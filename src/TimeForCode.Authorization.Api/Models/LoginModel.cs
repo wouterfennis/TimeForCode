@@ -5,6 +5,6 @@ namespace TimeForCode.Authorization.Api.Models
     public class LoginModel
     {
         [Required]
-        public required IdentityProvider IdentityProvider { get; set; }
+        public required IdentityProvider IdentityProvider { get; init; }
     }
 }

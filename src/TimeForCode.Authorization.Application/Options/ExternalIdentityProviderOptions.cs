@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using TimeForCode.Authorization.Values;
 
 namespace TimeForCode.Authorization.Application.Options
 {
@@ -10,6 +11,18 @@ namespace TimeForCode.Authorization.Application.Options
         public required string CallbackUri { get; init; }
 
         [Required]
+        public required string TokenExchangeUri { get; init; }
+
+        [Required]
         public required ExternalIdentityProvider Github { get; init; }
+
+        public ExternalIdentityProvider GetExternalIdentityProvider(IdentityProvider identityProvider)
+        {
+            return identityProvider switch
+            {
+                IdentityProvider.Github => Github,
+                _ => throw new NotImplementedException()
+            };
+        }
     }
 }

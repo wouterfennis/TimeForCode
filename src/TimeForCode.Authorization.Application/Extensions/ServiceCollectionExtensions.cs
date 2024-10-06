@@ -19,12 +19,12 @@ namespace TimeForCode.Authorization.Application.Extensions
         /// </remarks>
         public static IServiceCollection AddApplicationLayer(this IServiceCollection services, IConfiguration configuration)
         {
+            services.AddMemoryCache();
             services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<LoginHandler>());
 
             services
                 .Configure<ExternalIdentityProviderOptions>(options => configuration.GetSection(ExternalIdentityProviderOptions.SectionName)
                 .Bind(options));
-
 
             return services;
         }

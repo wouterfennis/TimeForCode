@@ -41,6 +41,22 @@ namespace TimeForCode.Authorization.Api.Controllers
             return Redirect(redirectUrl.AbsoluteUri);
         }
 
+                /// <summary>
+        /// Login endpoint.
+        /// </summary>
+        /// <param name="loginModel">The model containing the requested external identity provider</param>
+        /// <returns> 
+        /// The redirect URL towards an external identity provider.
+        /// </returns>
+        [HttpPost]
+        [Route("callback")]
+        [ProducesResponseType(StatusCodes.Status302Found)]
+        public async Task<IActionResult> CallbackAsync([FromQuery] CallbackModel loginModel)
+        {
+            var redirectUrl = await _sender.Send(loginModel.MapToCommand());
+            return Redirect(redirectUrl.AbsoluteUri);
+        }
+
         [HttpPost]
         [Route("logout")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -57,4 +73,6 @@ namespace TimeForCode.Authorization.Api.Controllers
             return Ok();
         }
     }
+
+
 }
