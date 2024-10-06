@@ -2,6 +2,7 @@
 using System.Text.Json.Serialization;
 using Microsoft.OpenApi.Models;
 using TimeForCode.Authorization.Application.Extensions;
+using TimeForCode.Authorization.Infrastructure.Extensions;
 
 namespace TimeForCode.Authorization.Api
 {
@@ -40,6 +41,7 @@ namespace TimeForCode.Authorization.Api
                 });
 
             services.AddApplicationLayer(_configuration);
+            services.AddInfrastructureLayer();
         }
 
         /// <summary>

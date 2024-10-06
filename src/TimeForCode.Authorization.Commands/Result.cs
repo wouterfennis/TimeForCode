@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 public class Result<T>
 {
     public T? Data { get; init; }

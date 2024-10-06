@@ -38,6 +38,8 @@ namespace TimeForCode.Authorization.Application.Handlers
             uriBuilder.Host = identityProvider.Host;
             query["client_id"] = identityProvider.ClientId;
             uriBuilder.Query = query.ToString();
+
+            return Task.FromResult(uriBuilder.Uri);
         }
 
         private string CreateState()

@@ -9,7 +9,7 @@ using TimeForCode.Authorization.Values;
 
 namespace TimeForCode.Authorization.Application.Handlers
 {
-    public class CallbackHandler : IRequestHandler<CallbackCommand, Uri>
+    public class CallbackHandler : IRequestHandler<CallbackCommand, Result<CallbackResult>>
     {
         private readonly ExternalIdentityProviderOptions _options;
         private readonly IMemoryCache _memoryCache;
@@ -24,46 +24,49 @@ namespace TimeForCode.Authorization.Application.Handlers
             _restService = restService;
         }
 
-        public Task<Uri> Handle(CallbackCommand request, CancellationToken cancellationToken)
+        public async Task<Result<CallbackResult>> Handle(CallbackCommand request, CancellationToken cancellationToken)
         {
             var result = GetIdentityProvider(request.State);
             if (result.IsFailure)
             {
-                throw new Exception("State is not known");
+                Result<CallbackResult>.Failure(result.ErrorMessage);
             }
 
             var model = BuildAccessTokenModel(request.Code, result.Data);
-            var accessToken = await _restService.GetAccessTokenAsync(model);
+            var externalAccessTokenResult = await _restService.GetAccessTokenAsync(model);
+            if(externalAccessTokenResult.IsFailure)
+            {
+                Result<CallbackResult>.Failure(externalAccessTokenResult.ErrorMessage);
+            }
+
+            // save account information
+
+            // exchange for internal access token
+
+            return Result<CallbackResult>.Success(new CallbackResult
+            {
+                InternalAccessToken = externalAccessTokenResult.Data.AccessToken
+            });
         }
 
-        private Result<IdentityProvider> GetIdentityProvider(string state)
+        private Result<ExternalIdentityProvider> GetIdentityProvider(string state)
         {
             if (!_memoryCache.TryGetValue(state, out IdentityProvider identityProvider))
             {
-                return Result<IdentityProvider>.Failure("State is not known");
+                return Result<ExternalIdentityProvider>.Failure("State is not known");
             }
 
-            return Result<IdentityProvider>.Success(identityProvider);
+            var options = _options.GetExternalIdentityProvider(identityProvider);
+            return Result<ExternalIdentityProvider>.Success(options);
         }
 
-        private GetAccessTokenModel BuildAccessTokenModel(string code, IdentityProvider identityProvider)
+        private GetAccessTokenModel BuildAccessTokenModel(string code, ExternalIdentityProvider identityProvider)
         {
-            string clientId = string.Empty;
-            string clientSecret = string.Empty;
-            switch (identityProvider)
-            {
-                case IdentityProvider.Github:
-                    clientId = _options.Github.ClientId;
-                    clientSecret = _options.Github.ClientSecret;
-                    break;
-                default:
-                    break;
-            }
-
             return new GetAccessTokenModel
             {
-                ClientId = clientId,
-                ClientSecret = clientSecret,
+                Host = identityProvider.Host,
+                ClientId = identityProvider.ClientId,
+                ClientSecret = identityProvider.ClientSecret,
                 Code = code
             };
         }

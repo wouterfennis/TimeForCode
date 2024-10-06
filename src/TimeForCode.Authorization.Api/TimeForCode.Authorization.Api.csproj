@@ -14,8 +14,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference
-      Include="..\TimeForCode.Authorization.Application\TimeForCode.Authorization.Application.csproj" />
+    <ProjectReference Include="..\TimeForCode.Authorization.Application\TimeForCode.Authorization.Application.csproj" />
+    <ProjectReference Include="..\TimeForCode.Authorization.Infrastructure\TimeForCode.Authorization.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

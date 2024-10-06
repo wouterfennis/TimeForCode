@@ -13,10 +13,6 @@ namespace TimeForCode.Authorization.Application.Extensions
         /// <param name="services">The <see cref="IServiceCollection"/> to add services to.</param>
         /// <param name="configuration">The <see cref="IConfiguration"/> instance used to configure the services.</param>
         /// <returns>The <see cref="IServiceCollection"/> with the application layer services added.</returns>
-        /// <remarks>
-        /// This method registers MediatR services and configures the <see cref="ExternalIdentityProviderOptions"/>
-        /// from the provided configuration section.
-        /// </remarks>
         public static IServiceCollection AddApplicationLayer(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddMemoryCache();

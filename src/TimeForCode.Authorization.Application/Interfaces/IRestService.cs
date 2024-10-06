@@ -2,6 +2,6 @@
 {
     public interface IRestService
     {
-        public Task<string> GetAccessTokenAsync(GetAccessTokenModel model);
+        public Task<Result<GetAccessTokenResult>> GetAccessTokenAsync(GetAccessTokenModel model);
     }
 }

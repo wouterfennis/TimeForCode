@@ -1,4 +1,6 @@
-    public class CallbackModel
+using System.ComponentModel.DataAnnotations;
+
+public class CallbackModel
     {
         [Required]
         public required string Code { get; init; }

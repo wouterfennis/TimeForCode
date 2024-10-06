@@ -41,20 +41,27 @@ namespace TimeForCode.Authorization.Api.Controllers
             return Redirect(redirectUrl.AbsoluteUri);
         }
 
-                /// <summary>
-        /// Login endpoint.
+        /// <summary>
+        /// Callback endpoint that is being called by the external identity provider. After the redirect initiated by <see cref="LoginAsync"/>.
         /// </summary>
-        /// <param name="loginModel">The model containing the requested external identity provider</param>
+        /// <param name="callbackModel">The model containing the authorization code from the external identity provider</param>
         /// <returns> 
-        /// The redirect URL towards an external identity provider.
+        /// The internal access token.
         /// </returns>
         [HttpPost]
         [Route("callback")]
-        [ProducesResponseType(StatusCodes.Status302Found)]
-        public async Task<IActionResult> CallbackAsync([FromQuery] CallbackModel loginModel)
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> CallbackAsync([FromQuery] CallbackModel callbackModel)
         {
-            var redirectUrl = await _sender.Send(loginModel.MapToCommand());
-            return Redirect(redirectUrl.AbsoluteUri);
+            var redirectUrl = await _sender.Send(callbackModel.MapToCommand());
+
+            if(redirectUrl.IsFailure)
+            {
+                return BadRequest(redirectUrl.ErrorMessage);
+            }
+
+            return Ok(redirectUrl.Data!.InternalAccessToken);
         }
 
         [HttpPost]
