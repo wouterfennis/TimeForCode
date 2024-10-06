@@ -1,0 +1,14 @@
+@TimeForCode.Authorization_HostAddress = https://localhost:7138
+
+POST {{TimeForCode.Authorization_HostAddress}}/api/authentication/login
+Content-Type: application/json
+User-Agent: testfile
+
+{
+    "IdentityProvider": "Github"
+}
+
+### Assert response
+
+
+###
