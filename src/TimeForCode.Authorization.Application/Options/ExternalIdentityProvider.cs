@@ -12,5 +12,8 @@ namespace TimeForCode.Authorization.Application.Options
 
         [Required]
         public required string ClientSecret { get; init; }
+
+        [Required]
+        public required string RestApiHost { get; init; }
     }
 }

@@ -1,7 +1,6 @@
 ﻿using MediatR;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
-using System.Web;
 using TimeForCode.Authorization.Application.Interfaces;
 using TimeForCode.Authorization.Application.Options;
 using TimeForCode.Authorization.Commands;
@@ -13,33 +12,38 @@ namespace TimeForCode.Authorization.Application.Handlers
     {
         private readonly ExternalIdentityProviderOptions _options;
         private readonly IMemoryCache _memoryCache;
-        private readonly IRestService _restService;
+        private readonly IIdentityProviderServiceFactory _identityProviderServiceFactory;
 
         public CallbackHandler(IOptions<ExternalIdentityProviderOptions> options, 
             IMemoryCache memoryCache,
-            IRestService restService)
+            IIdentityProviderServiceFactory identityProviderServiceFactory)
         {
             _options = options.Value;
             _memoryCache = memoryCache;
-            _restService = restService;
+            _identityProviderServiceFactory = identityProviderServiceFactory;
         }
 
         public async Task<Result<CallbackResult>> Handle(CallbackCommand request, CancellationToken cancellationToken)
         {
-            var result = GetIdentityProvider(request.State);
+            var result = GetIdentityProviderService(request.State);
             if (result.IsFailure)
             {
                 Result<CallbackResult>.Failure(result.ErrorMessage);
             }
+            var identityProviderService = result.Data;
 
-            var model = BuildAccessTokenModel(request.Code, result.Data);
-            var externalAccessTokenResult = await _restService.GetAccessTokenAsync(model);
+            var externalAccessTokenResult = await identityProviderService.GetAccessTokenAsync(request.Code);
             if(externalAccessTokenResult.IsFailure)
             {
                 Result<CallbackResult>.Failure(externalAccessTokenResult.ErrorMessage);
             }
 
             // save account information
+            var getAccountInformationModel = new GetAccountInformationModel
+            {
+                AccessToken = externalAccessTokenResult.Data.AccessToken
+            };
+            var accountInformation = await identityProviderService.GetAccountInformation(getAccountInformationModel);
 
             // exchange for internal access token
 
@@ -49,26 +53,15 @@ namespace TimeForCode.Authorization.Application.Handlers
             });
         }
 
-        private Result<ExternalIdentityProvider> GetIdentityProvider(string state)
+        private Result<IIdentityProviderService> GetIdentityProviderService(string state)
         {
             if (!_memoryCache.TryGetValue(state, out IdentityProvider identityProvider))
             {
-                return Result<ExternalIdentityProvider>.Failure("State is not known");
+                return Result<IIdentityProviderService>.Failure("State is not known");
             }
 
-            var options = _options.GetExternalIdentityProvider(identityProvider);
-            return Result<ExternalIdentityProvider>.Success(options);
+            return _identityProviderServiceFactory.GetIdentityProviderService(identityProvider);
         }
 
-        private GetAccessTokenModel BuildAccessTokenModel(string code, ExternalIdentityProvider identityProvider)
-        {
-            return new GetAccessTokenModel
-            {
-                Host = identityProvider.Host,
-                ClientId = identityProvider.ClientId,
-                ClientSecret = identityProvider.ClientSecret,
-                Code = code
-            };
-        }
     }
 }

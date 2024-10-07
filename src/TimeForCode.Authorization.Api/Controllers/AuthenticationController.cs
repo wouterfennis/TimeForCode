@@ -54,14 +54,14 @@ namespace TimeForCode.Authorization.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> CallbackAsync([FromQuery] CallbackModel callbackModel)
         {
-            var redirectUrl = await _sender.Send(callbackModel.MapToCommand());
+            var callbackResult = await _sender.Send(callbackModel.MapToCommand());
 
-            if(redirectUrl.IsFailure)
+            if(callbackResult.IsFailure)
             {
-                return BadRequest(redirectUrl.ErrorMessage);
+                return BadRequest(callbackResult.ErrorMessage);
             }
 
-            return Ok(redirectUrl.Data!.InternalAccessToken);
+            return Ok(callbackResult.Data!.InternalAccessToken);
         }
 
         [HttpPost]

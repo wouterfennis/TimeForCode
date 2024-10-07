@@ -18,7 +18,8 @@ namespace TimeForCode.Authorization.Infrastructure.Extensions
         /// <returns>The <see cref="IServiceCollection"/> with the application layer services added.</returns>
         public static IServiceCollection AddInfrastructureLayer(this IServiceCollection services)
         {
-            services.AddScoped<IRestService, RestService>();
+            services.AddScoped<IIdentityProviderServiceFactory, IdentityProviderServiceFactory>();
+            services.AddScoped<IIdentityProviderService, GithubService>();
             return services;
         }
     }
