@@ -5,11 +5,11 @@ namespace TimeForCode.Authorization.Infrastructure.Services
 {
     internal class IdentityProviderServiceFactory : IIdentityProviderServiceFactory
     {
-        private readonly GithubService _githubService;
+        private readonly IEnumerable<IIdentityProviderService> _services;
 
-        public IdentityProviderServiceFactory(GithubService githubService)
+        public IdentityProviderServiceFactory(IEnumerable<IIdentityProviderService> services)
         {
-            _githubService = githubService;
+            _services = services;
         }
         
         public Result<IIdentityProviderService> GetIdentityProviderService(IdentityProvider identityProvider)
@@ -17,7 +17,8 @@ namespace TimeForCode.Authorization.Infrastructure.Services
             switch (identityProvider)
             {
                 case IdentityProvider.Github:
-                    return Result<IIdentityProviderService>.Success(_githubService);
+                    var githubService = _services.Where(x => x.GetType() == typeof(GithubService)).Single();
+                    return Result<IIdentityProviderService>.Success(githubService);
                 default:
                     return Result<IIdentityProviderService>.Failure("Identity provider not supported");
             }

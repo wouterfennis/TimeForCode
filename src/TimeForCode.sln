@@ -11,7 +11,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TimeForCode.Authorization.C
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TimeForCode.Authorization.Values", "TimeForCode.Authorization.Values\TimeForCode.Authorization.Values.csproj", "{4BA01673-98B3-4270-86E4-2697486CD9E7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimeForCode.Authorization.Infrastructure", "TimeForCode.Authorization.Infrastructure\TimeForCode.Authorization.Infrastructure.csproj", "{E8AE3581-6BAE-4F73-8D18-DCCF3E21BC82}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TimeForCode.Authorization.Infrastructure", "TimeForCode.Authorization.Infrastructure\TimeForCode.Authorization.Infrastructure.csproj", "{E8AE3581-6BAE-4F73-8D18-DCCF3E21BC82}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{0E98DD01-937E-4378-BFFB-1DE720D2019B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tst", "tst", "{6F750404-37BF-4C8B-B54F-C77F6F7CB4E6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimeForCode.Authorization.Api.Tests", "..\tst\TimeForCode.Authorization.Api.Tests\TimeForCode.Authorization.Api.Tests.csproj", "{F913D394-6B1B-4E53-A240-4A5AB7E8DEFF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,9 +45,21 @@ Global
 		{E8AE3581-6BAE-4F73-8D18-DCCF3E21BC82}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E8AE3581-6BAE-4F73-8D18-DCCF3E21BC82}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E8AE3581-6BAE-4F73-8D18-DCCF3E21BC82}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F913D394-6B1B-4E53-A240-4A5AB7E8DEFF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F913D394-6B1B-4E53-A240-4A5AB7E8DEFF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F913D394-6B1B-4E53-A240-4A5AB7E8DEFF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F913D394-6B1B-4E53-A240-4A5AB7E8DEFF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{6D679E9B-31CF-439E-8CA7-21B78B15D6D4} = {0E98DD01-937E-4378-BFFB-1DE720D2019B}
+		{C73FA7AD-75A8-4F2E-87A0-EFB578EB7E4A} = {0E98DD01-937E-4378-BFFB-1DE720D2019B}
+		{8254628F-3CD6-4024-96D3-125B5DAD9473} = {0E98DD01-937E-4378-BFFB-1DE720D2019B}
+		{4BA01673-98B3-4270-86E4-2697486CD9E7} = {0E98DD01-937E-4378-BFFB-1DE720D2019B}
+		{E8AE3581-6BAE-4F73-8D18-DCCF3E21BC82} = {0E98DD01-937E-4378-BFFB-1DE720D2019B}
+		{F913D394-6B1B-4E53-A240-4A5AB7E8DEFF} = {6F750404-37BF-4C8B-B54F-C77F6F7CB4E6}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D1F8C98B-6300-412B-B5E1-CE65A5AF126F}

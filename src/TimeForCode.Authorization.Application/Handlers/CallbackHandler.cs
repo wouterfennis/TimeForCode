@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using TimeForCode.Authorization.Application.Interfaces;
 using TimeForCode.Authorization.Application.Options;
@@ -13,14 +14,17 @@ namespace TimeForCode.Authorization.Application.Handlers
         private readonly ExternalIdentityProviderOptions _options;
         private readonly IMemoryCache _memoryCache;
         private readonly IIdentityProviderServiceFactory _identityProviderServiceFactory;
+        private readonly ILogger<CallbackHandler> _logger;
 
-        public CallbackHandler(IOptions<ExternalIdentityProviderOptions> options, 
+        public CallbackHandler(IOptions<ExternalIdentityProviderOptions> options,
             IMemoryCache memoryCache,
-            IIdentityProviderServiceFactory identityProviderServiceFactory)
+            IIdentityProviderServiceFactory identityProviderServiceFactory,
+            ILogger<CallbackHandler> logger)
         {
             _options = options.Value;
             _memoryCache = memoryCache;
             _identityProviderServiceFactory = identityProviderServiceFactory;
+            _logger = logger;
         }
 
         public async Task<Result<CallbackResult>> Handle(CallbackCommand request, CancellationToken cancellationToken)
@@ -33,7 +37,7 @@ namespace TimeForCode.Authorization.Application.Handlers
             var identityProviderService = result.Data;
 
             var externalAccessTokenResult = await identityProviderService.GetAccessTokenAsync(request.Code);
-            if(externalAccessTokenResult.IsFailure)
+            if (externalAccessTokenResult.IsFailure)
             {
                 Result<CallbackResult>.Failure(externalAccessTokenResult.ErrorMessage);
             }
@@ -43,7 +47,14 @@ namespace TimeForCode.Authorization.Application.Handlers
             {
                 AccessToken = externalAccessTokenResult.Data.AccessToken
             };
-            var accountInformation = await identityProviderService.GetAccountInformation(getAccountInformationModel);
+            var accountInformationResult = await identityProviderService.GetAccountInformation(getAccountInformationModel);
+
+            if (accountInformationResult.IsFailure)
+            {
+                Result<CallbackResult>.Failure(accountInformationResult.ErrorMessage);
+            }
+
+            _logger.LogDebug(accountInformationResult.Data.ToString());
 
             // exchange for internal access token
 

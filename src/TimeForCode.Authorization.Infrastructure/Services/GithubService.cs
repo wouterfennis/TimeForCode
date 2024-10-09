@@ -16,7 +16,7 @@ namespace TimeForCode.Authorization.Infrastructure.Services
             _identityProviderOptions = options.Value.GetExternalIdentityProvider(IdentityProvider.Github);
         }
 
-        public async Task<Result<GetAccessTokenResult>> GetAccessTokenAsync(GetAccessTokenModel model)
+        public async Task<Result<GetAccessTokenResult>> GetAccessTokenAsync(string code)
         {
             var uriBuilder = new UriBuilder
             {
@@ -32,7 +32,7 @@ namespace TimeForCode.Authorization.Infrastructure.Services
             {
                 client_id = _identityProviderOptions.ClientId,
                 client_secret = _identityProviderOptions.ClientSecret,
-                code = model.Code
+                code = code
             });
 
             var response = await client.ExecuteAsync<GetAccessTokenResult>(request);
@@ -45,7 +45,7 @@ namespace TimeForCode.Authorization.Infrastructure.Services
             return Result<GetAccessTokenResult>.Failure(response.ErrorMessage!);
         }
 
-        public Task<Result<AccountInformation>> GetAccountInformation(GetAccountInformationModel model)
+        public async Task<Result<AccountInformation>> GetAccountInformation(GetAccountInformationModel model)
         {
             var uriBuilder = new UriBuilder
             {
@@ -56,16 +56,16 @@ namespace TimeForCode.Authorization.Infrastructure.Services
             var client = new RestClient(uriBuilder.ToString());
             client.AcceptedContentTypes = [MediaTypeNames.Application.Json];
 
-            var request = new RestRequest("/login/oauth/access_token", Method.Get);
+            var request = new RestRequest("/user", Method.Get);
 
-            var response = await client.ExecuteAsync<GetAccessTokenResult>(request);
+            var response = await client.ExecuteAsync<AccountInformation>(request);
 
             if (response.IsSuccessful)
             {
-                return Result<GetAccessTokenResult>.Success(response.Data!);
+                return Result<AccountInformation>.Success(response.Data!);
             }
 
-            return Result<GetAccessTokenResult>.Failure(response.ErrorMessage!);
+            return Result<AccountInformation>.Failure(response.ErrorMessage!);
         }
     }
 }
