@@ -1,10 +1,13 @@
-public class AccountInformation
+namespace TimeForCode.Authorization.Application.Interfaces
 {
-    public int Id { get; set; }
-    public string Login { get; set; }
-    public string NodeId { get; set; }
-    public string AvatarUrl { get; set; }
-    public string Name { get; set; }
-    public string? Company { get; set; }
-    public string Email { get; set; }
+    public class AccountInformation
+    {
+        public required int Id { get; init; }
+        public required string Login { get; init; }
+        public required string NodeId { get; init; }
+        public required string AvatarUrl { get; init; }
+        public required string Name { get; init; }
+        public required string? Company { get; init; }
+        public required string Email { get; init; }
+    }
 }

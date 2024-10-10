@@ -11,7 +11,6 @@ namespace TimeForCode.Authorization.Application.Handlers
 {
     public class CallbackHandler : IRequestHandler<CallbackCommand, Result<CallbackResult>>
     {
-        private readonly ExternalIdentityProviderOptions _options;
         private readonly IMemoryCache _memoryCache;
         private readonly IIdentityProviderServiceFactory _identityProviderServiceFactory;
         private readonly ILogger<CallbackHandler> _logger;
@@ -21,7 +20,6 @@ namespace TimeForCode.Authorization.Application.Handlers
             IIdentityProviderServiceFactory identityProviderServiceFactory,
             ILogger<CallbackHandler> logger)
         {
-            _options = options.Value;
             _memoryCache = memoryCache;
             _identityProviderServiceFactory = identityProviderServiceFactory;
             _logger = logger;
@@ -34,7 +32,7 @@ namespace TimeForCode.Authorization.Application.Handlers
             {
                 Result<CallbackResult>.Failure(result.ErrorMessage);
             }
-            var identityProviderService = result.Data;
+            var identityProviderService = result.Value;
 
             var externalAccessTokenResult = await identityProviderService.GetAccessTokenAsync(request.Code);
             if (externalAccessTokenResult.IsFailure)
@@ -45,7 +43,7 @@ namespace TimeForCode.Authorization.Application.Handlers
             // save account information
             var getAccountInformationModel = new GetAccountInformationModel
             {
-                AccessToken = externalAccessTokenResult.Data.AccessToken
+                AccessToken = externalAccessTokenResult.Value.AccessToken
             };
             var accountInformationResult = await identityProviderService.GetAccountInformation(getAccountInformationModel);
 
@@ -54,13 +52,13 @@ namespace TimeForCode.Authorization.Application.Handlers
                 Result<CallbackResult>.Failure(accountInformationResult.ErrorMessage);
             }
 
-            _logger.LogDebug(accountInformationResult.Data.ToString());
+            _logger.LogDebug(accountInformationResult.Value.ToString());
 
             // exchange for internal access token
 
             return Result<CallbackResult>.Success(new CallbackResult
             {
-                InternalAccessToken = externalAccessTokenResult.Data.AccessToken
+                InternalAccessToken = externalAccessTokenResult.Value.AccessToken
             });
         }
 

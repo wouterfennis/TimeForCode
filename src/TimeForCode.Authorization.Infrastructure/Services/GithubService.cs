@@ -3,6 +3,7 @@ using RestSharp;
 using System.Net.Mime;
 using TimeForCode.Authorization.Application.Interfaces;
 using TimeForCode.Authorization.Application.Options;
+using TimeForCode.Authorization.Commands;
 using TimeForCode.Authorization.Values;
 
 namespace TimeForCode.Authorization.Infrastructure.Services

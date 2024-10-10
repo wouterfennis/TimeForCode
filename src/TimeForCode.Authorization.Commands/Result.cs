@@ -1,19 +1,22 @@
-using System.Diagnostics.CodeAnalysis;
-
-public class Result<T>
+namespace TimeForCode.Authorization.Commands
 {
-    public T? Data { get; init; }
-    public bool IsSuccess { get; init; }
-    public bool IsFailure => !IsSuccess;
-    public string? ErrorMessage { get; init; }
-
-    public static Result<T> Success(T data)
+    public class Result<T>
     {
-        return new Result<T> { Data = data, IsSuccess = true };
-    }
+        private T? _value { get; init; }
+        private string? _errorMessage { get; init; }
+        public T Value => _value ?? throw new InvalidOperationException("The result does not contain any value.");
+        public bool IsSuccess { get; init; }
+        public bool IsFailure => !IsSuccess;
+        public string ErrorMessage => _errorMessage ?? throw new InvalidOperationException("The result does not contain any error message.");
 
-    public static Result<T> Failure(string errorMessage)
-    {
-        return new Result<T> { IsSuccess = false, ErrorMessage = errorMessage };
+        public static Result<T> Success(T data)
+        {
+            return new Result<T> { _value = data, IsSuccess = true };
+        }
+
+        public static Result<T> Failure(string errorMessage)
+        {
+            return new Result<T> { IsSuccess = false, _errorMessage = errorMessage };
+        }
     }
 }

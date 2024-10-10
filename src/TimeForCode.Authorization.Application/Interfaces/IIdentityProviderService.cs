@@ -1,4 +1,6 @@
-﻿namespace TimeForCode.Authorization.Application.Interfaces
+﻿using TimeForCode.Authorization.Commands;
+
+namespace TimeForCode.Authorization.Application.Interfaces
 {
     public interface IIdentityProviderService
     {
