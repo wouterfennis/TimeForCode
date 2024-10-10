@@ -14,7 +14,7 @@ namespace TimeForCode.Authorization.Api.Client.Extensions
             {
                 return new HttpClientHandler
                 {
-                    AllowAutoRedirect = false // Prevent automatic redirect follow
+                    AllowAutoRedirect = false
                 };
             });
 
