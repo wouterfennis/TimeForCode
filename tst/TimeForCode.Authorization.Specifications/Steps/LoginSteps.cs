@@ -1,10 +1,5 @@
 ﻿using FluentAssertions;
 using Reqnroll;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TimeForCode.Authorization.Api.Client;
 using TimeForCode.Authorization.Api.Client.Extensions;
 
@@ -19,12 +14,6 @@ namespace TimeForCode.Authorization.Specifications.Steps
         public LoginSteps(IAuthClient authClient)
         {
             _authClient = authClient;
-        }
-
-        [Given("The user has an account at the external platform")]
-        public void GivenTheUserHasAnAccountAtTheExternalPlatform()
-        {
-            // do nothing yet
         }
 
         [When("The user logs in at the time for code platform")]

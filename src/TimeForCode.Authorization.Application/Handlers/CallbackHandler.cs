@@ -30,14 +30,14 @@ namespace TimeForCode.Authorization.Application.Handlers
             var result = GetIdentityProviderService(request.State);
             if (result.IsFailure)
             {
-                Result<CallbackResult>.Failure(result.ErrorMessage);
+                return Result<CallbackResult>.Failure(result.ErrorMessage);
             }
             var identityProviderService = result.Value;
 
             var externalAccessTokenResult = await identityProviderService.GetAccessTokenAsync(request.Code);
             if (externalAccessTokenResult.IsFailure)
             {
-                Result<CallbackResult>.Failure(externalAccessTokenResult.ErrorMessage);
+                return Result<CallbackResult>.Failure(externalAccessTokenResult.ErrorMessage);
             }
 
             // save account information
@@ -49,7 +49,7 @@ namespace TimeForCode.Authorization.Application.Handlers
 
             if (accountInformationResult.IsFailure)
             {
-                Result<CallbackResult>.Failure(accountInformationResult.ErrorMessage);
+                return Result<CallbackResult>.Failure(accountInformationResult.ErrorMessage);
             }
 
             _logger.LogDebug(accountInformationResult.Value.ToString());

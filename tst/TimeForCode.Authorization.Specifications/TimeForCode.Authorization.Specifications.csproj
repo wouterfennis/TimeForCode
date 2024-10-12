@@ -10,6 +10,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ReqnrollObsoleteCodeBehindFiles Remove="Features\Login\Login - Copy.feature.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="6.0.2">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -17,6 +21,7 @@
     <PackageReference Include="FluentAssertions" Version="6.12.1" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.10" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="Moq" Version="4.20.72" />
     <PackageReference Include="MSTest.TestAdapter" Version="3.6.1" />
     <PackageReference Include="MSTest.TestFramework" Version="3.6.1" />
     <PackageReference Include="Reqnroll" Version="2.1.1" />
@@ -27,10 +32,24 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\TimeForCode.Authorization.Api.Client\TimeForCode.Authorization.Api.Client.csproj" />
     <ProjectReference Include="..\..\src\TimeForCode.Authorization.Api\TimeForCode.Authorization.Api.csproj" />
+    <ProjectReference Include="..\..\src\TimeForCode.Authorization.Infrastructure\TimeForCode.Authorization.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Features\Login\Callback.feature.cs">
+      <DependentUpon>Callback.feature</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ReqnrollFeatureFiles Update="Features\Login\Callback.feature">
+      <Visible>$(UsingMicrosoftNETSdk)</Visible>
+      <CodeBehindFile>%(RelativeDir)%(Filename).feature$(DefaultLanguageSourceExtension)</CodeBehindFile>
+    </ReqnrollFeatureFiles>
   </ItemGroup>
 
 </Project>
