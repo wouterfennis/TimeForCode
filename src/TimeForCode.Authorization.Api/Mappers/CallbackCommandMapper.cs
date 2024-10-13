@@ -4,7 +4,7 @@ namespace TimeForCode.Authorization.Api.Mappers
 {
     public static class CallbackCommandMapper
     {
-        public static CallbackCommand MapToCommand(this CallbackModel model)
+        public static CallbackCommand MapToCommand(this CallbackRequestModel model)
         {
             return new CallbackCommand
             {

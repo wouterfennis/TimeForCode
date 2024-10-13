@@ -5,7 +5,7 @@ namespace TimeForCode.Authorization.Api.Mappers
 {
     public static class LoginCommandMapper
     {
-        public static LoginCommand MapToCommand(this LoginModel model)
+        public static LoginCommand MapToCommand(this LoginRequestModel model)
         {
             return new LoginCommand
             {

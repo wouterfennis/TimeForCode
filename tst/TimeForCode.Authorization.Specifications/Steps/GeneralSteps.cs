@@ -56,5 +56,12 @@ namespace TimeForCode.Authorization.Specifications.Steps
                 .Setup(x => x.GetAccessTokenAsync(It.IsAny<string>()))
                 .ReturnsAsync(result);
         }
+
+        [Given("The user has not logged in at the external platform")]
+        public void GivenTheUserHasNotLoggedInAtTheExternalPlatform()
+        {
+            // No need to do anything here
+        }
+
     }
 }

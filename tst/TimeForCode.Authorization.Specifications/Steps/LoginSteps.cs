@@ -9,7 +9,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
     internal class LoginSteps
     {
         private readonly IAuthClient _authClient;
-        private RedirectResult? _result = null;
+        private TryVoid<ApiException?>? _result = null;
 
         public LoginSteps(IAuthClient authClient)
         {
@@ -19,19 +19,20 @@ namespace TimeForCode.Authorization.Specifications.Steps
         [When("The user logs in at the time for code platform")]
         public async Task WhenTheUserLogsInAtTheTimeForCodePlatformAsync()
         {
-            var model = new LoginModel
+            var model = new LoginRequestModel
             {
                 IdentityProvider = IdentityProvider.Github
             };
 
-            _result = await _authClient.LoginWithRedirectAsync(model);
+            _result = await _authClient.TryLoginAsync(model);
         }
 
         [Then("The user is redirected to the external platform")]
         public void ThenTheUserIsRedirectedToTheExternalPlatform()
         {
             _result.Should().NotBeNull();
-            _result!.Url.Should().NotBeNullOrEmpty();
+            _result!.Exception.Should().NotBeNull();
+            _result!.Exception!.Headers["Location"].Single().Should().NotBeNullOrEmpty();
         }
     }
 }

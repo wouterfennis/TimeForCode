@@ -101,13 +101,13 @@ Login consists technically on two parts.
         }
         
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("User has logged in at the external platform")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("User has not logged in at the external platform")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Callback")]
-        public async System.Threading.Tasks.Task UserHasLoggedInAtTheExternalPlatform()
+        public async System.Threading.Tasks.Task UserHasNotLoggedInAtTheExternalPlatform()
         {
             string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
-            global::Reqnroll.ScenarioInfo scenarioInfo = new global::Reqnroll.ScenarioInfo("User has logged in at the external platform", null, tagsOfScenario, argumentsOfScenario, featureTags);
+            global::Reqnroll.ScenarioInfo scenarioInfo = new global::Reqnroll.ScenarioInfo("User has not logged in at the external platform", null, tagsOfScenario, argumentsOfScenario, featureTags);
 #line 12
 this.ScenarioInitialize(scenarioInfo);
 #line hidden
@@ -119,16 +119,51 @@ this.ScenarioInitialize(scenarioInfo);
             {
                 await this.ScenarioStartAsync();
 #line 13
- await testRunner.GivenAsync("The user logs in at the external platform", ((string)(null)), ((global::Reqnroll.Table)(null)), "Given ");
+ await testRunner.GivenAsync("The user has not logged in at the external platform", ((string)(null)), ((global::Reqnroll.Table)(null)), "Given ");
 #line hidden
 #line 14
  await testRunner.WhenAsync("The external platform calls the time for code platform to complete the authorizat" +
                         "ion", ((string)(null)), ((global::Reqnroll.Table)(null)), "When ");
 #line hidden
 #line 15
- await testRunner.ThenAsync("A authentication token is returned", ((string)(null)), ((global::Reqnroll.Table)(null)), "Then ");
+ await testRunner.ThenAsync("A authentication token is not returned", ((string)(null)), ((global::Reqnroll.Table)(null)), "Then ");
 #line hidden
 #line 16
+ await testRunner.AndAsync("The following error message is returned: \"State is not known\"", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
+#line hidden
+            }
+            await this.ScenarioCleanupAsync();
+        }
+        
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("User has logged in at the external platform")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Callback")]
+        public async System.Threading.Tasks.Task UserHasLoggedInAtTheExternalPlatform()
+        {
+            string[] tagsOfScenario = ((string[])(null));
+            System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
+            global::Reqnroll.ScenarioInfo scenarioInfo = new global::Reqnroll.ScenarioInfo("User has logged in at the external platform", null, tagsOfScenario, argumentsOfScenario, featureTags);
+#line 18
+this.ScenarioInitialize(scenarioInfo);
+#line hidden
+            if ((global::Reqnroll.TagHelper.ContainsIgnoreTag(scenarioInfo.CombinedTags) || global::Reqnroll.TagHelper.ContainsIgnoreTag(featureTags)))
+            {
+                testRunner.SkipScenario();
+            }
+            else
+            {
+                await this.ScenarioStartAsync();
+#line 19
+ await testRunner.GivenAsync("The user logs in at the external platform", ((string)(null)), ((global::Reqnroll.Table)(null)), "Given ");
+#line hidden
+#line 20
+ await testRunner.WhenAsync("The external platform calls the time for code platform to complete the authorizat" +
+                        "ion", ((string)(null)), ((global::Reqnroll.Table)(null)), "When ");
+#line hidden
+#line 21
+ await testRunner.ThenAsync("A authentication token is returned", ((string)(null)), ((global::Reqnroll.Table)(null)), "Then ");
+#line hidden
+#line 22
  await testRunner.AndAsync("The user information is saved in the time for code platform", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
 #line hidden
             }

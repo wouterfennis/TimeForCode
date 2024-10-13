@@ -34,9 +34,9 @@ namespace TimeForCode.Authorization.Api.Controllers
         /// </returns>
         [HttpPost]
         [Route("login")]
-        [ProducesResponseType(typeof(RedirectResult), StatusCodes.Status302Found)]
+        [ProducesResponseType(StatusCodes.Status302Found)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> LoginAsync([FromBody] LoginModel loginModel)
+        public async Task<IActionResult> LoginAsync([FromBody] LoginRequestModel loginModel)
         {
             var redirectUrl = await _sender.Send(loginModel.MapToCommand());
             return Redirect(redirectUrl.AbsoluteUri);
@@ -51,19 +51,19 @@ namespace TimeForCode.Authorization.Api.Controllers
         /// </returns>
         [HttpPost]
         [Route("callback")]
-        [ProducesResponseType(typeof(BadRequestObjectResult), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(CallbackResponseModel), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [ProducesResponseType(typeof(OkObjectResult), StatusCodes.Status200OK)]
-        public async Task<IActionResult> CallbackAsync([FromQuery] CallbackModel callbackModel)
+        public async Task<IActionResult> CallbackAsync([FromQuery] CallbackRequestModel callbackModel)
         {
             var callbackResult = await _sender.Send(callbackModel.MapToCommand());
 
             if (callbackResult.IsFailure)
             {
-                return BadRequest(callbackResult.ErrorMessage);
+                return BadRequest(ProblemDetailsMapper.BadRequest(callbackResult.ErrorMessage));
             }
 
-            return Ok(callbackResult.Value!.InternalAccessToken);
+            return Ok(CallbackResponseModel.Create(callbackResult.Value!.InternalAccessToken));
         }
 
         [HttpPost]
