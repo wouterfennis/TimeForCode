@@ -1,7 +1,13 @@
 ﻿using FluentAssertions;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
+using Moq;
 using Reqnroll;
+using System.Reflection;
 using TimeForCode.Authorization.Api.Client;
 using TimeForCode.Authorization.Api.Client.Extensions;
+using TimeForCode.Authorization.Application.Interfaces;
+using TimeForCode.Authorization.Commands;
 
 namespace TimeForCode.Authorization.Specifications.Steps
 {
@@ -9,23 +15,35 @@ namespace TimeForCode.Authorization.Specifications.Steps
     internal class CallbackSteps
     {
         private readonly IAuthClient _authClient;
+        private readonly IServiceProvider _provider;
         private TryResponse<Api.Client.CallbackResponseModel?, ApiException<ProblemDetails>?>? _result = null;
 
-        public CallbackSteps(IAuthClient authClient)
+        public CallbackSteps(IAuthClient authClient, IServiceProvider provider)
         {
             _authClient = authClient;
+            _provider = provider;
+        }
+
+        [Given("The external platform does not return the access token")]
+        public void GivenTheExternalPlatformDoesNotReturnTheAccessToken()
+        {
+            Mock<IIdentityProviderService> mock = _provider.GetRequiredService<Mock<IIdentityProviderService>>();
+
+            var result = Result<GetAccessTokenResult>.Failure("Access token cannot be received");
+
+            mock.Setup(x => x.GetAccessTokenAsync(It.IsAny<string>()))
+                .ReturnsAsync(result);
         }
 
         [When("The external platform calls the time for code platform to complete the authorization")]
         public async Task WhenTheExternalPlatformCallsTheTimeForCodePlatformToCompleteTheAuthorizationAsync()
         {
             string code = "code";
-            string state = "state";
 
-            _result = await _authClient.TryCallbackAsync(code, state);
+            _result = await _authClient.TryCallbackAsync(code, Constants.StateKey);
         }
 
-        [Then("A authentication token is returned")]
+        [Then("An authentication token is returned")]
         public void ThenAAuthenticationTokenIsReturned()
         {
             _result.Should().NotBeNull();
@@ -39,8 +57,8 @@ namespace TimeForCode.Authorization.Specifications.Steps
             // throw new PendingStepException();
         }
 
-        [Then("A authentication token is not returned")]
-        public void ThenAAuthenticationTokenIsNotReturned()
+        [Then("An authentication token is not returned")]
+        public void ThenAnAuthenticationTokenIsNotReturned()
         {
             _result.Should().NotBeNull();
         }

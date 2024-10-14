@@ -2,6 +2,7 @@
 using Moq;
 using Reqnroll;
 using Reqnroll.BoDi;
+using Reqnroll.CommonModels;
 using TimeForCode.Authorization.Application.Interfaces;
 using TimeForCode.Authorization.Commands;
 
@@ -32,10 +33,20 @@ namespace TimeForCode.Authorization.Specifications.Steps
                 NodeId = "",
                 Company = "",
             };
-            var result = Result<AccountInformation>.Success(accountInformation);
+            var result = Commands.Result<AccountInformation>.Success(accountInformation);
 
-            mock
-                .Setup(x => x.GetAccountInformation(It.IsAny<GetAccountInformationModel>()))
+            mock.Setup(x => x.GetAccountInformation(It.IsAny<GetAccountInformationModel>()))
+                .ReturnsAsync(result);
+        }
+
+        [Given("The user has no account at the external platform")]
+        public void GivenTheUserHasNoAccountAtTheExternalPlatform()
+        {
+            Mock<IIdentityProviderService> mock = _provider.GetRequiredService<Mock<IIdentityProviderService>>();
+
+            var result = Commands.Result<AccountInformation>.Failure("No account information");
+
+            mock.Setup(x => x.GetAccountInformation(It.IsAny<GetAccountInformationModel>()))
                 .ReturnsAsync(result);
         }
 
@@ -50,10 +61,9 @@ namespace TimeForCode.Authorization.Specifications.Steps
                 Scope = "scope",
                 TokenType = "token_type"
             };
-            var result = Result<GetAccessTokenResult>.Success(accessTokenResult);
+            var result = Commands.Result<GetAccessTokenResult>.Success(accessTokenResult);
 
-            mock
-                .Setup(x => x.GetAccessTokenAsync(It.IsAny<string>()))
+            mock.Setup(x => x.GetAccessTokenAsync(It.IsAny<string>()))
                 .ReturnsAsync(result);
         }
 

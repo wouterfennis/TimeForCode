@@ -1,10 +1,8 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using TimeForCode.Authorization.Application.Interfaces;
+using TimeForCode.Authorization.Infrastructure.Random;
 using TimeForCode.Authorization.Infrastructure.Services;
 
 namespace TimeForCode.Authorization.Infrastructure.Extensions
@@ -19,6 +17,7 @@ namespace TimeForCode.Authorization.Infrastructure.Extensions
         public static IServiceCollection AddInfrastructureLayer(this IServiceCollection services)
         {
             services.AddScoped<IIdentityProviderServiceFactory, IdentityProviderServiceFactory>();
+            services.AddScoped<IRandomGenerator, RandomGenerator>();
             services.AddScoped<IIdentityProviderService, GithubService>();
             return services;
         }

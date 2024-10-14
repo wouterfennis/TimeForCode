@@ -16,6 +16,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
             _authClient = authClient;
         }
 
+        [Given("The user logs in at the time for code platform")]
         [When("The user logs in at the time for code platform")]
         public async Task WhenTheUserLogsInAtTheTimeForCodePlatformAsync()
         {

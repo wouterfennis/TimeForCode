@@ -21,7 +21,8 @@ namespace TimeForCode.Authorization.Specifications.Mocking
                 var interfacesToRemove = new List<Type>
                 {
                     typeof(IIdentityProviderService),
-                    typeof(IIdentityProviderServiceFactory)
+                    typeof(IIdentityProviderServiceFactory),
+                    typeof(IRandomGenerator)
                 };
 
                 var descriptors = services
@@ -35,12 +36,17 @@ namespace TimeForCode.Authorization.Specifications.Mocking
 
                 var mockIdentityProviderService = new Mock<IIdentityProviderService>();
                 var mockIdentityProviderServiceFactory = new Mock<IIdentityProviderServiceFactory>();
+                var mockRandomGenerator = new Mock<IRandomGenerator>();
 
                 mockIdentityProviderServiceFactory.Setup(x => x.GetIdentityProviderService(It.IsAny<IdentityProvider>()))
                     .Returns(Result<IIdentityProviderService>.Success(mockIdentityProviderService.Object));
 
+                mockRandomGenerator.Setup(x => x.GenerateRandomString())
+                    .Returns(Constants.StateKey);
+
                 services.TryAddSingleton(mockIdentityProviderService);
                 services.TryAddSingleton(mockIdentityProviderServiceFactory.Object);
+                services.TryAddSingleton(mockRandomGenerator.Object);
             });
         }
     }
