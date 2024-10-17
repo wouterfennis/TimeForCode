@@ -15,8 +15,8 @@ namespace TimeForCode.Authorization.Application.Handlers
         private readonly IMemoryCache _memoryCache;
         private readonly IRandomGenerator _randomGenerator;
 
-        public LoginHandler(IOptions<ExternalIdentityProviderOptions> options, 
-            IMemoryCache memoryCache, 
+        public LoginHandler(IOptions<ExternalIdentityProviderOptions> options,
+            IMemoryCache memoryCache,
             IRandomGenerator randomGenerator)
         {
             _options = options.Value;

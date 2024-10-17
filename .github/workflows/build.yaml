@@ -58,4 +58,4 @@ jobs:
       run: dotnet format ./src/TimeForCode.sln --no-restore
 
     - name: Run NuGet security scan
-      run: dotnet list package --vulnerable —-include-transitive
+      run: dotnet list package ./src/TimeForCode.sln --vulnerable —-include-transitive

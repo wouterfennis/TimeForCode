@@ -12,7 +12,7 @@ namespace TimeForCode.Authorization.Infrastructure.Services
         {
             _services = services;
         }
-        
+
         public Result<IIdentityProviderService> GetIdentityProviderService(IdentityProvider identityProvider)
         {
             switch (identityProvider)

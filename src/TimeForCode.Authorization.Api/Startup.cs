@@ -1,6 +1,6 @@
-﻿using System.Reflection;
+﻿using Microsoft.OpenApi.Models;
+using System.Reflection;
 using System.Text.Json.Serialization;
-using Microsoft.OpenApi.Models;
 using TimeForCode.Authorization.Application.Extensions;
 using TimeForCode.Authorization.Infrastructure.Extensions;
 
