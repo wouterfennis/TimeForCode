@@ -57,8 +57,5 @@ jobs:
     - name: Run dotnet-format
       run: dotnet format ./src/TimeForCode.sln --no-restore
 
-    - name: Install dotnet-security
-      run: dotnet tool install --global dotnet-security
-
-    - name: Run security analysis
-      run: dotnet security check
+    - name: Run NuGet security scan
+      run: dotnet list package --vulnerable —-include-transitive
