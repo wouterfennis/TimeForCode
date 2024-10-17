@@ -5,6 +5,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using MongoDB.Driver;
 using Moq;
+using RestSharp;
+using RichardSzalay.MockHttp;
 using System.Runtime.CompilerServices;
 using TimeForCode.Authorization.Api;
 using TimeForCode.Authorization.Application.Interfaces;
@@ -24,10 +26,9 @@ namespace TimeForCode.Authorization.Specifications.Mocking
             {
                 var interfacesToRemove = new List<Type>
                 {
-                    typeof(IIdentityProviderService),
-                    typeof(IIdentityProviderServiceFactory),
                     typeof(IRandomGenerator),
-                    typeof(IMongoDbContext)
+                    typeof(IMongoDbContext),
+                    typeof(RestClient)
                 };
 
                 var descriptors = services
@@ -39,19 +40,18 @@ namespace TimeForCode.Authorization.Specifications.Mocking
                     descriptors.ForEach(d => services.Remove(d));
                 }
 
-                var mockIdentityProviderService = new Mock<IIdentityProviderService>();
-                var mockIdentityProviderServiceFactory = new Mock<IIdentityProviderServiceFactory>();
                 var mockRandomGenerator = new Mock<IRandomGenerator>();
                 MockMongoDb(services);
-
-                mockIdentityProviderServiceFactory.Setup(x => x.GetIdentityProviderService(It.IsAny<IdentityProvider>()))
-                    .Returns(Result<IIdentityProviderService>.Success(mockIdentityProviderService.Object));
 
                 mockRandomGenerator.Setup(x => x.GenerateRandomString())
                     .Returns(Constants.StateKey);
 
-                services.TryAddSingleton(mockIdentityProviderService);
-                services.TryAddSingleton(mockIdentityProviderServiceFactory.Object);
+                var mockHttp = new MockHttpMessageHandler();
+                services.TryAddSingleton(mockHttp);
+
+                var restClient = new RestClient(new RestClientOptions { ConfigureMessageHandler = _ => mockHttp });
+
+                services.TryAddSingleton(restClient);
                 services.TryAddSingleton(mockRandomGenerator.Object);
             });
 

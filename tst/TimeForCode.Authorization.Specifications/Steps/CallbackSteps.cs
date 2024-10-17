@@ -1,14 +1,12 @@
 ﻿using FluentAssertions;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Driver;
 using Moq;
 using Reqnroll;
-using System.Reflection;
+using RichardSzalay.MockHttp;
+using System.Net;
 using TimeForCode.Authorization.Api.Client;
 using TimeForCode.Authorization.Api.Client.Extensions;
-using TimeForCode.Authorization.Application.Interfaces;
-using TimeForCode.Authorization.Commands;
 using TimeForCode.Authorization.Domain;
 
 namespace TimeForCode.Authorization.Specifications.Steps
@@ -29,12 +27,10 @@ namespace TimeForCode.Authorization.Specifications.Steps
         [Given("The external platform does not return the access token")]
         public void GivenTheExternalPlatformDoesNotReturnTheAccessToken()
         {
-            Mock<IIdentityProviderService> mock = _provider.GetRequiredService<Mock<IIdentityProviderService>>();
+            var mockHttp = _provider.GetRequiredService<MockHttpMessageHandler>();
 
-            var result = Result<GetAccessTokenResult>.Failure("Access token cannot be received");
-
-            mock.Setup(x => x.GetAccessTokenAsync(It.IsAny<string>()))
-                .ReturnsAsync(result);
+            mockHttp.When("https://github.com/login/oauth/access_token")
+                .Respond(HttpStatusCode.NotFound, "application/json", "Access token cannot be received");
         }
 
         [When("The external platform calls the time for code platform to complete the authorization")]

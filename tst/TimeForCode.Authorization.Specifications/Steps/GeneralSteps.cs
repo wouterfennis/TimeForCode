@@ -1,10 +1,9 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Moq;
 using Reqnroll;
-using Reqnroll.BoDi;
-using Reqnroll.CommonModels;
+using RichardSzalay.MockHttp;
+using System.Net;
+using System.Text.Json;
 using TimeForCode.Authorization.Application.Interfaces;
-using TimeForCode.Authorization.Commands;
 using TimeForCode.Authorization.Domain;
 
 namespace TimeForCode.Authorization.Specifications.Steps
@@ -22,7 +21,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
         [Given("The user has an account at the external platform")]
         public void GivenTheUserHasAnAccountAtTheExternalPlatform()
         {
-            Mock<IIdentityProviderService> mock = _provider.GetRequiredService<Mock<IIdentityProviderService>>();
+            var mockHttp = _provider.GetRequiredService<MockHttpMessageHandler>();
 
             var accountInformation = new AccountInformation
             {
@@ -34,27 +33,26 @@ namespace TimeForCode.Authorization.Specifications.Steps
                 NodeId = "",
                 Company = "",
             };
-            var result = Commands.Result<AccountInformation>.Success(accountInformation);
 
-            mock.Setup(x => x.GetAccountInformation(It.IsAny<GetAccountInformationModel>()))
-                .ReturnsAsync(result);
+            mockHttp.When("https://api.github.com/user")
+                    .Respond("application/json", JsonSerializer.Serialize(accountInformation));
         }
 
         [Given("The user has no account at the external platform")]
         public void GivenTheUserHasNoAccountAtTheExternalPlatform()
         {
-            Mock<IIdentityProviderService> mock = _provider.GetRequiredService<Mock<IIdentityProviderService>>();
+            var mockHttp = _provider.GetRequiredService<MockHttpMessageHandler>();
 
             var result = Commands.Result<AccountInformation>.Failure("No account information");
 
-            mock.Setup(x => x.GetAccountInformation(It.IsAny<GetAccountInformationModel>()))
-                .ReturnsAsync(result);
+            mockHttp.When("https://api.github.com/user")
+                    .Respond(HttpStatusCode.NotFound, "application/json", "No account information");
         }
 
         [Given("The user logs in at the external platform")]
         public void GivenTheUserLogsInAtTheExternalPlatform()
         {
-            Mock<IIdentityProviderService> mock = _provider.GetRequiredService<Mock<IIdentityProviderService>>();
+            var mockHttp = _provider.GetRequiredService<MockHttpMessageHandler>();
 
             var accessTokenResult = new GetAccessTokenResult
             {
@@ -62,10 +60,9 @@ namespace TimeForCode.Authorization.Specifications.Steps
                 Scope = "scope",
                 TokenType = "token_type"
             };
-            var result = Commands.Result<GetAccessTokenResult>.Success(accessTokenResult);
 
-            mock.Setup(x => x.GetAccessTokenAsync(It.IsAny<string>()))
-                .ReturnsAsync(result);
+            mockHttp.When("https://github.com/login/oauth/access_token")
+                .Respond("application/json", JsonSerializer.Serialize(accessTokenResult));
         }
 
         [Given("The user has not logged in at the external platform")]

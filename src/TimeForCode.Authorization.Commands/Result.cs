@@ -14,7 +14,7 @@ namespace TimeForCode.Authorization.Commands
             return new Result<T> { _value = data, IsSuccess = true };
         }
 
-        public static Result<T> Failure(string errorMessage)
+        public static Result<T> Failure(string? errorMessage)
         {
             return new Result<T> { IsSuccess = false, _errorMessage = errorMessage };
         }

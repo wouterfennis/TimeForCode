@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Driver.Core.Configuration;
+using RestSharp;
 using System;
 using TimeForCode.Authorization.Application.Interfaces;
 using TimeForCode.Authorization.Infrastructure.Options;
@@ -27,6 +28,7 @@ namespace TimeForCode.Authorization.Infrastructure.Extensions
                 .Configure<DbOptions>(options => configuration.GetSection(DbOptions.SectionName)
                 .Bind(options));
 
+            services.AddSingleton<RestClient>();
             services.AddSingleton<IMongoDbContext, MongoDbContext>();
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 

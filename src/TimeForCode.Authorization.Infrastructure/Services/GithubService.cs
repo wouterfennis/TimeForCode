@@ -12,10 +12,12 @@ namespace TimeForCode.Authorization.Infrastructure.Services
     internal class GithubService : IIdentityProviderService
     {
         private readonly ExternalIdentityProvider _identityProviderOptions;
+        private readonly RestClient _restClient;
 
-        public GithubService(IOptions<ExternalIdentityProviderOptions> options)
+        public GithubService(IOptions<ExternalIdentityProviderOptions> options, RestClient restClient)
         {
             _identityProviderOptions = options.Value.GetExternalIdentityProvider(IdentityProvider.Github);
+            _restClient = restClient;
         }
 
         public async Task<Result<GetAccessTokenResult>> GetAccessTokenAsync(string code)
@@ -24,12 +26,12 @@ namespace TimeForCode.Authorization.Infrastructure.Services
             {
                 Scheme = "https",
                 Host = _identityProviderOptions.Host,
+                Path = "/login/oauth/access_token"
             };
 
-            var client = new RestClient(uriBuilder.ToString());
-            client.AcceptedContentTypes = [MediaTypeNames.Application.Json];
+            _restClient.AcceptedContentTypes = [MediaTypeNames.Application.Json];
 
-            var request = new RestRequest("/login/oauth/access_token", Method.Post);
+            var request = new RestRequest(uriBuilder.ToString(), Method.Post);
             request.AddBody(new
             {
                 client_id = _identityProviderOptions.ClientId,
@@ -37,14 +39,14 @@ namespace TimeForCode.Authorization.Infrastructure.Services
                 code = code
             });
 
-            var response = await client.ExecuteAsync<GetAccessTokenResult>(request);
+            var response = await _restClient.ExecuteAsync<GetAccessTokenResult>(request);
 
             if (response.IsSuccessful)
             {
                 return Result<GetAccessTokenResult>.Success(response.Data!);
             }
 
-            return Result<GetAccessTokenResult>.Failure(response.ErrorMessage!);
+            return Result<GetAccessTokenResult>.Failure(response.ErrorMessage);
         }
 
         public async Task<Result<AccountInformation>> GetAccountInformation(GetAccountInformationModel model)
@@ -53,14 +55,14 @@ namespace TimeForCode.Authorization.Infrastructure.Services
             {
                 Scheme = "https",
                 Host = _identityProviderOptions.RestApiHost,
+                Path = "/user"
             };
 
-            var client = new RestClient(uriBuilder.ToString());
-            client.AcceptedContentTypes = [MediaTypeNames.Application.Json];
+            _restClient.AcceptedContentTypes = [MediaTypeNames.Application.Json];
 
-            var request = new RestRequest("/user", Method.Get);
+            var request = new RestRequest(uriBuilder.ToString(), Method.Get);
 
-            var response = await client.ExecuteAsync<AccountInformation>(request);
+            var response = await _restClient.ExecuteAsync<AccountInformation>(request);
 
             if (response.IsSuccessful)
             {
