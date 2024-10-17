@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Logging;
 using TimeForCode.Authorization.Api;
 
 internal class Program

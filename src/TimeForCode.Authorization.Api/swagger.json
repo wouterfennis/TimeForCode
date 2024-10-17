@@ -52,6 +52,7 @@
           {
             "name": "Code",
             "in": "query",
+            "description": "Gets or sets the authorization code.",
             "required": true,
             "schema": {
               "type": "string"
@@ -60,6 +61,7 @@
           {
             "name": "State",
             "in": "query",
+            "description": "Gets or sets the state parameter.",
             "required": true,
             "schema": {
               "type": "string"
@@ -98,6 +100,7 @@
         "tags": [
           "Authentication"
         ],
+        "summary": "Logout endpoint.",
         "responses": {
           "200": {
             "description": "OK"
@@ -110,6 +113,7 @@
         "tags": [
           "Authentication"
         ],
+        "summary": "Refresh endpoint.",
         "responses": {
           "200": {
             "description": "OK"
@@ -128,16 +132,19 @@
         "properties": {
           "accessToken": {
             "minLength": 1,
-            "type": "string"
+            "type": "string",
+            "description": "Gets or sets the access token."
           }
         },
-        "additionalProperties": false
+        "additionalProperties": false,
+        "description": "Represents the model for a callback response."
       },
       "IdentityProvider": {
         "enum": [
           "Github"
         ],
-        "type": "string"
+        "type": "string",
+        "description": "Represents the identity providers supported by the application."
       },
       "LoginRequestModel": {
         "required": [
@@ -149,7 +156,8 @@
             "$ref": "#/components/schemas/IdentityProvider"
           }
         },
-        "additionalProperties": false
+        "additionalProperties": false,
+        "description": "Represents the model for a login request."
       },
       "ProblemDetails": {
         "type": "object",
