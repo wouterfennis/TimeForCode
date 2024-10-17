@@ -41,13 +41,13 @@ namespace TimeForCode.Authorization.Api
                 });
 
             services.AddApplicationLayer(_configuration);
-            services.AddInfrastructureLayer();
+            services.AddInfrastructureLayer(_configuration);
         }
 
         /// <summary>
         /// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         /// </summary>
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public static void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.UseDeveloperExceptionPage();
             app.UseHttpsRedirection();

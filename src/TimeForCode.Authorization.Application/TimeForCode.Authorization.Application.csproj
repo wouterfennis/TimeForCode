@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\TimeForCode.Authorization.Commands\TimeForCode.Authorization.Commands.csproj" />
+    <ProjectReference Include="..\TimeForCode.Authorization.Domain\TimeForCode.Authorization.Domain.csproj" />
   </ItemGroup>
 
 </Project>

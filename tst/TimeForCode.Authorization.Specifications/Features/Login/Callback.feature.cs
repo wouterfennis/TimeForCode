@@ -222,7 +222,7 @@ this.ScenarioInitialize(scenarioInfo);
             string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
             global::Reqnroll.ScenarioInfo scenarioInfo = new global::Reqnroll.ScenarioInfo("User has an account at the external platform", null, tagsOfScenario, argumentsOfScenario, featureTags);
-#line 34
+#line 33
 this.ScenarioInitialize(scenarioInfo);
 #line hidden
             if ((global::Reqnroll.TagHelper.ContainsIgnoreTag(scenarioInfo.CombinedTags) || global::Reqnroll.TagHelper.ContainsIgnoreTag(featureTags)))
@@ -232,23 +232,23 @@ this.ScenarioInitialize(scenarioInfo);
             else
             {
                 await this.ScenarioStartAsync();
-#line 35
+#line 34
  await testRunner.GivenAsync("The user has an account at the external platform", ((string)(null)), ((global::Reqnroll.Table)(null)), "Given ");
 #line hidden
-#line 36
+#line 35
  await testRunner.AndAsync("The user logs in at the time for code platform", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
 #line hidden
-#line 37
+#line 36
  await testRunner.AndAsync("The user logs in at the external platform", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
 #line hidden
-#line 38
+#line 37
  await testRunner.WhenAsync("The external platform calls the time for code platform to complete the authorizat" +
                         "ion", ((string)(null)), ((global::Reqnroll.Table)(null)), "When ");
 #line hidden
-#line 39
+#line 38
  await testRunner.ThenAsync("An authentication token is returned", ((string)(null)), ((global::Reqnroll.Table)(null)), "Then ");
 #line hidden
-#line 40
+#line 39
  await testRunner.AndAsync("The user information is saved in the time for code platform", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
 #line hidden
             }

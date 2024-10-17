@@ -1,4 +1,5 @@
 ﻿using TimeForCode.Authorization.Commands;
+using TimeForCode.Authorization.Domain;
 
 namespace TimeForCode.Authorization.Application.Interfaces
 {

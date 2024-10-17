@@ -30,7 +30,6 @@ Scenario: User has no account information at the external platform
 	Then An authentication token is not returned
 	And The following error message is returned: "No account information"
 
-
 Scenario: User has an account at the external platform
 	Given The user has an account at the external platform
 	And The user logs in at the time for code platform

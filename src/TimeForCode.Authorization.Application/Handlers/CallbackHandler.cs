@@ -5,6 +5,7 @@ using Microsoft.Extensions.Options;
 using TimeForCode.Authorization.Application.Interfaces;
 using TimeForCode.Authorization.Application.Options;
 using TimeForCode.Authorization.Commands;
+using TimeForCode.Authorization.Domain;
 using TimeForCode.Authorization.Values;
 
 namespace TimeForCode.Authorization.Application.Handlers
@@ -14,15 +15,18 @@ namespace TimeForCode.Authorization.Application.Handlers
         private readonly IMemoryCache _memoryCache;
         private readonly IIdentityProviderServiceFactory _identityProviderServiceFactory;
         private readonly ILogger<CallbackHandler> _logger;
+        private readonly IRepository<AccountInformation> _accountRepository;
 
         public CallbackHandler(IOptions<ExternalIdentityProviderOptions> options,
             IMemoryCache memoryCache,
             IIdentityProviderServiceFactory identityProviderServiceFactory,
-            ILogger<CallbackHandler> logger)
+            ILogger<CallbackHandler> logger,
+            IRepository<AccountInformation> accountRepository)
         {
             _memoryCache = memoryCache;
             _identityProviderServiceFactory = identityProviderServiceFactory;
             _logger = logger;
+            _accountRepository = accountRepository;
         }
 
         public async Task<Result<CallbackResult>> Handle(CallbackCommand request, CancellationToken cancellationToken)
@@ -40,7 +44,23 @@ namespace TimeForCode.Authorization.Application.Handlers
                 return Result<CallbackResult>.Failure(externalAccessTokenResult.ErrorMessage);
             }
 
-            // save account information
+            var saveResult = await SaveAccountInformation(identityProviderService, externalAccessTokenResult);
+
+            if (saveResult.IsFailure)
+            {
+                return Result<CallbackResult>.Failure(saveResult.ErrorMessage);
+            }
+
+            //TODO: exchange for internal access token
+
+            return Result<CallbackResult>.Success(new CallbackResult
+            {
+                InternalAccessToken = externalAccessTokenResult.Value.AccessToken
+            });
+        }
+
+        private async Task<Result<AccountInformation>> SaveAccountInformation(IIdentityProviderService identityProviderService, Result<GetAccessTokenResult> externalAccessTokenResult)
+        {
             var getAccountInformationModel = new GetAccountInformationModel
             {
                 AccessToken = externalAccessTokenResult.Value.AccessToken
@@ -49,17 +69,13 @@ namespace TimeForCode.Authorization.Application.Handlers
 
             if (accountInformationResult.IsFailure)
             {
-                return Result<CallbackResult>.Failure(accountInformationResult.ErrorMessage);
+                return Result<AccountInformation>.Failure(accountInformationResult.ErrorMessage);
             }
 
+            await _accountRepository.CreateAsync(accountInformationResult.Value);
+
             _logger.LogDebug(accountInformationResult.Value.ToString());
-
-            // exchange for internal access token
-
-            return Result<CallbackResult>.Success(new CallbackResult
-            {
-                InternalAccessToken = externalAccessTokenResult.Value.AccessToken
-            });
+            return Result<AccountInformation>.Success(accountInformationResult.Value);
         }
 
         private Result<IIdentityProviderService> GetIdentityProviderService(string state)

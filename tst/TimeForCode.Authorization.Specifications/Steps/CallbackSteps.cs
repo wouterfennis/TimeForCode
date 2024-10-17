@@ -1,6 +1,7 @@
 ﻿using FluentAssertions;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
+using MongoDB.Driver;
 using Moq;
 using Reqnroll;
 using System.Reflection;
@@ -8,6 +9,7 @@ using TimeForCode.Authorization.Api.Client;
 using TimeForCode.Authorization.Api.Client.Extensions;
 using TimeForCode.Authorization.Application.Interfaces;
 using TimeForCode.Authorization.Commands;
+using TimeForCode.Authorization.Domain;
 
 namespace TimeForCode.Authorization.Specifications.Steps
 {
@@ -54,7 +56,9 @@ namespace TimeForCode.Authorization.Specifications.Steps
         [Then("The user information is saved in the time for code platform")]
         public void ThenTheUserInformationIsSavedInTheTimeForCodePlatform()
         {
-            // throw new PendingStepException();
+            var mongoCollection = _provider.GetRequiredService<Mock<IMongoCollection<AccountInformation>>>();
+
+            mongoCollection.Verify(mongoCollection => mongoCollection.InsertOneAsync(It.IsAny<AccountInformation>(), It.IsAny<InsertOneOptions>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Then("An authentication token is not returned")]

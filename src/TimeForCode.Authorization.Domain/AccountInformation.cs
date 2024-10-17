@@ -1,7 +1,12 @@
-namespace TimeForCode.Authorization.Application.Interfaces
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
+
+namespace TimeForCode.Authorization.Domain
 {
     public class AccountInformation
     {
+        [BsonId]
+        [BsonRepresentation(BsonType.ObjectId)]
         public required int Id { get; init; }
         public required string Login { get; init; }
         public required string NodeId { get; init; }

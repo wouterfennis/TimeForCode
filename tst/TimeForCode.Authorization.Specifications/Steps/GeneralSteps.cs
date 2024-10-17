@@ -5,6 +5,7 @@ using Reqnroll.BoDi;
 using Reqnroll.CommonModels;
 using TimeForCode.Authorization.Application.Interfaces;
 using TimeForCode.Authorization.Commands;
+using TimeForCode.Authorization.Domain;
 
 namespace TimeForCode.Authorization.Specifications.Steps
 {
