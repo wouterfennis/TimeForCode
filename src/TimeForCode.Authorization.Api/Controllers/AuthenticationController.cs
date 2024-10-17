@@ -66,6 +66,10 @@ namespace TimeForCode.Authorization.Api.Controllers
             return Ok(CallbackResponseModel.Create(callbackResult.Value!.InternalAccessToken));
         }
 
+        /// <summary>
+        /// Logout endpoint.
+        /// </summary>
+        /// <returns></returns>
         [HttpPost]
         [Route("logout")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -74,6 +78,10 @@ namespace TimeForCode.Authorization.Api.Controllers
             return Ok();
         }
 
+        /// <summary>
+        /// Refresh endpoint.
+        /// </summary>
+        /// <returns></returns>
         [HttpPost]
         [Route("refresh")]
         [ProducesResponseType(StatusCodes.Status200OK)]
