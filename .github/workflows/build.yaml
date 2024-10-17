@@ -23,16 +23,16 @@ jobs:
         dotnet-version: '8.0.x' # Adjust the .NET version as needed
 
     - name: Restore dependencies
-      run: dotnet restore
+      run: dotnet restore ./src/TimeForCode.sln
 
     - name: Build
-      run: dotnet build --no-restore --configuration Release
+      run: dotnet build ./src/TimeForCode.sln --no-restore --configuration Release
 
     - name: Run tests
-      run: dotnet test --no-build --verbosity normal --configuration Release
+      run: dotnet test ./src/TimeForCode.sln --no-build --verbosity normal --configuration Release
 
     - name: Publish
-      run: dotnet publish --no-build --configuration Release --output ./publish
+      run: dotnet publish ./src/TimeForCode.Authorization.Api.csproj --no-build --configuration Release --output ./publish
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
