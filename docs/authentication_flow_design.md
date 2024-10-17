@@ -32,23 +32,29 @@
  button. This triggers the authentication flow.
 - The user is redirected to the internal authentication service.
 
-### 3. The website checks with the internal authentication service what needs to be done
+### 3. The website checks with the internal authentication service
 
 - The website calls the **internal authentication service**, which determines
  the appropriate **identity provider** to use for authentication.
 - This could be GitHub, Google, or any other provider based on the logic or
  configuration (e.g., GitHub for developers, Google for users).
 
-### 4. The internal authentication service forwards the client to the external identity provider
+### 4. The internal authentication service forwards to the identity provider
 
 - The authentication service **redirects the user** to the
  **identity provider** OAuth 2.0 authorization endpoint.
 - The redirect URL includes a **client_id**, **redirect_uri**
- (which points back to the service), and any **scopes** needed for the **identity provider** (e.g., `user:email`).
+ (which points back to the service), and any **scopes** needed for the
+  **identity provider** (e.g., `user:email`).
 - Example GitHub OAuth 2.0 URL:  
-  `https://github.com/login/oauth/authorize?client_id=the_client_id&redirect_uri=https://the-service.com/callback&scope=user`
 
-### 5. The identity provider forwards the client back to the internal authentication service with the external token
+```markdown
+https://github.com/login/oauth/authorize?client_id=the_client_id
+&redirect_uri=https://the-service.com/callback
+&scope=user
+```
+
+### 5. The identity provider forwards to the internal authentication service
 
 - After the user logs in with the **identity provider** and grants permission,
  The **identity provider** redirects the user back to the
@@ -59,7 +65,7 @@
 - The **identity provider** responds with an access token that the internal
  service can use to retrieve the user’s profile or email.
 
-### 6. The authentication service will check the new token and look up an internal account that is stored for the person
+### 6. The authentication service will check the new token
 
 - The **internal authentication service** now:
   1. **Validates the identity provider token** by verifying its signature
@@ -70,7 +76,7 @@
     against the internal database.
   3. If no account exists, it can create a new account or return an error.
 
-### 7. A new internal token is created that contains the scopes the person needs to use the website
+### 7. A new internal token is created that contains custom scopes
 
 - Once the user is validated and an internal account is matched (or created),
  the **internal authentication service** generates a **new internal token**
