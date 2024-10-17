@@ -29,7 +29,7 @@ jobs:
       run: dotnet build ./src/TimeForCode.sln --no-restore --configuration Release
 
     - name: Run tests
-      run: dotnet test ./src/TimeForCode.sln --no-build --verbosity normal --configuration Release
+      run: dotnet test ./src/TimeForCode.sln --no-build --verbosity normal --configuration Release --collect:"XPlat Code Coverage"
 
     - name: Publish
       run: dotnet publish ./src/TimeForCode.Authorization.Api/*.csproj --no-build --configuration Release --output ./publish
@@ -39,6 +39,18 @@ jobs:
       with:
         name: dotnet-app
         path: ./publish
+
+    - name: Install reportgenerator
+      run: dotnet tool install -g dotnet-reportgenerator-globaltool
+
+    - name: Generate coverage report
+      run: dotnet reportgenerator -reports:**/coverage.cobertura.xml -targetdir:coverage -reporttypes:Html
+
+    - name: Upload coverage report
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report
+        path: coverage
 
     - name: Setup Node.js
       uses: actions/setup-node@v4
