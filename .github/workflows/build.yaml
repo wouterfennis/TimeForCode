@@ -40,8 +40,8 @@ jobs:
         name: dotnet-app
         path: ./publish
 
-    - name: Install reportgenerator
-      run: dotnet tool install -g dotnet-reportgenerator-globaltool
+    - name: Install dotnet tools
+      run: dotnet tool restore
 
     - name: Generate coverage report
       run: dotnet reportgenerator -reports:**/coverage.cobertura.xml -targetdir:coverage -reporttypes:Html
@@ -62,9 +62,6 @@ jobs:
 
     - name: Run markdownlint
       run: markdownlint "**/*.md"
-
-    - name: Install dotnet-format
-      run: dotnet tool install -g dotnet-format
 
     - name: Run dotnet-format
       run: dotnet format ./src/TimeForCode.sln --no-restore --verify-no-changes
