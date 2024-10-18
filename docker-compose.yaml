@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    image: timeforcode-authorization-api:latest
+    container_name: timeforcode-authorization-api
+    ports:
+      - "8080:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+      - Logging__LogLevel__Default=Debug
+      - Logging__LogLevel__Microsoft.AspNetCore=Warning
+      - ExternalIdentityProviderOptions__CallbackUri=
+      - ExternalIdentityProviderOptions__TokenExchangeUri=
+      - ExternalIdentityProviderOptions__Github__Host=github.com
+      - ExternalIdentityProviderOptions__Github__RestApiHost=api.github.com
+      - ExternalIdentityProviderOptions__Github__ClientId=
+      - ExternalIdentityProviderOptions__Github__ClientSecret=
+      - DbOptions__ConnectionString=mongodb://mongo:27017
+      - DbOptions__DatabaseName=AuthorizationServer
+    depends_on:
+      - mongo
+    networks:
+      - app-network
+
+  mongo:
+    image: mongo:latest
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=example
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  mongo-data:

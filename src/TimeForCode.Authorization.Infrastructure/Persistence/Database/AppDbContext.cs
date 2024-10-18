@@ -1,4 +1,5 @@
-﻿using MongoDB.Driver;
+﻿using Microsoft.Extensions.Options;
+using MongoDB.Driver;
 using TimeForCode.Authorization.Infrastructure.Options;
 
 namespace TimeForCode.Authorization.Infrastructure.Persistence.Database
@@ -7,10 +8,10 @@ namespace TimeForCode.Authorization.Infrastructure.Persistence.Database
     {
         private readonly IMongoDatabase _database;
 
-        public MongoDbContext(DbOptions dbOptions)
+        public MongoDbContext(IOptions<DbOptions> dbOptions)
         {
-            var client = new MongoClient(dbOptions.ConnectionString);
-            _database = client.GetDatabase(dbOptions.DatabaseName);
+            var client = new MongoClient(dbOptions.Value.ConnectionString);
+            _database = client.GetDatabase(dbOptions.Value.DatabaseName);
         }
 
         public IMongoCollection<T> GetCollection<T>()
