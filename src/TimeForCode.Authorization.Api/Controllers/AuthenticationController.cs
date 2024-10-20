@@ -49,7 +49,7 @@ namespace TimeForCode.Authorization.Api.Controllers
         /// <returns> 
         /// The internal access token.
         /// </returns>
-        [HttpPost]
+        [HttpGet]
         [Route("callback")]
         [ProducesResponseType(typeof(CallbackResponseModel), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]

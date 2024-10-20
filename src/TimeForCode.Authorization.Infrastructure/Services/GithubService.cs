@@ -1,6 +1,8 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using RestSharp;
 using System.Net.Mime;
+using System.Text.Json;
 using TimeForCode.Authorization.Application.Interfaces;
 using TimeForCode.Authorization.Application.Options;
 using TimeForCode.Authorization.Commands;
@@ -46,7 +48,9 @@ namespace TimeForCode.Authorization.Infrastructure.Services
                 return Result<GetAccessTokenResult>.Success(response.Data!);
             }
 
-            return Result<GetAccessTokenResult>.Failure(response.ErrorMessage);
+            var problemDetails = JsonSerializer.Deserialize<ProblemDetails>(response.Content!);
+
+            return Result<GetAccessTokenResult>.Failure(problemDetails!.Detail);
         }
 
         public async Task<Result<AccountInformation>> GetAccountInformation(GetAccountInformationModel model)
@@ -69,7 +73,9 @@ namespace TimeForCode.Authorization.Infrastructure.Services
                 return Result<AccountInformation>.Success(response.Data!);
             }
 
-            return Result<AccountInformation>.Failure(response.ErrorMessage!);
+            var problemDetails = JsonSerializer.Deserialize<ProblemDetails>(response.Content!);
+
+            return Result<AccountInformation>.Failure(problemDetails!.Detail);
         }
     }
 }

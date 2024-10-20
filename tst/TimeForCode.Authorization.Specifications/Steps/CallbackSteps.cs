@@ -5,6 +5,7 @@ using Moq;
 using Reqnroll;
 using RichardSzalay.MockHttp;
 using System.Net;
+using System.Text.Json;
 using TimeForCode.Authorization.Api.Client;
 using TimeForCode.Authorization.Api.Client.Extensions;
 using TimeForCode.Authorization.Domain;
@@ -29,8 +30,15 @@ namespace TimeForCode.Authorization.Specifications.Steps
         {
             var mockHttp = _provider.GetRequiredService<MockHttpMessageHandler>();
 
+            var problemDetails = new Microsoft.AspNetCore.Mvc.ProblemDetails
+            {
+                Title = "Access token cannot be received",
+                Status = (int)HttpStatusCode.NotFound,
+                Detail = "Access token cannot be received"
+            };
+
             mockHttp.When("https://github.com/login/oauth/access_token")
-                .Respond(HttpStatusCode.NotFound, "application/json", "Access token cannot be received");
+                .Respond(HttpStatusCode.NotFound, "application/json", JsonSerializer.Serialize(problemDetails));
         }
 
         [When("The external platform calls the time for code platform to complete the authorization")]

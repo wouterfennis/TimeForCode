@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using Reqnroll;
 using RichardSzalay.MockHttp;
 using System.Net;
@@ -43,10 +44,15 @@ namespace TimeForCode.Authorization.Specifications.Steps
         {
             var mockHttp = _provider.GetRequiredService<MockHttpMessageHandler>();
 
-            var result = Commands.Result<AccountInformation>.Failure("No account information");
+            var problemDetails = new ProblemDetails
+            {
+                Title = "No account information",
+                Status = (int)HttpStatusCode.NotFound,
+                Detail = "No account information"
+            };
 
             mockHttp.When("https://api.github.com/user")
-                    .Respond(HttpStatusCode.NotFound, "application/json", "No account information");
+                    .Respond(HttpStatusCode.NotFound, "application/json", JsonSerializer.Serialize(problemDetails));
         }
 
         [Given("The user logs in at the external platform")]

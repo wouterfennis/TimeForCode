@@ -1,9 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace TimeForCode.Authorization.Application.Interfaces
+namespace IdentityProviderMockService.Models
 {
-    public class GetAccessTokenResult
+    public class AccessTokenResponse
     {
         /// <summary>
         /// Token Type

@@ -1,0 +1,6 @@
+@IdentityProviderMockService_HostAddress = http://localhost:5212
+
+GET {{IdentityProviderMockService_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

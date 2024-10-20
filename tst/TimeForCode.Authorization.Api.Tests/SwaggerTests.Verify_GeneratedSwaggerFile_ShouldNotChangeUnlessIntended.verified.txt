@@ -43,7 +43,7 @@
       }
     },
     "/api/Authentication/callback": {
-      "post": {
+      "get": {
         "tags": [
           "Authentication"
         ],
