@@ -7,31 +7,22 @@
   },
   "paths": {
     "/api/Authentication/login": {
-      "post": {
+      "get": {
         "tags": [
           "Authentication"
         ],
         "summary": "Login endpoint.",
-        "requestBody": {
-          "description": "The model containing the requested external identity provider",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/LoginRequestModel"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/LoginRequestModel"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/LoginRequestModel"
-              }
+        "parameters": [
+          {
+            "name": "IdentityProvider",
+            "in": "query",
+            "description": "Gets or sets the identity provider for the login request.",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/IdentityProvider"
             }
           }
-        },
+        ],
         "responses": {
           "302": {
             "description": "Found"
@@ -145,19 +136,6 @@
         ],
         "type": "string",
         "description": "Represents the identity providers supported by the application."
-      },
-      "LoginRequestModel": {
-        "required": [
-          "identityProvider"
-        ],
-        "type": "object",
-        "properties": {
-          "identityProvider": {
-            "$ref": "#/components/schemas/IdentityProvider"
-          }
-        },
-        "additionalProperties": false,
-        "description": "Represents the model for a login request."
       },
       "ProblemDetails": {
         "type": "object",

@@ -7,6 +7,8 @@ namespace TimeForCode.Authorization.Application.Options
         [Required]
         public required string Host { get; init; }
 
+        public int? HostPort { get; init; }
+
         [Required]
         public required string ClientId { get; init; }
 
@@ -15,5 +17,7 @@ namespace TimeForCode.Authorization.Application.Options
 
         [Required]
         public required string RestApiHost { get; init; }
+
+        public int? RestApiPort { get; init; }
     }
 }

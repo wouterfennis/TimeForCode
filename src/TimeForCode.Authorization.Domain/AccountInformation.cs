@@ -6,8 +6,7 @@ namespace TimeForCode.Authorization.Domain
     public class AccountInformation
     {
         [BsonId]
-        [BsonRepresentation(BsonType.ObjectId)]
-        public required int Id { get; init; }
+        public required ObjectId Id { get; init; }
         public required string Login { get; init; }
         public required string NodeId { get; init; }
         public required string AvatarUrl { get; init; }

@@ -6,13 +6,13 @@ WORKDIR /app
 
 # Copy the entire solution and restore dependencies
 COPY . ./
-RUN dotnet restore ./src/TimeForCode.sln
+RUN dotnet restore ./tst/IdentityProviderMockService/IdentityProviderMockService.csproj
 
 # Build the entire solution
-RUN dotnet build ./src/TimeForCode.sln --no-restore --configuration Debug
+RUN dotnet build ./tst/IdentityProviderMockService/IdentityProviderMockService.csproj --no-restore --configuration Debug
 
 # Publish the application
-RUN dotnet publish ./src/TimeForCode.Authorization.Api/*.csproj --no-build --configuration Debug --output /app/publish
+RUN dotnet publish ./tst/IdentityProviderMockService/IdentityProviderMockService.csproj --no-build --configuration Debug --output /app/publish
 
 # Use the official .NET runtime image to run the application
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
@@ -30,10 +30,10 @@ COPY --from=build /app/publish .
 #RUN chown -R appuser:appgroup /app
 
 # Switch to the non-root user
-# USER appuser
+#USER appuser
 
 # Expose the port the application runs on
 EXPOSE 80
 
 # Set the entry point for the container
-ENTRYPOINT ["dotnet", "TimeForCode.Authorization.Api.dll"]
+ENTRYPOINT ["dotnet", "IdentityProviderMockService.dll"]

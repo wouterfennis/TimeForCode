@@ -32,11 +32,11 @@ namespace TimeForCode.Authorization.Api.Controllers
         /// <returns> 
         /// The redirect URL towards an external identity provider.
         /// </returns>
-        [HttpPost]
+        [HttpGet]
         [Route("login")]
         [ProducesResponseType(StatusCodes.Status302Found)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> LoginAsync([FromBody] LoginRequestModel loginModel)
+        public async Task<IActionResult> LoginAsync(LoginRequestModel loginModel)
         {
             var redirectUrl = await _sender.Send(loginModel.MapToCommand());
             return Redirect(redirectUrl.AbsoluteUri);

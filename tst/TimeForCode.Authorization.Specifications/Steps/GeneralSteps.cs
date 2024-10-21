@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
+using MongoDB.Bson;
 using Reqnroll;
 using RichardSzalay.MockHttp;
 using System.Net;
@@ -26,7 +27,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
 
             var accountInformation = new AccountInformation
             {
-                Id = 1,
+                Id = ObjectId.GenerateNewId(),
                 Name = "John Doe",
                 Email = "",
                 AvatarUrl = "https://avatars.githubusercontent.com/u/1?v=4",

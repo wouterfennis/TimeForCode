@@ -33,16 +33,16 @@ namespace TimeForCode.Authorization.Application.Handlers
             };
 
             string state = CreateState(request.IdentityProvider);
+            var identityProvider = _options.GetExternalIdentityProvider(request.IdentityProvider);
 
             var query = HttpUtility.ParseQueryString(string.Empty);
             query["state"] = state;
             query["redirect_uri"] = _options.CallbackUri;
             query["scope"] = "user";
-
-            var identityProvider = _options.GetExternalIdentityProvider(request.IdentityProvider);
+            query["client_id"] = identityProvider.ClientId;
 
             uriBuilder.Host = identityProvider.Host;
-            query["client_id"] = identityProvider.ClientId;
+            uriBuilder.Port = identityProvider.HostPort.HasValue ? identityProvider.HostPort.Value : uriBuilder.Port;
             uriBuilder.Query = query.ToString();
 
             return Task.FromResult(uriBuilder.Uri);

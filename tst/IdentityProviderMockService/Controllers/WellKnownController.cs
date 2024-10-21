@@ -16,31 +16,22 @@ namespace IdentityProviderMockService.Controllers
     public class WellKnownController : ControllerBase
     {
         private readonly ILogger<WellKnownController> _logger;
-        private readonly MemoryCache _memoryCache;
+        private readonly IMemoryCache _memoryCache;
         private readonly RSAParameters _rsaParameters;
         private readonly RsaSecurityKey _rsaSecurityKey;
         private readonly AuthenticationOptions _authenticationOptions;
 
         public WellKnownController(ILogger<WellKnownController> logger, 
-            IOptions<RsaKeyOptions> rsaKeyOptions,
             IOptions<AuthenticationOptions> authenticationOptions,
-            MemoryCache memoryCache)
+            IMemoryCache memoryCache)
         {
             _logger = logger;
             _memoryCache = memoryCache;
             _authenticationOptions = authenticationOptions.Value;
 
             var rsa = RSA.Create();
-            var rsaKey = rsaKeyOptions.Value;
 
-            _rsaParameters = new RSAParameters
-            {
-                Modulus = Base64UrlEncoder.DecodeBytes(rsaKey.Modulus),
-                Exponent = Base64UrlEncoder.DecodeBytes(rsaKey.Exponent),
-                D = Base64UrlEncoder.DecodeBytes(rsaKey.D)
-            };
-
-            rsa.ImportParameters(_rsaParameters);
+            _rsaParameters = rsa.ExportParameters(includePrivateParameters: true);
             _rsaSecurityKey = new RsaSecurityKey(rsa);
         }
 
@@ -57,7 +48,7 @@ namespace IdentityProviderMockService.Controllers
 
             return Ok(discoveryDocument);
         }
-
+        
         [HttpGet("jwks.json")]
         public IActionResult GetJwksJson()
         {

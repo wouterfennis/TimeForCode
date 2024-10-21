@@ -31,6 +31,8 @@ namespace TimeForCode.Authorization.Infrastructure.Services
                 Path = "/login/oauth/access_token"
             };
 
+            uriBuilder.Port = _identityProviderOptions.HostPort.HasValue ? _identityProviderOptions.HostPort.Value : uriBuilder.Port;
+
             _restClient.AcceptedContentTypes = [MediaTypeNames.Application.Json];
 
             var request = new RestRequest(uriBuilder.ToString(), Method.Post);
@@ -61,6 +63,8 @@ namespace TimeForCode.Authorization.Infrastructure.Services
                 Host = _identityProviderOptions.RestApiHost,
                 Path = "/user"
             };
+
+            uriBuilder.Port = _identityProviderOptions.RestApiPort.HasValue ? _identityProviderOptions.RestApiPort.Value : uriBuilder.Port;
 
             _restClient.AcceptedContentTypes = [MediaTypeNames.Application.Json];
 

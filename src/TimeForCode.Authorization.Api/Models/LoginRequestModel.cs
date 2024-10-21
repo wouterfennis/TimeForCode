@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
 
 namespace TimeForCode.Authorization.Api.Models
 {
@@ -11,6 +12,7 @@ namespace TimeForCode.Authorization.Api.Models
         /// Gets or sets the identity provider for the login request.
         /// </summary>
         [Required]
+        [FromQuery]
         public required IdentityProvider IdentityProvider { get; init; }
     }
 }
