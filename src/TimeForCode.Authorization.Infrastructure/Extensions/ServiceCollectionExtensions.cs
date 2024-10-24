@@ -1,9 +1,8 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using MongoDB.Driver.Core.Configuration;
 using RestSharp;
-using System;
 using TimeForCode.Authorization.Application.Interfaces;
+using TimeForCode.Authorization.Domain;
 using TimeForCode.Authorization.Infrastructure.Options;
 using TimeForCode.Authorization.Infrastructure.Persistence.Database;
 using TimeForCode.Authorization.Infrastructure.Random;
@@ -31,7 +30,7 @@ namespace TimeForCode.Authorization.Infrastructure.Extensions
 
             services.AddSingleton<RestClient>();
             services.AddSingleton<IMongoDbContext, MongoDbContext>();
-            services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+            services.AddScoped<IRepository<AccountInformation>, AccountInformationRepository>();
 
             return services;
         }

@@ -72,7 +72,7 @@ namespace TimeForCode.Authorization.Application.Handlers
                 return Result<AccountInformation>.Failure(accountInformationResult.ErrorMessage);
             }
 
-            await _accountRepository.CreateAsync(accountInformationResult.Value);
+            await _accountRepository.CreateOrUpdateAsync(accountInformationResult.Value);
 
             _logger.LogDebug(accountInformationResult.Value.ToString());
             return Result<AccountInformation>.Success(accountInformationResult.Value);

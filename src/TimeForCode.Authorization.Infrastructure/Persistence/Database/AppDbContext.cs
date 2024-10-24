@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Options;
 using MongoDB.Driver;
+using TimeForCode.Authorization.Domain;
 using TimeForCode.Authorization.Infrastructure.Options;
 
 namespace TimeForCode.Authorization.Infrastructure.Persistence.Database
@@ -14,9 +15,9 @@ namespace TimeForCode.Authorization.Infrastructure.Persistence.Database
             _database = client.GetDatabase(dbOptions.Value.DatabaseName);
         }
 
-        public IMongoCollection<T> GetCollection<T>()
+        public IMongoCollection<T> GetCollection<T>() where T : DocumentEntity
         {
-            return _database.GetCollection<T>(nameof(T));
+            return _database.GetCollection<T>(typeof(T).Name);
         }
     }
 }
