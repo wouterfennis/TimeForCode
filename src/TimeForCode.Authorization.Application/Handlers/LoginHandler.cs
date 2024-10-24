@@ -28,7 +28,6 @@ namespace TimeForCode.Authorization.Application.Handlers
         {
             var uriBuilder = new UriBuilder
             {
-                Scheme = "https",
                 Path = "/login/oauth/authorize"
             };
 

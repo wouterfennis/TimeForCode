@@ -2,11 +2,11 @@
 {
     public static class AuthClientExtensions
     {
-        public static async Task<TryVoid<ApiException?>> TryLoginAsync(this IAuthClient client, LoginRequestModel model)
+        public static async Task<TryVoid<ApiException?>> TryLoginAsync(this IAuthClient client, IdentityProvider idenityProvider)
         {
             try
             {
-                await client.LoginAsync(model);
+                await client.LoginAsync(idenityProvider);
             }
             catch (ApiException exception)
             {

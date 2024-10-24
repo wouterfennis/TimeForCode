@@ -10,19 +10,19 @@ namespace IdentityProviderMockService.Models
         /// </summary>
         [JsonPropertyName("client_id")]
         [Required]
-        public string ClientId { get; set; }
+        public required string ClientId { get; init; }
 
         /// <summary>
         /// Client secret
         /// </summary>
         [JsonPropertyName("client_secret")]
         [Required]
-        public string ClientSecret { get; set; }
+        public required string ClientSecret { get; init; }
 
         /// <summary>
         /// Authorization code
         /// </summary>
         [Required]
-        public string Code { get; set; }
+        public required string Code { get; init; }
     }
 }

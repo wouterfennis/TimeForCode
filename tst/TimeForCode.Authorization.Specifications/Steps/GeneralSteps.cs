@@ -30,13 +30,13 @@ namespace TimeForCode.Authorization.Specifications.Steps
                 Id = ObjectId.GenerateNewId(),
                 Name = "John Doe",
                 Email = "",
-                AvatarUrl = "https://avatars.githubusercontent.com/u/1?v=4",
+                AvatarUrl = "http://avatars.githubusercontent.com/u/1?v=4",
                 Login = "johndoe",
                 NodeId = "",
                 Company = "",
             };
 
-            mockHttp.When("https://api.github.com/user")
+            mockHttp.When("http://api.github.com/user")
                     .Respond("application/json", JsonSerializer.Serialize(accountInformation));
         }
 
@@ -52,7 +52,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
                 Detail = "No account information"
             };
 
-            mockHttp.When("https://api.github.com/user")
+            mockHttp.When("http://api.github.com/user")
                     .Respond(HttpStatusCode.NotFound, "application/json", JsonSerializer.Serialize(problemDetails));
         }
 
@@ -68,7 +68,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
                 TokenType = "token_type"
             };
 
-            mockHttp.When("https://github.com/login/oauth/access_token")
+            mockHttp.When("http://github.com/login/oauth/access_token")
                 .Respond("application/json", JsonSerializer.Serialize(accessTokenResult));
         }
 

@@ -26,7 +26,6 @@ namespace TimeForCode.Authorization.Infrastructure.Services
         {
             var uriBuilder = new UriBuilder
             {
-                Scheme = "https",
                 Host = _identityProviderOptions.Host,
                 Path = "/login/oauth/access_token"
             };
@@ -59,7 +58,6 @@ namespace TimeForCode.Authorization.Infrastructure.Services
         {
             var uriBuilder = new UriBuilder
             {
-                Scheme = "https",
                 Host = _identityProviderOptions.RestApiHost,
                 Path = "/user"
             };

@@ -20,12 +20,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
         [When("The user logs in at the time for code platform")]
         public async Task WhenTheUserLogsInAtTheTimeForCodePlatformAsync()
         {
-            var model = new LoginRequestModel
-            {
-                IdentityProvider = IdentityProvider.Github
-            };
-
-            _result = await _authClient.TryLoginAsync(model);
+            _result = await _authClient.TryLoginAsync(IdentityProvider.Github);
         }
 
         [Then("The user is redirected to the external platform")]

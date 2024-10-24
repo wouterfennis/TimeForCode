@@ -37,7 +37,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
                 Detail = "Access token cannot be received"
             };
 
-            mockHttp.When("https://github.com/login/oauth/access_token")
+            mockHttp.When("http://github.com/login/oauth/access_token")
                 .Respond(HttpStatusCode.NotFound, "application/json", JsonSerializer.Serialize(problemDetails));
         }
 

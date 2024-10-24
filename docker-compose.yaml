@@ -1,54 +1,54 @@
 version: '3.8'
 
 services:
-  authorization-api:
-    build:
-      context: .
-      dockerfile: Dockerfile.api
-    image: timeforcode-authorization-api:latest
-    container_name: timeforcode-authorization-api
-    ports:
-      - "8080:80"
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:80
-      - Logging__LogLevel__Default=Debug
-      - Logging__LogLevel__Microsoft.AspNetCore=Warning
-      - ExternalIdentityProviderOptions__CallbackUri=http://localhost:8081/api/authentication/callback
-      - ExternalIdentityProviderOptions__TokenExchangeUri=http://localhost:8080/something
-      - ExternalIdentityProviderOptions__Github__Host=localhost
-      - ExternalIdentityProviderOptions__Github__HostPort=8081
-      - ExternalIdentityProviderOptions__Github__RestApiHost=localhost
-      - ExternalIdentityProviderOptions__Github__RestApiPort=8081
-      - ExternalIdentityProviderOptions__Github__ClientId=test-client
-      - ExternalIdentityProviderOptions__Github__ClientSecret=test-secret
-      - DbOptions__ConnectionString=mongodb://mongo:27017
-      - DbOptions__DatabaseName=AuthorizationServer
-    depends_on:
-      - mongo
-    networks:
-      - app-network
+  # authorization-api:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.api
+  #   image: timeforcode-authorization-api:latest
+  #   container_name: timeforcode-authorization-api
+  #   ports:
+  #     - "8080:80"
+  #   environment:
+  #     - ASPNETCORE_ENVIRONMENT=Development
+  #     - ASPNETCORE_URLS=http://+:80
+  #     - Logging__LogLevel__Default=Debug
+  #     - Logging__LogLevel__Microsoft.AspNetCore=Warning
+  #     - ExternalIdentityProviderOptions__CallbackUri=http://localhost:8080/api/authentication/callback
+  #     - ExternalIdentityProviderOptions__TokenExchangeUri=http://localhost:8080/something
+  #     - ExternalIdentityProviderOptions__Github__Host=localhost
+  #     - ExternalIdentityProviderOptions__Github__HostPort=8081
+  #     - ExternalIdentityProviderOptions__Github__RestApiHost=localhost
+  #     - ExternalIdentityProviderOptions__Github__RestApiPort=8081
+  #     - ExternalIdentityProviderOptions__Github__ClientId=test-client
+  #     - ExternalIdentityProviderOptions__Github__ClientSecret=test-secret
+  #     - DbOptions__ConnectionString=mongodb://mongo:27017
+  #     - DbOptions__DatabaseName=AuthorizationServer
+  #   depends_on:
+  #     - mongo
+  #   networks:
+  #     - app-network
 
-  identity-provider-mock:
-    build:
-      context: .
-      dockerfile: Dockerfile.idenity-provider-mock
-    image: idenity-provider-mock:latest
-    container_name: idenity-provider-mock
-    ports:
-      - "8081:80"
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:80
-      - Logging__LogLevel__Default=Debug
-      - Logging__LogLevel__Microsoft.AspNetCore=Warning
-      - AuthenticationOptions__Issuer=http://localhost:8081
-      - AuthenticationOptions__Audience=http://localhost:8080
-      - AuthenticationOptions__ExpiresInMinutes=60
-      - AuthenticationOptions__ExpectedClientId=test-client
-      - AuthenticationOptions__ExpectedClientSecret=test-secret
-    networks:
-      - app-network
+  # identity-provider-mock:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.idenity-provider-mock
+  #   image: idenity-provider-mock:latest
+  #   container_name: idenity-provider-mock
+  #   ports:
+  #     - "8081:80"
+  #   environment:
+  #     - ASPNETCORE_ENVIRONMENT=Development
+  #     - ASPNETCORE_URLS=http://+:80
+  #     - Logging__LogLevel__Default=Debug
+  #     - Logging__LogLevel__Microsoft.AspNetCore=Warning
+  #     - AuthenticationOptions__Issuer=http://localhost:8081
+  #     - AuthenticationOptions__Audience=http://localhost:8080
+  #     - AuthenticationOptions__ExpiresInMinutes=60
+  #     - AuthenticationOptions__ExpectedClientId=test-client
+  #     - AuthenticationOptions__ExpectedClientSecret=test-secret
+  #   networks:
+  #     - app-network
 
   mongo:
     image: mongo:latest
