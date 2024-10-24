@@ -15,26 +15,22 @@ namespace IdentityProviderMockService.Controllers
     public class WellKnownController : ControllerBase
     {
         private readonly ILogger<WellKnownController> _logger;
-        private readonly IMemoryCache _memoryCache;
         private readonly RSAParameters _rsaParameters;
-        private readonly RsaSecurityKey _rsaSecurityKey;
         private readonly AuthenticationOptions _authenticationOptions;
 
-        public WellKnownController(ILogger<WellKnownController> logger, 
+        public WellKnownController(ILogger<WellKnownController> logger,
             IOptions<AuthenticationOptions> authenticationOptions,
-            IMemoryCache memoryCache)
+            RSA rsa)
         {
             _logger = logger;
-            _memoryCache = memoryCache;
             _authenticationOptions = authenticationOptions.Value;
 
-            var rsa = RSA.Create();
-
             _rsaParameters = rsa.ExportParameters(includePrivateParameters: true);
-            _rsaSecurityKey = new RsaSecurityKey(rsa);
         }
 
         [HttpGet("openid-configuration")]
+        [ProducesResponseType(typeof(UserResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public IActionResult GetOpenIdConfiguration()
         {
             _logger.LogDebug("OpenIdConfiguration is returned");
@@ -47,8 +43,10 @@ namespace IdentityProviderMockService.Controllers
 
             return Ok(discoveryDocument);
         }
-        
+
         [HttpGet("jwks.json")]
+        [ProducesResponseType(typeof(UserResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public IActionResult GetJwksJson()
         {
             _logger.LogDebug("jwks is returned");
@@ -60,7 +58,7 @@ namespace IdentityProviderMockService.Controllers
                 Modulus = Base64UrlEncoder.Encode(_rsaParameters.Modulus)
             };
 
-            var jwks = new JwksResponse{ Keys = [jwk] };
+            var jwks = new JwksResponse { Keys = [jwk] };
             return Ok(jwks);
         }
     }

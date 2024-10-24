@@ -19,25 +19,24 @@ namespace IdentityProviderMockService.Controllers
     {
         private readonly ILogger<LoginController> _logger;
         private readonly IMemoryCache _memoryCache;
-        private readonly RSAParameters _rsaParameters;
         private readonly RsaSecurityKey _rsaSecurityKey;
         private readonly AuthenticationOptions _authenticationOptions;
 
-        public LoginController(ILogger<LoginController> logger, 
+        public LoginController(ILogger<LoginController> logger,
             IOptions<AuthenticationOptions> authenticationOptions,
+            RSA rsa,
             IMemoryCache memoryCache)
         {
             _logger = logger;
             _memoryCache = memoryCache;
             _authenticationOptions = authenticationOptions.Value;
 
-            var rsa = RSA.Create();
-
-            _rsaParameters = rsa.ExportParameters(includePrivateParameters: true);
             _rsaSecurityKey = new RsaSecurityKey(rsa);
         }
 
         [HttpGet("oauth/authorize")]
+        [ProducesResponseType(StatusCodes.Status307TemporaryRedirect)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         public IActionResult GetAuthorize(AuthorizeRequest request)
         {
             _logger.LogDebug("authorize is returned");
@@ -57,6 +56,9 @@ namespace IdentityProviderMockService.Controllers
         }
 
         [HttpPost("oauth/access_token")]
+        [ProducesResponseType(typeof(AccessTokenResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public IActionResult GetAccessToken([FromBody] AccessTokenRequest accessTokenRequest)
         {
             if (accessTokenRequest.ClientId != _authenticationOptions.ExpectedClientId || accessTokenRequest.ClientSecret != _authenticationOptions.ExpectedClientSecret)
@@ -85,6 +87,8 @@ namespace IdentityProviderMockService.Controllers
             }
 
             _logger.LogDebug("Token is returned");
+            var claims = new Dictionary<string, object>();
+            claims.Add("scope", authorizeDetails!.Scope);
 
             var tokenHandler = new JwtSecurityTokenHandler();
             var tokenDescriptor = new SecurityTokenDescriptor
@@ -93,6 +97,7 @@ namespace IdentityProviderMockService.Controllers
                 Expires = DateTime.UtcNow.AddMinutes(_authenticationOptions.ExpiresInMinutes),
                 Issuer = _authenticationOptions.Issuer,
                 Audience = _authenticationOptions.Audience,
+                Claims = claims,
                 SigningCredentials = new SigningCredentials(_rsaSecurityKey, SecurityAlgorithms.RsaSha256)
             };
             var token = tokenHandler.CreateToken(tokenDescriptor);

@@ -67,6 +67,7 @@ namespace TimeForCode.Authorization.Infrastructure.Services
             _restClient.AcceptedContentTypes = [MediaTypeNames.Application.Json];
 
             var request = new RestRequest(uriBuilder.ToString(), Method.Get);
+            request.AddHeader("Authorization", $"Bearer {model.AccessToken}");
 
             var response = await _restClient.ExecuteAsync<AccountInformation>(request);
 

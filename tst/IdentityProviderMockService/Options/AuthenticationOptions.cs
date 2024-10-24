@@ -13,30 +13,30 @@ namespace IdentityProviderMockService.Options
         /// Token issuer
         /// </summary>
         [Required]
-        public required string Issuer { get; set; }
+        public string Issuer { get; set; }
 
         /// <summary>
         /// Token audience
         /// </summary>
         [Required]
-        public required string Audience { get; set; }
+        public string Audience { get; set; }
 
         /// <summary>
         /// Token expiration time in minutes
         /// </summary>
         [Required]
-        public required int ExpiresInMinutes { get; set; }
+        public int ExpiresInMinutes { get; set; }
 
         /// <summary>
         /// Expected client id for returning a token
         /// </summary>
         [Required]
-        public required string ExpectedClientId { get; set; }
+        public string ExpectedClientId { get; set; }
 
         /// <summary>
         /// Expected client secret for returning a token
         /// </summary>
         [Required]
-        public required string ExpectedClientSecret { get; set; }
+        public string ExpectedClientSecret { get; set; }
     }
 }
