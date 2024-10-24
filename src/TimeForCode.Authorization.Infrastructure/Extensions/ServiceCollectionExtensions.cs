@@ -8,6 +8,7 @@ using TimeForCode.Authorization.Infrastructure.Options;
 using TimeForCode.Authorization.Infrastructure.Persistence.Database;
 using TimeForCode.Authorization.Infrastructure.Random;
 using TimeForCode.Authorization.Infrastructure.Services;
+using TimeForCode.Authorization.Infrastructure.Services.Github;
 
 namespace TimeForCode.Authorization.Infrastructure.Extensions
 {

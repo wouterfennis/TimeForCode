@@ -1,5 +1,6 @@
 ﻿using TimeForCode.Authorization.Application.Interfaces;
 using TimeForCode.Authorization.Commands;
+using TimeForCode.Authorization.Infrastructure.Services.Github;
 using TimeForCode.Authorization.Values;
 
 namespace TimeForCode.Authorization.Infrastructure.Services

@@ -7,6 +7,7 @@ using System.Net;
 using System.Text.Json;
 using TimeForCode.Authorization.Application.Interfaces;
 using TimeForCode.Authorization.Domain;
+using TimeForCode.Authorization.Infrastructure.Services.Github;
 
 namespace TimeForCode.Authorization.Specifications.Steps
 {
@@ -25,9 +26,9 @@ namespace TimeForCode.Authorization.Specifications.Steps
         {
             var mockHttp = _provider.GetRequiredService<MockHttpMessageHandler>();
 
-            var accountInformation = new AccountInformation
+            var accountInformation = new GithubUser
             {
-                Id = ObjectId.GenerateNewId(),
+                Id = 1,
                 Name = "John Doe",
                 Email = "",
                 AvatarUrl = "http://avatars.githubusercontent.com/u/1?v=4",

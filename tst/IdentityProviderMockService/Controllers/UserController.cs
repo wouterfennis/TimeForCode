@@ -38,7 +38,7 @@ namespace IdentityProviderMockService.Controllers
             var user = new UserResponse
             {
                 Id = 1,
-                Name = User.Identity.Name,
+                Name = User.Claims.Single(x => x.Type == ClaimTypes.NameIdentifier)?.Value!,
                 Email = "something@something.org",
                 Login = "johndoe",
                 NodeId = "MDQ6VXNlcjE=",

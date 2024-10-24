@@ -7,6 +7,7 @@ namespace TimeForCode.Authorization.Domain
     {
         [BsonId]
         public required ObjectId Id { get; init; }
+        public required string IdentityProviderId { get; init; }
         public required string Login { get; init; }
         public required string NodeId { get; init; }
         public required string AvatarUrl { get; init; }

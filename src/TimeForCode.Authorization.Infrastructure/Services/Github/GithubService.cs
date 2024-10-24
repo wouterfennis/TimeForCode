@@ -9,7 +9,7 @@ using TimeForCode.Authorization.Commands;
 using TimeForCode.Authorization.Domain;
 using TimeForCode.Authorization.Values;
 
-namespace TimeForCode.Authorization.Infrastructure.Services
+namespace TimeForCode.Authorization.Infrastructure.Services.Github
 {
     internal class GithubService : IIdentityProviderService
     {
@@ -39,7 +39,7 @@ namespace TimeForCode.Authorization.Infrastructure.Services
             {
                 client_id = _identityProviderOptions.ClientId,
                 client_secret = _identityProviderOptions.ClientSecret,
-                code = code
+                code
             });
 
             var response = await _restClient.ExecuteAsync<GetAccessTokenResult>(request);
@@ -69,11 +69,12 @@ namespace TimeForCode.Authorization.Infrastructure.Services
             var request = new RestRequest(uriBuilder.ToString(), Method.Get);
             request.AddHeader("Authorization", $"Bearer {model.AccessToken}");
 
-            var response = await _restClient.ExecuteAsync<AccountInformation>(request);
+            var response = await _restClient.ExecuteAsync<GithubUser>(request);
 
             if (response.IsSuccessful)
             {
-                return Result<AccountInformation>.Success(response.Data!);
+                var accountInformation = response.Data!.MapToAccountInformation();
+                return Result<AccountInformation>.Success(accountInformation);
             }
 
             var problemDetails = JsonSerializer.Deserialize<ProblemDetails>(response.Content!);
