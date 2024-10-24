@@ -22,7 +22,7 @@ services:
   #     - ExternalIdentityProviderOptions__Github__RestApiPort=8081
   #     - ExternalIdentityProviderOptions__Github__ClientId=test-client
   #     - ExternalIdentityProviderOptions__Github__ClientSecret=test-secret
-  #     - DbOptions__ConnectionString=mongodb://mongo:27017
+  #     - DbOptions__ConnectionString=mongodb://root:example@localhost:27017/?authSource=admin
   #     - DbOptions__DatabaseName=AuthorizationServer
   #   depends_on:
   #     - mongo
@@ -59,6 +59,7 @@ services:
     environment:
       - MONGO_INITDB_ROOT_USERNAME=root
       - MONGO_INITDB_ROOT_PASSWORD=example
+      - MONGO_INITDB_DATABASE=AuthorizationServer
     volumes:
       - mongo-data:/data/db
     networks:
