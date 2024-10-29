@@ -1,14 +1,12 @@
 
 using IdentityProviderMockService.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
-using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 
 namespace IdentityProviderMockService
 {
-    public class Program
+    public static class Program
     {
         public static void Main(string[] args)
         {

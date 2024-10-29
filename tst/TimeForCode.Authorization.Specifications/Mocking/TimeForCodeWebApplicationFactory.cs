@@ -11,7 +11,7 @@ using System.Runtime.CompilerServices;
 using TimeForCode.Authorization.Api;
 using TimeForCode.Authorization.Application.Interfaces;
 using TimeForCode.Authorization.Commands;
-using TimeForCode.Authorization.Domain;
+using TimeForCode.Authorization.Domain.Entities;
 using TimeForCode.Authorization.Infrastructure.Persistence.Database;
 using TimeForCode.Authorization.Infrastructure.Services;
 using TimeForCode.Authorization.Values;
@@ -28,6 +28,8 @@ namespace TimeForCode.Authorization.Specifications.Mocking
                 {
                     typeof(IRandomGenerator),
                     typeof(IMongoDbContext),
+                    typeof(IAccountInformationRepository),
+                    typeof(IRefreshTokenRepository),
                     typeof(RestClient)
                 };
 
@@ -41,7 +43,7 @@ namespace TimeForCode.Authorization.Specifications.Mocking
                 }
 
                 var mockRandomGenerator = new Mock<IRandomGenerator>();
-                MockMongoDb(services);
+                MockDataAccess(services);
 
                 mockRandomGenerator.Setup(x => x.GenerateRandomString())
                     .Returns(Constants.StateKey);
@@ -54,19 +56,18 @@ namespace TimeForCode.Authorization.Specifications.Mocking
                 services.TryAddSingleton(restClient);
                 services.TryAddSingleton(mockRandomGenerator.Object);
             });
-
         }
 
-        private static void MockMongoDb(IServiceCollection services)
+        private static void MockDataAccess(IServiceCollection services)
         {
-            var mockUserCollection = new Mock<IMongoCollection<AccountInformation>>();
-            var mockDbContext = new Mock<IMongoDbContext>();
+            var mockAccountInformationRepository = new Mock<IAccountInformationRepository>();
+            var mockRefreshTokenRepository = new Mock<IRefreshTokenRepository>();
 
-            mockDbContext.Setup(c => c.GetCollection<AccountInformation>())
-                .Returns(mockUserCollection.Object);
+            services.TryAddSingleton(mockAccountInformationRepository);
+            services.TryAddSingleton(mockRefreshTokenRepository);
 
-            services.TryAddSingleton(mockUserCollection);
-            services.TryAddSingleton(mockDbContext.Object);
+            services.TryAddSingleton(mockAccountInformationRepository.Object);
+            services.TryAddSingleton(mockRefreshTokenRepository.Object);
         }
     }
 

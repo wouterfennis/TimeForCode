@@ -1,13 +1,17 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using Microsoft.IdentityModel.Protocols;
+using Microsoft.IdentityModel.Tokens;
 using RestSharp;
 using System.Net.Mime;
 using System.Text.Json;
 using TimeForCode.Authorization.Application.Interfaces;
 using TimeForCode.Authorization.Application.Options;
 using TimeForCode.Authorization.Commands;
-using TimeForCode.Authorization.Domain;
+using TimeForCode.Authorization.Domain.Entities;
 using TimeForCode.Authorization.Values;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace TimeForCode.Authorization.Infrastructure.Services.Github
 {
@@ -15,11 +19,13 @@ namespace TimeForCode.Authorization.Infrastructure.Services.Github
     {
         private readonly ExternalIdentityProvider _identityProviderOptions;
         private readonly RestClient _restClient;
+        private readonly IMemoryCache _memoryCache;
 
-        public GithubService(IOptions<ExternalIdentityProviderOptions> options, RestClient restClient)
+        public GithubService(IOptions<ExternalIdentityProviderOptions> options, RestClient restClient, IMemoryCache memoryCache)
         {
             _identityProviderOptions = options.Value.GetExternalIdentityProvider(IdentityProvider.Github);
             _restClient = restClient;
+            _memoryCache = memoryCache;
         }
 
         public async Task<Result<GetAccessTokenResult>> GetAccessTokenAsync(string code)
@@ -80,6 +86,35 @@ namespace TimeForCode.Authorization.Infrastructure.Services.Github
             var problemDetails = JsonSerializer.Deserialize<ProblemDetails>(response.Content!);
 
             return Result<AccountInformation>.Failure(problemDetails!.Detail);
+        }
+
+        public async Task<TokenValidationParameters> GetTokenValidationParameters()
+        {
+            if (_memoryCache.TryGetValue(_identityProviderOptions.MetaDataAddress, out TokenValidationParameters? tokenValidationParameters))
+            {
+                return tokenValidationParameters!;
+            }
+
+            var configurationManager = new ConfigurationManager<OpenIdConnectConfiguration>(
+                _identityProviderOptions.MetaDataAddress,
+                new OpenIdConnectConfigurationRetriever());
+
+            var openIdConfig = await configurationManager.GetConfigurationAsync(CancellationToken.None);
+
+            tokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidIssuer = openIdConfig.Issuer,
+                ValidateAudience = true,
+                ValidAudiences = new List<string> { _identityProviderOptions.ClientId },
+                ValidateLifetime = true,
+                IssuerSigningKeys = openIdConfig.SigningKeys,
+                ValidateIssuerSigningKey = true
+            };
+
+            _memoryCache.Set(_identityProviderOptions.MetaDataAddress, tokenValidationParameters, TimeSpan.FromHours(1));
+
+            return tokenValidationParameters;
         }
     }
 }

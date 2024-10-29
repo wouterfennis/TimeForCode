@@ -19,5 +19,8 @@ namespace TimeForCode.Authorization.Application.Options
         public required string RestApiHost { get; init; }
 
         public int? RestApiPort { get; init; }
+
+        [Required]
+        public required string MetaDataAddress { get; init; }
     }
 }

@@ -1,7 +1,7 @@
 ﻿using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Bson;
 
-namespace TimeForCode.Authorization.Domain
+namespace TimeForCode.Authorization.Domain.Entities
 {
     public class DocumentEntity
     {

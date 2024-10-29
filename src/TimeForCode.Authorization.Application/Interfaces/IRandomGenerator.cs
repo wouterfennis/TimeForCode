@@ -1,6 +1,4 @@
-﻿using TimeForCode.Authorization.Commands;
-
-namespace TimeForCode.Authorization.Application.Interfaces
+﻿namespace TimeForCode.Authorization.Application.Interfaces
 {
     public interface IRandomGenerator
     {

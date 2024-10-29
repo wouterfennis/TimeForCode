@@ -1,5 +1,5 @@
 ﻿using MongoDB.Bson;
-using TimeForCode.Authorization.Domain;
+using TimeForCode.Authorization.Domain.Entities;
 
 namespace TimeForCode.Authorization.Infrastructure.Services.Github
 {

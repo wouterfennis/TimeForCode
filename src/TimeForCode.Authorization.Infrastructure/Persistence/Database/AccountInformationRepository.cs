@@ -1,10 +1,10 @@
 ﻿using MongoDB.Driver;
 using TimeForCode.Authorization.Application.Interfaces;
-using TimeForCode.Authorization.Domain;
+using TimeForCode.Authorization.Domain.Entities;
 
 namespace TimeForCode.Authorization.Infrastructure.Persistence.Database
 {
-    public class AccountInformationRepository : IRepository<AccountInformation>
+    public class AccountInformationRepository : IAccountInformationRepository
     {
         private readonly IMongoCollection<AccountInformation> _collection;
 
@@ -13,19 +13,9 @@ namespace TimeForCode.Authorization.Infrastructure.Persistence.Database
             _collection = context.GetCollection<AccountInformation>();
         }
 
-        public async Task<IEnumerable<AccountInformation>> GetAllAsync()
+        public async Task<AccountInformation> GetByIdAsync(string id)
         {
-            return await _collection.Find(_ => true).ToListAsync();
-        }
-
-        public async Task<AccountInformation> GetByIdAsync(string identityProviderId)
-        {
-            return await _collection.Find(Builders<AccountInformation>.Filter.Eq("IdentityProviderId", identityProviderId)).FirstOrDefaultAsync();
-        }
-
-        public async Task CreateAsync(AccountInformation entity)
-        {
-            await _collection.InsertOneAsync(entity);
+            return await _collection.Find(Builders<AccountInformation>.Filter.Eq("IdentityProviderId", id)).FirstOrDefaultAsync();
         }
 
         public async Task CreateOrUpdateAsync(AccountInformation entity)
@@ -41,14 +31,14 @@ namespace TimeForCode.Authorization.Infrastructure.Persistence.Database
             }
         }
 
-        public async Task UpdateAsync(AccountInformation entity)
+        private async Task CreateAsync(AccountInformation entity)
         {
-            await _collection.ReplaceOneAsync(Builders<AccountInformation>.Filter.Eq("_id", (entity as dynamic).Id), entity);
+            await _collection.InsertOneAsync(entity);
         }
 
-        public async Task DeleteAsync(string id)
+        private async Task UpdateAsync(AccountInformation entity)
         {
-            await _collection.DeleteOneAsync(Builders<AccountInformation>.Filter.Eq("_id", id));
+            await _collection.ReplaceOneAsync(Builders<AccountInformation>.Filter.Eq("_id", (entity as dynamic).Id), entity);
         }
     }
 }

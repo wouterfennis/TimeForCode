@@ -1,6 +1,6 @@
 ﻿using TimeForCode.Authorization.Application.Interfaces;
 
-namespace TimeForCode.Authorization.Infrastructure.Random
+namespace TimeForCode.Authorization.Infrastructure.Services
 {
     public class RandomGenerator : IRandomGenerator
     {

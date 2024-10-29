@@ -1,11 +1,13 @@
-﻿using TimeForCode.Authorization.Commands;
-using TimeForCode.Authorization.Domain;
+﻿using Microsoft.IdentityModel.Tokens;
+using TimeForCode.Authorization.Commands;
+using TimeForCode.Authorization.Domain.Entities;
 
 namespace TimeForCode.Authorization.Application.Interfaces
 {
     public interface IIdentityProviderService
     {
-        public Task<Result<GetAccessTokenResult>> GetAccessTokenAsync(string code);
-        public Task<Result<AccountInformation>> GetAccountInformation(GetAccountInformationModel model);
+        Task<Result<GetAccessTokenResult>> GetAccessTokenAsync(string code);
+        Task<Result<AccountInformation>> GetAccountInformation(GetAccountInformationModel model);
+        Task<TokenValidationParameters> GetTokenValidationParameters();
     }
 }

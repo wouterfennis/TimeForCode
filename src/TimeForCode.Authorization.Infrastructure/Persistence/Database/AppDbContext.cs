@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Options;
 using MongoDB.Driver;
-using TimeForCode.Authorization.Domain;
+using TimeForCode.Authorization.Domain.Entities;
 using TimeForCode.Authorization.Infrastructure.Options;
 
 namespace TimeForCode.Authorization.Infrastructure.Persistence.Database

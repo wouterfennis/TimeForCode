@@ -2,10 +2,8 @@
 using Microsoft.Extensions.DependencyInjection;
 using RestSharp;
 using TimeForCode.Authorization.Application.Interfaces;
-using TimeForCode.Authorization.Domain;
 using TimeForCode.Authorization.Infrastructure.Options;
 using TimeForCode.Authorization.Infrastructure.Persistence.Database;
-using TimeForCode.Authorization.Infrastructure.Random;
 using TimeForCode.Authorization.Infrastructure.Services;
 using TimeForCode.Authorization.Infrastructure.Services.Github;
 
@@ -24,13 +22,16 @@ namespace TimeForCode.Authorization.Infrastructure.Extensions
             services.AddScoped<IRandomGenerator, RandomGenerator>();
             services.AddScoped<IIdentityProviderService, GithubService>();
 
+            services.AddSingleton(TimeProvider.System);
+
             services
                 .Configure<DbOptions>(options => configuration.GetSection(DbOptions.SectionName)
                 .Bind(options));
 
             services.AddSingleton<RestClient>();
             services.AddSingleton<IMongoDbContext, MongoDbContext>();
-            services.AddScoped<IRepository<AccountInformation>, AccountInformationRepository>();
+            services.AddScoped<IAccountInformationRepository, AccountInformationRepository>();
+            services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 
             return services;
         }

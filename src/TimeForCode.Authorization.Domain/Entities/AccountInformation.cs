@@ -1,4 +1,4 @@
-namespace TimeForCode.Authorization.Domain
+namespace TimeForCode.Authorization.Domain.Entities
 {
     public class AccountInformation : DocumentEntity
     {
