@@ -76,7 +76,8 @@ namespace TimeForCode.Authorization.Api.Controllers
             HttpContext.Response.Cookies.Append("AccessToken", callbackResult.Value!.InternalAccessToken.Token, accessTokenCookieOptions);
             HttpContext.Response.Cookies.Append("RefreshToken", callbackResult.Value!.RefreshToken.Token, refreshTokenCookieOptions);
 
-            var response= new CallbackResponseModel
+            // This is for the time being for debugging purposes.
+            var response = new CallbackResponseModel
             {
                 AccessToken = callbackResult.Value!.InternalAccessToken,
                 RefreshToken = callbackResult.Value!.RefreshToken
