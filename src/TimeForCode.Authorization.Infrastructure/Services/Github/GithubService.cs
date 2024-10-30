@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Protocols;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 using RestSharp;
 using System.Net.Mime;
@@ -9,10 +10,9 @@ using System.Text.Json;
 using TimeForCode.Authorization.Application.Interfaces;
 using TimeForCode.Authorization.Application.Options;
 using TimeForCode.Authorization.Commands;
+using TimeForCode.Authorization.Domain;
 using TimeForCode.Authorization.Domain.Entities;
 using TimeForCode.Authorization.Values;
-using Microsoft.Extensions.Caching.Memory;
-using TimeForCode.Authorization.Domain;
 
 namespace TimeForCode.Authorization.Infrastructure.Services.Github
 {

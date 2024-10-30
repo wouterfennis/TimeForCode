@@ -21,7 +21,7 @@ namespace TimeForCode.Authorization.Infrastructure.Services
         {
             var identityProviderResult = GetIdentityProvider(state);
 
-            if(identityProviderResult.IsFailure)
+            if (identityProviderResult.IsFailure)
             {
                 return Result<IIdentityProviderService>.Failure(identityProviderResult.ErrorMessage);
             }

@@ -36,7 +36,7 @@ namespace TimeForCode.Authorization.Application.Handlers
                 return Result<CallbackResult>.Failure(saveResult.ErrorMessage);
             }
 
-            var internalToken = _tokenService.GenerateInternalToken(saveResult.Value.Id.ToString()); 
+            var internalToken = _tokenService.GenerateInternalToken(saveResult.Value.Id.ToString());
             var refreshToken = await _tokenService.CreateAndReplaceRefreshToken(null);
 
             return Result<CallbackResult>.Success(new CallbackResult
@@ -45,8 +45,9 @@ namespace TimeForCode.Authorization.Application.Handlers
                 {
                     Token = internalToken.Token
                 },
-                RefreshToken = new RefreshToken{
-                  Token =    refreshToken.Token,
+                RefreshToken = new RefreshToken
+                {
+                    Token = refreshToken.Token,
                     ExpiresAfter = refreshToken.ExpiresAfter
                 }
             });

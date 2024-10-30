@@ -3,7 +3,7 @@ using TimeForCode.Authorization.Domain.Entities;
 
 namespace TimeForCode.Authorization.Infrastructure.Persistence.Database
 {
-    public interface IMongoDbContext 
+    public interface IMongoDbContext
     {
         IMongoCollection<T> GetCollection<T>() where T : DocumentEntity;
     }

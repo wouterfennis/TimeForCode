@@ -33,7 +33,7 @@ namespace IdentityProviderMockService.Controllers
         public IActionResult GetUser()
         {
             _logger.LogDebug("user is returned");
-            
+
 
             var user = new UserResponse
             {
