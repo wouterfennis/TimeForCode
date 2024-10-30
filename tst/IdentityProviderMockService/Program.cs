@@ -21,7 +21,7 @@ namespace IdentityProviderMockService
             builder.Services.Configure<RsaOptions>(builder.Configuration.GetSection(RsaOptions.SectionName));
 
             var authenticationOptions = AuthenticationOptions.Bind(builder.Configuration);
-            
+
             var rsaOptions = RsaOptions.Bind(builder.Configuration);
 
             var certificateBytes = Convert.FromBase64String(rsaOptions.Base64Certificate);
