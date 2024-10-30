@@ -10,13 +10,13 @@ namespace IdentityProviderMockService.Models
         /// </summary>
         [JsonPropertyName("issuer")]
         [Required]
-        public string Issuer { get; set; }
+        public required string Issuer { get; init; }
 
         /// <summary>
         /// JWKS Uri
         /// </summary>
         [JsonPropertyName("jwks_uri")]
         [Required]
-        public string JwksUri { get; set; }
+        public required string JwksUri { get; init; }
     }
 }
