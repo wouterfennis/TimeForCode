@@ -20,13 +20,11 @@ namespace TimeForCode.Authorization.Infrastructure.Services.Github
     {
         private readonly ExternalIdentityProvider _identityProviderOptions;
         private readonly RestClient _restClient;
-        private readonly IMemoryCache _memoryCache;
 
-        public GithubService(IOptions<ExternalIdentityProviderOptions> options, RestClient restClient, IMemoryCache memoryCache)
+        public GithubService(IOptions<ExternalIdentityProviderOptions> options, RestClient restClient)
         {
             _identityProviderOptions = options.Value.GetExternalIdentityProvider(IdentityProvider.Github);
             _restClient = restClient;
-            _memoryCache = memoryCache;
         }
 
         public async Task<Result<GetAccessTokenResult>> GetAccessTokenAsync(string code)
@@ -89,7 +87,7 @@ namespace TimeForCode.Authorization.Infrastructure.Services.Github
             return Result<AccountInformation>.Failure(problemDetails!.Detail);
         }
 
-        public async Task<TokenValidationParameters> GetTokenValidationParameters()
+        public Task<TokenValidationParameters> GetTokenValidationParameters()
         {
             var tokenValidationParameters = new TokenValidationParameters
             {
@@ -101,9 +99,7 @@ namespace TimeForCode.Authorization.Infrastructure.Services.Github
                 ValidateIssuerSigningKey = false
             };
 
-            _memoryCache.Set(_identityProviderOptions.MetaDataAddress, tokenValidationParameters, TimeSpan.FromHours(1));
-
-            return tokenValidationParameters;
+            return Task.FromResult(tokenValidationParameters);
         }
     }
 }

@@ -71,7 +71,7 @@ namespace TimeForCode.Authorization.Api.Controllers
                 Expires = DateTime.UtcNow.AddHours(1)
             };
 
-            var refreshTokenCookieOptions = accessTokenCookieOptions;
+            var refreshTokenCookieOptions = new CookieOptions(accessTokenCookieOptions);
             refreshTokenCookieOptions.Expires = DateTime.UtcNow.AddDays(7);
             HttpContext.Response.Cookies.Append("AccessToken", callbackResult.Value!.InternalAccessToken.Token, accessTokenCookieOptions);
             HttpContext.Response.Cookies.Append("RefreshToken", callbackResult.Value!.RefreshToken.Token, refreshTokenCookieOptions);

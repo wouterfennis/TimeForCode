@@ -13,19 +13,19 @@ namespace TimeForCode.Authorization.Application.Options
         /// Token issuer
         /// </summary>
         [Required]
-        public string Issuer { get; set; }
+        public required string Issuer { get; init; }
 
         /// <summary>
         /// Token audience
         /// </summary>
         [Required]
-        public string Audience { get; set; }
+        public required string Audience { get; init; }
 
         /// <summary>
         /// Token expiration time in minutes
         /// </summary>
         [Required]
-        public int TokenExpiresInMinutes { get; set; }
+        public required int TokenExpiresInMinutes { get; init; }
 
         /// <summary>
         /// Default refresh token expiration time in days
