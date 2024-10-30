@@ -7,6 +7,15 @@ namespace IdentityProviderMockService.Options
         public const string SectionName = "RsaOptions";
 
         [Required]
-        public string Base64Certificate { get; set; }
+        public required string Base64Certificate { get; init; }
+
+        public static RsaOptions Bind(Microsoft.Extensions.Configuration.IConfiguration configuration)
+        {
+            var rsaOptions = new RsaOptions
+            {
+                Base64Certificate = configuration.GetSection(SectionName).GetValue<string>(nameof(Base64Certificate))!,
+            };
+            return rsaOptions;
+        }
     }
 }

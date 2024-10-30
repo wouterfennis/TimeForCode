@@ -13,30 +13,43 @@ namespace IdentityProviderMockService.Options
         /// Token issuer
         /// </summary>
         [Required]
-        public string Issuer { get; set; }
+        public required string Issuer { get; init; }
 
         /// <summary>
         /// Token audience
         /// </summary>
         [Required]
-        public string Audience { get; set; }
+        public required string Audience { get; init; }
 
         /// <summary>
         /// Token expiration time in minutes
         /// </summary>
         [Required]
-        public int ExpiresInMinutes { get; set; }
+        public required int ExpiresInMinutes { get; init; }
 
         /// <summary>
         /// Expected client id for returning a token
         /// </summary>
         [Required]
-        public string ExpectedClientId { get; set; }
+        public required string ExpectedClientId { get; init; }
 
         /// <summary>
         /// Expected client secret for returning a token
         /// </summary>
         [Required]
-        public string ExpectedClientSecret { get; set; }
+        public required string ExpectedClientSecret { get; init; }
+
+        public static AuthenticationOptions Bind(Microsoft.Extensions.Configuration.IConfiguration configuration)
+        {
+            var authenticationOptions = new AuthenticationOptions
+            {
+                Audience = configuration.GetSection(SectionName).GetValue<string>(nameof(Audience))!,
+                Issuer = configuration.GetSection(SectionName).GetValue<string>(nameof(Issuer))!,
+                ExpectedClientId = configuration.GetSection(SectionName).GetValue<string>(nameof(ExpectedClientId))!,
+                ExpectedClientSecret = configuration.GetSection(SectionName).GetValue<string>(nameof(ExpectedClientSecret))!,
+                ExpiresInMinutes = configuration.GetSection(SectionName).GetValue<int>(nameof(ExpiresInMinutes)),
+            };
+            return authenticationOptions;
+        }
     }
 }

@@ -45,8 +45,7 @@ namespace TimeForCode.Authorization.Application.Extensions
 
         private static RSA LoadCertificate(IConfiguration configuration)
         {
-            var rsaOptions = new RsaOptions();
-            configuration.GetSection(RsaOptions.SectionName).Bind(rsaOptions);
+            var rsaOptions = RsaOptions.Bind(configuration);
 
             var certificateBytes = Convert.FromBase64String(rsaOptions.Base64Certificate);
 

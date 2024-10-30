@@ -20,25 +20,18 @@ namespace IdentityProviderMockService
             builder.Services.Configure<AuthenticationOptions>(builder.Configuration.GetSection(AuthenticationOptions.SectionName));
             builder.Services.Configure<RsaOptions>(builder.Configuration.GetSection(RsaOptions.SectionName));
 
-            // Bind AuthenticationOptions
-            var authenticationOptions = new AuthenticationOptions();
-            builder.Configuration.GetSection(AuthenticationOptions.SectionName).Bind(authenticationOptions);
+            var authenticationOptions = AuthenticationOptions.Bind(builder.Configuration);
+            
+            var rsaOptions = RsaOptions.Bind(builder.Configuration);
 
-            // Bind RsaOptions
-            var rsaOptions = new RsaOptions();
-            builder.Configuration.GetSection(RsaOptions.SectionName).Bind(rsaOptions);
-
-            // Convert Base64 string to byte array
             var certificateBytes = Convert.FromBase64String(rsaOptions.Base64Certificate);
 
-            // Load the certificate
             var certificate = new X509Certificate2(certificateBytes, (string?)null, X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.PersistKeySet | X509KeyStorageFlags.Exportable);
 
             var rsa = certificate.GetRSAPrivateKey()!;
 
             builder.Services.AddSingleton(rsa);
 
-            // Add Authentication
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>
                 {
