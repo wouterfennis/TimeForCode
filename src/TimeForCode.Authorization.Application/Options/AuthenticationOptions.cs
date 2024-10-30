@@ -25,6 +25,12 @@ namespace TimeForCode.Authorization.Application.Options
         /// Token expiration time in minutes
         /// </summary>
         [Required]
-        public int ExpiresInMinutes { get; set; }
+        public int TokenExpiresInMinutes { get; set; }
+
+        /// <summary>
+        /// Default refresh token expiration time in days
+        /// </summary>
+        [Required]
+        public required int DefaultRefreshTokenExpirationAfterInDays { get; init; }
     }
 }

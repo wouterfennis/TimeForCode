@@ -115,16 +115,31 @@
   },
   "components": {
     "schemas": {
+      "AccessToken": {
+        "required": [
+          "token"
+        ],
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "CallbackResponseModel": {
         "required": [
-          "accessToken"
+          "accessToken",
+          "refreshToken"
         ],
         "type": "object",
         "properties": {
           "accessToken": {
-            "minLength": 1,
-            "type": "string",
-            "description": "Gets or sets the access token."
+            "$ref": "#/components/schemas/AccessToken"
+          },
+          "refreshToken": {
+            "$ref": "#/components/schemas/RefreshToken"
           }
         },
         "additionalProperties": false,
@@ -163,6 +178,24 @@
           }
         },
         "additionalProperties": { }
+      },
+      "RefreshToken": {
+        "required": [
+          "expiresAfter",
+          "token"
+        ],
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "nullable": true
+          },
+          "expiresAfter": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
       }
     }
   }

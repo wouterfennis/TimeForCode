@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using TimeForCode.Authorization.Application.Services;
 using TimeForCode.Authorization.Commands;
+using TimeForCode.Authorization.Values;
 
 namespace TimeForCode.Authorization.Application.Handlers
 {
@@ -36,10 +37,18 @@ namespace TimeForCode.Authorization.Application.Handlers
             }
 
             var internalToken = _tokenService.GenerateInternalToken(saveResult.Value.Id.ToString()); 
+            var refreshToken = await _tokenService.CreateAndReplaceRefreshToken(null);
 
             return Result<CallbackResult>.Success(new CallbackResult
             {
-                InternalAccessToken = internalToken
+                InternalAccessToken = new AccessToken
+                {
+                    Token = internalToken.Token
+                },
+                RefreshToken = new RefreshToken{
+                  Token =    refreshToken.Token,
+                    ExpiresAfter = refreshToken.ExpiresAfter
+                }
             });
         }
     }

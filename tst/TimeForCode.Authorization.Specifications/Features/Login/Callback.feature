@@ -12,14 +12,14 @@ Login consists technically on two parts.
 Scenario: User has not logged in at the external platform
 	Given The user has not logged in at the external platform
 	When The external platform calls the time for code platform to complete the authorization
-	Then An authentication token is not returned
+	Then An access token is not returned
 	And The following error message is returned: "State is not known"
 
 Scenario: Access token cannot be received at the external platform
 	Given The user logs in at the time for code platform
 	And The external platform does not return the access token
 	When The external platform calls the time for code platform to complete the authorization
-	Then An authentication token is not returned
+	Then An access token is not returned
 	And The following error message is returned: "Access token cannot be received"
 
 Scenario: User has no account information at the external platform
@@ -27,7 +27,7 @@ Scenario: User has no account information at the external platform
 	And The user logs in at the time for code platform
 	And The user logs in at the external platform
 	When The external platform calls the time for code platform to complete the authorization
-	Then An authentication token is not returned
+	Then An access token is not returned
 	And The following error message is returned: "No account information"
 
 Scenario: User has an account at the external platform
@@ -35,5 +35,5 @@ Scenario: User has an account at the external platform
 	And The user logs in at the time for code platform
 	And The user logs in at the external platform
 	When The external platform calls the time for code platform to complete the authorization
-	Then An authentication token is returned
+	Then An access token is returned
 	And The user information is saved in the time for code platform

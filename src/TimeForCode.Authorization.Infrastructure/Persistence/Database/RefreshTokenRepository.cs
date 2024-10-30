@@ -13,7 +13,7 @@ namespace TimeForCode.Authorization.Infrastructure.Persistence.Database
             _collection = context.GetCollection<RefreshToken>();
         }
 
-        public async Task<RefreshToken> GetByTokenAsync(string token)
+        public async Task<RefreshToken?> GetByTokenAsync(string token)
         {
             return await _collection.Find(Builders<RefreshToken>.Filter.Eq("token", token)).FirstOrDefaultAsync();
         }
@@ -21,6 +21,11 @@ namespace TimeForCode.Authorization.Infrastructure.Persistence.Database
         public async Task CreateAsync(RefreshToken entity)
         {
             await _collection.InsertOneAsync(entity);
+        }
+
+        public Task UpdateAsync(RefreshToken existingToken)
+        {
+            return _collection.ReplaceOneAsync(Builders<RefreshToken>.Filter.Eq("token", existingToken.Token), existingToken);
         }
     }
 }

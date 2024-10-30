@@ -63,7 +63,26 @@ namespace TimeForCode.Authorization.Api.Controllers
                 return BadRequest(ProblemDetailsMapper.BadRequest(callbackResult.ErrorMessage));
             }
 
-            return Ok(CallbackResponseModel.Create(callbackResult.Value!.InternalAccessToken));
+            var accessTokenCookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTime.UtcNow.AddHours(1)
+            };
+
+            var refreshTokenCookieOptions = accessTokenCookieOptions;
+            refreshTokenCookieOptions.Expires = DateTime.UtcNow.AddDays(7);
+            HttpContext.Response.Cookies.Append("AccessToken", callbackResult.Value!.InternalAccessToken.Token, accessTokenCookieOptions);
+            HttpContext.Response.Cookies.Append("RefreshToken", callbackResult.Value!.RefreshToken.Token, refreshTokenCookieOptions);
+
+            var response= new CallbackResponseModel
+            {
+                AccessToken = callbackResult.Value!.InternalAccessToken,
+                RefreshToken = callbackResult.Value!.RefreshToken
+            };
+
+            return Ok(response);
         }
 
         /// <summary>

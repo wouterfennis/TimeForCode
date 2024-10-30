@@ -49,12 +49,13 @@ namespace TimeForCode.Authorization.Specifications.Steps
             _result = await _authClient.TryCallbackAsync(code, Constants.StateKey);
         }
 
-        [Then("An authentication token is returned")]
-        public void ThenAAuthenticationTokenIsReturned()
+        [Then("An access token is returned")]
+        public void ThenAAccessTokenIsReturned()
         {
             _result.Should().NotBeNull();
             _result!.Response.Should().NotBeNull();
-            _result!.Response!.AccessToken.Should().NotBeNullOrEmpty();
+            _result!.Response!.AccessToken.Should().NotBeNull();
+            _result!.Response!.AccessToken.Token.Should().NotBeNullOrEmpty();
         }
 
         [Then("The user information is saved in the time for code platform")]
@@ -65,8 +66,8 @@ namespace TimeForCode.Authorization.Specifications.Steps
             repository.Verify(r => r.CreateOrUpdateAsync(It.IsAny<AccountInformation>()));
         }
 
-        [Then("An authentication token is not returned")]
-        public void ThenAnAuthenticationTokenIsNotReturned()
+        [Then("An access token is not returned")]
+        public void ThenAnAccessTokenIsNotReturned()
         {
             _result.Should().NotBeNull();
         }

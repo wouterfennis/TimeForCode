@@ -126,7 +126,7 @@ this.ScenarioInitialize(scenarioInfo);
                         "ion", ((string)(null)), ((global::Reqnroll.Table)(null)), "When ");
 #line hidden
 #line 15
- await testRunner.ThenAsync("An authentication token is not returned", ((string)(null)), ((global::Reqnroll.Table)(null)), "Then ");
+ await testRunner.ThenAsync("An access token is not returned", ((string)(null)), ((global::Reqnroll.Table)(null)), "Then ");
 #line hidden
 #line 16
  await testRunner.AndAsync("The following error message is returned: \"State is not known\"", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
@@ -164,7 +164,7 @@ this.ScenarioInitialize(scenarioInfo);
                         "ion", ((string)(null)), ((global::Reqnroll.Table)(null)), "When ");
 #line hidden
 #line 22
- await testRunner.ThenAsync("An authentication token is not returned", ((string)(null)), ((global::Reqnroll.Table)(null)), "Then ");
+ await testRunner.ThenAsync("An access token is not returned", ((string)(null)), ((global::Reqnroll.Table)(null)), "Then ");
 #line hidden
 #line 23
  await testRunner.AndAsync("The following error message is returned: \"Access token cannot be received\"", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
@@ -205,7 +205,7 @@ this.ScenarioInitialize(scenarioInfo);
                         "ion", ((string)(null)), ((global::Reqnroll.Table)(null)), "When ");
 #line hidden
 #line 30
- await testRunner.ThenAsync("An authentication token is not returned", ((string)(null)), ((global::Reqnroll.Table)(null)), "Then ");
+ await testRunner.ThenAsync("An access token is not returned", ((string)(null)), ((global::Reqnroll.Table)(null)), "Then ");
 #line hidden
 #line 31
  await testRunner.AndAsync("The following error message is returned: \"No account information\"", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
@@ -246,7 +246,7 @@ this.ScenarioInitialize(scenarioInfo);
                         "ion", ((string)(null)), ((global::Reqnroll.Table)(null)), "When ");
 #line hidden
 #line 38
- await testRunner.ThenAsync("An authentication token is returned", ((string)(null)), ((global::Reqnroll.Table)(null)), "Then ");
+ await testRunner.ThenAsync("An access token is returned", ((string)(null)), ((global::Reqnroll.Table)(null)), "Then ");
 #line hidden
 #line 39
  await testRunner.AndAsync("The user information is saved in the time for code platform", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");

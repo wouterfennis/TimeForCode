@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using TimeForCode.Authorization.Application.Interfaces;
 using TimeForCode.Authorization.Commands;
+using TimeForCode.Authorization.Domain;
 using TimeForCode.Authorization.Domain.Entities;
 
 namespace TimeForCode.Authorization.Application.Services
@@ -21,7 +22,7 @@ namespace TimeForCode.Authorization.Application.Services
             _logger = logger;
         }
 
-        public async Task<Result<AccountInformation>> SaveAccountInformation(string state, string accessToken)
+        public async Task<Result<AccountInformation>> SaveAccountInformation(string state, AccessToken accessToken)
         {
             var identityProviderServiceResult = _identityProviderServiceFactory.GetIdentityProviderServiceFromState(state);
 
@@ -30,11 +31,7 @@ namespace TimeForCode.Authorization.Application.Services
                 return Result<AccountInformation>.Failure(identityProviderServiceResult.ErrorMessage);
             }
 
-            var getAccountInformationModel = new GetAccountInformationModel
-            {
-                AccessToken = accessToken
-            };
-            var accountInformationResult = await identityProviderServiceResult.Value.GetAccountInformation(getAccountInformationModel);
+            var accountInformationResult = await identityProviderServiceResult.Value.GetAccountInformation(accessToken);
 
             if (accountInformationResult.IsFailure)
             {

@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using TimeForCode.Authorization.Values;
 
 /// <summary>
 /// Represents the model for a callback response.
@@ -6,18 +7,14 @@ using System.ComponentModel.DataAnnotations;
 public class CallbackResponseModel
 {
     /// <summary>
-    /// Gets or sets the access token.
+    /// The access token.
     /// </summary>
     [Required]
-    public required string AccessToken { get; init; }
+    public required AccessToken AccessToken { get; init; }
 
     /// <summary>
-    /// Creates a new instance of <see cref="CallbackResponseModel"/> with the specified access token.
+    /// The access token.
     /// </summary>
-    /// <param name="internalAccessToken">The internal access token to set.</param>
-    /// <returns>A new instance of <see cref="CallbackResponseModel"/>.</returns>
-    internal static CallbackResponseModel Create(string internalAccessToken)
-    {
-        return new CallbackResponseModel { AccessToken = internalAccessToken };
-    }
+    [Required]
+    public required RefreshToken RefreshToken { get; init; }
 }

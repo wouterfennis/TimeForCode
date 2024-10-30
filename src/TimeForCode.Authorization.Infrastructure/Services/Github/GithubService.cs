@@ -12,6 +12,7 @@ using TimeForCode.Authorization.Commands;
 using TimeForCode.Authorization.Domain.Entities;
 using TimeForCode.Authorization.Values;
 using Microsoft.Extensions.Caching.Memory;
+using TimeForCode.Authorization.Domain;
 
 namespace TimeForCode.Authorization.Infrastructure.Services.Github
 {
@@ -60,7 +61,7 @@ namespace TimeForCode.Authorization.Infrastructure.Services.Github
             return Result<GetAccessTokenResult>.Failure(problemDetails!.Detail);
         }
 
-        public async Task<Result<AccountInformation>> GetAccountInformation(GetAccountInformationModel model)
+        public async Task<Result<AccountInformation>> GetAccountInformation(Domain.AccessToken accessToken)
         {
             var uriBuilder = new UriBuilder
             {
@@ -73,7 +74,7 @@ namespace TimeForCode.Authorization.Infrastructure.Services.Github
             _restClient.AcceptedContentTypes = [MediaTypeNames.Application.Json];
 
             var request = new RestRequest(uriBuilder.ToString(), Method.Get);
-            request.AddHeader("Authorization", $"Bearer {model.AccessToken}");
+            request.AddHeader("Authorization", $"Bearer {accessToken}");
 
             var response = await _restClient.ExecuteAsync<GithubUser>(request);
 
