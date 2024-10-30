@@ -66,6 +66,7 @@ namespace TimeForCode.Authorization.Application.Services
             {
                 Subject = new ClaimsIdentity([new Claim("sub", userId)]),
                 Expires = _timeProvider.GetUtcNow().AddMinutes(_authenticationOptions.TokenExpiresInMinutes).UtcDateTime,
+                NotBefore = _timeProvider.GetUtcNow().UtcDateTime,
                 Issuer = _authenticationOptions.Issuer,
                 Audience = _authenticationOptions.Audience,
                 Claims = claims,

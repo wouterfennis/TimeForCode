@@ -74,7 +74,7 @@ namespace TimeForCode.Authorization.Infrastructure.Services.Github
             _restClient.AcceptedContentTypes = [MediaTypeNames.Application.Json];
 
             var request = new RestRequest(uriBuilder.ToString(), Method.Get);
-            request.AddHeader("Authorization", $"Bearer {accessToken}");
+            request.AddHeader("Authorization", $"Bearer {accessToken.Token}");
 
             var response = await _restClient.ExecuteAsync<GithubUser>(request);
 
@@ -91,26 +91,14 @@ namespace TimeForCode.Authorization.Infrastructure.Services.Github
 
         public async Task<TokenValidationParameters> GetTokenValidationParameters()
         {
-            if (_memoryCache.TryGetValue(_identityProviderOptions.MetaDataAddress, out TokenValidationParameters? tokenValidationParameters))
-            {
-                return tokenValidationParameters!;
-            }
-
-            var configurationManager = new ConfigurationManager<OpenIdConnectConfiguration>(
-                _identityProviderOptions.MetaDataAddress,
-                new OpenIdConnectConfigurationRetriever());
-
-            var openIdConfig = await configurationManager.GetConfigurationAsync(CancellationToken.None);
-
-            tokenValidationParameters = new TokenValidationParameters
+            var tokenValidationParameters = new TokenValidationParameters
             {
                 ValidateIssuer = true,
-                ValidIssuer = openIdConfig.Issuer,
+                ValidIssuer = _identityProviderOptions.Issuer,
                 ValidateAudience = true,
                 ValidAudiences = new List<string> { _identityProviderOptions.ClientId },
                 ValidateLifetime = true,
-                IssuerSigningKeys = openIdConfig.SigningKeys,
-                ValidateIssuerSigningKey = true
+                ValidateIssuerSigningKey = false
             };
 
             _memoryCache.Set(_identityProviderOptions.MetaDataAddress, tokenValidationParameters, TimeSpan.FromHours(1));

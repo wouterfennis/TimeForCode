@@ -8,7 +8,7 @@ namespace TimeForCode.Authorization.Application.Interfaces
     public interface IIdentityProviderService
     {
         Task<Result<GetAccessTokenResult>> GetAccessTokenAsync(string code);
-        Task<Result<AccountInformation>> GetAccountInformation(AccessToken model);
+        Task<Result<AccountInformation>> GetAccountInformation(AccessToken accessToken);
         Task<TokenValidationParameters> GetTokenValidationParameters();
     }
 }
