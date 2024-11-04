@@ -95,6 +95,9 @@
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
           }
         }
       }
@@ -107,7 +110,27 @@
         "summary": "Refresh endpoint.",
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CallbackResponseModel"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
           }
         }
       }
@@ -117,6 +140,7 @@
     "schemas": {
       "AccessToken": {
         "required": [
+          "expiresAfter",
           "token"
         ],
         "type": "object",
@@ -124,6 +148,10 @@
           "token": {
             "type": "string",
             "nullable": true
+          },
+          "expiresAfter": {
+            "type": "string",
+            "format": "date-time"
           }
         },
         "additionalProperties": false

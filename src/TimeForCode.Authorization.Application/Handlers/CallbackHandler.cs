@@ -6,7 +6,7 @@ using TimeForCode.Authorization.Values;
 
 namespace TimeForCode.Authorization.Application.Handlers
 {
-    public class CallbackHandler : IRequestHandler<CallbackCommand, Result<CallbackResult>>
+    public class CallbackHandler : IRequestHandler<CallbackCommand, Result<TokenResult>>
     {
         private readonly IAccountService _accountService;
         private readonly ITokenService _tokenService;
@@ -21,29 +21,31 @@ namespace TimeForCode.Authorization.Application.Handlers
             _logger = logger;
         }
 
-        public async Task<Result<CallbackResult>> Handle(CallbackCommand request, CancellationToken cancellationToken)
+        public async Task<Result<TokenResult>> Handle(CallbackCommand request, CancellationToken cancellationToken)
         {
             var accessTokenResult = await _tokenService.GetAccessTokenFromExternalProvider(request.State, request.Code);
             if (accessTokenResult.IsFailure)
             {
-                return Result<CallbackResult>.Failure(accessTokenResult.ErrorMessage);
+                return Result<TokenResult>.Failure(accessTokenResult.ErrorMessage);
             }
 
             var saveResult = await _accountService.SaveAccountInformation(request.State, accessTokenResult.Value);
 
             if (saveResult.IsFailure)
             {
-                return Result<CallbackResult>.Failure(saveResult.ErrorMessage);
+                return Result<TokenResult>.Failure(saveResult.ErrorMessage);
             }
 
-            var internalToken = _tokenService.GenerateInternalToken(saveResult.Value.Id.ToString());
-            var refreshToken = await _tokenService.CreateAndReplaceRefreshToken(null);
+            var userId = saveResult.Value.Id.ToString();
+            var internalToken = _tokenService.GenerateInternalToken(userId);
+            var refreshToken = await _tokenService.CreateRefreshToken(userId);
 
-            return Result<CallbackResult>.Success(new CallbackResult
+            return Result<TokenResult>.Success(new TokenResult
             {
                 InternalAccessToken = new AccessToken
                 {
-                    Token = internalToken.Token
+                    Token = internalToken.Token,
+                    ExpiresAfter = internalToken.ExpiresAfter
                 },
                 RefreshToken = new RefreshToken
                 {

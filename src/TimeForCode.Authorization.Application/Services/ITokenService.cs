@@ -1,13 +1,14 @@
 ﻿using TimeForCode.Authorization.Commands;
-using TimeForCode.Authorization.Domain;
-using TimeForCode.Authorization.Domain.Entities;
+using TimeForCode.Authorization.Values;
 
 namespace TimeForCode.Authorization.Application.Services
 {
     public interface ITokenService
     {
-        Task<Result<AccessToken>> GetAccessTokenFromExternalProvider(string state, string code);
+        Task<Result<ExternalAccessToken>> GetAccessTokenFromExternalProvider(string state, string code);
         AccessToken GenerateInternalToken(string userId);
-        Task<RefreshToken> CreateAndReplaceRefreshToken(RefreshToken? oldRefreshToken);
+        Task<RefreshToken> CreateRefreshToken(string userId);
+        Task<Result<AccessToken>> RefreshInternalTokenAsync(RefreshToken refreshToken);
+        Task<Result<RefreshToken>> ReplaceRefreshToken(RefreshToken oldRefreshToken);
     }
 }

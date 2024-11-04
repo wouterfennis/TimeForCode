@@ -1,8 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Protocols;
-using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 using RestSharp;
 using System.Net.Mime;
@@ -10,7 +7,6 @@ using System.Text.Json;
 using TimeForCode.Authorization.Application.Interfaces;
 using TimeForCode.Authorization.Application.Options;
 using TimeForCode.Authorization.Commands;
-using TimeForCode.Authorization.Domain;
 using TimeForCode.Authorization.Domain.Entities;
 using TimeForCode.Authorization.Values;
 
@@ -59,7 +55,7 @@ namespace TimeForCode.Authorization.Infrastructure.Services.Github
             return Result<GetAccessTokenResult>.Failure(problemDetails!.Detail);
         }
 
-        public async Task<Result<AccountInformation>> GetAccountInformation(Domain.AccessToken accessToken)
+        public async Task<Result<AccountInformation>> GetAccountInformation(ExternalAccessToken accessToken)
         {
             var uriBuilder = new UriBuilder
             {
@@ -94,7 +90,7 @@ namespace TimeForCode.Authorization.Infrastructure.Services.Github
                 ValidateIssuer = true,
                 ValidIssuer = _identityProviderOptions.Issuer,
                 ValidateAudience = true,
-                ValidAudiences = new List<string> { _identityProviderOptions.ClientId },
+                ValidAudiences = [_identityProviderOptions.ClientId],
                 ValidateLifetime = true,
                 ValidateIssuerSigningKey = false
             };

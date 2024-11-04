@@ -7,8 +7,7 @@ using System.Security.Cryptography;
 using TimeForCode.Authorization.Application.Interfaces;
 using TimeForCode.Authorization.Application.Options;
 using TimeForCode.Authorization.Commands;
-using TimeForCode.Authorization.Domain;
-using TimeForCode.Authorization.Domain.Entities;
+using TimeForCode.Authorization.Values;
 
 namespace TimeForCode.Authorization.Application.Services
 {
@@ -36,22 +35,26 @@ namespace TimeForCode.Authorization.Application.Services
             _refreshTokenRepository = refreshTokenRepository;
         }
 
-        public async Task<Result<AccessToken>> GetAccessTokenFromExternalProvider(string state, string code)
+        public async Task<Result<ExternalAccessToken>> GetAccessTokenFromExternalProvider(string state, string code)
         {
             var result = _identityProviderServiceFactory.GetIdentityProviderServiceFromState(state);
             if (result.IsFailure)
             {
-                return Result<AccessToken>.Failure(result.ErrorMessage);
+                return Result<ExternalAccessToken>.Failure(result.ErrorMessage);
             }
             var identityProviderService = result.Value;
 
             var externalAccessTokenResult = await identityProviderService.GetAccessTokenAsync(code);
             if (externalAccessTokenResult.IsFailure)
             {
-                return Result<AccessToken>.Failure(externalAccessTokenResult.ErrorMessage);
+                return Result<ExternalAccessToken>.Failure(externalAccessTokenResult.ErrorMessage);
             }
 
-            return Result<AccessToken>.Success(new AccessToken { Token = externalAccessTokenResult.Value.AccessToken });
+            var accessToken = new ExternalAccessToken
+            {
+                Token = externalAccessTokenResult.Value.AccessToken,
+            };
+            return Result<ExternalAccessToken>.Success(accessToken);
         }
 
         public AccessToken GenerateInternalToken(string userId)
@@ -60,6 +63,7 @@ namespace TimeForCode.Authorization.Application.Services
             {
                 { "scope", "user" }
             };
+            var expiresAfter = _timeProvider.GetUtcNow().AddMinutes(_authenticationOptions.TokenExpiresInMinutes);
 
             var tokenHandler = new JwtSecurityTokenHandler();
             var tokenDescriptor = new SecurityTokenDescriptor
@@ -77,33 +81,57 @@ namespace TimeForCode.Authorization.Application.Services
 
             return new AccessToken
             {
-                Token = tokenString
+                Token = tokenString,
+                ExpiresAfter = expiresAfter
             };
         }
 
-        public async Task<RefreshToken> CreateAndReplaceRefreshToken(RefreshToken? oldRefreshToken)
+        public async Task<RefreshToken> CreateRefreshToken(string userId)
         {
-            if (oldRefreshToken != null)
-            {
-                RefreshToken? existingToken = await _refreshTokenRepository.GetByTokenAsync(oldRefreshToken.Token);
-                if (existingToken != null)
-                {
-                    existingToken.SetExpiresAfter(_timeProvider.GetUtcNow());
-                    await _refreshTokenRepository.UpdateAsync(existingToken);
-                }
-            }
-
             var token = _randomGenerator.GenerateRandomString();
-            var refreshToken = new RefreshToken
+            var refreshToken = new Domain.Entities.RefreshToken
             {
                 Id = ObjectId.GenerateNewId(),
                 ExpiresAfter = _timeProvider.GetUtcNow().AddDays(_authenticationOptions.DefaultRefreshTokenExpirationAfterInDays),
-                Token = token
+                Token = token,
+                UserId = userId
             };
 
             await _refreshTokenRepository.CreateAsync(refreshToken);
 
-            return refreshToken;
+            return new RefreshToken
+            {
+                Token = token,
+                ExpiresAfter = refreshToken.ExpiresAfter,
+            };
+        }
+
+        public async Task<Result<AccessToken>> RefreshInternalTokenAsync(RefreshToken refreshToken)
+        {
+            Domain.Entities.RefreshToken? existingToken = await _refreshTokenRepository.GetByTokenAsync(refreshToken.Token);
+
+            if (existingToken == null)
+            {
+                return Result<AccessToken>.Failure("Refresh token not found");
+            }
+
+            return Result<AccessToken>.Success(GenerateInternalToken(existingToken.UserId));
+        }
+
+        public async Task<Result<RefreshToken>> ReplaceRefreshToken(RefreshToken oldRefreshToken)
+        {
+            Domain.Entities.RefreshToken? existingToken = await _refreshTokenRepository.GetByTokenAsync(oldRefreshToken.Token);
+
+            if (existingToken == null)
+            {
+                return Result<RefreshToken>.Failure("Refresh token not found");
+            }
+
+            existingToken.SetExpiresAfter(_timeProvider.GetUtcNow());
+            await _refreshTokenRepository.UpdateAsync(existingToken);
+
+            var newRefreshToken = await CreateRefreshToken(existingToken.UserId);
+            return Result<RefreshToken>.Success(newRefreshToken);
         }
     }
 }

@@ -3,6 +3,7 @@
     public class RefreshToken : DocumentEntity
     {
         public required string Token { get; init; }
+        public required string UserId { get; init; }
         public required DateTimeOffset ExpiresAfter { get; set; }
 
         public bool IsExpired(DateTimeOffset referenceDateTime) => referenceDateTime > ExpiresAfter;

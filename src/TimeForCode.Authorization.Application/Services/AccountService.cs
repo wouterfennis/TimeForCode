@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
 using TimeForCode.Authorization.Application.Interfaces;
 using TimeForCode.Authorization.Commands;
-using TimeForCode.Authorization.Domain;
 using TimeForCode.Authorization.Domain.Entities;
+using TimeForCode.Authorization.Values;
 
 namespace TimeForCode.Authorization.Application.Services
 {
@@ -22,7 +22,7 @@ namespace TimeForCode.Authorization.Application.Services
             _logger = logger;
         }
 
-        public async Task<Result<AccountInformation>> SaveAccountInformation(string state, AccessToken accessToken)
+        public async Task<Result<AccountInformation>> SaveAccountInformation(string state, ExternalAccessToken accessToken)
         {
             var identityProviderServiceResult = _identityProviderServiceFactory.GetIdentityProviderServiceFromState(state);
 
