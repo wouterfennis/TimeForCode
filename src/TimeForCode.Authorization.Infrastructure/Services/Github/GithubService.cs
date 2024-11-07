@@ -31,7 +31,7 @@ namespace TimeForCode.Authorization.Infrastructure.Services.Github
                 Path = "/login/oauth/access_token"
             };
 
-            uriBuilder.Port = _identityProviderOptions.HostPort.HasValue ? _identityProviderOptions.HostPort.Value : uriBuilder.Port;
+            uriBuilder.Port = _identityProviderOptions.HostPort ?? uriBuilder.Port;
 
             _restClient.AcceptedContentTypes = [MediaTypeNames.Application.Json];
 
@@ -63,7 +63,7 @@ namespace TimeForCode.Authorization.Infrastructure.Services.Github
                 Path = "/user"
             };
 
-            uriBuilder.Port = _identityProviderOptions.RestApiPort.HasValue ? _identityProviderOptions.RestApiPort.Value : uriBuilder.Port;
+            uriBuilder.Port = _identityProviderOptions.RestApiPort ?? uriBuilder.Port;
 
             _restClient.AcceptedContentTypes = [MediaTypeNames.Application.Json];
 

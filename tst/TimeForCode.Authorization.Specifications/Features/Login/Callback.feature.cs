@@ -129,7 +129,7 @@ this.ScenarioInitialize(scenarioInfo);
  await testRunner.ThenAsync("An access token is not returned", ((string)(null)), ((global::Reqnroll.Table)(null)), "Then ");
 #line hidden
 #line 16
- await testRunner.AndAsync("The following error message is returned: \"State is not known\"", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
+ await testRunner.AndAsync("The following callback error message is returned: \"State is not known\"", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
 #line hidden
             }
             await this.ScenarioCleanupAsync();
@@ -167,7 +167,8 @@ this.ScenarioInitialize(scenarioInfo);
  await testRunner.ThenAsync("An access token is not returned", ((string)(null)), ((global::Reqnroll.Table)(null)), "Then ");
 #line hidden
 #line 23
- await testRunner.AndAsync("The following error message is returned: \"Access token cannot be received\"", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
+ await testRunner.AndAsync("The following callback error message is returned: \"Access token cannot be receive" +
+                        "d\"", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
 #line hidden
             }
             await this.ScenarioCleanupAsync();
@@ -208,7 +209,7 @@ this.ScenarioInitialize(scenarioInfo);
  await testRunner.ThenAsync("An access token is not returned", ((string)(null)), ((global::Reqnroll.Table)(null)), "Then ");
 #line hidden
 #line 31
- await testRunner.AndAsync("The following error message is returned: \"No account information\"", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
+ await testRunner.AndAsync("The following callback error message is returned: \"No account information\"", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
 #line hidden
             }
             await this.ScenarioCleanupAsync();

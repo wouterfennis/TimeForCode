@@ -5,14 +5,14 @@ using TimeForCode.Authorization.Commands;
 
 namespace TimeForCode.Authorization.Application.Handlers
 {
-    public class RefreshHandler : IRequestHandler<RefreshCommand, Result<TokenResult>>
+    public class LogoutHandler : IRequestHandler<LogoutCommand>
     {
         private readonly ITokenService _tokenService;
-        private readonly ILogger<RefreshHandler> _logger;
+        private readonly ILogger<LogoutHandler> _logger;
 
-        public RefreshHandler(IAccountService accountService,
+        public LogoutHandler(IAccountService accountService,
             ITokenService tokenService,
-            ILogger<RefreshHandler> logger)
+            ILogger<LogoutHandler> logger)
         {
             _tokenService = tokenService;
             _logger = logger;
@@ -39,6 +39,16 @@ namespace TimeForCode.Authorization.Application.Handlers
                 InternalAccessToken = internalTokenResult.Value,
                 RefreshToken = refreshToken.Value
             });
+        }
+
+        public async Task Handle(LogoutCommand request, CancellationToken cancellationToken)
+        {
+            if(request.RefreshToken == null)
+            {
+                return;
+            }
+
+            await _tokenService.ExpireRefreshTokenAsync(request.RefreshToken);
         }
     }
 }

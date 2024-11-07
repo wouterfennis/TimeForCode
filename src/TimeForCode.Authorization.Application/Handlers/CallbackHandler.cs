@@ -23,7 +23,7 @@ namespace TimeForCode.Authorization.Application.Handlers
 
         public async Task<Result<TokenResult>> Handle(CallbackCommand request, CancellationToken cancellationToken)
         {
-            var accessTokenResult = await _tokenService.GetAccessTokenFromExternalProvider(request.State, request.Code);
+            var accessTokenResult = await _tokenService.GetAccessTokenFromExternalProviderAsync(request.State, request.Code);
             if (accessTokenResult.IsFailure)
             {
                 return Result<TokenResult>.Failure(accessTokenResult.ErrorMessage);
@@ -38,7 +38,7 @@ namespace TimeForCode.Authorization.Application.Handlers
 
             var userId = saveResult.Value.Id.ToString();
             var internalToken = _tokenService.GenerateInternalToken(userId);
-            var refreshToken = await _tokenService.CreateRefreshToken(userId);
+            var refreshToken = await _tokenService.CreateRefreshTokenAsync(userId);
 
             return Result<TokenResult>.Success(new TokenResult
             {

@@ -30,5 +30,19 @@
 
             return TryResponse<CallbackResponseModel?, ApiException<ProblemDetails>?>.Create(response, default);
         }
+
+        public static async Task<TryVoid<ApiException<ProblemDetails>?>> TryRefreshAsync(this IAuthClient client)
+        {
+            try
+            {
+                await client.RefreshAsync();
+            }
+            catch (ApiException<ProblemDetails>? exception)
+            {
+                return TryVoid<ApiException<ProblemDetails>?>.Create(exception);
+            }
+
+            return TryVoid<ApiException<ProblemDetails>?>.Create(default);
+        }
     }
 }

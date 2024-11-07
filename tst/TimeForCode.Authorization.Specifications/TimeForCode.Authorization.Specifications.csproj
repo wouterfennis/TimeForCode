@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <ReqnrollObsoleteCodeBehindFiles Remove="Features\Login\Login - Copy.feature.cs" />
+    <ReqnrollObsoleteCodeBehindFiles Remove="Features\Refresh\Logout.feature.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -41,12 +42,29 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="Features\Refresh\Refresh.feature.cs">
+      <DependentUpon>Refresh.feature</DependentUpon>
+    </Compile>
+    <Compile Update="Features\Logout\Logout.feature.cs">
+      <Visible>true</Visible>
+      <DependentUpon>Logout.feature</DependentUpon>
+      <DesignTime>true</DesignTime>
+      <AutoGen>true</AutoGen>
+    </Compile>
     <Compile Update="Features\Login\Callback.feature.cs">
       <DependentUpon>Callback.feature</DependentUpon>
     </Compile>
   </ItemGroup>
 
   <ItemGroup>
+    <ReqnrollFeatureFiles Update="Features\Refresh\Refresh.feature">
+      <Visible>$(UsingMicrosoftNETSdk)</Visible>
+      <CodeBehindFile>%(RelativeDir)%(Filename).feature$(DefaultLanguageSourceExtension)</CodeBehindFile>
+    </ReqnrollFeatureFiles>
+    <ReqnrollFeatureFiles Update="Features\Logout\Logout.feature">
+      <Visible>$(UsingMicrosoftNETSdk)</Visible>
+      <CodeBehindFile>%(RelativeDir)%(Filename).feature$(DefaultLanguageSourceExtension)</CodeBehindFile>
+    </ReqnrollFeatureFiles>
     <ReqnrollFeatureFiles Update="Features\Login\Callback.feature">
       <Visible>$(UsingMicrosoftNETSdk)</Visible>
       <CodeBehindFile>%(RelativeDir)%(Filename).feature$(DefaultLanguageSourceExtension)</CodeBehindFile>

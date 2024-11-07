@@ -101,8 +101,8 @@ namespace TimeForCode.Authorization.Api.Controllers
                 Expires = result.RefreshToken.ExpiresAfter
             };
 
-            HttpContext.Response.Cookies.Append(Constants.CookieTokenKey, JsonSerializer.Serialize(result.InternalAccessToken), accessTokenCookieOptions);
-            HttpContext.Response.Cookies.Append(Constants.CookieRefreshTokenKey, JsonSerializer.Serialize(result.RefreshToken), refreshTokenCookieOptions);
+            HttpContext.Response.Cookies.Append(CookieConstants.TokenKey, JsonSerializer.Serialize(result.InternalAccessToken), accessTokenCookieOptions);
+            HttpContext.Response.Cookies.Append(CookieConstants.RefreshTokenKey, JsonSerializer.Serialize(result.RefreshToken), refreshTokenCookieOptions);
         }
 
         /// <summary>
@@ -115,12 +115,10 @@ namespace TimeForCode.Authorization.Api.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> LogoutAsync()
         {
-            var accessToken = GetAccessToken();
             var refreshToken = GetRefreshToken();
 
             var command = new LogoutCommand { 
                 RefreshToken = refreshToken,
-                AccessToken = accessToken 
             };
 
             await _sender.Send(command);
@@ -130,39 +128,13 @@ namespace TimeForCode.Authorization.Api.Controllers
             return Ok();
         }
 
-        private AccessToken? GetAccessToken()
-        {
-            if (HttpContext.Request.Cookies.TryGetValue(Constants.CookieTokenKey, out var accessToken))
-            {
-                return JsonSerializer.Deserialize<AccessToken>(accessToken);
-            }
-
-            return null;
-        }
-
-        private RefreshToken? GetRefreshToken()
-        {
-            if (HttpContext.Request.Cookies.TryGetValue(Constants.CookieRefreshTokenKey, out var refreshToken))
-            {
-                return JsonSerializer.Deserialize<RefreshToken>(refreshToken);
-            }
-
-            return null;
-        }
-
-        private void DeleteTokenResponseCookies()
-        {
-            HttpContext.Response.Cookies.Delete(Constants.CookieTokenKey);
-            HttpContext.Response.Cookies.Delete(Constants.CookieRefreshTokenKey);
-        }
-
         /// <summary>
         /// Refresh endpoint.
         /// </summary>
         /// <returns>New access token and refresh token</returns>
         [HttpPost]
         [Route("refresh")]
-        [ProducesResponseType(typeof(CallbackResponseModel), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> RefreshAsync()
@@ -183,7 +155,21 @@ namespace TimeForCode.Authorization.Api.Controllers
 
             return ProcessTokenResult(tokenResult);
         }
+
+        private RefreshToken? GetRefreshToken()
+        {
+            if (HttpContext.Request.Cookies.TryGetValue(CookieConstants.RefreshTokenKey, out var refreshToken))
+            {
+                return JsonSerializer.Deserialize<RefreshToken>(refreshToken);
+            }
+
+            return null;
+        }
+
+        private void DeleteTokenResponseCookies()
+        {
+            HttpContext.Response.Cookies.Delete(CookieConstants.TokenKey);
+            HttpContext.Response.Cookies.Delete(CookieConstants.RefreshTokenKey);
+        }
     }
-
-
 }

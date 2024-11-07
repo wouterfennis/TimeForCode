@@ -110,14 +110,7 @@
         "summary": "Refresh endpoint.",
         "responses": {
           "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CallbackResponseModel"
-                }
-              }
-            }
+            "description": "OK"
           },
           "400": {
             "description": "Bad Request",

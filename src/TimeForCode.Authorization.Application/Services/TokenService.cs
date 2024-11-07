@@ -35,7 +35,7 @@ namespace TimeForCode.Authorization.Application.Services
             _refreshTokenRepository = refreshTokenRepository;
         }
 
-        public async Task<Result<ExternalAccessToken>> GetAccessTokenFromExternalProvider(string state, string code)
+        public async Task<Result<ExternalAccessToken>> GetAccessTokenFromExternalProviderAsync(string state, string code)
         {
             var result = _identityProviderServiceFactory.GetIdentityProviderServiceFromState(state);
             if (result.IsFailure)
@@ -86,7 +86,7 @@ namespace TimeForCode.Authorization.Application.Services
             };
         }
 
-        public async Task<RefreshToken> CreateRefreshToken(string userId)
+        public async Task<RefreshToken> CreateRefreshTokenAsync(string userId)
         {
             var token = _randomGenerator.GenerateRandomString();
             var refreshToken = new Domain.Entities.RefreshToken
@@ -115,10 +115,15 @@ namespace TimeForCode.Authorization.Application.Services
                 return Result<AccessToken>.Failure("Refresh token not found");
             }
 
+            if (existingToken.IsExpired(_timeProvider.GetUtcNow()))
+            {
+                return Result<AccessToken>.Failure("Refresh token expired");
+            }
+
             return Result<AccessToken>.Success(GenerateInternalToken(existingToken.UserId));
         }
 
-        public async Task<Result<RefreshToken>> ReplaceRefreshToken(RefreshToken oldRefreshToken)
+        public async Task<Result<RefreshToken>> ReplaceRefreshTokenAsync(RefreshToken oldRefreshToken)
         {
             Domain.Entities.RefreshToken? existingToken = await _refreshTokenRepository.GetByTokenAsync(oldRefreshToken.Token);
 
@@ -127,11 +132,28 @@ namespace TimeForCode.Authorization.Application.Services
                 return Result<RefreshToken>.Failure("Refresh token not found");
             }
 
-            existingToken.SetExpiresAfter(_timeProvider.GetUtcNow());
-            await _refreshTokenRepository.UpdateAsync(existingToken);
+            await ExpireRefreshTokenAsync(existingToken);
 
-            var newRefreshToken = await CreateRefreshToken(existingToken.UserId);
+            var newRefreshToken = await CreateRefreshTokenAsync(existingToken.UserId);
             return Result<RefreshToken>.Success(newRefreshToken);
+        }
+
+        public async Task ExpireRefreshTokenAsync(RefreshToken refreshToken)
+        {
+            Domain.Entities.RefreshToken? existingToken = await _refreshTokenRepository.GetByTokenAsync(refreshToken.Token);
+
+            if (existingToken == null)
+            {
+                return;
+            }
+
+            await ExpireRefreshTokenAsync(existingToken);
+        }
+
+        private async Task ExpireRefreshTokenAsync(Domain.Entities.RefreshToken refreshToken)
+        {
+            refreshToken.SetExpiresAfter(_timeProvider.GetUtcNow());
+            await _refreshTokenRepository.UpdateAsync(refreshToken);
         }
     }
 }

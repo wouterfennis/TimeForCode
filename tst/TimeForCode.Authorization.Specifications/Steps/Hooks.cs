@@ -1,5 +1,7 @@
-﻿using Reqnroll;
+﻿using Microsoft.AspNetCore.Mvc.Testing.Handlers;
+using Reqnroll;
 using Reqnroll.BoDi;
+using System.Net;
 using TimeForCode.Authorization.Api.Client;
 using TimeForCode.Authorization.Specifications.Mocking;
 
@@ -18,8 +20,13 @@ namespace TimeForCode.Authorization.Specifications.Steps
         [BeforeScenario]
         public void BeforeScenario()
         {
+            var cookieContainer = new CookieContainer();
+            var cookieHandler = new CookieContainerHandler(cookieContainer);
+
             var httpClient = _objectContainer.Resolve<TimeForCodeWebApplicationFactory>()
-                .CreateClient(new Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
+                .CreateDefaultClient(cookieHandler);
+
+            _objectContainer.RegisterInstanceAs(cookieContainer);
 
             var authClient = new AuthClient(httpClient);
             _objectContainer.RegisterInstanceAs<IAuthClient>(authClient);

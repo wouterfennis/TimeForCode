@@ -41,6 +41,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
                 .Respond(HttpStatusCode.NotFound, "application/json", JsonSerializer.Serialize(problemDetails));
         }
 
+        [Given("The external platform calls the time for code platform to complete the authorization")]
         [When("The external platform calls the time for code platform to complete the authorization")]
         public async Task WhenTheExternalPlatformCallsTheTimeForCodePlatformToCompleteTheAuthorizationAsync()
         {
@@ -72,8 +73,8 @@ namespace TimeForCode.Authorization.Specifications.Steps
             _result.Should().NotBeNull();
         }
 
-        [Then("The following error message is returned: {string}")]
-        public void ThenTheFollowingErrorMessageIsReturned(string errorMessage)
+        [Then("The following callback error message is returned: {string}")]
+        public void ThenTheFollowingCallbackErrorMessageIsReturned(string errorMessage)
         {
             _result!.Exception.Should().NotBeNull();
 

@@ -5,10 +5,11 @@ namespace TimeForCode.Authorization.Application.Services
 {
     public interface ITokenService
     {
-        Task<Result<ExternalAccessToken>> GetAccessTokenFromExternalProvider(string state, string code);
+        Task<Result<ExternalAccessToken>> GetAccessTokenFromExternalProviderAsync(string state, string code);
         AccessToken GenerateInternalToken(string userId);
-        Task<RefreshToken> CreateRefreshToken(string userId);
+        Task<RefreshToken> CreateRefreshTokenAsync(string userId);
         Task<Result<AccessToken>> RefreshInternalTokenAsync(RefreshToken refreshToken);
-        Task<Result<RefreshToken>> ReplaceRefreshToken(RefreshToken oldRefreshToken);
+        Task<Result<RefreshToken>> ReplaceRefreshTokenAsync(RefreshToken oldRefreshToken);
+        Task ExpireRefreshTokenAsync(RefreshToken refreshToken);
     }
 }
