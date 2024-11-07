@@ -1,5 +1,5 @@
-using TimeForCode.Authorization.Infrastructure.Services;
 using FluentAssertions;
+using TimeForCode.Authorization.Infrastructure.Services;
 
 namespace TimeForCode.Authorization.Infrastructure.Tests.Services
 {

@@ -43,7 +43,7 @@ namespace TimeForCode.Authorization.Application.Handlers
 
         public async Task Handle(LogoutCommand request, CancellationToken cancellationToken)
         {
-            if(request.RefreshToken == null)
+            if (request.RefreshToken == null)
             {
                 return;
             }

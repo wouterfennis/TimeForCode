@@ -117,7 +117,8 @@ namespace TimeForCode.Authorization.Api.Controllers
         {
             var refreshToken = GetRefreshToken();
 
-            var command = new LogoutCommand { 
+            var command = new LogoutCommand
+            {
                 RefreshToken = refreshToken,
             };
 
@@ -168,8 +169,8 @@ namespace TimeForCode.Authorization.Api.Controllers
 
         private void DeleteTokenResponseCookies()
         {
-           HttpContext.Response.Cookies.Delete(CookieConstants.TokenKey);
-           HttpContext.Response.Cookies.Delete(CookieConstants.RefreshTokenKey);
+            HttpContext.Response.Cookies.Delete(CookieConstants.TokenKey);
+            HttpContext.Response.Cookies.Delete(CookieConstants.RefreshTokenKey);
         }
     }
 }

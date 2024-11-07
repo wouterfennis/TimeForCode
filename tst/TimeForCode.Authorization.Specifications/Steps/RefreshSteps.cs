@@ -49,7 +49,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
         {
             var refreshToken = new Values.RefreshToken
             {
-                 Token = "token",
+                Token = "token",
                 ExpiresAfter = DateTime.UtcNow.AddHours(-1),
             };
 
@@ -101,7 +101,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
         {
             var uri = new Uri("http://localhost");
             var refreshTokenCookie = _cookieContainer.GetCookies(uri)[CookieConstants.RefreshTokenKey];
-                refreshTokenCookie.Should().BeNull();
+            refreshTokenCookie.Should().BeNull();
         }
 
         [Then("The access token is revoked")]
