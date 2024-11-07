@@ -1,5 +1,10 @@
-﻿using Reqnroll;
+﻿using MongoDB.Bson;
+using Reqnroll;
+using System.Net;
+using System.Text.Json;
+using System.Web;
 using TimeForCode.Authorization.Api.Client;
+using TimeForCode.Authorization.Values;
 
 namespace TimeForCode.Authorization.Specifications.Steps
 {
@@ -7,10 +12,12 @@ namespace TimeForCode.Authorization.Specifications.Steps
     internal class LogoutSteps
     {
         private readonly IAuthClient _authClient;
+        private readonly CookieContainer _cookieContainer;
 
-        public LogoutSteps(IAuthClient authClient)
+        public LogoutSteps(IAuthClient authClient, CookieContainer cookieContainer)
         {
             _authClient = authClient;
+            _cookieContainer = cookieContainer;
         }
 
         [Given("The user has not logged in at the time for code platform")]
@@ -19,10 +26,18 @@ namespace TimeForCode.Authorization.Specifications.Steps
             // do nothing
         }
 
-        [Given("The user has logged in at the time for code platform")]
-        public void GivenTheUserHasLoggedInAtTheTimeForCodePlatform()
+        [Given("The user has an access token")]
+        public void GivenTheUserHasAnAccessToken()
         {
-            throw new PendingStepException();
+            var accessToken = new Values.AccessToken
+            {
+                Token = "token",
+                ExpiresAfter = DateTime.UtcNow.AddHours(1),
+            };
+
+            var uri = new Uri("http://localhost");
+            var cookieValue = HttpUtility.UrlEncode(JsonSerializer.Serialize(accessToken));
+            _cookieContainer.Add(uri, new Cookie(CookieConstants.TokenKey, cookieValue));
         }
 
         [When("The user logs out from the external platform")]
@@ -36,6 +51,5 @@ namespace TimeForCode.Authorization.Specifications.Steps
         {
             // do nothing, no exceptions should have been thrown
         }
-
     }
 }

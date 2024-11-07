@@ -168,8 +168,8 @@ namespace TimeForCode.Authorization.Api.Controllers
 
         private void DeleteTokenResponseCookies()
         {
-            HttpContext.Response.Cookies.Delete(CookieConstants.TokenKey);
-            HttpContext.Response.Cookies.Delete(CookieConstants.RefreshTokenKey);
+           HttpContext.Response.Cookies.Delete(CookieConstants.TokenKey);
+           HttpContext.Response.Cookies.Delete(CookieConstants.RefreshTokenKey);
         }
     }
 }

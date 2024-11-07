@@ -69,5 +69,48 @@ namespace TimeForCode.Authorization.Specifications.Steps
             repository.Setup(x => x.GetByTokenAsync(It.IsAny<string>()))
                 .ReturnsAsync(expiredRefreshToken);
         }
+
+        [Given("The user has a refresh token")]
+        public void GivenTheUserHasARefreshToken()
+        {
+            var refreshToken = new Values.RefreshToken
+            {
+                Token = "token",
+                ExpiresAfter = DateTime.UtcNow.AddHours(1),
+            };
+
+            var uri = new Uri("http://localhost");
+            var cookieValue = HttpUtility.UrlEncode(JsonSerializer.Serialize(refreshToken));
+            _cookieContainer.Add(uri, new Cookie(CookieConstants.RefreshTokenKey, cookieValue));
+
+            var expiredRefreshToken = new Domain.Entities.RefreshToken
+            {
+                ExpiresAfter = DateTime.UtcNow.AddHours(1),
+                Id = new ObjectId(),
+                Token = refreshToken.Token,
+                UserId = "id"
+            };
+
+            var repository = _provider.GetService<Mock<IRefreshTokenRepository>>()!;
+            repository.Setup(x => x.GetByTokenAsync(It.IsAny<string>()))
+                .ReturnsAsync(expiredRefreshToken);
+        }
+
+        [Then("The refresh token is revoked")]
+        public void ThenTheRefreshTokenIsRevoked()
+        {
+            var uri = new Uri("http://localhost");
+            var refreshTokenCookie = _cookieContainer.GetCookies(uri)[CookieConstants.RefreshTokenKey];
+                refreshTokenCookie.Should().BeNull();
+        }
+
+        [Then("The access token is revoked")]
+        public void ThenTheAccessTokenIsRevoked()
+        {
+            var uri = new Uri("http://localhost");
+            var accessTokenCookie = _cookieContainer.GetCookies(uri)[CookieConstants.TokenKey];
+            accessTokenCookie.Should().BeNull();
+        }
+
     }
 }

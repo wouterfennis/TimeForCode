@@ -143,23 +143,19 @@ this.ScenarioInitialize(scenarioInfo);
             {
                 await this.ScenarioStartAsync();
 #line 12
- await testRunner.GivenAsync("The user has an account at the external platform", ((string)(null)), ((global::Reqnroll.Table)(null)), "Given ");
+ await testRunner.GivenAsync("The user has an access token", ((string)(null)), ((global::Reqnroll.Table)(null)), "Given ");
 #line hidden
 #line 13
- await testRunner.AndAsync("The user logs in at the time for code platform", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
+ await testRunner.AndAsync("The user has a refresh token", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
 #line hidden
 #line 14
- await testRunner.AndAsync("The user logs in at the external platform", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
-#line hidden
-#line 15
- await testRunner.AndAsync("The external platform calls the time for code platform to complete the authorizat" +
-                        "ion", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
-#line hidden
-#line 16
  await testRunner.WhenAsync("The user logs out from the external platform", ((string)(null)), ((global::Reqnroll.Table)(null)), "When ");
 #line hidden
-#line 17
- await testRunner.ThenAsync("The logout is confirmed", ((string)(null)), ((global::Reqnroll.Table)(null)), "Then ");
+#line 15
+ await testRunner.ThenAsync("The refresh token is revoked", ((string)(null)), ((global::Reqnroll.Table)(null)), "Then ");
+#line hidden
+#line 16
+ await testRunner.ThenAsync("The access token is revoked", ((string)(null)), ((global::Reqnroll.Table)(null)), "Then ");
 #line hidden
             }
             await this.ScenarioCleanupAsync();
