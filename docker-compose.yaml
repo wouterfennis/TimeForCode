@@ -4,7 +4,7 @@ services:
   authorization-api:
     build:
       context: .
-      dockerfile: Dockerfile.api
+      dockerfile: Dockerfile.authorization-api
     image: timeforcode-authorization-api:latest
     container_name: timeforcode-authorization-api
     ports:
@@ -39,9 +39,9 @@ services:
   identity-provider-mock:
     build:
       context: .
-      dockerfile: Dockerfile.idenity-provider-mock
-    image: idenity-provider-mock:latest
-    container_name: idenity-provider-mock
+      dockerfile: Dockerfile.identity-provider-mock
+    image: identity-provider-mock:latest
+    container_name: identity-provider-mock
     ports:
       - "8081:80"
     environment:
