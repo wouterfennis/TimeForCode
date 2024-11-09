@@ -99,18 +99,22 @@ namespace TimeForCode.Authorization.Specifications.Steps
         [Then("The refresh token is revoked")]
         public void ThenTheRefreshTokenIsRevoked()
         {
-            var uri = new Uri("http://localhost");
-            var refreshTokenCookie = _cookieContainer.GetCookies(uri)[CookieConstants.RefreshTokenKey];
+            var refreshTokenCookie = _cookieContainer.GetAllCookies()[CookieConstants.RefreshTokenKey];
             refreshTokenCookie.Should().BeNull();
         }
 
         [Then("The access token is revoked")]
         public void ThenTheAccessTokenIsRevoked()
         {
-            var uri = new Uri("http://localhost");
-            var accessTokenCookie = _cookieContainer.GetCookies(uri)[CookieConstants.TokenKey];
+            var accessTokenCookie = _cookieContainer.GetAllCookies()[CookieConstants.TokenKey];
             accessTokenCookie.Should().BeNull();
         }
 
+        [Then("A refresh token is returned")]
+        public void ThenARefreshTokenIsReturned()
+        {
+            var refreshTokenCookie = _cookieContainer.GetAllCookies()[CookieConstants.RefreshTokenKey];
+            refreshTokenCookie.Should().NotBeNull();
+        }
     }
 }

@@ -6,7 +6,6 @@ using RichardSzalay.MockHttp;
 using System.Net;
 using System.Text.Json;
 using TimeForCode.Authorization.Application.Interfaces;
-using TimeForCode.Authorization.Domain;
 using TimeForCode.Authorization.Infrastructure.Services.Github;
 
 namespace TimeForCode.Authorization.Specifications.Steps

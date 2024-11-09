@@ -12,3 +12,10 @@ Scenario: User has expired refresh token
 	Given The user has an expired refresh token
 	When The user calls the refresh token endpoint
 	Then The following refresh error message is returned: "Refresh token expired"
+
+Scenario: User has valid refresh token
+	Given The user has a refresh token
+	When The user calls the refresh token endpoint
+	Then An access token is returned
+	And A refresh token is returned
+

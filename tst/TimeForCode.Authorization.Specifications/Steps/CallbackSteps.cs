@@ -9,6 +9,7 @@ using TimeForCode.Authorization.Api.Client;
 using TimeForCode.Authorization.Api.Client.Extensions;
 using TimeForCode.Authorization.Application.Interfaces;
 using TimeForCode.Authorization.Domain.Entities;
+using TimeForCode.Authorization.Values;
 
 namespace TimeForCode.Authorization.Specifications.Steps
 {
@@ -17,12 +18,14 @@ namespace TimeForCode.Authorization.Specifications.Steps
     {
         private readonly IAuthClient _authClient;
         private readonly IServiceProvider _provider;
-        private TryResponse<Api.Client.CallbackResponseModel?, ApiException<ProblemDetails>?>? _result = null;
+        private readonly CookieContainer _cookieContainer;
+        private TryResponse<CallbackResponseModel?, ApiException<ProblemDetails>?>? _result = null;
 
-        public CallbackSteps(IAuthClient authClient, IServiceProvider provider)
+        public CallbackSteps(IAuthClient authClient, IServiceProvider provider, CookieContainer cookieContainer)
         {
             _authClient = authClient;
             _provider = provider;
+            _cookieContainer = cookieContainer;
         }
 
         [Given("The external platform does not return the access token")]
@@ -53,10 +56,8 @@ namespace TimeForCode.Authorization.Specifications.Steps
         [Then("An access token is returned")]
         public void ThenAAccessTokenIsReturned()
         {
-            _result.Should().NotBeNull();
-            _result!.Response.Should().NotBeNull();
-            _result!.Response!.AccessToken.Should().NotBeNull();
-            _result!.Response!.AccessToken.Token.Should().NotBeNullOrEmpty();
+            var accessTokenCookie = _cookieContainer.GetAllCookies()[CookieConstants.TokenKey];
+            accessTokenCookie.Should().NotBeNull();
         }
 
         [Then("The user information is saved in the time for code platform")]
