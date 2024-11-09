@@ -94,7 +94,7 @@ namespace IdentityProviderMockService.Controllers
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity([new Claim("sub", authorizeDetails!.ClientId)]),
-                Expires = DateTime.UtcNow.AddMinutes(_authenticationOptions.ExpiresInMinutes),
+                Expires = DateTime.UtcNow.AddMinutes(_authenticationOptions.TokenExpiresInMinutes),
                 Issuer = _authenticationOptions.Issuer,
                 Audience = _authenticationOptions.Audience,
                 Claims = claims,

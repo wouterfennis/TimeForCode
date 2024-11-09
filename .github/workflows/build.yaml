@@ -1,4 +1,4 @@
-name: .NET
+name: Continuous Integration
 
 on:
   push:
@@ -23,16 +23,16 @@ jobs:
         dotnet-version: '8.0.x' # Adjust the .NET version as needed
 
     - name: Restore dependencies
-      run: dotnet restore ./src/TimeForCode.sln
+      run: dotnet restore ./TimeForCode.sln
 
     - name: Build
-      run: dotnet build ./src/TimeForCode.sln --no-restore --configuration Release
+      run: dotnet build ./TimeForCode.sln --no-restore --configuration Release
 
     - name: Run tests
-      run: dotnet test ./src/TimeForCode.sln --no-build --verbosity normal --configuration Release --collect:"XPlat Code Coverage"
+      run: dotnet test ./TimeForCode.sln --no-build --verbosity normal --configuration Release --collect:"XPlat Code Coverage"
 
     - name: Publish
-      run: dotnet publish ./src/TimeForCode.Authorization.Api/*.csproj --no-build --configuration Release --output ./publish
+      run: dotnet publish ./src/Authorization/TimeForCode.Authorization.Api/*.csproj --no-build --configuration Release --output ./publish
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
@@ -64,7 +64,7 @@ jobs:
       run: markdownlint "**/*.md"
 
     - name: Run dotnet-format
-      run: dotnet format ./src/TimeForCode.sln --no-restore --verify-no-changes
+      run: dotnet format ./TimeForCode.sln --no-restore --verify-no-changes
 
     - name: Run NuGet security scan
-      run: dotnet list ./src/TimeForCode.sln package --vulnerable --include-transitive
+      run: dotnet list ./TimeForCode.sln package --vulnerable --include-transitive

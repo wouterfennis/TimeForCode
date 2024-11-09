@@ -6,13 +6,13 @@ WORKDIR /app
 
 # Copy the entire solution and restore dependencies
 COPY . ./
-RUN dotnet restore ./tst/IdentityProviderMockService/IdentityProviderMockService.csproj
+RUN dotnet restore ./tst/Authorization/IdentityProviderMockService/IdentityProviderMockService.csproj
 
 # Build the entire solution
-RUN dotnet build ./tst/IdentityProviderMockService/IdentityProviderMockService.csproj --no-restore --configuration Debug
+RUN dotnet build ./tst/Authorization/IdentityProviderMockService/IdentityProviderMockService.csproj --no-restore --configuration Debug
 
 # Publish the application
-RUN dotnet publish ./tst/IdentityProviderMockService/IdentityProviderMockService.csproj --no-build --configuration Debug --output /app/publish
+RUN dotnet publish ./tst/Authorization/IdentityProviderMockService/IdentityProviderMockService.csproj --no-build --configuration Debug --output /app/publish
 
 # Use the official .NET runtime image to run the application
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime

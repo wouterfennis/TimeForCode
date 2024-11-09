@@ -32,9 +32,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\TimeForCode.Authorization.Api.Client\TimeForCode.Authorization.Api.Client.csproj" />
-    <ProjectReference Include="..\..\src\TimeForCode.Authorization.Api\TimeForCode.Authorization.Api.csproj" />
-    <ProjectReference Include="..\..\src\TimeForCode.Authorization.Infrastructure\TimeForCode.Authorization.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\src\Authorization\TimeForCode.Authorization.Api.Client\TimeForCode.Authorization.Api.Client.csproj" />
+    <ProjectReference Include="..\..\..\src\Authorization\TimeForCode.Authorization.Api\TimeForCode.Authorization.Api.csproj" />
+    <ProjectReference Include="..\..\..\src\Authorization\TimeForCode.Authorization.Infrastructure\TimeForCode.Authorization.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -6,13 +6,13 @@ WORKDIR /app
 
 # Copy the entire solution and restore dependencies
 COPY . ./
-RUN dotnet restore ./src/TimeForCode.sln
+RUN dotnet restore ./TimeForCode.sln
 
 # Build the entire solution
-RUN dotnet build ./src/TimeForCode.sln --no-restore --configuration Debug
+RUN dotnet build ./TimeForCode.sln --no-restore --configuration Debug
 
 # Publish the application
-RUN dotnet publish ./src/TimeForCode.Authorization.Api/*.csproj --no-build --configuration Debug --output /app/publish
+RUN dotnet publish ./src/Authorization/TimeForCode.Authorization.Api/*.csproj --no-build --configuration Debug --output /app/publish
 
 # Use the official .NET runtime image to run the application
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime

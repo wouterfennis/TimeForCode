@@ -25,7 +25,7 @@ namespace IdentityProviderMockService.Options
         /// Token expiration time in minutes
         /// </summary>
         [Required]
-        public required int ExpiresInMinutes { get; init; }
+        public required int TokenExpiresInMinutes { get; init; }
 
         /// <summary>
         /// Expected client id for returning a token
@@ -47,7 +47,7 @@ namespace IdentityProviderMockService.Options
                 Issuer = configuration.GetSection(SectionName).GetValue<string>(nameof(Issuer))!,
                 ExpectedClientId = configuration.GetSection(SectionName).GetValue<string>(nameof(ExpectedClientId))!,
                 ExpectedClientSecret = configuration.GetSection(SectionName).GetValue<string>(nameof(ExpectedClientSecret))!,
-                ExpiresInMinutes = configuration.GetSection(SectionName).GetValue<int>(nameof(ExpiresInMinutes)),
+                TokenExpiresInMinutes = configuration.GetSection(SectionName).GetValue<int>(nameof(TokenExpiresInMinutes)),
             };
             return authenticationOptions;
         }
