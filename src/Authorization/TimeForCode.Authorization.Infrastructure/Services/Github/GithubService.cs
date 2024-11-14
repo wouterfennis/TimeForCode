@@ -7,6 +7,7 @@ using System.Text.Json;
 using TimeForCode.Authorization.Application.Interfaces;
 using TimeForCode.Authorization.Application.Options;
 using TimeForCode.Authorization.Commands;
+using TimeForCode.Authorization.Domain;
 using TimeForCode.Authorization.Domain.Entities;
 using TimeForCode.Authorization.Values;
 
@@ -14,6 +15,7 @@ namespace TimeForCode.Authorization.Infrastructure.Services.Github
 {
     internal class GithubService : IIdentityProviderService
     {
+        private const string UserEndpoint = "/user";
         private readonly ExternalIdentityProvider _identityProviderOptions;
         private readonly RestClient _restClient;
 
@@ -28,7 +30,7 @@ namespace TimeForCode.Authorization.Infrastructure.Services.Github
             var uriBuilder = new UriBuilder
             {
                 Host = _identityProviderOptions.Host,
-                Path = "/login/oauth/access_token"
+                Path = OAuthConstants.AccessTokenEndpoint
             };
 
             uriBuilder.Port = _identityProviderOptions.HostPort ?? uriBuilder.Port;
@@ -60,15 +62,14 @@ namespace TimeForCode.Authorization.Infrastructure.Services.Github
             var uriBuilder = new UriBuilder
             {
                 Host = _identityProviderOptions.RestApiHost,
-                Path = "/user"
+                Path = UserEndpoint,
+                Port = _identityProviderOptions.RestApiPort ?? -1
             };
-
-            uriBuilder.Port = _identityProviderOptions.RestApiPort ?? uriBuilder.Port;
 
             _restClient.AcceptedContentTypes = [MediaTypeNames.Application.Json];
 
             var request = new RestRequest(uriBuilder.ToString(), Method.Get);
-            request.AddHeader("Authorization", $"Bearer {accessToken.Token}");
+            request.AddHeader(OAuthConstants.AuthorizationHeader, $"{OAuthConstants.BearerPrefix}{accessToken.Token}");
 
             var response = await _restClient.ExecuteAsync<GithubUser>(request);
 

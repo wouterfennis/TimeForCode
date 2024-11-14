@@ -9,13 +9,6 @@ namespace TimeForCode.Authorization.Api.Client.Extensions
             services.AddHttpClient<IAuthClient, AuthClient>((client) =>
             {
                 client.BaseAddress = baseAddress;
-            })
-            .ConfigurePrimaryHttpMessageHandler(() =>
-            {
-                return new HttpClientHandler
-                {
-                    AllowAutoRedirect = false
-                };
             });
 
             return services;

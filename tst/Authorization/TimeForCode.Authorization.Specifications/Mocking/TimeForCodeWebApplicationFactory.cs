@@ -7,14 +7,9 @@ using MongoDB.Driver;
 using Moq;
 using RestSharp;
 using RichardSzalay.MockHttp;
-using System.Runtime.CompilerServices;
 using TimeForCode.Authorization.Api;
 using TimeForCode.Authorization.Application.Interfaces;
-using TimeForCode.Authorization.Commands;
-using TimeForCode.Authorization.Domain.Entities;
 using TimeForCode.Authorization.Infrastructure.Persistence.Database;
-using TimeForCode.Authorization.Infrastructure.Services;
-using TimeForCode.Authorization.Values;
 
 namespace TimeForCode.Authorization.Specifications.Mocking
 {

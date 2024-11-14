@@ -5,6 +5,7 @@ using System.Web;
 using TimeForCode.Authorization.Application.Interfaces;
 using TimeForCode.Authorization.Application.Options;
 using TimeForCode.Authorization.Commands;
+using TimeForCode.Authorization.Domain;
 using TimeForCode.Authorization.Values;
 
 namespace TimeForCode.Authorization.Application.Handlers
@@ -26,23 +27,16 @@ namespace TimeForCode.Authorization.Application.Handlers
 
         public Task<Uri> Handle(LoginCommand request, CancellationToken cancellationToken)
         {
+            var identityProvider = _options.GetExternalIdentityProvider(request.IdentityProvider);
+            string state = CreateState(request.IdentityProvider);
+
             var uriBuilder = new UriBuilder
             {
-                Path = "/login/oauth/authorize"
+                Host = identityProvider.Host,
+                Port = identityProvider.HostPort ?? -1,
+                Path = OAuthConstants.AuthorizationEndpoint,
+                Query = BuildQuery(state, identityProvider.ClientId)
             };
-
-            string state = CreateState(request.IdentityProvider);
-            var identityProvider = _options.GetExternalIdentityProvider(request.IdentityProvider);
-
-            var query = HttpUtility.ParseQueryString(string.Empty);
-            query["state"] = state;
-            query["redirect_uri"] = _options.CallbackUri;
-            query["scope"] = "user";
-            query["client_id"] = identityProvider.ClientId;
-
-            uriBuilder.Host = identityProvider.Host;
-            uriBuilder.Port = identityProvider.HostPort.HasValue ? identityProvider.HostPort.Value : uriBuilder.Port;
-            uriBuilder.Query = query.ToString();
 
             return Task.FromResult(uriBuilder.Uri);
         }
@@ -51,8 +45,17 @@ namespace TimeForCode.Authorization.Application.Handlers
         {
             string state = _randomGenerator.GenerateRandomString();
             _memoryCache.Set(state, identityProvider, TimeSpan.FromMinutes(10));
-
             return state;
+        }
+
+        private string BuildQuery(string state, string clientId)
+        {
+            var query = HttpUtility.ParseQueryString(string.Empty);
+            query[OAuthConstants.State] = state;
+            query[OAuthConstants.RedirectUri] = _options.CallbackUri;
+            query[OAuthConstants.Scope] = OAuthConstants.UserScope;
+            query[OAuthConstants.ClientId] = clientId;
+            return query.ToString()!;
         }
     }
 }

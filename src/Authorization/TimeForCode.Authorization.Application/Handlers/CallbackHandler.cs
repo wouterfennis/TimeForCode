@@ -10,7 +10,6 @@ namespace TimeForCode.Authorization.Application.Handlers
     {
         private readonly IAccountService _accountService;
         private readonly ITokenService _tokenService;
-        private readonly ILogger<CallbackHandler> _logger;
 
         public CallbackHandler(IAccountService accountService,
             ITokenService tokenService,
@@ -18,7 +17,6 @@ namespace TimeForCode.Authorization.Application.Handlers
         {
             _accountService = accountService;
             _tokenService = tokenService;
-            _logger = logger;
         }
 
         public async Task<Result<TokenResult>> Handle(CallbackCommand request, CancellationToken cancellationToken)

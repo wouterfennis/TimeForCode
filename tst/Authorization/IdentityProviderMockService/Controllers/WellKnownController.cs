@@ -1,7 +1,6 @@
 using IdentityProviderMockService.Models;
 using IdentityProviderMockService.Options;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.Net.Mime;

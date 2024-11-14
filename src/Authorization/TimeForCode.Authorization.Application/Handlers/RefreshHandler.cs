@@ -8,14 +8,12 @@ namespace TimeForCode.Authorization.Application.Handlers
     public class RefreshHandler : IRequestHandler<RefreshCommand, Result<TokenResult>>
     {
         private readonly ITokenService _tokenService;
-        private readonly ILogger<RefreshHandler> _logger;
 
         public RefreshHandler(IAccountService accountService,
             ITokenService tokenService,
             ILogger<RefreshHandler> logger)
         {
             _tokenService = tokenService;
-            _logger = logger;
         }
 
         public async Task<Result<TokenResult>> Handle(RefreshCommand request, CancellationToken cancellationToken)

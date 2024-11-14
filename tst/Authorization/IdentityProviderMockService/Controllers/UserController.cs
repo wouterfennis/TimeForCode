@@ -1,15 +1,8 @@
 using IdentityProviderMockService.Models;
-using IdentityProviderMockService.Options;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
 using System.Net.Mime;
 using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Web;
 
 namespace IdentityProviderMockService.Controllers
 {

@@ -1,5 +1,4 @@
-﻿using MongoDB.Bson;
-using TimeForCode.Authorization.Domain.Entities;
+﻿using TimeForCode.Authorization.Domain.Entities;
 
 namespace TimeForCode.Authorization.Application.Interfaces
 {

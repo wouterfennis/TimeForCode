@@ -4,7 +4,6 @@ using System.Net.Mime;
 using System.Text.Json;
 using TimeForCode.Authorization.Api.Mappers;
 using TimeForCode.Authorization.Api.Models;
-using TimeForCode.Authorization.Application.Interfaces;
 using TimeForCode.Authorization.Commands;
 using TimeForCode.Authorization.Values;
 

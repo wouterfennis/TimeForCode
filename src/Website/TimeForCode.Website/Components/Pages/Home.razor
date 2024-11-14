@@ -10,9 +10,9 @@ Welcome to your new app.
 @authenticatedMessage
 
 @code {
-    private string authenticatedMessage;
+    private string? authenticatedMessage;
 
-    protected override async Task OnInitializedAsync()
+    protected override Task OnInitializedAsync()
     {
         var cookieValue = HttpContextAccessor.HttpContext?.Request.Cookies["AccessToken"];
         if (string.IsNullOrEmpty(cookieValue))
@@ -23,5 +23,7 @@ Welcome to your new app.
         {
             authenticatedMessage = "You are logged in.";
         }
+
+        return Task.CompletedTask;
     }
 }
