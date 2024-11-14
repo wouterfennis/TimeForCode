@@ -1,7 +1,27 @@
-﻿@page "/"
+﻿@inject IHttpContextAccessor HttpContextAccessor
+@page "/"
 
 <PageTitle>Home</PageTitle>
 
 <h1>Hello, world!</h1>
 
 Welcome to your new app.
+
+@authenticatedMessage
+
+@code {
+    private string authenticatedMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var cookieValue = HttpContextAccessor.HttpContext?.Request.Cookies["AccessToken"];
+        if (string.IsNullOrEmpty(cookieValue))
+        {
+            authenticatedMessage = $"You are not logged in";
+        }
+        else
+        {
+            authenticatedMessage = "You are logged in.";
+        }
+    }
+}
