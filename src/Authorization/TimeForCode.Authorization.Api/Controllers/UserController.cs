@@ -39,7 +39,7 @@ namespace TimeForCode.Authorization.Api.Controllers
             var userId = User.Claims.Single(x => x.Type == ClaimTypes.NameIdentifier)?.Value!;
             var userEntity = await _accountInformationRepository.GetByInternalIdAsync(userId);
 
-            if(userEntity == null)
+            if (userEntity == null)
             {
                 var problemDetails = new ProblemDetails
                 {
