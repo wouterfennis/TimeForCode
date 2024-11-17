@@ -1,7 +1,11 @@
-﻿using Microsoft.OpenApi.Models;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using System.Reflection;
 using System.Text.Json.Serialization;
+using TimeForCode.Authorization.Api.Filters;
 using TimeForCode.Authorization.Application.Extensions;
+using TimeForCode.Authorization.Application.Options;
 using TimeForCode.Authorization.Infrastructure.Extensions;
 
 namespace TimeForCode.Authorization.Api
@@ -32,16 +36,47 @@ namespace TimeForCode.Authorization.Api
                 var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
                 c.IncludeXmlComments(xmlPath);
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
+                    Name = "Authorization",
+                    In = ParameterLocation.Header,
+                    Type = SecuritySchemeType.ApiKey,
+                    Scheme = "Bearer"
+                });
+
+                c.OperationFilter<AuthorizeFilter>();
             });
 
             services.AddControllers()
-                .AddJsonOptions(x =>
-                {
-                    x.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-                });
+            .AddJsonOptions(x =>
+            {
+                x.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+            });
 
             services.AddApplicationLayer(_configuration);
             services.AddInfrastructureLayer(_configuration);
+
+            var authenticationOptions = AuthenticationOptions.Bind(_configuration);
+            var rsa = Application.Extensions.ServiceCollectionExtensions.LoadCertificate(_configuration);
+
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidIssuer = authenticationOptions.Issuer,
+                        ValidAudience = authenticationOptions.Audience,
+                        IssuerSigningKey = new RsaSecurityKey(rsa)
+                    };
+                });
+
+            services.AddAuthorizationBuilder()
+                    .AddPolicy("ApiUser", policy => policy.RequireClaim("scope", "user"));
         }
 
         /// <summary>
@@ -60,6 +95,9 @@ namespace TimeForCode.Authorization.Api
             });
 
             app.UseRouting();
+
+            app.UseAuthentication();
+            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {

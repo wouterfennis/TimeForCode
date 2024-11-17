@@ -4,7 +4,8 @@ namespace TimeForCode.Authorization.Application.Interfaces
 {
     public interface IAccountInformationRepository
     {
-        Task<AccountInformation> GetByIdAsync(string id);
-        Task CreateOrUpdateAsync(AccountInformation entity);
+        Task<AccountInformation> GetByIdentityProviderIdAsync(string identityProviderId);
+        Task<AccountInformation> GetByInternalIdAsync(string internalId);
+        Task<AccountInformation> CreateOrUpdateAsync(AccountInformation entity);
     }
 }

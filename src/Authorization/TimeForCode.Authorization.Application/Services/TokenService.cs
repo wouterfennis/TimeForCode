@@ -63,13 +63,14 @@ namespace TimeForCode.Authorization.Application.Services
             {
                 { "scope", "user" }
             };
-            var expiresAfter = _timeProvider.GetUtcNow().AddMinutes(_authenticationOptions.TokenExpiresInMinutes);
+            var expiresAfter = _timeProvider.GetUtcNow()
+                .AddMinutes(_authenticationOptions.TokenExpiresInMinutes);
 
             var tokenHandler = new JwtSecurityTokenHandler();
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity([new Claim("sub", userId)]),
-                Expires = _timeProvider.GetUtcNow().AddMinutes(_authenticationOptions.TokenExpiresInMinutes).UtcDateTime,
+                Expires = expiresAfter.UtcDateTime,
                 NotBefore = _timeProvider.GetUtcNow().UtcDateTime,
                 Issuer = _authenticationOptions.Issuer,
                 Audience = _authenticationOptions.Audience,

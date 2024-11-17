@@ -27,7 +27,6 @@ namespace IdentityProviderMockService.Controllers
         {
             _logger.LogDebug("user is returned");
 
-
             var user = new UserResponse
             {
                 Id = 1,

@@ -127,6 +127,44 @@
           }
         }
       }
+    },
+    "/api/User": {
+      "get": {
+        "tags": [
+          "User"
+        ],
+        "summary": "Get user information.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
     }
   },
   "components": {
@@ -217,6 +255,65 @@
           }
         },
         "additionalProperties": false
+      },
+      "UserResponse": {
+        "required": [
+          "avatarUrl",
+          "company",
+          "email",
+          "id",
+          "login",
+          "name",
+          "nodeId"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "User id",
+            "nullable": true
+          },
+          "login": {
+            "type": "string",
+            "description": "User login",
+            "nullable": true
+          },
+          "nodeId": {
+            "type": "string",
+            "description": "User node id",
+            "nullable": true
+          },
+          "avatarUrl": {
+            "type": "string",
+            "description": "User avatar url",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "description": "User name",
+            "nullable": true
+          },
+          "company": {
+            "type": "string",
+            "description": "User company",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "description": "User email",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "User response model"
+      }
+    },
+    "securitySchemes": {
+      "Bearer": {
+        "type": "apiKey",
+        "description": "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
+        "name": "Authorization",
+        "in": "header"
       }
     }
   }

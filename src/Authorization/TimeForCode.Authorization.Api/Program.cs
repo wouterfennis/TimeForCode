@@ -1,50 +1,51 @@
-using TimeForCode.Authorization.Api;
-
-internal class Program
+namespace TimeForCode.Authorization.Api
 {
-    /// <summary>
-    /// Starting point of the Api.
-    /// </summary>
-    /// <returns>0 if application terminates gracefully, 1 if an unexpected exception occured.</returns>
-    public static int Main(string[] args)
+    internal class Program
     {
-        var loggerFactory = LoggerFactory.Create(builder =>
+        /// <summary>
+        /// Starting point of the Api.
+        /// </summary>
+        /// <returns>0 if application terminates gracefully, 1 if an unexpected exception occured.</returns>
+        public static int Main(string[] args)
         {
-            builder.AddConsole();
-            builder.AddDebug();
-        });
-
-        var logger = loggerFactory.CreateLogger<Program>();
-
-        try
-        {
-            CreateHostBuilder(args).Build().Run();
-            return 0;
-        }
-        catch (Exception exception)
-        {
-            logger.LogError(exception, "An unexpected exception occurred.");
-            return 1;
-        }
-        finally
-        {
-            if (loggerFactory is IDisposable disposable)
+            var loggerFactory = LoggerFactory.Create(builder =>
             {
-                disposable.Dispose();
+                builder.AddConsole();
+                builder.AddDebug();
+            });
+
+            var logger = loggerFactory.CreateLogger<Program>();
+
+            try
+            {
+                CreateHostBuilder(args).Build().Run();
+                return 0;
+            }
+            catch (Exception exception)
+            {
+                logger.LogError(exception, "An unexpected exception occurred.");
+                return 1;
+            }
+            finally
+            {
+                if (loggerFactory is IDisposable disposable)
+                {
+                    disposable.Dispose();
+                }
             }
         }
+
+        private static IHostBuilder CreateHostBuilder(string[] args) =>
+        Host.CreateDefaultBuilder(args)
+            .ConfigureLogging((c, b) =>
+            {
+                b.AddConsole();
+                b.AddDebug();
+            })
+            .ConfigureWebHostDefaults(webBuilder =>
+            {
+                webBuilder.UseStartup<Startup>();
+            });
+
     }
-
-    private static IHostBuilder CreateHostBuilder(string[] args) =>
-    Host.CreateDefaultBuilder(args)
-        .ConfigureLogging((c, b) =>
-        {
-            b.AddConsole();
-            b.AddDebug();
-        })
-        .ConfigureWebHostDefaults(webBuilder =>
-        {
-            webBuilder.UseStartup<Startup>();
-        });
-
 }

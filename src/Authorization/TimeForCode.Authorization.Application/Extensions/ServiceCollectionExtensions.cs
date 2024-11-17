@@ -43,7 +43,7 @@ namespace TimeForCode.Authorization.Application.Extensions
             services.AddSingleton(rsa);
         }
 
-        private static RSA LoadCertificate(IConfiguration configuration)
+        public static RSA LoadCertificate(IConfiguration configuration)
         {
             var rsaOptions = RsaOptions.Bind(configuration);
 

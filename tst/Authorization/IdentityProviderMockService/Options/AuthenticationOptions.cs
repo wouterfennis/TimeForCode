@@ -49,6 +49,7 @@ namespace IdentityProviderMockService.Options
                 ExpectedClientSecret = configuration.GetSection(SectionName).GetValue<string>(nameof(ExpectedClientSecret))!,
                 TokenExpiresInMinutes = configuration.GetSection(SectionName).GetValue<int>(nameof(TokenExpiresInMinutes)),
             };
+
             return authenticationOptions;
         }
     }

@@ -38,10 +38,10 @@ namespace TimeForCode.Authorization.Application.Services
                 return Result<AccountInformation>.Failure(accountInformationResult.ErrorMessage);
             }
 
-            await _accountRepository.CreateOrUpdateAsync(accountInformationResult.Value);
+            var accountInformation = await _accountRepository.CreateOrUpdateAsync(accountInformationResult.Value);
 
-            _logger.LogDebug(accountInformationResult.Value.ToString());
-            return Result<AccountInformation>.Success(accountInformationResult.Value);
+            _logger.LogDebug("Account information: {AccountInformation}", accountInformation);
+            return Result<AccountInformation>.Success(accountInformation);
         }
     }
 }

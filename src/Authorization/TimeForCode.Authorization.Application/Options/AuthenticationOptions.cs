@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.Extensions.Configuration;
+using System.ComponentModel.DataAnnotations;
 
 namespace TimeForCode.Authorization.Application.Options
 {
@@ -32,5 +33,18 @@ namespace TimeForCode.Authorization.Application.Options
         /// </summary>
         [Required]
         public required int DefaultRefreshTokenExpirationAfterInDays { get; init; }
+
+        public static AuthenticationOptions Bind(IConfiguration configuration)
+        {
+            var authenticationOptions = new AuthenticationOptions
+            {
+                Audience = configuration.GetSection(SectionName).GetValue<string>(nameof(Audience))!,
+                Issuer = configuration.GetSection(SectionName).GetValue<string>(nameof(Issuer))!,
+                TokenExpiresInMinutes = configuration.GetSection(SectionName).GetValue<int>(nameof(TokenExpiresInMinutes)),
+                DefaultRefreshTokenExpirationAfterInDays = configuration.GetSection(SectionName).GetValue<int>(nameof(DefaultRefreshTokenExpirationAfterInDays)),
+            };
+
+            return authenticationOptions;
+        }
     }
 }

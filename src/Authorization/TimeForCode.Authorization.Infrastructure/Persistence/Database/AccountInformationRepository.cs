@@ -1,4 +1,5 @@
-﻿using MongoDB.Driver;
+﻿using MongoDB.Bson;
+using MongoDB.Driver;
 using TimeForCode.Authorization.Application.Interfaces;
 using TimeForCode.Authorization.Domain.Entities;
 
@@ -13,21 +14,28 @@ namespace TimeForCode.Authorization.Infrastructure.Persistence.Database
             _collection = context.GetCollection<AccountInformation>();
         }
 
-        public async Task<AccountInformation> GetByIdAsync(string id)
+        public async Task<AccountInformation> GetByIdentityProviderIdAsync(string identityProviderId)
         {
-            return await _collection.Find(Builders<AccountInformation>.Filter.Eq("IdentityProviderId", id)).FirstOrDefaultAsync();
+            return await _collection.Find(Builders<AccountInformation>.Filter.Eq("IdentityProviderId", identityProviderId)).FirstOrDefaultAsync();
         }
 
-        public async Task CreateOrUpdateAsync(AccountInformation entity)
+        public async Task<AccountInformation> GetByInternalIdAsync(string internalId)
         {
-            var existingEntity = await GetByIdAsync(entity.IdentityProviderId);
+            return await _collection.Find(Builders<AccountInformation>.Filter.Eq("_id", new ObjectId(internalId))).FirstOrDefaultAsync();
+        }
+
+        public async Task<AccountInformation> CreateOrUpdateAsync(AccountInformation entity)
+        {
+            var existingEntity = await GetByIdentityProviderIdAsync(entity.IdentityProviderId);
             if (existingEntity == null)
             {
                 await CreateAsync(entity);
+                return entity;
             }
             else
             {
                 await UpdateAsync(entity);
+                return existingEntity;
             }
         }
 
