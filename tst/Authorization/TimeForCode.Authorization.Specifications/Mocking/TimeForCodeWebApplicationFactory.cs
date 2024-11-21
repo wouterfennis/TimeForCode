@@ -9,7 +9,9 @@ using RestSharp;
 using RichardSzalay.MockHttp;
 using TimeForCode.Authorization.Api;
 using TimeForCode.Authorization.Application.Interfaces;
+using TimeForCode.Authorization.Domain.Entities;
 using TimeForCode.Authorization.Infrastructure.Persistence.Database;
+using TimeForCode.Authorization.Specifications.TestBuilder;
 
 namespace TimeForCode.Authorization.Specifications.Mocking
 {
@@ -56,6 +58,9 @@ namespace TimeForCode.Authorization.Specifications.Mocking
         private static void MockDataAccess(IServiceCollection services)
         {
             var mockAccountInformationRepository = new Mock<IAccountInformationRepository>();
+            mockAccountInformationRepository.Setup(x => x.CreateOrUpdateAsync(It.IsAny<AccountInformation>()))
+                .ReturnsAsync(AccountInformationBuilder.Build());
+
             var mockRefreshTokenRepository = new Mock<IRefreshTokenRepository>();
 
             services.TryAddSingleton(mockAccountInformationRepository);
