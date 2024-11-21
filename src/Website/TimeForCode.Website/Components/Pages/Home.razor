@@ -1,9 +1,11 @@
 ﻿@inject IHttpContextAccessor HttpContextAccessor
+@inject IAuthClient AuthClient
 @page "/"
+@using TimeForCode.Authorization.Api.Client
 
 <PageTitle>Home</PageTitle>
 
-<h1>Hello, world!</h1>
+<h1>Hello, @userName</h1>
 
 Welcome to your new app.
 
@@ -11,8 +13,9 @@ Welcome to your new app.
 
 @code {
     private string? authenticatedMessage;
+    private string? userName;
 
-    protected override Task OnInitializedAsync()
+    protected async override Task OnInitializedAsync()
     {
         var cookieValue = HttpContextAccessor.HttpContext?.Request.Cookies["AccessToken"];
         if (string.IsNullOrEmpty(cookieValue))
@@ -22,8 +25,14 @@ Welcome to your new app.
         else
         {
             authenticatedMessage = "You are logged in.";
+            await AuthClient.UserAsync().ContinueWith(task =>
+            {
+                if (task.IsCompletedSuccessfully)
+                {
+                    userName = task.Result.Name;
+                    InvokeAsync(StateHasChanged);
+                }
+            });
         }
-
-        return Task.CompletedTask;
     }
 }

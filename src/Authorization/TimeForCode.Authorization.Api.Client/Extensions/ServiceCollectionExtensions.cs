@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using TimeForCode.Authorization.Api.Client.Handlers;
 
 namespace TimeForCode.Authorization.Api.Client.Extensions
 {
@@ -6,10 +7,14 @@ namespace TimeForCode.Authorization.Api.Client.Extensions
     {
         public static IServiceCollection AddAuthClient(this IServiceCollection services, Uri baseAddress)
         {
+            services.AddHttpContextAccessor();
+            services.AddSingleton<CookieAuthorizationHandler>();
             services.AddHttpClient<IAuthClient, AuthClient>((client) =>
             {
                 client.BaseAddress = baseAddress;
-            });
+
+            })
+            .AddHttpMessageHandler<CookieAuthorizationHandler>();
 
             return services;
         }

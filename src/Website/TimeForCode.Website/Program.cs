@@ -1,4 +1,6 @@
+using TimeForCode.Authorization.Api.Client.Extensions;
 using TimeForCode.Website.Components;
+using TimeForCode.Website.Options;
 
 namespace TimeForCode.Website
 {
@@ -13,6 +15,9 @@ namespace TimeForCode.Website
                 .AddInteractiveServerComponents();
 
             builder.Services.AddHttpContextAccessor();
+
+            var authorizationServiceOptions = AuthorizationServiceOptions.Bind(builder.Configuration);
+            builder.Services.AddAuthClient(new Uri(authorizationServiceOptions.BaseUri));
 
             var app = builder.Build();
 
