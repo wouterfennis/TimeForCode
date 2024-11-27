@@ -11,6 +11,11 @@ Welcome to your new app.
 
 @authenticatedMessage
 
+@{ 
+    var loginUrl = "http://localhost:8080/api/Authentication/login?IdentityProvider=Github";
+}
+<a href="@loginUrl">Login</a>
+
 @code {
     private string? authenticatedMessage;
     private string? userName;
