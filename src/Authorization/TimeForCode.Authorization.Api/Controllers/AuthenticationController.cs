@@ -55,64 +55,37 @@ namespace TimeForCode.Authorization.Api.Controllers
         [HttpGet]
         [Route("callback")]
         [ProducesResponseType(typeof(CallbackResponseModel), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status302Found)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> CallbackAsync([FromQuery] CallbackRequestModel callbackModel)
         {
             var tokenResult = await _sender.Send(callbackModel.MapToCommand());
 
-            return ProcessTokenResult(tokenResult);
-        }
-
-        private IActionResult ProcessTokenResult(Result<TokenResult> tokenResult)
-        {
             if (tokenResult.IsFailure)
             {
                 return BadRequest(ProblemDetailsMapper.BadRequest(tokenResult.ErrorMessage));
             }
 
-            var result = tokenResult.Value!;
+            var response = ProcessTokenResult(tokenResult);
 
-            SetTokenResponseCookies(result);
-
-            // This is for the time being for debugging purposes.
-            var response = new CallbackResponseModel
+            if(tokenResult.Value.RedirectUri != null)
             {
-                AccessToken = tokenResult.Value!.InternalAccessToken,
-                RefreshToken = tokenResult.Value!.RefreshToken
-            };
+                return Redirect(tokenResult.Value.RedirectUri.ToString());
+            }
 
             return Ok(response);
-        }
-
-        private void SetTokenResponseCookies(TokenResult result)
-        {
-            var accessTokenCookieOptions = new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.Strict,
-                Expires = result.InternalAccessToken.ExpiresAfter
-            };
-
-            var refreshTokenCookieOptions = new CookieOptions(accessTokenCookieOptions)
-            {
-                Expires = result.RefreshToken.ExpiresAfter
-            };
-
-            HttpContext.Response.Cookies.Append(CookieConstants.TokenKey, JsonSerializer.Serialize(result.InternalAccessToken), accessTokenCookieOptions);
-            HttpContext.Response.Cookies.Append(CookieConstants.RefreshTokenKey, JsonSerializer.Serialize(result.RefreshToken), refreshTokenCookieOptions);
         }
 
         /// <summary>
         /// Logout endpoint.
         /// </summary>
         /// <returns></returns>
-        [HttpPost]
+        [HttpGet]
         [Route("logout")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> LogoutAsync()
+        public async Task<IActionResult> LogoutAsync(string redirectUri)
         {
             var refreshToken = GetRefreshToken();
 
@@ -125,14 +98,14 @@ namespace TimeForCode.Authorization.Api.Controllers
 
             DeleteTokenResponseCookies();
 
-            return Ok();
+            return Redirect(redirectUri);
         }
 
         /// <summary>
         /// Refresh endpoint.
         /// </summary>
         /// <returns>New access token and refresh token</returns>
-        [HttpPost]
+        [HttpGet]
         [Route("refresh")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
@@ -153,7 +126,48 @@ namespace TimeForCode.Authorization.Api.Controllers
 
             var tokenResult = await _sender.Send(refreshCommand);
 
-            return ProcessTokenResult(tokenResult);
+            if (tokenResult.IsFailure)
+            {
+                return BadRequest(ProblemDetailsMapper.BadRequest(tokenResult.ErrorMessage));
+            }
+            
+            var response = ProcessTokenResult(tokenResult);
+
+            return Ok(response);
+        }
+
+        private CallbackResponseModel ProcessTokenResult(Result<TokenResult> tokenResult)
+        {
+            var result = tokenResult.Value!;
+
+            SetTokenResponseCookies(result);
+
+            var response = new CallbackResponseModel
+            {
+                AccessToken = tokenResult.Value!.InternalAccessToken,
+                RefreshToken = tokenResult.Value!.RefreshToken
+            };
+
+            return response;
+        }
+
+        private void SetTokenResponseCookies(TokenResult result)
+        {
+            var accessTokenCookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                Expires = result.InternalAccessToken.ExpiresAfter
+            };
+
+            var refreshTokenCookieOptions = new CookieOptions(accessTokenCookieOptions)
+            {
+                Expires = result.RefreshToken.ExpiresAfter
+            };
+
+            HttpContext.Response.Cookies.Append(CookieConstants.TokenKey, JsonSerializer.Serialize(result.InternalAccessToken), accessTokenCookieOptions);
+            HttpContext.Response.Cookies.Append(CookieConstants.RefreshTokenKey, JsonSerializer.Serialize(result.RefreshToken), refreshTokenCookieOptions);
         }
 
         private RefreshToken? GetRefreshToken()

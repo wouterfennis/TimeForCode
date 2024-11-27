@@ -1,6 +1,6 @@
-﻿using Microsoft.Extensions.Caching.Memory;
-using TimeForCode.Authorization.Application.Interfaces;
+﻿using TimeForCode.Authorization.Application.Interfaces;
 using TimeForCode.Authorization.Commands;
+using TimeForCode.Authorization.Domain.Entities;
 using TimeForCode.Authorization.Infrastructure.Services.Github;
 using TimeForCode.Authorization.Values;
 
@@ -9,12 +9,12 @@ namespace TimeForCode.Authorization.Infrastructure.Services
     internal class IdentityProviderServiceFactory : IIdentityProviderServiceFactory
     {
         private readonly IEnumerable<IIdentityProviderService> _services;
-        private readonly IMemoryCache _memoryCache;
+        private readonly IStateRepository _stateRepository;
 
-        public IdentityProviderServiceFactory(IEnumerable<IIdentityProviderService> services, IMemoryCache memoryCache)
+        public IdentityProviderServiceFactory(IEnumerable<IIdentityProviderService> services, IStateRepository stateRepository)
         {
             _services = services;
-            _memoryCache = memoryCache;
+            _stateRepository = stateRepository;
         }
 
         public Result<IIdentityProviderService> GetIdentityProviderServiceFromState(string state)
@@ -38,12 +38,13 @@ namespace TimeForCode.Authorization.Infrastructure.Services
 
         private Result<IdentityProvider> GetIdentityProvider(string state)
         {
-            if (!_memoryCache.TryGetValue(state, out IdentityProvider identityProvider))
+            StateEntry? stateEntry = _stateRepository.GetState(state);
+            if (stateEntry == null)
             {
                 return Result<IdentityProvider>.Failure("State is not known");
             }
 
-            return Result<IdentityProvider>.Success(identityProvider);
+            return Result<IdentityProvider>.Success(stateEntry.IdentityProvider);
         }
     }
 }

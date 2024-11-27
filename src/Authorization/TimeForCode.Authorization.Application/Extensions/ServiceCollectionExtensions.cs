@@ -18,7 +18,6 @@ namespace TimeForCode.Authorization.Application.Extensions
         /// <returns>The <see cref="IServiceCollection"/> with the application layer services added.</returns>
         public static IServiceCollection AddApplicationLayer(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddMemoryCache();
             services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<LoginHandler>());
 
             services

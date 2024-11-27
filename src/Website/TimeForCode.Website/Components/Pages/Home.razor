@@ -1,5 +1,6 @@
 ﻿@inject IHttpContextAccessor HttpContextAccessor
 @inject IAuthClient AuthClient
+@inject NavigationManager NavigationManager
 @page "/"
 @using TimeForCode.Authorization.Api.Client
 
@@ -10,6 +11,13 @@
 Welcome to your new app.
 
 @authenticatedMessage
+
+<a href="http://localhost:8080/api/Authentication/login?IdentityProvider=Github">Log in with Github</a>
+
+@{
+    string logoutUri = $"http://localhost:8080/api/Authentication/logout?RedirectUri={NavigationManager.Uri}";
+}
+<a href="@logoutUri">Log out</a>
 
 @code {
     private string? authenticatedMessage;
@@ -34,5 +42,13 @@ Welcome to your new app.
                 }
             });
         }
+    }
+
+    private async Task Logout()
+    {
+        // get current url
+        await AuthClient.LogoutAsync(NavigationManager.Uri);
+        authenticatedMessage = "You are not logged in";
+        StateHasChanged();
     }
 }

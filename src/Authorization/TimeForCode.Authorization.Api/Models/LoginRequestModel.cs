@@ -14,5 +14,12 @@ namespace TimeForCode.Authorization.Api.Models
         [Required]
         [FromQuery]
         public required IdentityProvider IdentityProvider { get; init; }
+
+        /// <summary>
+        /// Gets or sets the redirect URI for the login request.
+        /// </summary>
+        [Required]
+        [FromQuery]
+        public required Uri RedirectUri { get; init; }
     }
 }

@@ -11,5 +11,6 @@ namespace TimeForCode.Authorization.Application.Services
         Task<Result<AccessToken>> RefreshInternalTokenAsync(RefreshToken refreshToken);
         Task<Result<RefreshToken>> ReplaceRefreshTokenAsync(RefreshToken oldRefreshToken);
         Task ExpireRefreshTokenAsync(RefreshToken refreshToken);
+        Uri GetRedirectUri(string state);
     }
 }

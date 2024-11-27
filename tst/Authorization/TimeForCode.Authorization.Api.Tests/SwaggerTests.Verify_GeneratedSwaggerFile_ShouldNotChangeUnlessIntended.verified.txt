@@ -21,6 +21,16 @@
             "schema": {
               "$ref": "#/components/schemas/IdentityProvider"
             }
+          },
+          {
+            "name": "RedirectUri",
+            "in": "query",
+            "description": "Gets or sets the redirect URI for the login request.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uri"
+            }
           }
         ],
         "responses": {
@@ -70,6 +80,9 @@
               }
             }
           },
+          "302": {
+            "description": "Found"
+          },
           "400": {
             "description": "Bad Request",
             "content": {
@@ -87,11 +100,20 @@
       }
     },
     "/api/Authentication/logout": {
-      "post": {
+      "get": {
         "tags": [
           "Authentication"
         ],
         "summary": "Logout endpoint.",
+        "parameters": [
+          {
+            "name": "redirectUri",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK"
@@ -103,7 +125,7 @@
       }
     },
     "/api/Authentication/refresh": {
-      "post": {
+      "get": {
         "tags": [
           "Authentication"
         ],

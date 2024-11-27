@@ -19,12 +19,14 @@ namespace TimeForCode.Authorization.Application.Services
         private readonly IRandomGenerator _randomGenerator;
         private readonly AuthenticationOptions _authenticationOptions;
         private readonly IRefreshTokenRepository _refreshTokenRepository;
+        private readonly IStateRepository _stateRepository;
 
         public TokenService(RSA rsa,
             IIdentityProviderServiceFactory identityProviderServiceFactory,
             TimeProvider timeProvider,
             IRandomGenerator randomGenerator,
             IRefreshTokenRepository refreshTokenRepository,
+            IStateRepository stateRepository,
             IOptions<AuthenticationOptions> authenticationOptions)
         {
             _rsaSecurityKey = new RsaSecurityKey(rsa);
@@ -33,6 +35,7 @@ namespace TimeForCode.Authorization.Application.Services
             _timeProvider = timeProvider;
             _randomGenerator = randomGenerator;
             _refreshTokenRepository = refreshTokenRepository;
+            _stateRepository = stateRepository;
         }
 
         public async Task<Result<ExternalAccessToken>> GetAccessTokenFromExternalProviderAsync(string state, string code)
@@ -155,6 +158,12 @@ namespace TimeForCode.Authorization.Application.Services
         {
             refreshToken.SetExpiresAfter(_timeProvider.GetUtcNow());
             await _refreshTokenRepository.UpdateAsync(refreshToken);
+        }
+
+        public Uri GetRedirectUri(string state)
+        {
+            var stateEntry = _stateRepository.GetState(state);
+            return stateEntry == null ? throw new InvalidOperationException("State not found") : stateEntry.RedirectUri;
         }
     }
 }
