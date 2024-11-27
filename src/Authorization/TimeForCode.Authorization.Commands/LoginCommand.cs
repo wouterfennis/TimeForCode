@@ -6,5 +6,6 @@ namespace TimeForCode.Authorization.Commands
     public class LoginCommand : IRequest<Uri>
     {
         public required IdentityProvider IdentityProvider { get; init; }
+        public required Uri RedirectUri { get; init; }
     }
 }

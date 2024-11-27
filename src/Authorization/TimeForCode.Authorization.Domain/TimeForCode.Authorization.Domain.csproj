@@ -10,4 +10,8 @@
     <PackageReference Include="MongoDB.Bson" Version="3.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\TimeForCode.Authorization.Values\TimeForCode.Authorization.Values.csproj" />
+  </ItemGroup>
+
 </Project>

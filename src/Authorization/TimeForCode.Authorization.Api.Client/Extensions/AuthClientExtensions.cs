@@ -2,11 +2,11 @@
 {
     public static class AuthClientExtensions
     {
-        public static async Task<TryVoid<ApiException?>> TryLoginAsync(this IAuthClient client, IdentityProvider idenityProvider)
+        public static async Task<TryVoid<ApiException?>> TryLoginAsync(this IAuthClient client, IdentityProvider idenityProvider, Uri redirectUri)
         {
             try
             {
-                await client.LoginAsync(idenityProvider);
+                await client.LoginAsync(idenityProvider, redirectUri);
             }
             catch (ApiException exception)
             {
@@ -16,7 +16,7 @@
             return TryVoid<ApiException?>.Create(default);
         }
 
-        public static async Task<TryResponse<CallbackResponseModel?, ApiException<ProblemDetails>?>> TryCallbackAsync(this IAuthClient client, string code, string state)
+        public static async Task<TryResponse<CallbackResponseModel?, Exception?>> TryCallbackAsync(this IAuthClient client, string code, string state)
         {
             CallbackResponseModel? response = default;
             try
@@ -25,10 +25,28 @@
             }
             catch (ApiException<ProblemDetails> exception)
             {
-                return TryResponse<CallbackResponseModel?, ApiException<ProblemDetails>?>.Create(response, exception);
+                return TryResponse<CallbackResponseModel?, Exception?>.Create(response, exception);
+            }
+            catch (ApiException exception)
+            {
+                return TryResponse<CallbackResponseModel?, Exception?>.Create(response, exception);
             }
 
-            return TryResponse<CallbackResponseModel?, ApiException<ProblemDetails>?>.Create(response, default);
+            return TryResponse<CallbackResponseModel?, Exception?>.Create(response, default);
+        }
+
+        public static async Task<TryVoid<ApiException?>> TryLogoutAsync(this IAuthClient client, string redirectUri)
+        {
+            try
+            {
+                await client.LogoutAsync(redirectUri);
+            }
+            catch (ApiException exception)
+            {
+                return TryVoid<ApiException?>.Create(exception);
+            }
+
+            return TryVoid<ApiException?>.Create(default);
         }
 
         public static async Task<TryVoid<ApiException<ProblemDetails>?>> TryRefreshAsync(this IAuthClient client)

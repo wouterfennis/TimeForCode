@@ -3,6 +3,7 @@ using System.Net;
 using System.Text.Json;
 using System.Web;
 using TimeForCode.Authorization.Api.Client;
+using TimeForCode.Authorization.Api.Client.Extensions;
 using TimeForCode.Authorization.Values;
 
 namespace TimeForCode.Authorization.Specifications.Steps
@@ -34,7 +35,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
                 ExpiresAfter = DateTime.UtcNow.AddHours(1),
             };
 
-            var uri = new Uri("http://localhost");
+            var uri = new Uri("http://localhost:8081");
             var cookieValue = HttpUtility.UrlEncode(JsonSerializer.Serialize(accessToken));
             _cookieContainer.Add(uri, new Cookie(CookieConstants.TokenKey, cookieValue));
         }
@@ -42,7 +43,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
         [When("The user logs out from the external platform")]
         public async Task WhenTheUserLogsOutFromTheExternalPlatformAsync()
         {
-            await _authClient.LogoutAsync();
+            await _authClient.TryLogoutAsync("http://localhost:8081");
         }
 
         [Then("The logout is confirmed")]

@@ -19,7 +19,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
         private readonly IAuthClient _authClient;
         private readonly IServiceProvider _provider;
         private readonly CookieContainer _cookieContainer;
-        private TryResponse<CallbackResponseModel?, ApiException<ProblemDetails>?>? _result = null;
+        private TryResponse<CallbackResponseModel?, Exception?>? _result = null;
 
         public CallbackSteps(IAuthClient authClient, IServiceProvider provider, CookieContainer cookieContainer)
         {
@@ -78,8 +78,11 @@ namespace TimeForCode.Authorization.Specifications.Steps
         public void ThenTheFollowingCallbackErrorMessageIsReturned(string errorMessage)
         {
             _result!.Exception.Should().NotBeNull();
+            _result!.Exception.Should().BeOfType<ApiException<ProblemDetails>>();
+            
+            var exception = _result!.Exception as ApiException<ProblemDetails>;
 
-            var problemDetails = _result!.Exception!.Result;
+            var problemDetails = exception!.Result;
             problemDetails!.Detail.Should().NotBeNull();
             problemDetails.Detail.Should().Be(errorMessage);
         }

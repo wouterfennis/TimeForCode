@@ -4,6 +4,7 @@ using RestSharp;
 using TimeForCode.Authorization.Application.Interfaces;
 using TimeForCode.Authorization.Infrastructure.Options;
 using TimeForCode.Authorization.Infrastructure.Persistence.Database;
+using TimeForCode.Authorization.Infrastructure.Persistence.Memory;
 using TimeForCode.Authorization.Infrastructure.Services;
 using TimeForCode.Authorization.Infrastructure.Services.Github;
 
@@ -32,6 +33,9 @@ namespace TimeForCode.Authorization.Infrastructure.Extensions
             services.AddSingleton<IMongoDbContext, MongoDbContext>();
             services.AddScoped<IAccountInformationRepository, AccountInformationRepository>();
             services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+
+            services.AddMemoryCache();
+            services.AddScoped<IStateRepository, StateRepository>();
 
             return services;
         }

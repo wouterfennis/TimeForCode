@@ -37,9 +37,11 @@ namespace TimeForCode.Authorization.Application.Handlers
             var userId = saveResult.Value.Id.ToString();
             var internalToken = _tokenService.GenerateInternalToken(userId);
             var refreshToken = await _tokenService.CreateRefreshTokenAsync(userId);
+            var redirectUri = _tokenService.GetRedirectUri(request.State);
 
             return Result<TokenResult>.Success(new TokenResult
             {
+                RedirectUri = redirectUri,
                 InternalAccessToken = new AccessToken
                 {
                     Token = internalToken.Token,
