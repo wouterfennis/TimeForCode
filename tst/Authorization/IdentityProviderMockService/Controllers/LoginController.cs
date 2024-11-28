@@ -35,7 +35,7 @@ namespace IdentityProviderMockService.Controllers
         }
 
         [HttpGet("oauth/authorize")]
-        [ProducesResponseType(StatusCodes.Status307TemporaryRedirect)]
+        [ProducesResponseType(StatusCodes.Status302Found)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         public IActionResult GetAuthorize(AuthorizeRequest request)
         {
@@ -87,8 +87,10 @@ namespace IdentityProviderMockService.Controllers
             }
 
             _logger.LogDebug("Token is returned");
-            var claims = new Dictionary<string, object>();
-            claims.Add("scope", authorizeDetails!.Scope);
+            var claims = new Dictionary<string, object>
+            {
+                { "scope", authorizeDetails!.Scope }
+            };
 
             var tokenHandler = new JwtSecurityTokenHandler();
             var tokenDescriptor = new SecurityTokenDescriptor

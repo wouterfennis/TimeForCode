@@ -8,11 +8,10 @@ namespace TimeForCode.Authorization.Api.Client.Extensions
         public static IServiceCollection AddAuthClient(this IServiceCollection services, Uri baseAddress)
         {
             services.AddHttpContextAccessor();
-            services.AddSingleton<CookieAuthorizationHandler>();
+            services.AddScoped<CookieAuthorizationHandler>();
             services.AddHttpClient<IAuthClient, AuthClient>((client) =>
             {
                 client.BaseAddress = baseAddress;
-
             })
             .AddHttpMessageHandler<CookieAuthorizationHandler>();
 

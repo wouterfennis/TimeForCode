@@ -65,15 +65,16 @@ This repository houses:
 
 ### Prerequisites
 
-TODO
+- Running Docker
 
 ### Installation
 
-TODO
+```powershell
+docker compose up --build
+```
 
 ## Usage
-
-TODO
+1. Navigate to http://localhost:8082 to visit the website
 
 ## Contributing
 
