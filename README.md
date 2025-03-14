@@ -1,6 +1,9 @@
 # TimeForCode
 
-Welcome to **TimeForCode**, an initiative aimed at connecting companies and individuals willing to donate their time and skills to open-source projects. This repository contains the software that powers the **TimeForCode** platform, including the website, backend, and supporting documentation.
+Welcome to **TimeForCode**, an initiative aimed at connecting companies and
+ individuals willing to donate their time and skills to open-source projects.
+  This repository contains the software that powers the **TimeForCode**
+   platform, including the website, backend, and supporting documentation.
 
 ## Table of Contents
 
@@ -10,7 +13,6 @@ Welcome to **TimeForCode**, an initiative aimed at connecting companies and indi
 - [Getting Started](#getting-started)
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
-  - [Running the Application](#running-the-application)
 - [Usage](#usage)
 - [Contributing](#contributing)
   - [Code of Conduct](#code-of-conduct)
@@ -22,21 +24,29 @@ Welcome to **TimeForCode**, an initiative aimed at connecting companies and indi
 
 ## About the Project
 
-**TimeForCode** is a platform designed to foster collaboration between companies and the open-source community. Organizations can donate developer hours to open-source projects, empowering teams to work on impactful initiatives while gaining valuable experience.
+**TimeForCode** is a platform designed to foster collaboration between
+ companies and the open-source community. Organizations can donate developer
+  hours to open-source projects, empowering teams to work on impactful
+   initiatives while gaining valuable experience.
 
 This repository houses:
+
 - The **website** where companies can register and pledge hours.
-- The **backend** API that manages project listings, donations, and participant information.
+- The **backend** API that manages project listings, donations, and participant
+ information.
 - The **documentation** for contributors, API usage, and general guidelines.
 
 ---
 
 ## Features
 
-- **Company and Individual Accounts**: Register as a company or an individual donor.
+- **Company and Individual Accounts**: Register as a company or an individual
+ donor.
 - **Project Listings**: Browse open-source projects in need of contributions.
-- **Hour Donations**: Companies and individuals can pledge development hours to specific projects.
-- **Collaboration Tools**: Built-in tools for time tracking and reporting on contributions.
+- **Hour Donations**: Companies and individuals can pledge development hours
+ to specific projects.
+- **Collaboration Tools**: Built-in tools for time tracking and reporting
+ on contributions.
 
 ---
 
@@ -55,23 +65,30 @@ This repository houses:
 
 ### Prerequisites
 
-TODO
+- Running Docker
 
 ### Installation
 
-TODO
+```powershell
+docker compose up --build
+```
 
 ## Usage
 
-TODO
+1. Navigate to [http://localhost:8082] to visit the website
 
 ## Contributing
-We welcome contributions to TimeForCode! Please take a moment to review our guidelines to help us keep this project accessible and collaborative.
+
+We welcome contributions to TimeForCode! Please take a moment to review our
+ guidelines to help us keep this project accessible and collaborative.
 
 ## Code of Conduct
-By participating in this project, you agree to abide by the Code of Conduct. Please be respectful and constructive in your interactions with others.
+
+By participating in this project, you agree to abide by the Code of Conduct.
+ Please be respectful and constructive in your interactions with others.
 
 ### How to Contribute
+
 Fork the repository.
 Create a new feature branch (git checkout -b feature/AmazingFeature).
 Commit your changes (git commit -m 'Add some AmazingFeature').
@@ -84,10 +101,13 @@ Ensure your code adheres to the style guide.
 Document any new functionality or endpoints.
 
 ## License
+
 Distributed under the MIT License. See LICENSE for more information.
 
 ## Contact
-If you have any questions or suggestions, feel free to contact the project maintainers:
+
+If you have any questions or suggestions, feel free to contact the project
+ maintainers:
 
 Name: Wouter Fennis
 GitHub: @wouterfennis

@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.10" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.10" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="7.3.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TimeForCode.Authorization.Application\TimeForCode.Authorization.Application.csproj" />
+    <ProjectReference Include="..\TimeForCode.Authorization.Infrastructure\TimeForCode.Authorization.Infrastructure.csproj" />
+    <ProjectReference Include="..\TimeForCode.Authorization.Values\TimeForCode.Authorization.Values.csproj" />
+  </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="dotnet tool restore"></Exec>
+    <Exec Command="dotnet swagger tofile --output $(ProjectDir)swagger.json $(OutputPath)/$(AssemblyName).dll v1"></Exec>
+  </Target>
+
+</Project>

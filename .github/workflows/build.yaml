@@ -1,0 +1,70 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x' # Adjust the .NET version as needed
+
+    - name: Restore dependencies
+      run: dotnet restore ./TimeForCode.sln
+
+    - name: Build
+      run: dotnet build ./TimeForCode.sln --no-restore --configuration Release
+
+    - name: Run tests
+      run: dotnet test ./TimeForCode.sln --no-build --verbosity normal --configuration Release --collect:"XPlat Code Coverage"
+
+    - name: Publish
+      run: dotnet publish ./src/Authorization/TimeForCode.Authorization.Api/*.csproj --no-build --configuration Release --output ./publish
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: dotnet-app
+        path: ./publish
+
+    - name: Install dotnet tools
+      run: dotnet tool restore
+
+    - name: Generate coverage report
+      run: dotnet reportgenerator -reports:**/coverage.cobertura.xml -targetdir:coverage -reporttypes:Html
+
+    - name: Upload coverage report
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report
+        path: coverage
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Install markdownlint-cli
+      run: npm install -g markdownlint-cli
+
+    - name: Run markdownlint
+      run: markdownlint "**/*.md"
+
+    - name: Run dotnet-format
+      run: dotnet format ./TimeForCode.sln --no-restore --verify-no-changes
+
+    - name: Run NuGet security scan
+      run: dotnet list ./TimeForCode.sln package --vulnerable --include-transitive

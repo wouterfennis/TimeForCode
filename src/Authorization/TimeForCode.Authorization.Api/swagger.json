@@ -1,0 +1,342 @@
+{
+  "openapi": "3.0.4",
+  "info": {
+    "title": "Authorization API",
+    "description": "API to interact with the authorization backend",
+    "version": "v1"
+  },
+  "paths": {
+    "/api/Authentication/login": {
+      "get": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Login endpoint.",
+        "parameters": [
+          {
+            "name": "IdentityProvider",
+            "in": "query",
+            "description": "Gets or sets the identity provider for the login request.",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/IdentityProvider"
+            }
+          },
+          {
+            "name": "RedirectUri",
+            "in": "query",
+            "description": "Gets or sets the redirect URI for the login request.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uri"
+            }
+          }
+        ],
+        "responses": {
+          "302": {
+            "description": "Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/Authentication/callback": {
+      "get": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Callback endpoint that is being called by the external identity provider. After the redirect initiated by M:TimeForCode.Authorization.Api.Controllers.AuthenticationController.LoginAsync(TimeForCode.Authorization.Api.Models.LoginRequestModel).",
+        "parameters": [
+          {
+            "name": "Code",
+            "in": "query",
+            "description": "Gets or sets the authorization code.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "State",
+            "in": "query",
+            "description": "Gets or sets the state parameter.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CallbackResponseModel"
+                }
+              }
+            }
+          },
+          "302": {
+            "description": "Found"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/Authentication/logout": {
+      "get": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Logout endpoint.",
+        "parameters": [
+          {
+            "name": "redirectUri",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/Authentication/refresh": {
+      "get": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Refresh endpoint.",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/User": {
+      "get": {
+        "tags": [
+          "User"
+        ],
+        "summary": "Get user information.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AccessToken": {
+        "required": [
+          "expiresAfter",
+          "token"
+        ],
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "nullable": true
+          },
+          "expiresAfter": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CallbackResponseModel": {
+        "required": [
+          "accessToken",
+          "refreshToken"
+        ],
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "$ref": "#/components/schemas/AccessToken"
+          },
+          "refreshToken": {
+            "$ref": "#/components/schemas/RefreshToken"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Represents the model for a callback response."
+      },
+      "IdentityProvider": {
+        "enum": [
+          "Github"
+        ],
+        "type": "string",
+        "description": "Represents the identity providers supported by the application."
+      },
+      "ProblemDetails": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "detail": {
+            "type": "string",
+            "nullable": true
+          },
+          "instance": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": { }
+      },
+      "RefreshToken": {
+        "required": [
+          "expiresAfter",
+          "token"
+        ],
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "nullable": true
+          },
+          "expiresAfter": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "UserResponse": {
+        "required": [
+          "avatarUrl",
+          "company",
+          "email",
+          "id",
+          "login",
+          "name",
+          "nodeId"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "User id",
+            "nullable": true
+          },
+          "login": {
+            "type": "string",
+            "description": "User login",
+            "nullable": true
+          },
+          "nodeId": {
+            "type": "string",
+            "description": "User node id",
+            "nullable": true
+          },
+          "avatarUrl": {
+            "type": "string",
+            "description": "User avatar url",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "description": "User name",
+            "nullable": true
+          },
+          "company": {
+            "type": "string",
+            "description": "User company",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "description": "User email",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "User response model"
+      }
+    },
+    "securitySchemes": {
+      "Bearer": {
+        "type": "apiKey",
+        "description": "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
+        "name": "Authorization",
+        "in": "header"
+      }
+    }
+  }
+}

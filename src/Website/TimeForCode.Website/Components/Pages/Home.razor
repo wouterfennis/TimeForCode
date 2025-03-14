@@ -1,0 +1,63 @@
+﻿@inject IHttpContextAccessor HttpContextAccessor
+@inject IAuthClient AuthClient
+@inject NavigationManager NavigationManager
+@page "/"
+@using TimeForCode.Authorization.Api.Client
+
+<PageTitle>Home</PageTitle>
+
+<h1>Hello, @userName</h1>
+
+Welcome to your new app.
+
+@authenticatedMessage
+
+@{
+    string logoutUri = $"http://localhost:8080/api/Authentication/logout?RedirectUri={NavigationManager.Uri}";
+    string loginUri = $"http://localhost:8080/api/Authentication/login?IdentityProvider=Github&RedirectUri={NavigationManager.Uri}";
+}
+@if (authenticated.HasValue && authenticated.Value)
+{
+    <a href="@logoutUri">Log out</a>
+}
+else
+{
+    <a href="@loginUri">Log in with Github</a>
+}
+
+@code {
+    private bool? authenticated;
+    private string? authenticatedMessage;
+    private string? userName;
+
+    protected async override Task OnInitializedAsync()
+    {
+        var cookieValue = HttpContextAccessor.HttpContext?.Request.Cookies["AccessToken"];
+        if (string.IsNullOrEmpty(cookieValue))
+        {
+            authenticatedMessage = $"You are not logged in";
+            authenticated = false;
+        }
+        else
+        {
+            authenticatedMessage = "You are logged in.";
+            authenticated = true;
+
+            await AuthClient.UserAsync().ContinueWith(task =>
+            {
+                if (task.IsCompletedSuccessfully)
+                {
+                    userName = task.Result.Name;
+                    InvokeAsync(StateHasChanged);
+                }
+            });
+        }
+    }
+
+    private async Task Logout()
+    {
+        await AuthClient.LogoutAsync(NavigationManager.Uri);
+        authenticatedMessage = "You are not logged in";
+        StateHasChanged();
+    }
+}

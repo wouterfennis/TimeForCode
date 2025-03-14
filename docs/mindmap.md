@@ -1,7 +1,8 @@
 # Mindmap Time for Code
 
-The following mind map provides an overview of the Time For Code platform. 
-This diagram serves as a high-level guide to the platform's architecture and functionality.
+The following mind map provides an overview of the Time For Code platform.
+This diagram serves as a high-level guide to the platform's architecture
+ and functionality.
 
 ```mermaid
 mindmap
