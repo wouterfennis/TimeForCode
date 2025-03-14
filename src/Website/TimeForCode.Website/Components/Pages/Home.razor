@@ -12,14 +12,21 @@ Welcome to your new app.
 
 @authenticatedMessage
 
-<a href="http://localhost:8080/api/Authentication/login?IdentityProvider=Github">Log in with Github</a>
-
 @{
     string logoutUri = $"http://localhost:8080/api/Authentication/logout?RedirectUri={NavigationManager.Uri}";
+    string loginUri = $"http://localhost:8080/api/Authentication/login?IdentityProvider=Github&RedirectUri={NavigationManager.Uri}";
 }
-<a href="@logoutUri">Log out</a>
+@if (authenticated.HasValue && authenticated.Value)
+{
+    <a href="@logoutUri">Log out</a>
+}
+else
+{
+    <a href="@loginUri">Log in with Github</a>
+}
 
 @code {
+    private bool? authenticated;
     private string? authenticatedMessage;
     private string? userName;
 
@@ -29,10 +36,13 @@ Welcome to your new app.
         if (string.IsNullOrEmpty(cookieValue))
         {
             authenticatedMessage = $"You are not logged in";
+            authenticated = false;
         }
         else
         {
             authenticatedMessage = "You are logged in.";
+            authenticated = true;
+
             await AuthClient.UserAsync().ContinueWith(task =>
             {
                 if (task.IsCompletedSuccessfully)

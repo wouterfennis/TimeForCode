@@ -23,11 +23,21 @@ namespace TimeForCode.Authorization.Specifications.Features.Login
     public partial class CallbackFeature
     {
         
-        private static global::Reqnroll.ITestRunner testRunner;
+        private global::Reqnroll.ITestRunner testRunner;
         
         private Microsoft.VisualStudio.TestTools.UnitTesting.TestContext _testContext;
         
         private static string[] featureTags = ((string[])(null));
+        
+        private static global::Reqnroll.FeatureInfo featureInfo = new global::Reqnroll.FeatureInfo(new System.Globalization.CultureInfo("en-US"), "Features/Login", "Callback", @"	As a user
+	I want to login with my existing account from another platform
+	So that my data is shared between the platforms
+
+Login consists technically on two parts.
+1. The initial call to the authorization service where a redirect url towards the external platform is returned.
+2. The user is redirected to the external platform to perform the authentication.
+3. The external platform calls the time for code platform to complete the authorization
+4. The time for code platform calls the external platform to receive the access token", global::Reqnroll.ProgrammingLanguage.CSharp, featureTags);
         
 #line 1 "Callback.feature"
 #line hidden
@@ -47,34 +57,25 @@ namespace TimeForCode.Authorization.Specifications.Features.Login
         [Microsoft.VisualStudio.TestTools.UnitTesting.ClassInitializeAttribute()]
         public static async System.Threading.Tasks.Task FeatureSetupAsync(Microsoft.VisualStudio.TestTools.UnitTesting.TestContext testContext)
         {
-            testRunner = global::Reqnroll.TestRunnerManager.GetTestRunnerForAssembly();
-            global::Reqnroll.FeatureInfo featureInfo = new global::Reqnroll.FeatureInfo(new System.Globalization.CultureInfo("en-US"), "Features/Login", "Callback", @"	As a user
-	I want to login with my existing account from another platform
-	So that my data is shared between the platforms
-
-Login consists technically on two parts.
-1. The initial call to the authorization service where a redirect url towards the external platform is returned.
-2. The user is redirected to the external platform to perform the authentication.
-3. The external platform calls the time for code platform to complete the authorization
-4. The time for code platform calls the external platform to receive the access token", global::Reqnroll.ProgrammingLanguage.CSharp, featureTags);
-            await testRunner.OnFeatureStartAsync(featureInfo);
         }
         
         [Microsoft.VisualStudio.TestTools.UnitTesting.ClassCleanupAttribute(Microsoft.VisualStudio.TestTools.UnitTesting.ClassCleanupBehavior.EndOfClass)]
         public static async System.Threading.Tasks.Task FeatureTearDownAsync()
         {
-            await testRunner.OnFeatureEndAsync();
-            global::Reqnroll.TestRunnerManager.ReleaseTestRunner(testRunner);
-            testRunner = null;
         }
         
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestInitializeAttribute()]
         public async System.Threading.Tasks.Task TestInitializeAsync()
         {
+            testRunner = global::Reqnroll.TestRunnerManager.GetTestRunnerForAssembly(featureHint: featureInfo);
             if (((testRunner.FeatureContext != null) 
-                        && (testRunner.FeatureContext.FeatureInfo.Title != "Callback")))
+                        && (testRunner.FeatureContext.FeatureInfo.Equals(featureInfo) == false)))
             {
-                await global::TimeForCode.Authorization.Specifications.Features.Login.CallbackFeature.FeatureSetupAsync(null);
+                await testRunner.OnFeatureEndAsync();
+            }
+            if ((testRunner.FeatureContext == null))
+            {
+                await testRunner.OnFeatureStartAsync(featureInfo);
             }
         }
         
@@ -82,6 +83,7 @@ Login consists technically on two parts.
         public async System.Threading.Tasks.Task TestTearDownAsync()
         {
             await testRunner.OnScenarioEndAsync();
+            global::Reqnroll.TestRunnerManager.ReleaseTestRunner(testRunner);
         }
         
         public void ScenarioInitialize(global::Reqnroll.ScenarioInfo scenarioInfo)
