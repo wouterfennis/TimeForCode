@@ -79,7 +79,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
         {
             _result!.Exception.Should().NotBeNull();
             _result!.Exception.Should().BeOfType<ApiException<ProblemDetails>>();
-            
+
             var exception = _result!.Exception as ApiException<ProblemDetails>;
 
             var problemDetails = exception!.Result;

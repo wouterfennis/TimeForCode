@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.DataProtection;
 using TimeForCode.Authorization.Api.Client.Extensions;
 using TimeForCode.Website.Components;
 using TimeForCode.Website.Options;
@@ -10,9 +11,13 @@ namespace TimeForCode.Website
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
             builder.Services.AddRazorComponents()
                 .AddInteractiveServerComponents();
+
+            var storageOptions = StorageOptions.Bind(builder.Configuration);
+            builder.Services.AddDataProtection()
+                .PersistKeysToFileSystem(new DirectoryInfo(storageOptions.StoragePath))
+                .SetApplicationName("TimeForCode.Website");
 
             builder.Services.AddHttpContextAccessor();
 
@@ -29,7 +34,7 @@ namespace TimeForCode.Website
                 app.UseHsts();
             }
 
-            app.UseHttpsRedirection();
+            // app.UseHttpsRedirection();
 
             app.UseStaticFiles();
             app.UseAntiforgery();

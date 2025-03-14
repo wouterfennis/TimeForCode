@@ -32,8 +32,8 @@ namespace TimeForCode.Authorization.Application.Handlers
 
             var uriBuilder = new UriBuilder
             {
-                Host = identityProvider.Host,
-                Port = identityProvider.HostPort ?? -1,
+                Host = identityProvider.LoginHost,
+                Port = identityProvider.LoginHostPort ?? -1,
                 Path = OAuthConstants.AuthorizationEndpoint,
                 Query = BuildQuery(state, identityProvider.ClientId)
             };

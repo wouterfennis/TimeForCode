@@ -69,7 +69,7 @@ namespace TimeForCode.Authorization.Api.Controllers
 
             var response = ProcessTokenResult(tokenResult);
 
-            if(tokenResult.Value.RedirectUri != null)
+            if (tokenResult.Value.RedirectUri != null)
             {
                 return Redirect(tokenResult.Value.RedirectUri.ToString());
             }
@@ -130,7 +130,7 @@ namespace TimeForCode.Authorization.Api.Controllers
             {
                 return BadRequest(ProblemDetailsMapper.BadRequest(tokenResult.ErrorMessage));
             }
-            
+
             var response = ProcessTokenResult(tokenResult);
 
             return Ok(response);
