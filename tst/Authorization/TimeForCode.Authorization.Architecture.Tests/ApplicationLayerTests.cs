@@ -1,10 +1,9 @@
 using ArchUnitNET.Domain;
-using ArchUnitNET.Loader;
 using ArchUnitNET.Fluent;
-
+using ArchUnitNET.Loader;
+using MediatR;
 //add a using directive to ArchUnitNET.Fluent.ArchRuleDefinition to easily define ArchRules
 using static ArchUnitNET.Fluent.ArchRuleDefinition;
-using MediatR;
 
 namespace TimeForCode.Authorization.Architecture.Tests
 {
@@ -25,9 +24,9 @@ namespace TimeForCode.Authorization.Architecture.Tests
         public void CommandHandlers_ThatAreInApplicationLayer_AreAllowed()
         {
             // Arrange
-             var rule = Types().That().ImplementInterface(typeof(IRequestHandler<>)).Should()
-                .ResideInNamespace(".*\\.Authorization\\.Application\\..*", useRegularExpressions: true)
-                .Because("Command Handlers should always be in the application layer");
+            var rule = Types().That().ImplementInterface(typeof(IRequestHandler<>)).Should()
+               .ResideInNamespace(".*\\.Authorization\\.Application\\..*", useRegularExpressions: true)
+               .Because("Command Handlers should always be in the application layer");
 
             // Assert
             Evaluate(rule);
