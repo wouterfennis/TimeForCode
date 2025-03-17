@@ -1,23 +1,27 @@
-using ArchUnitNET.Domain;
-using ArchUnitNET.Fluent;
-using ArchUnitNET.Loader;
 using MediatR;
-//add a using directive to ArchUnitNET.Fluent.ArchRuleDefinition to easily define ArchRules
 using static ArchUnitNET.Fluent.ArchRuleDefinition;
 
 namespace TimeForCode.Authorization.Architecture.Tests
 {
     [TestClass]
-    public class ApplicationLayerTests
+    public class ApplicationLayerTests : ArchitectureTestBase
     {
-        private ArchUnitNET.Domain.Architecture Architecture = default!;
-
-        [TestInitialize]
-        public void Initialize()
+        [TestMethod]
+        public void ApplicationLayer_WithReferencesToApiLayer_AreNotAllowed()
         {
-            Architecture = new ArchLoader().LoadAssemblies(
-                System.Reflection.Assembly.Load(typeof(TimeForCode.Authorization.Application.Anchor).Assembly.GetName().Name!)
-            ).Build();
+            var rule = Types().That().Are(ApplicationLayer).Should()
+                .NotDependOnAny(ApiLayer).Because("Application layer should not have references to api layer");
+
+            Evaluate(rule);
+        }
+
+        [TestMethod]
+        public void ApplicationLayer_WithReferencesToInfrastructureLayer_AreNotAllowed()
+        {
+            var rule = Types().That().Are(ApplicationLayer).Should()
+                .NotDependOnAny(InfrastructureLayer).Because("Application layer should not have references to infrastructure layer");
+
+            Evaluate(rule);
         }
 
         [TestMethod]
@@ -30,18 +34,6 @@ namespace TimeForCode.Authorization.Architecture.Tests
 
             // Assert
             Evaluate(rule);
-        }
-
-        private void Evaluate(IArchRule exampleLayerShouldNotAccessForbiddenLayer)
-        {
-            var result = exampleLayerShouldNotAccessForbiddenLayer.Evaluate(Architecture);
-
-            foreach (var violation in result.Where(x => !x.Passed))
-            {
-                Console.WriteLine(violation.Description);
-            }
-
-            Assert.IsTrue(exampleLayerShouldNotAccessForbiddenLayer.HasNoViolations(Architecture));
         }
     }
 }
