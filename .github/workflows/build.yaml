@@ -46,18 +46,15 @@ jobs:
         key: ${{ runner.os }}-sonar-scanner
         restore-keys: ${{ runner.os }}-sonar-scanner
 
-    - name: Install SonarQube Cloud scanner
-      if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
-      run: |
-          mkdir -p ./.sonar/scanner
-          dotnet tool update dotnet-sonarscanner --tool-path ./.sonar/scanner
+    - name: Install dotnet tools
+      run: dotnet tool restore
 
     - name: Restore dependencies
       run: dotnet restore ./TimeForCode.sln
 
     - name: SonarCloud Scan Start
       run: |
-          ./.sonar/scanner/dotnet-sonarscanner begin /k:"wouterfennis_TimeForCode" /o:"wouterfennis" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io"
+          dotnet-sonarscanner begin /k:"wouterfennis_TimeForCode" /o:"wouterfennis" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.cs.opencover.reportsPaths=**/coverage.cobertura.xml
 
     - name: Build
       run: |
@@ -68,7 +65,7 @@ jobs:
 
     - name: SonarCloud Scan End
       run: |
-          ./.sonar/scanner/dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /d:sonar.cs.opencover.reportsPaths=**/coverage.cobertura.xml
+          dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
 
     - name: Publish
       run: dotnet publish ./src/Authorization/TimeForCode.Authorization.Api/*.csproj --no-build --configuration Release --output ./publish
@@ -78,9 +75,6 @@ jobs:
       with:
         name: dotnet-app
         path: ./publish
-
-    - name: Install dotnet tools
-      run: dotnet tool restore
 
     - name: Generate coverage report
       run: dotnet reportgenerator -reports:**/coverage.cobertura.xml -targetdir:coverage -reporttypes:Html
