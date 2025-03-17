@@ -21,6 +21,11 @@ jobs:
         java-version: 17
         distribution: 'zulu'
 
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x' # Adjust the .NET version as needed
+
     - name: Checkout code
       uses: actions/checkout@v4
       with:         
@@ -47,11 +52,6 @@ jobs:
       run: |
           New-Item -Path .\.sonar\scanner -ItemType Directory
           dotnet tool update dotnet-sonarscanner --tool-path .\.sonar\scanner
-
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: '8.0.x' # Adjust the .NET version as needed
 
     - name: Restore dependencies
       run: dotnet restore ./TimeForCode.sln
