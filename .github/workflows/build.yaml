@@ -54,7 +54,7 @@ jobs:
 
     - name: SonarCloud Scan Start
       run: |
-          dotnet dotnet-sonarscanner begin /k:"wouterfennis_TimeForCode" /o:"wouterfennis" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io"
+          dotnet dotnet-sonarscanner begin /k:"wouterfennis_TimeForCode" /o:"wouterfennis" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /d:sonar.coverageReportPaths="**/coverage.cobertura.xml"
 
     - name: Build
       run: |
@@ -63,7 +63,6 @@ jobs:
     - name: Run tests
       run: |
           dotnet test ./TimeForCode.sln --no-build --verbosity normal --configuration Release --collect:"XPlat Code Coverage"
-          dotnet test ./TimeForCode.sln --no-build --verbosity normal --configuration Release --collect:"Code Coverage"
 
     - name: SonarCloud Scan End
       run: |
