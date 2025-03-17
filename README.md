@@ -1,5 +1,7 @@
 # TimeForCode
 
+[![Continuous Integration](https://github.com/wouterfennis/TimeForCode/actions/workflows/build.yaml/badge.svg)](https://github.com/wouterfennis/TimeForCode/actions/workflows/build.yaml)
+
 Welcome to **TimeForCode**, an initiative aimed at connecting companies and
  individuals willing to donate their time and skills to open-source projects.
   This repository contains the software that powers the **TimeForCode**

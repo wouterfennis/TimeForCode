@@ -42,6 +42,20 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TimeForCode.Website", "src\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TimeForCode.Authorization.Architecture.Tests", "tst\Authorization\TimeForCode.Authorization.Architecture.Tests\TimeForCode.Authorization.Architecture.Tests.csproj", "{215ACB3B-F437-4E7F-A7B6-FDFE474C27CF}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution", "Solution", "{85CC5B26-CA5D-4462-8AB3-50C307D50E84}"
+	ProjectSection(SolutionItems) = preProject
+		.dockerignore = .dockerignore
+		.editorconfig = .editorconfig
+		.gitignore = .gitignore
+		CODE_OF_CONDUCT.md = CODE_OF_CONDUCT.md
+		docker-compose.yaml = docker-compose.yaml
+		Dockerfile.authorization-api = Dockerfile.authorization-api
+		Dockerfile.identity-provider-mock = Dockerfile.identity-provider-mock
+		Dockerfile.website = Dockerfile.website
+		LICENSE = LICENSE
+		README.md = README.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
