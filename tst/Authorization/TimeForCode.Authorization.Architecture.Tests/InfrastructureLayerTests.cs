@@ -13,5 +13,14 @@ namespace TimeForCode.Authorization.Architecture.Tests
 
             Evaluate(rule);
         }
+
+        [TestMethod]
+        public void Repositories_ThatExistInInfrastructureLayer_AreAllowed()
+        {
+            var rule = Classes().That().HaveNameEndingWith("Repository")
+                .Should().Be(InfrastructureLayer);
+
+            Evaluate(rule);
+        }
     }
 }
