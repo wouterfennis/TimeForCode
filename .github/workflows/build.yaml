@@ -54,7 +54,7 @@ jobs:
 
     - name: SonarCloud Scan Start
       run: |
-          dotnet-sonarscanner begin /k:"wouterfennis_TimeForCode" /o:"wouterfennis" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.cs.opencover.reportsPaths=**/coverage.cobertura.xml
+          dotnet dotnet-sonarscanner begin /k:"wouterfennis_TimeForCode" /o:"wouterfennis" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.cs.opencover.reportsPaths=**/coverage.cobertura.xml
 
     - name: Build
       run: |
@@ -65,7 +65,7 @@ jobs:
 
     - name: SonarCloud Scan End
       run: |
-          dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
+          dotnet dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
 
     - name: Publish
       run: dotnet publish ./src/Authorization/TimeForCode.Authorization.Api/*.csproj --no-build --configuration Release --output ./publish
