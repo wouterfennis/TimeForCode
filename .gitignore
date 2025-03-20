@@ -94,3 +94,6 @@ $RECYCLE.BIN/
 *.lnk
 **/coverage.cobertura.xml
 **/coverage/
+*.coverage
+*.xml
+*.trx

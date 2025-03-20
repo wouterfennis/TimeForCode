@@ -1,6 +1,10 @@
 # TimeForCode
 
 [![Continuous Integration](https://github.com/wouterfennis/TimeForCode/actions/workflows/build.yaml/badge.svg)](https://github.com/wouterfennis/TimeForCode/actions/workflows/build.yaml)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=wouterfennis_TimeForCode&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=wouterfennis_TimeForCode)
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=wouterfennis_TimeForCode&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=wouterfennis_TimeForCode)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=wouterfennis_TimeForCode&metric=coverage)](https://sonarcloud.io/summary/new_code?id=wouterfennis_TimeForCode)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=wouterfennis_TimeForCode&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=wouterfennis_TimeForCode)
 
 Welcome to **TimeForCode**, an initiative aimed at connecting companies and
  individuals willing to donate their time and skills to open-source projects.
