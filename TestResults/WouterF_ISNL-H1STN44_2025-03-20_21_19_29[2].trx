@@ -1,0 +1,77 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="4f0e4660-32bd-4b2e-be28-c7c245483385" name="WouterF@ISNL-H1STN44 2025-03-20 21:19:29" runUser="CRONOS\WouterF" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2025-03-20T21:19:30.0009252+01:00" queuing="2025-03-20T21:19:30.0009255+01:00" start="2025-03-20T21:19:28.0065541+01:00" finish="2025-03-20T21:19:30.0104181+01:00" />
+  <TestSettings name="default" id="7db8615a-390e-458b-97a1-b2bcd94044b9">
+    <Deployment runDeploymentRoot="WouterF_ISNL-H1STN44_2025-03-20_21_19_29" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="43639036-f15d-4d39-b274-a73b488435b3" testId="3d503f66-d7ff-346c-aacf-33ad139daecd" testName="CommandHandlers_ThatAreInApplicationLayer_AreAllowed" computerName="ISNL-H1STN44" duration="00:00:00.0278509" startTime="2025-03-20T21:19:29.6715568+01:00" endTime="2025-03-20T21:19:29.6996621+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="43639036-f15d-4d39-b274-a73b488435b3" />
+    <UnitTestResult executionId="cb71518d-1df9-4a63-b80b-54891605f53c" testId="698ffc52-e3ab-083d-7631-b460bb3e5fae" testName="DomainLayer_WithReferencesToApplicationLayer_AreNotAllowed" computerName="ISNL-H1STN44" duration="00:00:00.0227852" startTime="2025-03-20T21:19:29.7421759+01:00" endTime="2025-03-20T21:19:29.7650846+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="cb71518d-1df9-4a63-b80b-54891605f53c" />
+    <UnitTestResult executionId="77331a75-f9a5-4de4-862c-9edcfd133d36" testId="c93f3a56-f8c9-b6c0-af60-050d1654eecc" testName="DomainLayer_WithReferencesToInfrastructureLayer_AreNotAllowed" computerName="ISNL-H1STN44" duration="00:00:00.0191744" startTime="2025-03-20T21:19:29.7654749+01:00" endTime="2025-03-20T21:19:29.7847765+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="77331a75-f9a5-4de4-862c-9edcfd133d36" />
+    <UnitTestResult executionId="726d0fc1-75c0-4c81-80f4-4160c0000fde" testId="894ff2b2-3874-7547-ece5-0f7fac10deb5" testName="ApplicationLayer_WithReferencesToApiLayer_AreNotAllowed" computerName="ISNL-H1STN44" duration="00:00:00.3796190" startTime="2025-03-20T21:19:29.2328297+01:00" endTime="2025-03-20T21:19:29.6338385+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="726d0fc1-75c0-4c81-80f4-4160c0000fde" />
+    <UnitTestResult executionId="d991be50-43dc-4f6f-baa9-95a4a3e2d233" testId="c885a373-f6df-f909-d6dd-099cdd5afd92" testName="Infrastructure_WithReferencesToApiLayer_AreNotAllowed" computerName="ISNL-H1STN44" duration="00:00:00.0174137" startTime="2025-03-20T21:19:29.7851671+01:00" endTime="2025-03-20T21:19:29.8027489+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d991be50-43dc-4f6f-baa9-95a4a3e2d233" />
+    <UnitTestResult executionId="e33a6987-fc09-4397-aebe-a3fdf095efb2" testId="40c12cf9-8be7-c9f4-9b09-78e2dbd8bbcc" testName="ApplicationLayer_WithReferencesToInfrastructureLayer_AreNotAllowed" computerName="ISNL-H1STN44" duration="00:00:00.0289937" startTime="2025-03-20T21:19:29.6414333+01:00" endTime="2025-03-20T21:19:29.6708395+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e33a6987-fc09-4397-aebe-a3fdf095efb2" />
+    <UnitTestResult executionId="cc4ce1c6-b032-4103-8672-c97ba43be7fe" testId="19134c7a-f57f-27ed-5314-9e2bde605d73" testName="DomainLayer_WithReferencesToApiLayer_AreNotAllowed" computerName="ISNL-H1STN44" duration="00:00:00.0411148" startTime="2025-03-20T21:19:29.7004819+01:00" endTime="2025-03-20T21:19:29.7417869+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="cc4ce1c6-b032-4103-8672-c97ba43be7fe" />
+    <UnitTestResult executionId="3a0d00a0-c49d-4690-a6f6-46ab00efa438" testId="d9d00e12-ebc9-2445-d79e-657ed8851b06" testName="Repositories_ThatExistInInfrastructureLayer_AreAllowed" computerName="ISNL-H1STN44" duration="00:00:00.0303143" startTime="2025-03-20T21:19:29.8036329+01:00" endTime="2025-03-20T21:19:29.8347172+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="3a0d00a0-c49d-4690-a6f6-46ab00efa438" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="DomainLayer_WithReferencesToApplicationLayer_AreNotAllowed" storage="c:\users\wouterf\git\timeforcode\tst\authorization\timeforcode.authorization.architecture.tests\bin\debug\net8.0\timeforcode.authorization.architecture.tests.dll" id="698ffc52-e3ab-083d-7631-b460bb3e5fae">
+      <Execution id="cb71518d-1df9-4a63-b80b-54891605f53c" />
+      <TestMethod codeBase="C:\Users\WouterF\Git\TimeForCode\tst\Authorization\TimeForCode.Authorization.Architecture.Tests\bin\Debug\net8.0\TimeForCode.Authorization.Architecture.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="TimeForCode.Authorization.Architecture.Tests.DomainLayerTests" name="DomainLayer_WithReferencesToApplicationLayer_AreNotAllowed" />
+    </UnitTest>
+    <UnitTest name="Repositories_ThatExistInInfrastructureLayer_AreAllowed" storage="c:\users\wouterf\git\timeforcode\tst\authorization\timeforcode.authorization.architecture.tests\bin\debug\net8.0\timeforcode.authorization.architecture.tests.dll" id="d9d00e12-ebc9-2445-d79e-657ed8851b06">
+      <Execution id="3a0d00a0-c49d-4690-a6f6-46ab00efa438" />
+      <TestMethod codeBase="C:\Users\WouterF\Git\TimeForCode\tst\Authorization\TimeForCode.Authorization.Architecture.Tests\bin\Debug\net8.0\TimeForCode.Authorization.Architecture.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="TimeForCode.Authorization.Architecture.Tests.InfrastructureLayerTests" name="Repositories_ThatExistInInfrastructureLayer_AreAllowed" />
+    </UnitTest>
+    <UnitTest name="DomainLayer_WithReferencesToInfrastructureLayer_AreNotAllowed" storage="c:\users\wouterf\git\timeforcode\tst\authorization\timeforcode.authorization.architecture.tests\bin\debug\net8.0\timeforcode.authorization.architecture.tests.dll" id="c93f3a56-f8c9-b6c0-af60-050d1654eecc">
+      <Execution id="77331a75-f9a5-4de4-862c-9edcfd133d36" />
+      <TestMethod codeBase="C:\Users\WouterF\Git\TimeForCode\tst\Authorization\TimeForCode.Authorization.Architecture.Tests\bin\Debug\net8.0\TimeForCode.Authorization.Architecture.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="TimeForCode.Authorization.Architecture.Tests.DomainLayerTests" name="DomainLayer_WithReferencesToInfrastructureLayer_AreNotAllowed" />
+    </UnitTest>
+    <UnitTest name="CommandHandlers_ThatAreInApplicationLayer_AreAllowed" storage="c:\users\wouterf\git\timeforcode\tst\authorization\timeforcode.authorization.architecture.tests\bin\debug\net8.0\timeforcode.authorization.architecture.tests.dll" id="3d503f66-d7ff-346c-aacf-33ad139daecd">
+      <Execution id="43639036-f15d-4d39-b274-a73b488435b3" />
+      <TestMethod codeBase="C:\Users\WouterF\Git\TimeForCode\tst\Authorization\TimeForCode.Authorization.Architecture.Tests\bin\Debug\net8.0\TimeForCode.Authorization.Architecture.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="TimeForCode.Authorization.Architecture.Tests.ApplicationLayerTests" name="CommandHandlers_ThatAreInApplicationLayer_AreAllowed" />
+    </UnitTest>
+    <UnitTest name="DomainLayer_WithReferencesToApiLayer_AreNotAllowed" storage="c:\users\wouterf\git\timeforcode\tst\authorization\timeforcode.authorization.architecture.tests\bin\debug\net8.0\timeforcode.authorization.architecture.tests.dll" id="19134c7a-f57f-27ed-5314-9e2bde605d73">
+      <Execution id="cc4ce1c6-b032-4103-8672-c97ba43be7fe" />
+      <TestMethod codeBase="C:\Users\WouterF\Git\TimeForCode\tst\Authorization\TimeForCode.Authorization.Architecture.Tests\bin\Debug\net8.0\TimeForCode.Authorization.Architecture.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="TimeForCode.Authorization.Architecture.Tests.DomainLayerTests" name="DomainLayer_WithReferencesToApiLayer_AreNotAllowed" />
+    </UnitTest>
+    <UnitTest name="Infrastructure_WithReferencesToApiLayer_AreNotAllowed" storage="c:\users\wouterf\git\timeforcode\tst\authorization\timeforcode.authorization.architecture.tests\bin\debug\net8.0\timeforcode.authorization.architecture.tests.dll" id="c885a373-f6df-f909-d6dd-099cdd5afd92">
+      <Execution id="d991be50-43dc-4f6f-baa9-95a4a3e2d233" />
+      <TestMethod codeBase="C:\Users\WouterF\Git\TimeForCode\tst\Authorization\TimeForCode.Authorization.Architecture.Tests\bin\Debug\net8.0\TimeForCode.Authorization.Architecture.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="TimeForCode.Authorization.Architecture.Tests.InfrastructureLayerTests" name="Infrastructure_WithReferencesToApiLayer_AreNotAllowed" />
+    </UnitTest>
+    <UnitTest name="ApplicationLayer_WithReferencesToApiLayer_AreNotAllowed" storage="c:\users\wouterf\git\timeforcode\tst\authorization\timeforcode.authorization.architecture.tests\bin\debug\net8.0\timeforcode.authorization.architecture.tests.dll" id="894ff2b2-3874-7547-ece5-0f7fac10deb5">
+      <Execution id="726d0fc1-75c0-4c81-80f4-4160c0000fde" />
+      <TestMethod codeBase="C:\Users\WouterF\Git\TimeForCode\tst\Authorization\TimeForCode.Authorization.Architecture.Tests\bin\Debug\net8.0\TimeForCode.Authorization.Architecture.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="TimeForCode.Authorization.Architecture.Tests.ApplicationLayerTests" name="ApplicationLayer_WithReferencesToApiLayer_AreNotAllowed" />
+    </UnitTest>
+    <UnitTest name="ApplicationLayer_WithReferencesToInfrastructureLayer_AreNotAllowed" storage="c:\users\wouterf\git\timeforcode\tst\authorization\timeforcode.authorization.architecture.tests\bin\debug\net8.0\timeforcode.authorization.architecture.tests.dll" id="40c12cf9-8be7-c9f4-9b09-78e2dbd8bbcc">
+      <Execution id="e33a6987-fc09-4397-aebe-a3fdf095efb2" />
+      <TestMethod codeBase="C:\Users\WouterF\Git\TimeForCode\tst\Authorization\TimeForCode.Authorization.Architecture.Tests\bin\Debug\net8.0\TimeForCode.Authorization.Architecture.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="TimeForCode.Authorization.Architecture.Tests.ApplicationLayerTests" name="ApplicationLayer_WithReferencesToInfrastructureLayer_AreNotAllowed" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="3d503f66-d7ff-346c-aacf-33ad139daecd" executionId="43639036-f15d-4d39-b274-a73b488435b3" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="698ffc52-e3ab-083d-7631-b460bb3e5fae" executionId="cb71518d-1df9-4a63-b80b-54891605f53c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c93f3a56-f8c9-b6c0-af60-050d1654eecc" executionId="77331a75-f9a5-4de4-862c-9edcfd133d36" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="894ff2b2-3874-7547-ece5-0f7fac10deb5" executionId="726d0fc1-75c0-4c81-80f4-4160c0000fde" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c885a373-f6df-f909-d6dd-099cdd5afd92" executionId="d991be50-43dc-4f6f-baa9-95a4a3e2d233" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="40c12cf9-8be7-c9f4-9b09-78e2dbd8bbcc" executionId="e33a6987-fc09-4397-aebe-a3fdf095efb2" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="19134c7a-f57f-27ed-5314-9e2bde605d73" executionId="cc4ce1c6-b032-4103-8672-c97ba43be7fe" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="d9d00e12-ebc9-2445-d79e-657ed8851b06" executionId="3a0d00a0-c49d-4690-a6f6-46ab00efa438" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="8" executed="8" passed="8" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <CollectorDataEntries>
+      <Collector agentName="ISNL-H1STN44" uri="datacollector://microsoft/CodeCoverage/2.0" collectorDisplayName="Code Coverage">
+        <UriAttachments>
+          <UriAttachment>
+            <A href="ISNL-H1STN44\WouterF_ISNL-H1STN44_2025-03-20.21_19_29[2].xml"></A>
+          </UriAttachment>
+        </UriAttachments>
+      </Collector>
+    </CollectorDataEntries>
+  </ResultSummary>
+</TestRun>
