@@ -62,7 +62,7 @@ jobs:
 
     - name: Run tests
       run: |
-         dotnet test ./TimeForCode.sln --no-build --verbosity normal --configuration Release --results-directory TestResults --logger "trx;LogFileName=test_results.trx" /p:CollectCoverage=true /p:CoverletOutput=TestResults/coverage.cobertura.xml /p:CoverletOutputFormat=cobertura
+         dotnet test ./TimeForCode.sln --no-build --verbosity normal --configuration Release --results-directory TestResults --collect:"XPlat Code Coverage"
 
          # dotnet test ./TimeForCode.sln --no-build --verbosity normal --configuration Release --collect:"XPlat Code Coverage" --results-directory TestResults
 
