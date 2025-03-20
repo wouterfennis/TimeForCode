@@ -64,8 +64,6 @@ jobs:
       run: |
          dotnet test ./TimeForCode.sln --no-build --verbosity normal --configuration Release --no-build --collect "Code Coverage;Format=Xml" --logger trx --results-directory TestResults
 
-         # dotnet test ./TimeForCode.sln --no-build --verbosity normal --configuration Release --collect:"XPlat Code Coverage" --results-directory TestResults
-
     - name: SonarCloud Scan End
       run: |
           dotnet dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
@@ -78,15 +76,6 @@ jobs:
       with:
         name: dotnet-app
         path: ./publish
-
-    - name: Generate coverage report
-      run: dotnet reportgenerator -reports:**/coverage.cobertura.xml -targetdir:coverage -reporttypes:Html
-
-    - name: Upload coverage report
-      uses: actions/upload-artifact@v4
-      with:
-        name: coverage-report
-        path: coverage
 
     - name: Setup Node.js
       uses: actions/setup-node@v4
