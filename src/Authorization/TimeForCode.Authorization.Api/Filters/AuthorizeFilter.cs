@@ -18,22 +18,22 @@ namespace TimeForCode.Authorization.Api.Filters
             if (hasAuthorize)
             {
                 operation.Security = new List<OpenApiSecurityRequirement>
+                {
+                    new OpenApiSecurityRequirement
+                    {
                         {
-                            new OpenApiSecurityRequirement
+                            new OpenApiSecurityScheme
                             {
+                                Reference = new OpenApiReference
                                 {
-                                    new OpenApiSecurityScheme
-                                    {
-                                        Reference = new OpenApiReference
-                                        {
-                                            Type = ReferenceType.SecurityScheme,
-                                            Id = "Bearer"
-                                        }
-                                    },
-                                    new string[] {}
+                                    Type = ReferenceType.SecurityScheme,
+                                    Id = "Bearer"
                                 }
-                            }
-                        };
+                            },
+                            Array.Empty<string>()
+                        }
+                    }
+                };
             }
         }
     }

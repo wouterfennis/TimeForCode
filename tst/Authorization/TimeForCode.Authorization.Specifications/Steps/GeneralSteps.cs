@@ -72,7 +72,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
         }
 
         [Given("The user has not logged in at the external platform")]
-        public void GivenTheUserHasNotLoggedInAtTheExternalPlatform()
+        public static void GivenTheUserHasNotLoggedInAtTheExternalPlatform()
         {
             // No need to do anything here
         }

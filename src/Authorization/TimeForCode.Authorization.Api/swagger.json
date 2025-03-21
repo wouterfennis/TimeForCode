@@ -110,7 +110,8 @@
             "name": "redirectUri",
             "in": "query",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "format": "uri"
             }
           }
         ],

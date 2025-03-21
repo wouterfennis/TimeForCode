@@ -56,7 +56,7 @@ else
 
     private async Task Logout()
     {
-        await AuthClient.LogoutAsync(NavigationManager.Uri);
+        await AuthClient.LogoutAsync(new Uri(NavigationManager.Uri));
         authenticatedMessage = "You are not logged in";
         StateHasChanged();
     }
