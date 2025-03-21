@@ -34,10 +34,7 @@ namespace TimeForCode.Authorization.Api
             }
             finally
             {
-                if (loggerFactory is IDisposable disposable)
-                {
-                    disposable.Dispose();
-                }
+                loggerFactory.Dispose();
             }
         }
 
