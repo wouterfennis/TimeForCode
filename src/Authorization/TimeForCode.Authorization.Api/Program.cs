@@ -1,8 +1,11 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace TimeForCode.Authorization.Api
 {
     /// <summary>
     /// Starting point of the Api.
     /// </summary>
+    [ExcludeFromCodeCoverage(Justification = "Application entrypoint")]
     internal static class Program
     {
         /// <summary>

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.DataProtection;
+using System.Diagnostics.CodeAnalysis;
 using TimeForCode.Authorization.Api.Client.Extensions;
 using TimeForCode.Website.Components;
 using TimeForCode.Website.Options;
@@ -8,6 +9,7 @@ namespace TimeForCode.Website
     /// <summary>
     /// The main entry point for the application.
     /// </summary>
+    [ExcludeFromCodeCoverage(Justification = "Application entrypoint")]
     internal static class Program
     {
         public static void Main(string[] args)
