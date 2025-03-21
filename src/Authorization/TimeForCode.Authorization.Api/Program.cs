@@ -1,6 +1,9 @@
 namespace TimeForCode.Authorization.Api
 {
-    internal class Program
+    /// <summary>
+    /// Starting point of the Api.
+    /// </summary>
+    internal static class Program
     {
         /// <summary>
         /// Starting point of the Api.
@@ -14,7 +17,7 @@ namespace TimeForCode.Authorization.Api
                 builder.AddDebug();
             });
 
-            var logger = loggerFactory.CreateLogger<Program>();
+            var logger = loggerFactory.CreateLogger(nameof(Program));
 
             try
             {

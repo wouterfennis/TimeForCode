@@ -5,7 +5,10 @@ using TimeForCode.Website.Options;
 
 namespace TimeForCode.Website
 {
-    public static class Program
+    /// <summary>
+    /// The main entry point for the application.
+    /// </summary>
+    internal static class Program
     {
         public static void Main(string[] args)
         {
@@ -33,8 +36,6 @@ namespace TimeForCode.Website
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
-
-            // app.UseHttpsRedirection();
 
             app.UseStaticFiles();
             app.UseAntiforgery();

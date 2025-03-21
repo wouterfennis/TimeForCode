@@ -21,7 +21,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
         }
 
         [Given("The user has not logged in at the time for code platform")]
-        public void GivenTheUserHasNotLoggedInAtTheTimeForCodePlatform()
+        public static void GivenTheUserHasNotLoggedInAtTheTimeForCodePlatform()
         {
             // do nothing
         }
@@ -47,7 +47,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
         }
 
         [Then("The logout is confirmed")]
-        public void ThenTheLogoutIsConfirmed()
+        public static void ThenTheLogoutIsConfirmed()
         {
             // do nothing, no exceptions should have been thrown
         }
