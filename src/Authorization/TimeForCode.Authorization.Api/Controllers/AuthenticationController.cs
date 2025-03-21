@@ -43,6 +43,7 @@ namespace TimeForCode.Authorization.Api.Controllers
         [HttpGet]
         [Route("login")]
         [ProducesResponseType(StatusCodes.Status302Found)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> LoginAsync(LoginRequestModel loginModel)
         {
@@ -94,6 +95,7 @@ namespace TimeForCode.Authorization.Api.Controllers
         [HttpGet]
         [Route("logout")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> LogoutAsync(Uri redirectUri)
         {
