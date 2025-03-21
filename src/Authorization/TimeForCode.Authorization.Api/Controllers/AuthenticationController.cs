@@ -1,9 +1,11 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using System.Net.Mime;
 using System.Text.Json;
 using TimeForCode.Authorization.Api.Mappers;
 using TimeForCode.Authorization.Api.Models;
+using TimeForCode.Authorization.Application.Options;
 using TimeForCode.Authorization.Commands;
 using TimeForCode.Authorization.Values;
 
@@ -18,14 +20,17 @@ namespace TimeForCode.Authorization.Api.Controllers
     public class AuthenticationController : ControllerBase
     {
         private readonly ISender _sender;
+        private readonly IOptions<AuthenticationOptions> _authenticationOptions;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AuthenticationController"/> class.
         /// </summary>
         /// <param name="sender">The sender.</param>
-        public AuthenticationController(ISender sender)
+        /// <param name="authenticationOptions">The authentication options.</param>
+        public AuthenticationController(ISender sender, IOptions<AuthenticationOptions> authenticationOptions)
         {
             _sender = sender;
+            _authenticationOptions = authenticationOptions;
         }
 
         /// <summary>
@@ -41,6 +46,11 @@ namespace TimeForCode.Authorization.Api.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> LoginAsync(LoginRequestModel loginModel)
         {
+            if (IsValidRedirectUri(loginModel.RedirectUri))
+            {
+                return BadRequest("The supplied redirect uri is invalid");
+            }
+
             var redirectUrl = await _sender.Send(loginModel.MapToCommand());
             return Redirect(redirectUrl.AbsoluteUri);
         }
@@ -85,8 +95,13 @@ namespace TimeForCode.Authorization.Api.Controllers
         [Route("logout")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> LogoutAsync(string redirectUri)
+        public async Task<IActionResult> LogoutAsync(Uri redirectUri)
         {
+            if (IsValidRedirectUri(redirectUri))
+            {
+                return BadRequest("The supplied redirect uri is invalid");
+            }
+
             var refreshToken = GetRefreshToken();
 
             var command = new LogoutCommand
@@ -98,7 +113,18 @@ namespace TimeForCode.Authorization.Api.Controllers
 
             DeleteTokenResponseCookies();
 
-            return Redirect(redirectUri);
+            return Redirect(redirectUri.AbsoluteUri);
+        }
+
+        private bool IsValidRedirectUri(Uri redirectUri)
+        {
+            var trustedParty = _authenticationOptions.Value.Audience + '/';
+            if(!redirectUri.AbsoluteUri.StartsWith(trustedParty))
+            {
+                return false;
+            }
+
+            return true;
         }
 
         /// <summary>

@@ -43,7 +43,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
         [When("The user logs out from the external platform")]
         public async Task WhenTheUserLogsOutFromTheExternalPlatformAsync()
         {
-            await _authClient.TryLogoutAsync("http://localhost:8081");
+            await _authClient.TryLogoutAsync(new Uri("http://localhost:8081"));
         }
 
         [Then("The logout is confirmed")]
