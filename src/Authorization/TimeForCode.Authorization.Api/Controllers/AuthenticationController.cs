@@ -121,7 +121,7 @@ namespace TimeForCode.Authorization.Api.Controllers
         private bool IsInvalidRedirectUri(Uri redirectUri)
         {
             var trustedParty = _authenticationOptions.Value.Audience + '/';
-            if(redirectUri.AbsoluteUri.StartsWith(trustedParty))
+            if (redirectUri.AbsoluteUri.StartsWith(trustedParty))
             {
                 return false;
             }
