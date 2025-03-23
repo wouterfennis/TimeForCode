@@ -13,17 +13,13 @@ namespace IdentityProviderMockService.Controllers
     [ApiController]
     public class JwksController : ControllerBase
     {
-        private readonly ILogger<OpenIdConfigurationController> _logger;
+        private readonly ILogger<JwksController> _logger;
         private readonly RSAParameters _rsaParameters;
-        private readonly AuthenticationOptions _authenticationOptions;
 
-        public JwksController(ILogger<OpenIdConfigurationController> logger,
-            IOptions<AuthenticationOptions> authenticationOptions,
+        public JwksController(ILogger<JwksController> logger,
             RSA rsa)
         {
             _logger = logger;
-            _authenticationOptions = authenticationOptions.Value;
-
             _rsaParameters = rsa.ExportParameters(includePrivateParameters: true);
         }
 

@@ -15,7 +15,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
     {
         private readonly IAuthClient _authClient;
         private readonly CookieContainer _cookieContainer;
-        private TryVoid<ApiException?> _result;
+        private TryVoid<ApiException?>? _result;
 
         public LogoutSteps(IAuthClient authClient, CookieContainer cookieContainer)
         {
