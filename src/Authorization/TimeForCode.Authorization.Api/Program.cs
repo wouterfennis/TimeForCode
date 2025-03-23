@@ -1,6 +1,12 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace TimeForCode.Authorization.Api
 {
-    internal class Program
+    /// <summary>
+    /// Starting point of the Api.
+    /// </summary>
+    [ExcludeFromCodeCoverage(Justification = "Application entrypoint")]
+    internal static class Program
     {
         /// <summary>
         /// Starting point of the Api.
@@ -14,7 +20,7 @@ namespace TimeForCode.Authorization.Api
                 builder.AddDebug();
             });
 
-            var logger = loggerFactory.CreateLogger<Program>();
+            var logger = loggerFactory.CreateLogger(nameof(Program));
 
             try
             {
@@ -28,10 +34,7 @@ namespace TimeForCode.Authorization.Api
             }
             finally
             {
-                if (loggerFactory is IDisposable disposable)
-                {
-                    disposable.Dispose();
-                }
+                loggerFactory.Dispose();
             }
         }
 

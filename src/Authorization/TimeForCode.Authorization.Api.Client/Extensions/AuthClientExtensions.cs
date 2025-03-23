@@ -8,6 +8,10 @@
             {
                 await client.LoginAsync(idenityProvider, redirectUri);
             }
+            catch (ApiException<ProblemDetails> exception)
+            {
+                return TryVoid<ApiException?>.Create(exception);
+            }
             catch (ApiException exception)
             {
                 return TryVoid<ApiException?>.Create(exception);
@@ -35,7 +39,7 @@
             return TryResponse<CallbackResponseModel?, Exception?>.Create(response, default);
         }
 
-        public static async Task<TryVoid<ApiException?>> TryLogoutAsync(this IAuthClient client, string redirectUri)
+        public static async Task<TryVoid<ApiException?>> TryLogoutAsync(this IAuthClient client, Uri redirectUri)
         {
             try
             {
