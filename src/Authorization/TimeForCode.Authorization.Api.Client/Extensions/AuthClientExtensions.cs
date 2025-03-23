@@ -8,6 +8,10 @@
             {
                 await client.LoginAsync(idenityProvider, redirectUri);
             }
+            catch (ApiException<ProblemDetails> exception)
+            {
+                return TryVoid<ApiException?>.Create(exception);
+            }
             catch (ApiException exception)
             {
                 return TryVoid<ApiException?>.Create(exception);

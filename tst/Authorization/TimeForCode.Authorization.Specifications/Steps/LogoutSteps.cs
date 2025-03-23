@@ -1,4 +1,6 @@
-﻿using Reqnroll;
+﻿using FluentAssertions;
+using Microsoft.AspNetCore.Http;
+using Reqnroll;
 using System.Net;
 using System.Text.Json;
 using System.Web;
@@ -13,6 +15,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
     {
         private readonly IAuthClient _authClient;
         private readonly CookieContainer _cookieContainer;
+        private TryVoid<ApiException?> _result;
 
         public LogoutSteps(IAuthClient authClient, CookieContainer cookieContainer)
         {
@@ -35,7 +38,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
                 ExpiresAfter = DateTime.UtcNow.AddHours(1),
             };
 
-            var uri = new Uri("http://localhost:8081");
+            var uri = new Uri("http://localhost:8082");
             var cookieValue = HttpUtility.UrlEncode(JsonSerializer.Serialize(accessToken));
             _cookieContainer.Add(uri, new Cookie(CookieConstants.TokenKey, cookieValue));
         }
@@ -43,7 +46,21 @@ namespace TimeForCode.Authorization.Specifications.Steps
         [When("The user logs out from the external platform")]
         public async Task WhenTheUserLogsOutFromTheExternalPlatformAsync()
         {
-            await _authClient.TryLogoutAsync(new Uri("http://localhost:8081"));
+            _result = await _authClient.TryLogoutAsync(new Uri("http://localhost:8082"));
+        }
+
+        [When("The user logs out from the external platform with invalid redirect url")]
+        public async Task WhenTheUserLogsOutFromTheExternalPlatformWithInvalidRedirectUrlAsync()
+        {
+            _result = await _authClient.TryLogoutAsync(new Uri("http://invalid-uri.com"));
+        }
+
+        [Then("The user is informed the logout redirect uri is rejected")]
+        public void ThenTheUserIsInformedTheLogoutRedirectUriIsRejected()
+        {
+            _result.Should().NotBeNull();
+            _result!.Exception.Should().NotBeNull();
+            _result!.Exception!.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
         }
 
         [Then("The logout is confirmed")]

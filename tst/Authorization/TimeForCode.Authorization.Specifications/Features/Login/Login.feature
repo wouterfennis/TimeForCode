@@ -13,3 +13,8 @@ Scenario: User wants to login with an existing account
 	Given The user has an account at the external platform
 	When The user logs in at the time for code platform
 	Then The user is redirected to the external platform
+
+Scenario: User wants to login with an invalid redirect url
+	Given The user has an account at the external platform
+	When The user logs in at the time for code platform with an invalid redirect url
+	Then The user is informed the login redirect uri is rejected

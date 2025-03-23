@@ -43,13 +43,13 @@ namespace TimeForCode.Authorization.Api.Controllers
         [HttpGet]
         [Route("login")]
         [ProducesResponseType(StatusCodes.Status302Found)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> LoginAsync(LoginRequestModel loginModel)
         {
-            if (IsValidRedirectUri(loginModel.RedirectUri))
+            if (IsInvalidRedirectUri(loginModel.RedirectUri))
             {
-                return BadRequest("The supplied redirect uri is invalid");
+                return BadRequest(ProblemDetailsMapper.BadRequest("The supplied redirect uri is invalid"));
             }
 
             var redirectUrl = await _sender.Send(loginModel.MapToCommand());
@@ -99,9 +99,9 @@ namespace TimeForCode.Authorization.Api.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> LogoutAsync(Uri redirectUri)
         {
-            if (IsValidRedirectUri(redirectUri))
+            if (IsInvalidRedirectUri(redirectUri))
             {
-                return BadRequest("The supplied redirect uri is invalid");
+                return BadRequest(ProblemDetailsMapper.BadRequest("The supplied redirect uri is invalid"));
             }
 
             var refreshToken = GetRefreshToken();
@@ -118,10 +118,10 @@ namespace TimeForCode.Authorization.Api.Controllers
             return Redirect(redirectUri.AbsoluteUri);
         }
 
-        private bool IsValidRedirectUri(Uri redirectUri)
+        private bool IsInvalidRedirectUri(Uri redirectUri)
         {
             var trustedParty = _authenticationOptions.Value.Audience + '/';
-            if(!redirectUri.AbsoluteUri.StartsWith(trustedParty))
+            if(redirectUri.AbsoluteUri.StartsWith(trustedParty))
             {
                 return false;
             }
