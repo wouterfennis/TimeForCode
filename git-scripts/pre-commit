@@ -1,0 +1,6 @@
+#!/bin/sh
+dotnet format
+if [ $? -ne 0 ]; then
+    echo "Code formatting failed. Please fix the issues and commit again."
+    exit 1
+fi
