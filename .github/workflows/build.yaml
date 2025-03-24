@@ -93,3 +93,40 @@ jobs:
 
     - name: Run NuGet security scan
       run: dotnet list ./TimeForCode.sln package --vulnerable --include-transitive
+
+    - name: Build Docker image API
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        file: ./Dockerfile.authorization-api
+        tags: ghcr.io/${{ github.repository }}/timeforcode-authorization-api:latest
+
+    - name: Build Docker image Website
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        file: ./Dockerfile.website
+        tags: ghcr.io/${{ github.repository }}/timeforcode-website:latest
+
+    - name: Log in to GitHub Container Registry
+      uses: docker/login-action@v4
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Push Docker image api
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        file: ./Dockerfile.authorization-api
+        push: true
+        tags: ghcr.io/${{ github.repository }}/timeforcode-authorization-api:latest
+
+    - name: Push Docker image website
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        file: ./Dockerfile.website
+        push: true
+        tags: ghcr.io/${{ github.repository }}/timeforcode-website:latest
