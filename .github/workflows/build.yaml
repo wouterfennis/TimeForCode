@@ -109,14 +109,14 @@ jobs:
         tags: ghcr.io/${{ github.repository }}/timeforcode-website:latest
 
     - name: Log in to GitHub Container Registry
-      uses: docker/login-action@v4
+      uses: docker/login-action@v3
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Push Docker image api
-      uses: docker/build-push-action@v4
+      uses: docker/build-push-action@v3
       with:
         context: .
         file: ./Dockerfile.authorization-api
@@ -124,7 +124,7 @@ jobs:
         tags: ghcr.io/${{ github.repository }}/timeforcode-authorization-api:latest
 
     - name: Push Docker image website
-      uses: docker/build-push-action@v4
+      uses: docker/build-push-action@v3
       with:
         context: .
         file: ./Dockerfile.website
