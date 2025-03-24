@@ -99,14 +99,14 @@ jobs:
       with:
         context: .
         file: ./Dockerfile.authorization-api
-        tags: ghcr.io/${{ github.repository }}/timeforcode-authorization-api:latest
+        tags: ghcr.io/wouterfennis/timeforcode/timeforcode-authorization-api:latest
 
     - name: Build Docker image Website
       uses: docker/build-push-action@v4
       with:
         context: .
         file: ./Dockerfile.website
-        tags: ghcr.io/${{ github.repository }}/timeforcode-website:latest
+        tags: ghcr.io/wouterfennis/timeforcode/timeforcode-website:latest
 
     - name: Log in to GitHub Container Registry
       uses: docker/login-action@v3
