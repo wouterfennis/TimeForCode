@@ -121,7 +121,7 @@ jobs:
         context: .
         file: ./Dockerfile.authorization-api
         push: true
-        tags: ghcr.io/${{ github.repository.toLowerCase() }}/timeforcode-authorization-api:latest
+        tags: ghcr.io/wouterfennis/timeforcode/timeforcode-authorization-api:latest
 
     - name: Push Docker image website
       uses: docker/build-push-action@v3
@@ -129,4 +129,4 @@ jobs:
         context: .
         file: ./Dockerfile.website
         push: true
-        tags: ghcr.io/${{ github.repository.toLowerCase() }}/timeforcode-website:latest
+        tags: ghcr.io/wouterfennis/timeforcode/timeforcode-website:latest
