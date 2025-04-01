@@ -88,7 +88,7 @@ namespace TimeForCode.Authorization.Api
             {
                 app.UseDeveloperExceptionPage();
             }
-            
+
             app.UseHttpsRedirection();
 
             app.UseSwagger();
