@@ -84,7 +84,11 @@ namespace TimeForCode.Authorization.Api
         /// </summary>
         public static void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            app.UseDeveloperExceptionPage();
+            if (env.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+            }
+            
             app.UseHttpsRedirection();
 
             app.UseSwagger();
