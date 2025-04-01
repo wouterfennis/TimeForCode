@@ -19,13 +19,24 @@ module appServicePlanModule 'appServicePlan.bicep' = {
   }
 }
 
-module appServiceModule 'appService.bicep' = {
+module apiAppServiceModule 'appService.bicep' = {
   scope: rgAuthApp
-  name: 'appServiceModule'
+  name: 'apiAppServiceModule'
   params: {
     location: location
     appServicePlanName: appServicePlanModule.outputs.name
   	appServiceName: 'app-auth'
-  	dockerHubImageName: 'mydockerhub/myimage:latest'
+  	imageName: 'ghcr.io/wouterfennis/timeforcode/timeforcode-authorization-api:latest'
+  }
+}
+
+module websiteAppServiceModule 'appService.bicep' = {
+  scope: rgAuthApp
+  name: 'websiteAppServiceModule'
+  params: {
+    location: location
+    appServicePlanName: appServicePlanModule.outputs.name
+  	appServiceName: 'app-auth'
+  	imageName: 'ghcr.io/wouterfennis/timeforcode/timeforcode-website:latest'
   }
 }
