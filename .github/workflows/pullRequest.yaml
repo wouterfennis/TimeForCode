@@ -1,9 +1,10 @@
-name: Continuous Integration Stable
+name: Continuous Integration Pull Request
 
 on:
-  push:
+  pull_request:
     branches:
       - main
+    types: [opened, synchronize, reopened]
 
 jobs:
   build:
@@ -14,7 +15,7 @@ jobs:
       packages: write
 
     env:
-      IMAGE_TAG: latest
+      IMAGE_TAG: ${{ github.run_number }}.${{ github.run_attempt }}
 
     steps:
     - name: Set up JDK 17
