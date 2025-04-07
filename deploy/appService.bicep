@@ -20,8 +20,13 @@ resource appService 'Microsoft.Web/sites@2021-02-01' = {
            value: 'https://ghcr.io'
          }
        ]
-     }
+    }
+    clientCertEnabled: false
+    httpsOnly: true
     serverFarmId: appServicePlan.id
+  }
+  identity: {
+    type: 'SystemAssigned'
   }
 }
 
