@@ -19,16 +19,16 @@ module appServicePlanModule 'appServicePlan.bicep' = {
   }
 }
 
-module apiAppServiceModule 'appService.bicep' = {
-  scope: rgAuthApp
-  name: 'apiAppServiceModule'
-  params: {
-    location: location
-    appServicePlanName: appServicePlanModule.outputs.name
-  	appServiceName: 'app-auth'
-  	imageName: 'ghcr.io/wouterfennis/timeforcode/timeforcode-authorization-api:latest'
-  }
-}
+// module apiAppServiceModule 'appService.bicep' = {
+//   scope: rgAuthApp
+//   name: 'apiAppServiceModule'
+//   params: {
+//     location: location
+//     appServicePlanName: appServicePlanModule.outputs.name
+//   	appServiceName: 'timeforcode-app-auth'
+//   	imageName: 'ghcr.io/wouterfennis/timeforcode/timeforcode-authorization-api:latest'
+//   }
+// }
 
 module websiteAppServiceModule 'appService.bicep' = {
   scope: rgAuthApp
@@ -36,7 +36,7 @@ module websiteAppServiceModule 'appService.bicep' = {
   params: {
     location: location
     appServicePlanName: appServicePlanModule.outputs.name
-  	appServiceName: 'app-auth'
+  	appServiceName: 'timeforcode-app-auth'
   	imageName: 'ghcr.io/wouterfennis/timeforcode/timeforcode-website:latest'
   }
 }

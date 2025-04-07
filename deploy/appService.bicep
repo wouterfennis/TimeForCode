@@ -6,11 +6,13 @@ param imageName string
 
 resource appServicePlan 'Microsoft.Web/serverfarms@2021-02-01' existing = {
   name: appServicePlanName
+  scope: resourceGroup('rg-infrastructure')
 }
 
 resource appService 'Microsoft.Web/sites@2021-02-01' = {
   name: appServiceName
   location: location
+  kind: 'app,linux'
   properties: {
      siteConfig:{
        linuxFxVersion: 'DOCKER|${imageName}'
