@@ -1,9 +1,7 @@
 name: Deploy Bicep
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch: # Allows the workflow to be triggered manually
 
 permissions:
   id-token: write
