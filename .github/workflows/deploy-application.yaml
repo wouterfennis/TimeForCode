@@ -27,5 +27,5 @@ jobs:
         az deployment sub create \
           --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }} \
           --location WestEurope \
-          --template-file authorization.bicep \
+          --template-file application.bicep \
           --parameters location=WestEurope

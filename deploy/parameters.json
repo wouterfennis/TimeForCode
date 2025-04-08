@@ -1,0 +1,24 @@
+{
+    "name": "parameters",
+    "description": "Parameters for the deployment",
+    "applicationInfrastructure":{
+        "resourceGroup": "rg-platform-infra",
+        "appServicePlan": {
+            "name": "ApplicationAppServicePlan",
+            "sku": "F1",
+            "capacity": 1,
+            "tier": "Free",
+            "size": "F1",
+            "family": "F"
+        }
+    },
+    "application":{
+        "resourceGroup": "rg-auth-app",
+        "authorizationApi":{
+            "appServiceName": "timeforcode-auth-api"
+        },
+        "timeForCodeWebsite":{
+            "appServiceName": "timeforcode-website"
+        }
+    }
+}
