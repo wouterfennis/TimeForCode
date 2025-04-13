@@ -1,8 +1,10 @@
 ﻿@inject IHttpContextAccessor HttpContextAccessor
 @inject IAuthClient AuthClient
 @inject NavigationManager NavigationManager
+@inject AuthorizationServiceOptions authorizationServiceOptions
 @page "/"
 @using TimeForCode.Authorization.Api.Client
+@using TimeForCode.Website.Options
 
 <PageTitle>Home</PageTitle>
 
@@ -13,8 +15,8 @@ Welcome to your new app.
 @authenticatedMessage
 
 @{
-    string logoutUri = $"http://localhost:8080/api/Authentication/logout?RedirectUri={NavigationManager.Uri}";
-    string loginUri = $"http://localhost:8080/api/Authentication/login?IdentityProvider=Github&RedirectUri={NavigationManager.Uri}";
+    string logoutUri = $"{authorizationServiceOptions}/api/Authentication/logout?RedirectUri={NavigationManager.Uri}";
+    string loginUri = $"{authorizationServiceOptions}/api/Authentication/login?IdentityProvider=Github&RedirectUri={NavigationManager.Uri}";
 }
 @if (authenticated.HasValue && authenticated.Value)
 {

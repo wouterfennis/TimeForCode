@@ -40,15 +40,15 @@ module apiAppServiceModule 'modules/appService.bicep' = {
       }
       {
         name: 'ExternalIdentityProviderOptions__Github__LoginHost'
-        value: 'localhost'
+        value: 'github.com'
       }
       {
         name: 'ExternalIdentityProviderOptions__Github__AccessTokenHost'
-        value: 'identity-provider-mock'
+        value: 'github.com'
       }
       {
         name: 'ExternalIdentityProviderOptions__Github__RestApiHost'
-        value: 'identity-provider-mock'
+        value: 'api.github.com'
       }
       {
         name: 'ExternalIdentityProviderOptions__Github__ClientId'
@@ -60,7 +60,7 @@ module apiAppServiceModule 'modules/appService.bicep' = {
       }
       {
         name: 'ExternalIdentityProviderOptions__Github__Issuer'
-        value: 'http://localhost:8081'
+        value: 'https://github.com'
       }
       {
         name: 'RefreshTokenOptions__DefaultExpirationAfterInDays'
