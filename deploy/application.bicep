@@ -20,7 +20,7 @@ module apiAppServiceModule 'modules/appService.bicep' = {
     additionalAppSettings: [
       {
         name: 'ASPNETCORE_ENVIRONMENT'
-        value: 'Development'
+        value: 'Production'
       }
       {
         name: 'ASPNETCORE_URLS'
@@ -98,6 +98,33 @@ module apiAppServiceModule 'modules/appService.bicep' = {
   }
 }
 
+module dbSidecarModule 'modules/appServiceSidecar.bicep' = {
+  scope: rgAuthApp
+  name: 'dbSidecarModule'
+  dependsOn: [
+    apiAppServiceModule
+  ]
+  params: {
+  	appServiceName: parameters.application.authorizationApi.appServiceName
+  	imageName: 'docker.io/mongodb:latest'
+    port: '27017'
+    additionalEnvironmentVariables: [
+      {
+        name: 'MONGO_INITDB_ROOT_USERNAME'
+        value: 'root'
+      }
+      {
+        name: 'MONGO_INITDB_ROOT_PASSWORD'
+        value: 'example'
+      }
+      {
+        name: 'MONGO_INITDB_DATABASE'
+        value: 'AuthorizationServer'
+      }
+    ]
+  }
+}
+
 module websiteAppServiceModule 'modules/appService.bicep' = {
   scope: rgAuthApp
   name: 'websiteAppServiceModule'
@@ -110,7 +137,7 @@ module websiteAppServiceModule 'modules/appService.bicep' = {
     additionalAppSettings: [
       {
         name: 'ASPNETCORE_ENVIRONMENT'
-        value: 'Development'
+        value: 'Production'
       }
       {
         name: 'ASPNETCORE_URLS'

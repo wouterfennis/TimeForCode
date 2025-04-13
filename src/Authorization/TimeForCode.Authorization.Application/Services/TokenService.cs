@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using MongoDB.Bson;
 using System.IdentityModel.Tokens.Jwt;
@@ -20,6 +21,7 @@ namespace TimeForCode.Authorization.Application.Services
         private readonly AuthenticationOptions _authenticationOptions;
         private readonly IRefreshTokenRepository _refreshTokenRepository;
         private readonly IStateRepository _stateRepository;
+        private readonly ILogger<TokenService> _logger;
 
         public TokenService(RSA rsa,
             IIdentityProviderServiceFactory identityProviderServiceFactory,
@@ -27,7 +29,8 @@ namespace TimeForCode.Authorization.Application.Services
             IRandomGenerator randomGenerator,
             IRefreshTokenRepository refreshTokenRepository,
             IStateRepository stateRepository,
-            IOptions<AuthenticationOptions> authenticationOptions)
+            IOptions<AuthenticationOptions> authenticationOptions,
+            ILogger<TokenService> logger)
         {
             _rsaSecurityKey = new RsaSecurityKey(rsa);
             _authenticationOptions = authenticationOptions.Value;
@@ -36,10 +39,12 @@ namespace TimeForCode.Authorization.Application.Services
             _randomGenerator = randomGenerator;
             _refreshTokenRepository = refreshTokenRepository;
             _stateRepository = stateRepository;
+            _logger = logger;
         }
 
         public async Task<Result<ExternalAccessToken>> GetAccessTokenFromExternalProviderAsync(string state, string code)
         {
+            _logger.LogDebug("GetAccessTokenFromExternalProviderAsync called with state: {State}, code: {Code}", state, code);
             var result = _identityProviderServiceFactory.GetIdentityProviderServiceFromState(state);
             if (result.IsFailure)
             {
@@ -47,6 +52,7 @@ namespace TimeForCode.Authorization.Application.Services
             }
             var identityProviderService = result.Value;
 
+            _logger.LogDebug("Getting access token from external provider with code: {Code}", code);
             var externalAccessTokenResult = await identityProviderService.GetAccessTokenAsync(code);
             if (externalAccessTokenResult.IsFailure)
             {
