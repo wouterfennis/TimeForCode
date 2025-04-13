@@ -14,7 +14,7 @@ namespace TimeForCode.Authorization.Infrastructure.Services
         private readonly IStateRepository _stateRepository;
         private readonly ILogger<IdentityProviderServiceFactory> _logger;
 
-        public IdentityProviderServiceFactory(IEnumerable<IIdentityProviderService> services, 
+        public IdentityProviderServiceFactory(IEnumerable<IIdentityProviderService> services,
             IStateRepository stateRepository,
             ILogger<IdentityProviderServiceFactory> logger)
         {
