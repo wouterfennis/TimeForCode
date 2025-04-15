@@ -22,7 +22,7 @@ namespace TimeForCode.Authorization.Infrastructure.Services.Github
         private readonly RestClient _restClient;
         private readonly ILogger<GithubService> _logger;
 
-        public GithubService(IOptions<ExternalIdentityProviderOptions> options, 
+        public GithubService(IOptions<ExternalIdentityProviderOptions> options,
             RestClient restClient,
             ILogger<GithubService> logger)
         {
