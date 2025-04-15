@@ -35,7 +35,7 @@ namespace TimeForCode.Authorization.Infrastructure.Extensions
             services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 
             services.AddMemoryCache();
-            services.AddScoped<IStateRepository, StateRepository>();
+            services.AddSingleton<IStateRepository, StateRepository>();
 
             return services;
         }
