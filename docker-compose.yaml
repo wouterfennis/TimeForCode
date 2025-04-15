@@ -70,7 +70,7 @@ services:
       - ASPNETCORE_URLS=http://+:80
       - Logging__LogLevel__Default=Debug
       - Logging__LogLevel__Microsoft.AspNetCore=Warning
-      - AuthorizationServiceOptions"__BaseUri=http://localhost:8080
+      - AuthorizationServiceOptions__BaseUri=http://localhost:8080
       - StorageOptions__StoragePath=/storage
     networks:
       - app-network

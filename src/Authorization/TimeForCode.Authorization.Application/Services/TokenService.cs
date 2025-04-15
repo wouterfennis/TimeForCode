@@ -52,8 +52,9 @@ namespace TimeForCode.Authorization.Application.Services
             }
             var identityProviderService = result.Value;
 
-            _logger.LogDebug("Getting access token from external provider with code: {Code}", code);
-            var externalAccessTokenResult = await identityProviderService.GetAccessTokenAsync(code);
+            Uri redirectUri = GetRedirectUri(state);
+            _logger.LogDebug("Getting access token from external provider with code: {Code} and redirectUri: {RedirectUri}", code, redirectUri);
+            var externalAccessTokenResult = await identityProviderService.GetAccessTokenAsync(code, redirectUri);
             if (externalAccessTokenResult.IsFailure)
             {
                 return Result<ExternalAccessToken>.Failure(externalAccessTokenResult.ErrorMessage);

@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using DnsClient.Internal;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using RestSharp;
@@ -18,14 +20,18 @@ namespace TimeForCode.Authorization.Infrastructure.Services.Github
         private const string UserEndpoint = "/user";
         private readonly ExternalIdentityProvider _identityProviderOptions;
         private readonly RestClient _restClient;
+        private readonly ILogger<GithubService> _logger;
 
-        public GithubService(IOptions<ExternalIdentityProviderOptions> options, RestClient restClient)
+        public GithubService(IOptions<ExternalIdentityProviderOptions> options, 
+            RestClient restClient,
+            ILogger<GithubService> logger)
         {
             _identityProviderOptions = options.Value.GetExternalIdentityProvider(IdentityProvider.Github);
             _restClient = restClient;
+            _logger = logger;
         }
 
-        public async Task<Result<GetAccessTokenResult>> GetAccessTokenAsync(string code)
+        public async Task<Result<GetAccessTokenResult>> GetAccessTokenAsync(string code, Uri redirectUri)
         {
             var uriBuilder = new UriBuilder
             {
@@ -37,12 +43,15 @@ namespace TimeForCode.Authorization.Infrastructure.Services.Github
 
             _restClient.AcceptedContentTypes = [MediaTypeNames.Application.Json];
 
+            _logger.LogDebug("Sending access token request towards: {Uri}", uriBuilder.ToString());
+
             var request = new RestRequest(uriBuilder.ToString(), Method.Post);
-            request.AddBody(new
+            request.AddJsonBody(new
             {
                 client_id = _identityProviderOptions.ClientId,
                 client_secret = _identityProviderOptions.ClientSecret,
-                code
+                code = code,
+                redirect_uri = redirectUri.ToString()
             });
 
             var response = await _restClient.ExecuteAsync<GetAccessTokenResult>(request);
