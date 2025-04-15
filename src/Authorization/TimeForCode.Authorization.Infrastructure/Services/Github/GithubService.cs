@@ -63,8 +63,9 @@ namespace TimeForCode.Authorization.Infrastructure.Services.Github
             {
                 Host = _identityProviderOptions.RestApiHost,
                 Path = UserEndpoint,
-                Port = _identityProviderOptions.RestApiPort ?? -1
             };
+
+            uriBuilder.Port = _identityProviderOptions.RestApiPort ?? uriBuilder.Port;
 
             _restClient.AcceptedContentTypes = [MediaTypeNames.Application.Json];
 

@@ -33,10 +33,11 @@ namespace TimeForCode.Authorization.Application.Handlers
             var uriBuilder = new UriBuilder
             {
                 Host = identityProvider.LoginHost,
-                Port = identityProvider.LoginHostPort ?? -1,
                 Path = OAuthConstants.AuthorizationEndpoint,
                 Query = BuildQuery(state, identityProvider.ClientId)
             };
+
+            uriBuilder.Port = identityProvider.LoginHostPort ?? uriBuilder.Port;
 
             return Task.FromResult(uriBuilder.Uri);
         }
