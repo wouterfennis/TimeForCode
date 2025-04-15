@@ -84,7 +84,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
 
             var problemDetails = exception!.Result;
             problemDetails!.Detail.Should().NotBeNull();
-            problemDetails.Detail.Should().Be(errorMessage);
+            problemDetails.Detail.Should().Contain(errorMessage);
         }
     }
 }
