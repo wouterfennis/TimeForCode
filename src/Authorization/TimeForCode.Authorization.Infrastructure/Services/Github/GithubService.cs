@@ -46,6 +46,7 @@ namespace TimeForCode.Authorization.Infrastructure.Services.Github
             _logger.LogDebug("Sending access token request towards: {Uri}", uriBuilder.ToString());
 
             var request = new RestRequest(uriBuilder.ToString(), Method.Post);
+            request.AddHeader("Content-Type", MediaTypeNames.Application.Json);
             request.AddJsonBody(new
             {
                 client_id = _identityProviderOptions.ClientId,
