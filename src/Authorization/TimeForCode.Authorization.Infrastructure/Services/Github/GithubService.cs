@@ -52,9 +52,7 @@ namespace TimeForCode.Authorization.Infrastructure.Services.Github
                 return Result<GetAccessTokenResult>.Success(response.Data!);
             }
 
-            var problemDetails = JsonSerializer.Deserialize<ProblemDetails>(response.Content!);
-
-            return Result<GetAccessTokenResult>.Failure(problemDetails!.Detail);
+            return Result<GetAccessTokenResult>.Failure(response.Content!);
         }
 
         public async Task<Result<AccountInformation>> GetAccountInformation(ExternalAccessToken accessToken)
