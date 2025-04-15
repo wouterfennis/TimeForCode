@@ -16,7 +16,7 @@ module apiAppServiceModule 'modules/appService.bicep' = {
     appServicePlanName: parameters.applicationInfrastructure.appServicePlan.name
     appServicePlanResourceGroup: parameters.applicationInfrastructure.resourceGroup
   	appServiceName: parameters.application.authorizationApi.appServiceName
-  	imageName: 'ghcr.io/wouterfennis/timeforcode/timeforcode-authorization-api:latest'
+  	imageName: 'ghcr.io/wouterfennis/timeforcode/timeforcode-authorization-api:15.1'
     additionalAppSettings: [
       {
         name: 'ASPNETCORE_ENVIRONMENT'
@@ -106,6 +106,7 @@ module dbSidecarModule 'modules/appServiceSidecar.bicep' = {
   ]
   params: {
   	appServiceName: parameters.application.authorizationApi.appServiceName
+  	sidecarName: 'mongodb'
   	imageName: 'docker.io/mongodb:latest'
     port: '27017'
     additionalEnvironmentVariables: [
@@ -133,7 +134,7 @@ module websiteAppServiceModule 'modules/appService.bicep' = {
     appServicePlanName: parameters.applicationInfrastructure.appServicePlan.name
     appServicePlanResourceGroup: parameters.applicationInfrastructure.resourceGroup
   	appServiceName: parameters.application.timeForCodeWebsite.appServiceName
-  	imageName: 'ghcr.io/wouterfennis/timeforcode/timeforcode-website:latest'
+  	imageName: 'ghcr.io/wouterfennis/timeforcode/timeforcode-website:15.1'
     additionalAppSettings: [
       {
         name: 'ASPNETCORE_ENVIRONMENT'
