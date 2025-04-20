@@ -92,9 +92,7 @@ namespace TimeForCode.Authorization.Infrastructure.Services.Github
                 return Result<AccountInformation>.Success(accountInformation);
             }
 
-            var problemDetails = JsonSerializer.Deserialize<ProblemDetails>(response.Content!);
-
-            return Result<AccountInformation>.Failure(problemDetails!.Detail);
+            return Result<AccountInformation>.Failure(response.Content!);
         }
 
         public Task<TokenValidationParameters> GetTokenValidationParameters()
