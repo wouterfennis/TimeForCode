@@ -19,6 +19,7 @@ namespace TimeForCode.Authorization.Infrastructure.Services.Github
     {
         private const string UserEndpoint = "/user";
         private readonly ExternalIdentityProvider _identityProviderOptions;
+        private readonly IOptions<ExternalIdentityProviderOptions> _options;
         private readonly RestClient _restClient;
         private readonly ILogger<GithubService> _logger;
 
@@ -27,11 +28,12 @@ namespace TimeForCode.Authorization.Infrastructure.Services.Github
             ILogger<GithubService> logger)
         {
             _identityProviderOptions = options.Value.GetExternalIdentityProvider(IdentityProvider.Github);
+            _options = options;
             _restClient = restClient;
             _logger = logger;
         }
 
-        public async Task<Result<GetAccessTokenResult>> GetAccessTokenAsync(string code, Uri redirectUri)
+        public async Task<Result<GetAccessTokenResult>> GetAccessTokenAsync(string code)
         {
             var uriBuilder = new UriBuilder
             {
@@ -53,7 +55,7 @@ namespace TimeForCode.Authorization.Infrastructure.Services.Github
                 client_id = _identityProviderOptions.ClientId,
                 client_secret = _identityProviderOptions.ClientSecret,
                 code = code,
-                redirect_uri = redirectUri.ToString()
+                redirect_uri = _options.Value.CallbackUri
             });
 
             var response = await _restClient.ExecuteAsync<GetAccessTokenResult>(request);
