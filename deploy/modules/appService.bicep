@@ -8,14 +8,17 @@ param imageName string
 param additionalAppSettings array = []
 
 resource appServicePlan 'Microsoft.Web/serverfarms@2021-02-01' existing = {
-  name: appServicePlanName
   scope: resourceGroup(appServicePlanResourceGroup)
+  name: appServicePlanName
 }
 
 resource appService 'Microsoft.Web/sites@2021-02-01' = {
   name: appServiceName
   location: location
   kind: 'app,linux'
+  identity: {
+    type: 'SystemAssigned'
+  }
   properties: {
      siteConfig:{
        linuxFxVersion: 'DOCKER|${imageName}'
@@ -29,9 +32,6 @@ resource appService 'Microsoft.Web/sites@2021-02-01' = {
     clientCertEnabled: false
     httpsOnly: true
     serverFarmId: appServicePlan.id
-  }
-  identity: {
-    type: 'SystemAssigned'
   }
 }
 

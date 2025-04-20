@@ -13,7 +13,6 @@ resource sidecarContainer 'Microsoft.Web/sites/sitecontainers@2024-04-01' = {
     targetPort: port
     isMain: false
     authType: 'Anonymous'
-    volumeMounts: []
     environmentVariables: union([
     ], additionalEnvironmentVariables)
   }
