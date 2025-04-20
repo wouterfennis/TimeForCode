@@ -36,7 +36,8 @@ namespace TimeForCode.Authorization.Infrastructure.Services.Github
             var uriBuilder = new UriBuilder
             {
                 Host = _identityProviderOptions.AccessTokenHost,
-                Path = OAuthConstants.AccessTokenEndpoint
+                Path = OAuthConstants.AccessTokenEndpoint,
+                Scheme = Uri.UriSchemeHttps
             };
 
             uriBuilder.Port = _identityProviderOptions.AccessTokenHostPort ?? uriBuilder.Port;
