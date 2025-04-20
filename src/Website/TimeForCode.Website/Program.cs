@@ -26,6 +26,10 @@ namespace TimeForCode.Website
 
             builder.Services.AddHttpContextAccessor();
 
+            builder.Services
+                .Configure<AuthorizationServiceOptions>(options => builder.Configuration.GetSection(AuthorizationServiceOptions.SectionName)
+                .Bind(options));
+
             var authorizationServiceOptions = AuthorizationServiceOptions.Bind(builder.Configuration);
             builder.Services.AddAuthClient(new Uri(authorizationServiceOptions.BaseUri));
 

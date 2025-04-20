@@ -16,7 +16,7 @@ module apiAppServiceModule 'modules/appService.bicep' = {
     appServicePlanName: parameters.applicationInfrastructure.appServicePlan.name
     appServicePlanResourceGroup: parameters.applicationInfrastructure.resourceGroup
   	appServiceName: parameters.application.authorizationApi.appServiceName
-  	imageName: 'ghcr.io/wouterfennis/timeforcode/timeforcode-authorization-api:15.1'
+  	imageName: 'ghcr.io/wouterfennis/timeforcode/timeforcode-authorization-api:21.1'
     additionalAppSettings: [
       {
         name: 'ASPNETCORE_ENVIRONMENT'
@@ -52,11 +52,11 @@ module apiAppServiceModule 'modules/appService.bicep' = {
       }
       {
         name: 'ExternalIdentityProviderOptions__Github__ClientId'
-        value: 'test-client'
+        value: 'Ov23liwOguoe7jYG1XrE'
       }
       {
         name: 'ExternalIdentityProviderOptions__Github__ClientSecret'
-        value: 'test-secret'
+        value: 'e9ee23c6d03aaa5fadabe6ff350491ff6a34b75c'
       }
       {
         name: 'ExternalIdentityProviderOptions__Github__Issuer'
@@ -134,7 +134,7 @@ module websiteAppServiceModule 'modules/appService.bicep' = {
     appServicePlanName: parameters.applicationInfrastructure.appServicePlan.name
     appServicePlanResourceGroup: parameters.applicationInfrastructure.resourceGroup
   	appServiceName: parameters.application.timeForCodeWebsite.appServiceName
-  	imageName: 'ghcr.io/wouterfennis/timeforcode/timeforcode-website:15.1'
+  	imageName: 'ghcr.io/wouterfennis/timeforcode/timeforcode-website:21.1'
     additionalAppSettings: [
       {
         name: 'ASPNETCORE_ENVIRONMENT'
