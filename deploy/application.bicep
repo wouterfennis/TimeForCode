@@ -16,7 +16,7 @@ module apiAppServiceModule 'modules/appService.bicep' = {
     appServicePlanName: parameters.applicationInfrastructure.appServicePlan.name
     appServicePlanResourceGroup: parameters.applicationInfrastructure.resourceGroup
   	appServiceName: parameters.application.authorizationApi.appServiceName
-  	imageName: 'ghcr.io/wouterfennis/timeforcode/timeforcode-authorization-api:21.1'
+  	imageName: parameters.application.authorizationApi.imageName
     additionalAppSettings: [
       {
         name: 'ASPNETCORE_ENVIRONMENT'
@@ -88,11 +88,11 @@ module apiAppServiceModule 'modules/appService.bicep' = {
       }
       {
         name: 'DbOptions__ConnectionString'
-        value: 'mongodb://root:example@mongo:27017/?authSource=admin'
+        value: '${parameters.database.mongoDb.name}://${parameters.database.mongoDb.adminUsername}:${parameters.database.mongoDb.adminPassword}@mongo:${parameters.database.mongoDb.port}/?authSource=admin'
       }
       {
         name: 'DbOptions__DatabaseName'
-        value: 'AuthorizationServer'
+        value: parameters.database.mongoDb.databaseName
       }
     ]
   }
@@ -106,21 +106,21 @@ module dbSidecarModule 'modules/appServiceSidecar.bicep' = {
   ]
   params: {
   	appServiceName: parameters.application.authorizationApi.appServiceName
-  	sidecarName: 'mongodb'
-  	imageName: 'docker.io/mongodb:latest'
-    port: '27017'
+  	sidecarName: parameters.database.mongoDb.name
+  	imageName: parameters.database.mongoDb.imageName
+    port: parameters.database.mongoDb.port
     additionalEnvironmentVariables: [
       {
         name: 'MONGO_INITDB_ROOT_USERNAME'
-        value: 'root'
+        value: parameters.database.mongoDb.adminUsername
       }
       {
         name: 'MONGO_INITDB_ROOT_PASSWORD'
-        value: 'example'
+        value: parameters.database.mongoDb.adminPassword
       }
       {
         name: 'MONGO_INITDB_DATABASE'
-        value: 'AuthorizationServer'
+        value: parameters.database.mongoDb.databaseName
       }
     ]
   }
@@ -134,7 +134,7 @@ module websiteAppServiceModule 'modules/appService.bicep' = {
     appServicePlanName: parameters.applicationInfrastructure.appServicePlan.name
     appServicePlanResourceGroup: parameters.applicationInfrastructure.resourceGroup
   	appServiceName: parameters.application.timeForCodeWebsite.appServiceName
-  	imageName: 'ghcr.io/wouterfennis/timeforcode/timeforcode-website:21.1'
+  	imageName: parameters.application.timeForCodeWebsite.imageName
     additionalAppSettings: [
       {
         name: 'ASPNETCORE_ENVIRONMENT'

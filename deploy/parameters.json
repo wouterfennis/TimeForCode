@@ -15,10 +15,22 @@
     "application":{
         "resourceGroup": "rg-auth-app",
         "authorizationApi":{
-            "appServiceName": "timeforcode-auth-api"
+            "appServiceName": "timeforcode-auth-api",
+            "imageName": "ghcr.io/wouterfennis/timeforcode/timeforcode-authorization-api:22.1"
         },
         "timeForCodeWebsite":{
-            "appServiceName": "timeforcode-website"
+            "appServiceName": "timeforcode-website",
+            "imageName": "ghcr.io/wouterfennis/timeforcode/timeforcode-website:22.1"
         }
-    }
+    },
+    "database":{
+        "mongoDb": {
+            "name": "mongodb",
+            "imageName": "docker.io/mongodb:latest",
+            "port": "27017",
+            "adminUsername": "root",
+            "adminPassword": "example",
+            "databaseName": "AuthorizationServer"
+        }
+}
 }
