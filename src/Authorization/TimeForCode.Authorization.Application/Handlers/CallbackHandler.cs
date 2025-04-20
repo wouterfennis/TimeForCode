@@ -10,14 +10,17 @@ namespace TimeForCode.Authorization.Application.Handlers
     {
         private readonly IAccountService _accountService;
         private readonly ITokenService _tokenService;
+        private readonly IRefreshTokenService _refreshTokenService;
         private readonly ILogger<CallbackHandler> _logger;
 
         public CallbackHandler(IAccountService accountService,
             ITokenService tokenService,
+            IRefreshTokenService refreshTokenService,
             ILogger<CallbackHandler> logger)
         {
             _accountService = accountService;
             _tokenService = tokenService;
+            _refreshTokenService = refreshTokenService;
             _logger = logger;
         }
 
@@ -39,7 +42,7 @@ namespace TimeForCode.Authorization.Application.Handlers
 
             var userId = saveResult.Value.Id.ToString();
             var internalToken = _tokenService.GenerateInternalToken(userId);
-            var refreshToken = await _tokenService.CreateRefreshTokenAsync(userId);
+            var refreshToken = await _refreshTokenService.CreateRefreshTokenAsync(userId);
             var redirectUri = _tokenService.GetRedirectUri(request.State);
 
             return Result<TokenResult>.Success(new TokenResult

@@ -7,13 +7,13 @@ namespace TimeForCode.Authorization.Application.Handlers
 {
     public class LogoutHandler : IRequestHandler<LogoutCommand>
     {
-        private readonly ITokenService _tokenService;
+        private readonly IRefreshTokenService _refreshTokenService;
         private readonly ILogger<LogoutHandler> _logger;
 
-        public LogoutHandler(ITokenService tokenService,
+        public LogoutHandler(IRefreshTokenService refreshTokenService,
             ILogger<LogoutHandler> logger)
         {
-            _tokenService = tokenService;
+            _refreshTokenService = refreshTokenService;
             _logger = logger;
         }
 
@@ -25,7 +25,7 @@ namespace TimeForCode.Authorization.Application.Handlers
                 return;
             }
 
-            await _tokenService.ExpireRefreshTokenAsync(request.RefreshToken);
+            await _refreshTokenService.ExpireRefreshTokenAsync(request.RefreshToken);
         }
     }
 }

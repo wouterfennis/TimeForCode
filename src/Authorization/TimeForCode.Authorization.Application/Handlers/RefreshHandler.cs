@@ -1,5 +1,4 @@
 ﻿using MediatR;
-using Microsoft.Extensions.Logging;
 using TimeForCode.Authorization.Application.Services;
 using TimeForCode.Authorization.Commands;
 
@@ -8,11 +7,12 @@ namespace TimeForCode.Authorization.Application.Handlers
     public class RefreshHandler : IRequestHandler<RefreshCommand, Result<TokenResult>>
     {
         private readonly ITokenService _tokenService;
+        private readonly IRefreshTokenService _refreshTokenService;
 
-        public RefreshHandler(IAccountService accountService,
-            ITokenService tokenService,
-            ILogger<RefreshHandler> logger)
+        public RefreshHandler(ITokenService tokenService,
+            IRefreshTokenService refreshTokenService)
         {
+            _refreshTokenService = refreshTokenService;
             _tokenService = tokenService;
         }
 
@@ -25,7 +25,7 @@ namespace TimeForCode.Authorization.Application.Handlers
                 return Result<TokenResult>.Failure(internalTokenResult.ErrorMessage);
             }
 
-            var refreshToken = await _tokenService.ReplaceRefreshTokenAsync(request.RefreshToken);
+            var refreshToken = await _refreshTokenService.ReplaceRefreshTokenAsync(request.RefreshToken);
 
             if (refreshToken.IsFailure)
             {
