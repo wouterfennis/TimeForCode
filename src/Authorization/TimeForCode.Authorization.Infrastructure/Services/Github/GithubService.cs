@@ -72,6 +72,7 @@ namespace TimeForCode.Authorization.Infrastructure.Services.Github
             {
                 Host = _identityProviderOptions.RestApiHost,
                 Path = UserEndpoint,
+                Scheme = Uri.UriSchemeHttps
             };
 
             uriBuilder.Port = _identityProviderOptions.RestApiPort ?? uriBuilder.Port;

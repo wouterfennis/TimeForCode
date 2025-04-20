@@ -40,7 +40,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
                 Detail = "Access token cannot be received"
             };
 
-            mockHttp.When("http://localhost:8081/login/oauth/access_token")
+            mockHttp.When("https://localhost:8081/login/oauth/access_token")
                 .Respond(HttpStatusCode.NotFound, "application/json", JsonSerializer.Serialize(problemDetails));
         }
 

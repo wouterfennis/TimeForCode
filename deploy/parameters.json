@@ -16,11 +16,11 @@
         "resourceGroup": "rg-auth-app",
         "authorizationApi":{
             "appServiceName": "timeforcode-auth-api",
-            "imageName": "ghcr.io/wouterfennis/timeforcode/timeforcode-authorization-api:22.1"
+            "imageName": "ghcr.io/wouterfennis/timeforcode/timeforcode-authorization-api:24.1"
         },
         "timeForCodeWebsite":{
             "appServiceName": "timeforcode-website",
-            "imageName": "ghcr.io/wouterfennis/timeforcode/timeforcode-website:22.1"
+            "imageName": "ghcr.io/wouterfennis/timeforcode/timeforcode-website:24.1"
         }
     },
     "database":{
