@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using DnsClient.Internal;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using RestSharp;
@@ -17,12 +19,18 @@ namespace TimeForCode.Authorization.Infrastructure.Services.Github
     {
         private const string UserEndpoint = "/user";
         private readonly ExternalIdentityProvider _identityProviderOptions;
+        private readonly IOptions<ExternalIdentityProviderOptions> _options;
         private readonly RestClient _restClient;
+        private readonly ILogger<GithubService> _logger;
 
-        public GithubService(IOptions<ExternalIdentityProviderOptions> options, RestClient restClient)
+        public GithubService(IOptions<ExternalIdentityProviderOptions> options,
+            RestClient restClient,
+            ILogger<GithubService> logger)
         {
             _identityProviderOptions = options.Value.GetExternalIdentityProvider(IdentityProvider.Github);
+            _options = options;
             _restClient = restClient;
+            _logger = logger;
         }
 
         public async Task<Result<GetAccessTokenResult>> GetAccessTokenAsync(string code)
@@ -30,19 +38,24 @@ namespace TimeForCode.Authorization.Infrastructure.Services.Github
             var uriBuilder = new UriBuilder
             {
                 Host = _identityProviderOptions.AccessTokenHost,
-                Path = OAuthConstants.AccessTokenEndpoint
+                Path = OAuthConstants.AccessTokenEndpoint,
+                Scheme = Uri.UriSchemeHttps
             };
 
             uriBuilder.Port = _identityProviderOptions.AccessTokenHostPort ?? uriBuilder.Port;
 
             _restClient.AcceptedContentTypes = [MediaTypeNames.Application.Json];
 
+            _logger.LogDebug("Sending access token request towards: {Uri}", uriBuilder.ToString());
+
             var request = new RestRequest(uriBuilder.ToString(), Method.Post);
-            request.AddBody(new
+            request.AddHeader("Content-Type", MediaTypeNames.Application.Json);
+            request.AddJsonBody(new
             {
                 client_id = _identityProviderOptions.ClientId,
                 client_secret = _identityProviderOptions.ClientSecret,
-                code
+                code = code,
+                redirect_uri = _options.Value.CallbackUri
             });
 
             var response = await _restClient.ExecuteAsync<GetAccessTokenResult>(request);
@@ -52,9 +65,7 @@ namespace TimeForCode.Authorization.Infrastructure.Services.Github
                 return Result<GetAccessTokenResult>.Success(response.Data!);
             }
 
-            var problemDetails = JsonSerializer.Deserialize<ProblemDetails>(response.Content!);
-
-            return Result<GetAccessTokenResult>.Failure(problemDetails!.Detail);
+            return Result<GetAccessTokenResult>.Failure(response.Content!);
         }
 
         public async Task<Result<AccountInformation>> GetAccountInformation(ExternalAccessToken accessToken)
@@ -63,8 +74,10 @@ namespace TimeForCode.Authorization.Infrastructure.Services.Github
             {
                 Host = _identityProviderOptions.RestApiHost,
                 Path = UserEndpoint,
-                Port = _identityProviderOptions.RestApiPort ?? -1
+                Scheme = Uri.UriSchemeHttps
             };
+
+            uriBuilder.Port = _identityProviderOptions.RestApiPort ?? uriBuilder.Port;
 
             _restClient.AcceptedContentTypes = [MediaTypeNames.Application.Json];
 
@@ -79,9 +92,7 @@ namespace TimeForCode.Authorization.Infrastructure.Services.Github
                 return Result<AccountInformation>.Success(accountInformation);
             }
 
-            var problemDetails = JsonSerializer.Deserialize<ProblemDetails>(response.Content!);
-
-            return Result<AccountInformation>.Failure(problemDetails!.Detail);
+            return Result<AccountInformation>.Failure(response.Content!);
         }
 
         public Task<TokenValidationParameters> GetTokenValidationParameters()

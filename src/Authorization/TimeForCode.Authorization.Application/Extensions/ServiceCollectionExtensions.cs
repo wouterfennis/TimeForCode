@@ -32,6 +32,7 @@ namespace TimeForCode.Authorization.Application.Extensions
 
             services.AddScoped<IAccountService, AccountService>();
             services.AddScoped<ITokenService, TokenService>();
+            services.AddScoped<IRefreshTokenService, RefreshTokenService>();
 
             return services;
         }

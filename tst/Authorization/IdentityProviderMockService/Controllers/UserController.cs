@@ -27,6 +27,7 @@ namespace IdentityProviderMockService.Controllers
         {
             _logger.LogDebug("user is returned");
 
+#pragma warning disable S1075 // URIs should not be hardcoded, this is a mock
             var user = new UserResponse
             {
                 Id = 1,
@@ -37,6 +38,7 @@ namespace IdentityProviderMockService.Controllers
                 AvatarUrl = "https://avatars.githubusercontent.com/u/1?v=4",
                 Company = "GitHub"
             };
+#pragma warning restore S1075 // URIs should not be hardcoded
 
             return Ok(user);
         }
