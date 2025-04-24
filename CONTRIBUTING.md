@@ -13,7 +13,7 @@ By participating in this project, you agree to abide by our [Code of Conduct](CO
 ## How to Contribute
 
 ### 1. Reporting Issues
-If you encounter a bug or have a feature request, please [open an issue](https://github.com/your-repo/issues) and provide as much detail as possible, including:
+If you encounter a bug or have a feature request, please [open an issue](https://github.com/wouterfennis/TimeForCode/issues) and provide as much detail as possible, including:
 - Steps to reproduce the issue (if applicable).
 - Expected and actual behavior.
 - Screenshots or logs (if relevant).
@@ -22,7 +22,7 @@ If you encounter a bug or have a feature request, please [open an issue](https:/
 1. **Fork the repository**: Click the "Fork" button at the top of the repository page.
 2. **Clone your fork**: 
    ```bash
-   git clone https://github.com/your-username/TimeForCode.git
+   git clone https://github.com/wouterfennis/TimeForCode.git
    ```
 3. **Create a new feature branch**: 
    ```bash
