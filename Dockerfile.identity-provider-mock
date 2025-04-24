@@ -6,6 +6,7 @@ WORKDIR /app
 
 # Copy the entire solution and restore dependencies
 COPY ./src ./
+COPY ./TimeForCode.sln ./
 RUN dotnet restore ./tst/Authorization/IdentityProviderMockService/IdentityProviderMockService.csproj
 
 # Build the entire solution
