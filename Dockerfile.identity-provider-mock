@@ -5,7 +5,9 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /app
 
 # Copy the entire solution and restore dependencies
-COPY . ./
+COPY ./src ./src
+COPY ./tst ./tst
+COPY ./TimeForCode.sln ./
 RUN dotnet restore ./tst/Authorization/IdentityProviderMockService/IdentityProviderMockService.csproj
 
 # Build the entire solution
