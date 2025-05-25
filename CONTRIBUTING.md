@@ -18,7 +18,7 @@ By participating in this project, you agree to abide by our
 ### 1. Reporting Issues
 
 If you encounter a bug or have a feature request, please
- [open an issue](https://github.com/wouterfennis/TimeForCode/issues) and 
+ [open an issue](https://github.com/wouterfennis/TimeForCode/issues) and
 provide as much detail as possible, including:
 
 - Steps to reproduce the issue (if applicable).
@@ -88,7 +88,7 @@ Documentation
 
 ## Need Help?
 
-If you have any questions or need assistance, feel free to reach out by 
+If you have any questions or need assistance, feel free to reach out by
 opening an issue or joining our community descussions.
 
 Thank you for contributing to **TimeForCode**!
