@@ -65,6 +65,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Donation", "Donation", "{02
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimeForCode.Donation.Domain", "src\Donation\TimeForCode.Donation.Domain\TimeForCode.Donation.Domain.csproj", "{7FA017E8-E33C-4B43-82FB-78E98B627110}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimeForCode.Donation.Api", "src\Donation\TimeForCode.Donation.Api\TimeForCode.Donation.Api.csproj", "{0FC8F517-BF66-470F-A030-58161A4258E1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -127,6 +129,10 @@ Global
 		{7FA017E8-E33C-4B43-82FB-78E98B627110}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7FA017E8-E33C-4B43-82FB-78E98B627110}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7FA017E8-E33C-4B43-82FB-78E98B627110}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0FC8F517-BF66-470F-A030-58161A4258E1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0FC8F517-BF66-470F-A030-58161A4258E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0FC8F517-BF66-470F-A030-58161A4258E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0FC8F517-BF66-470F-A030-58161A4258E1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -151,6 +157,7 @@ Global
 		{5024C1C7-28D6-4288-BB5A-C270C145410A} = {85CC5B26-CA5D-4462-8AB3-50C307D50E84}
 		{02EA681E-C7D8-13C7-8484-4AC65E1B71E8} = {0E98DD01-937E-4378-BFFB-1DE720D2019B}
 		{7FA017E8-E33C-4B43-82FB-78E98B627110} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{0FC8F517-BF66-470F-A030-58161A4258E1} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D1F8C98B-6300-412B-B5E1-CE65A5AF126F}

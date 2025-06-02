@@ -15,7 +15,12 @@ Below is an overview of the available resources.
 - [Domain Mindmap](mindmap-domain.md): A detailed view of the domain
  entities and their relationships.
 
+## Donation
+
+- [Donation sequence diagrams](donation/donation-sequence-diagrams.md): Documentation
+ on the donation flow and its design.
+
 ## Authentication
 
-- [Authentication Flow Design](authentication_flow_design.md): Documentation
+- [Authentication Flow Design](authentication/authentication_flow_design.md): Documentation
  on the authentication flow and its design.
