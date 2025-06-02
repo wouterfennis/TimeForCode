@@ -171,6 +171,52 @@
         }
       }
     },
+    "/.well-known/jwks.json": {
+      "get": {
+        "tags": [
+          "Jwks"
+        ],
+        "summary": "Returns the JSON Web Key Set (JWKS) for the application.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JwksResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/.well-known/openid-configuration": {
+      "get": {
+        "tags": [
+          "OpenIdConfiguration"
+        ],
+        "summary": "Retrieves the OpenID Connect configuration document.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DiscoveryDocumentResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
     "/api/User": {
       "get": {
         "tags": [
@@ -247,12 +293,68 @@
         "additionalProperties": false,
         "description": "Represents the model for a callback response."
       },
+      "DiscoveryDocumentResponse": {
+        "required": [
+          "issuer",
+          "jwks_uri"
+        ],
+        "type": "object",
+        "properties": {
+          "issuer": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "jwks_uri": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
       "IdentityProvider": {
         "enum": [
           "Github"
         ],
         "type": "string",
         "description": "Represents the identity providers supported by the application."
+      },
+      "JwkResponse": {
+        "required": [
+          "e",
+          "kty",
+          "n"
+        ],
+        "type": "object",
+        "properties": {
+          "kty": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "e": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "n": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "JwksResponse": {
+        "required": [
+          "keys"
+        ],
+        "type": "object",
+        "properties": {
+          "keys": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JwkResponse"
+            }
+          }
+        },
+        "additionalProperties": false
       },
       "ProblemDetails": {
         "type": "object",

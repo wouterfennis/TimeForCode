@@ -1,36 +1,54 @@
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace TimeForCode.Donation.Api
 {
-    public class Program
+    /// <summary>
+    /// Starting point of the Api.
+    /// </summary>
+    [ExcludeFromCodeCoverage(Justification = "Application entrypoint")]
+    internal static class Program
     {
-        public static void Main(string[] args)
+        /// <summary>
+        /// Starting point of the Api.
+        /// </summary>
+        /// <returns>0 if application terminates gracefully, 1 if an unexpected exception occured.</returns>
+        public static int Main(string[] args)
         {
-            var builder = WebApplication.CreateBuilder(args);
-
-            // Add services to the container.
-
-            builder.Services.AddControllers();
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-            builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
-
-            var app = builder.Build();
-
-            // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
+            var loggerFactory = LoggerFactory.Create(builder =>
             {
-                app.UseSwagger();
-                app.UseSwaggerUI();
+                builder.AddConsole();
+                builder.AddDebug();
+            });
+
+            var logger = loggerFactory.CreateLogger(nameof(Program));
+
+            try
+            {
+                CreateHostBuilder(args).Build().Run();
+                return 0;
             }
-
-            app.UseHttpsRedirection();
-
-            app.UseAuthorization();
-
-
-            app.MapControllers();
-
-            app.Run();
+            catch (Exception exception)
+            {
+                logger.LogError(exception, "An unexpected exception occurred.");
+                return 1;
+            }
+            finally
+            {
+                loggerFactory.Dispose();
+            }
         }
+
+        private static IHostBuilder CreateHostBuilder(string[] args) =>
+        Host.CreateDefaultBuilder(args)
+            .ConfigureLogging((c, b) =>
+            {
+                b.AddConsole();
+                b.AddDebug();
+            })
+            .ConfigureWebHostDefaults(webBuilder =>
+            {
+                webBuilder.UseStartup<Startup>();
+            });
     }
 }

@@ -34,6 +34,9 @@ namespace TimeForCode.Authorization.Application.Options
         [Required]
         public required int DefaultRefreshTokenExpirationAfterInDays { get; init; }
 
+        /// <summary>
+        /// Bind the configuration to the AuthenticationOptions
+        /// </summary>
         public static AuthenticationOptions Bind(IConfiguration configuration)
         {
             var authenticationOptions = new AuthenticationOptions

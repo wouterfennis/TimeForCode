@@ -1,9 +1,10 @@
 ﻿using Microsoft.AspNetCore.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
-using TimeForCode.Authorization.Values;
+using TimeForCode.Shared.Api.Authentication;
+using TimeForCode.Shared.Api.Authentication.Models;
 
-namespace TimeForCode.Authorization.Api.Client.Handlers
+namespace TimeForCode.Shared.Api.Handlers
 {
     public class CookieAuthorizationHandler : DelegatingHandler
     {
@@ -16,7 +17,7 @@ namespace TimeForCode.Authorization.Api.Client.Handlers
 
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            var token = _httpContextAccessor.HttpContext.Request.Cookies[CookieConstants.TokenKey];
+            var token = _httpContextAccessor.HttpContext?.Request.Cookies[CookieConstants.TokenKey];
             if (!string.IsNullOrEmpty(token))
             {
                 var accessToken = JsonSerializer.Deserialize<AccessToken>(token);

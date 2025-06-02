@@ -1,8 +1,8 @@
-using IdentityProviderMockService.Models;
 using IdentityProviderMockService.Options;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using System.Net.Mime;
+using TimeForCode.Shared.Api.Authentication.Models;
 
 namespace IdentityProviderMockService.Controllers
 {
@@ -22,7 +22,7 @@ namespace IdentityProviderMockService.Controllers
         }
 
         [HttpGet("openid-configuration")]
-        [ProducesResponseType(typeof(UserResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(DiscoveryDocumentResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public IActionResult GetOpenIdConfiguration()
         {

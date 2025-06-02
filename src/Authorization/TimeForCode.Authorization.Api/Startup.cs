@@ -3,10 +3,10 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
 using System.Text.Json.Serialization;
-using TimeForCode.Authorization.Api.Filters;
 using TimeForCode.Authorization.Application.Extensions;
 using TimeForCode.Authorization.Application.Options;
 using TimeForCode.Authorization.Infrastructure.Extensions;
+using TimeForCode.Shared.Api.Filters;
 
 namespace TimeForCode.Authorization.Api
 {

@@ -1,5 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using TimeForCode.Authorization.Api.Client.Handlers;
+using TimeForCode.Shared.Api.Handlers;
 
 namespace TimeForCode.Authorization.Api.Client.Extensions
 {

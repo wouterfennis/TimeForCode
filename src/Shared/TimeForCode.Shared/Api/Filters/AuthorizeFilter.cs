@@ -2,7 +2,7 @@
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
-namespace TimeForCode.Authorization.Api.Filters
+namespace TimeForCode.Shared.Api.Filters
 {
     /// <summary>
     /// Authorize filter for Swagger

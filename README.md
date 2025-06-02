@@ -81,7 +81,7 @@ docker compose up --build
 
 ## Usage
 
-1. Navigate to [http://localhost:8082] to visit the website
+1. Navigate to [http://localhost:8083] to visit the website
 
 ## Contributing
 

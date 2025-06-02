@@ -15,4 +15,8 @@
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.11.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Shared\TimeForCode.Shared\TimeForCode.Shared.csproj" />
+  </ItemGroup>
+
 </Project>

@@ -4,7 +4,7 @@
     {
         public string Name { get; private init; }
 
-        private User(string name, Uri githubReference) : base(githubReference)
+        protected User(string name, Uri githubReference) : base(githubReference)
         {
             Name = name;
         }

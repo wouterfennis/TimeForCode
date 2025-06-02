@@ -35,7 +35,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
                 Company = "",
             };
 
-            mockHttp.When("https://localhost:8081/user")
+            mockHttp.When("http://localhost:8081/user")
                     .Respond("application/json", JsonSerializer.Serialize(accountInformation));
         }
 
@@ -51,7 +51,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
                 Detail = "No account information"
             };
 
-            mockHttp.When("https://localhost:8081/user")
+            mockHttp.When("http://localhost:8081/user")
                     .Respond(HttpStatusCode.NotFound, "application/json", JsonSerializer.Serialize(problemDetails));
         }
 
@@ -67,7 +67,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
                 TokenType = "token_type"
             };
 
-            mockHttp.When("https://localhost:8081/login/oauth/access_token")
+            mockHttp.When("http://localhost:8081/login/oauth/access_token")
                 .Respond("application/json", JsonSerializer.Serialize(accessTokenResult));
         }
 

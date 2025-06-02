@@ -8,6 +8,7 @@ using TimeForCode.Authorization.Api.Models;
 using TimeForCode.Authorization.Application.Options;
 using TimeForCode.Authorization.Commands;
 using TimeForCode.Authorization.Values;
+using TimeForCode.Shared.Api.Authentication;
 
 namespace TimeForCode.Authorization.Api.Controllers
 {

@@ -49,6 +49,5 @@ namespace TimeForCode.Authorization.Api
             {
                 webBuilder.UseStartup<Startup>();
             });
-
     }
 }

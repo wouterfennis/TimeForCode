@@ -2,6 +2,7 @@
 @inject IAuthClient AuthClient
 @inject NavigationManager NavigationManager
 @inject IOptions<AuthorizationServiceOptions> authorizationServiceOptions
+@inject IOptions<DonationServiceOptions> donationServiceOptions
 @page "/"
 @using Microsoft.Extensions.Options
 @using TimeForCode.Authorization.Api.Client
@@ -18,6 +19,7 @@ Welcome to your new app.
 @{
     string logoutUri = $"{authorizationServiceOptions.Value.BaseUri}/api/Authentication/logout?RedirectUri={NavigationManager.Uri}";
     string loginUri = $"{authorizationServiceOptions.Value.BaseUri}/api/Authentication/login?IdentityProvider=Github&RedirectUri={NavigationManager.Uri}";
+    string testUri = $"{donationServiceOptions.Value.BaseUri}/api/v1/project/test";
 }
 @if (authenticated.HasValue && authenticated.Value)
 {
@@ -26,6 +28,11 @@ Welcome to your new app.
 else
 {
     <a href="@loginUri">Log in with Github</a>
+}
+
+@if (authenticated.HasValue && authenticated.Value)
+{
+    <a href="@testUri">Test Donation</a>
 }
 
 @code {

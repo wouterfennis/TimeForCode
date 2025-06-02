@@ -11,6 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Shared\TimeForCode.Shared\TimeForCode.Shared.csproj" />
     <ProjectReference Include="..\TimeForCode.Authorization.Values\TimeForCode.Authorization.Values.csproj" />
   </ItemGroup>
 

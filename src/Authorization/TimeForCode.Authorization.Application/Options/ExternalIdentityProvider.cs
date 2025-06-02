@@ -24,6 +24,7 @@ namespace TimeForCode.Authorization.Application.Options
         public required string RestApiHost { get; init; }
 
         public int? RestApiPort { get; init; }
+        public bool IsHttps { get; init; }
 
         public required string? MetaDataAddress { get; init; }
 
