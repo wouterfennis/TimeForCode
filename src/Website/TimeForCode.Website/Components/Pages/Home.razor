@@ -1,11 +1,13 @@
 ﻿@inject IHttpContextAccessor HttpContextAccessor
 @inject IAuthClient AuthClient
+@inject IDonationClient DonationClient
 @inject NavigationManager NavigationManager
 @inject IOptions<AuthorizationServiceOptions> authorizationServiceOptions
 @inject IOptions<DonationServiceOptions> donationServiceOptions
 @page "/"
 @using Microsoft.Extensions.Options
 @using TimeForCode.Authorization.Api.Client
+@using TimeForCode.Donation.Api.Client
 @using TimeForCode.Website.Options
 
 <PageTitle>Home</PageTitle>
@@ -28,11 +30,6 @@ Welcome to your new app.
 else
 {
     <a href="@loginUri">Log in with Github</a>
-}
-
-@if (authenticated.HasValue && authenticated.Value)
-{
-    <a href="@testUri">Test Donation</a>
 }
 
 @code {
@@ -58,6 +55,14 @@ else
                 if (task.IsCompletedSuccessfully)
                 {
                     userName = task.Result.Name;
+                    InvokeAsync(StateHasChanged);
+                }
+            });
+
+            await DonationClient.GetAsync().ContinueWith(task =>
+            {
+                if (task.IsCompletedSuccessfully)
+                {
                     InvokeAsync(StateHasChanged);
                 }
             });

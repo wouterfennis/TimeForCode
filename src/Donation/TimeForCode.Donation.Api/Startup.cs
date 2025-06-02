@@ -71,7 +71,7 @@ namespace TimeForCode.Donation.Api
                 });
 
             services.AddAuthorizationBuilder()
-                    .AddPolicy("ApiUser", policy => policy.RequireClaim("scope", "donation"));
+                    .AddPolicy("ApiUser", policy => policy.RequireClaim("scope", "user"));
         }
 
         /// <summary>
