@@ -25,6 +25,10 @@ namespace TimeForCode.Authorization.Application.Extensions
                 .Bind(options));
 
             services
+                .Configure<TokenCreationOptions>(options => configuration.GetSection(TokenCreationOptions.SectionName)
+                .Bind(options));
+
+            services
                 .Configure<ExternalIdentityProviderOptions>(options => configuration.GetSection(ExternalIdentityProviderOptions.SectionName)
                 .Bind(options));
 

@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Authorization\TimeForCode.Authorization.Api.Client\TimeForCode.Authorization.Api.Client.csproj" />
+    <ProjectReference Include="..\..\Donation\TimeForCode.Donation.Api.Client\TimeForCode.Donation.Api.Client.csproj" />
   </ItemGroup>
 
 </Project>

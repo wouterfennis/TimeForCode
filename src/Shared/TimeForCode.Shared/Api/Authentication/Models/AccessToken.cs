@@ -1,4 +1,4 @@
-﻿namespace TimeForCode.Authorization.Values
+﻿namespace TimeForCode.Shared.Api.Authentication.Models
 {
     public class AccessToken
     {

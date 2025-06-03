@@ -9,7 +9,7 @@ using TimeForCode.Authorization.Api.Client;
 using TimeForCode.Authorization.Api.Client.Extensions;
 using TimeForCode.Authorization.Application.Interfaces;
 using TimeForCode.Authorization.Domain.Entities;
-using TimeForCode.Authorization.Values;
+using TimeForCode.Shared.Api.Authentication;
 
 namespace TimeForCode.Authorization.Specifications.Steps
 {
@@ -40,7 +40,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
                 Detail = "Access token cannot be received"
             };
 
-            mockHttp.When("https://localhost:8081/login/oauth/access_token")
+            mockHttp.When("http://localhost:8081/login/oauth/access_token")
                 .Respond(HttpStatusCode.NotFound, "application/json", JsonSerializer.Serialize(problemDetails));
         }
 

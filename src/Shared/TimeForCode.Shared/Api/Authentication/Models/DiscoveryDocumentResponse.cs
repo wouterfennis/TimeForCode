@@ -1,8 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace IdentityProviderMockService.Models
+namespace TimeForCode.Shared.Api.Authentication.Models
 {
+    /// <summary>
+    /// Response model for the discovery document endpoint.
+    /// </summary>
     public class DiscoveryDocumentResponse
     {
         /// <summary>

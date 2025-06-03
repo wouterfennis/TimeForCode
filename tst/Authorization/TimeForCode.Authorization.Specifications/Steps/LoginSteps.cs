@@ -21,7 +21,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
         [When("The user logs in at the time for code platform")]
         public async Task WhenTheUserLogsInAtTheTimeForCodePlatformAsync()
         {
-            _result = await _authClient.TryLoginAsync(IdentityProvider.Github, new Uri("http://localhost:8082"));
+            _result = await _authClient.TryLoginAsync(IdentityProvider.Github, new Uri("http://localhost:8083"));
         }
 
         [When("The user logs in at the time for code platform with an invalid redirect url")]

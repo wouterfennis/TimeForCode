@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using TimeForCode.Authorization.Values;
+using TimeForCode.Shared.Api.Authentication.Models;
 
 namespace TimeForCode.Authorization.Api.Models
 {

@@ -2,7 +2,7 @@
 
 The following mind map provides an overview of the Time For Code platform.
 This diagram serves as a high-level guide to the platform's architecture
- and functionality.
+and functionality.
 
 ```mermaid
 mindmap
@@ -21,7 +21,7 @@ mindmap
         Contribution reporting
         Level/Tiers
         Commit Tags
-        Campains
+        Campaigns
             Spotlight
             Themes
             Advertising
@@ -33,18 +33,18 @@ mindmap
         Striker .NET
         MongoDB/NoSQL
         Docker
-        Open Container Initiative
+            Open Container Initiative
         Swagger
-    Infrastucture
+    Infrastructure
         Infra as Code
         Database
         Serverless
         APIs
+            Swagger
     Security 
         Login external OAuth2 providers
             Github
         Roles
         Administrator
         Deployment secrets
-
 ```
