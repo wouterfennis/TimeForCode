@@ -17,7 +17,7 @@ namespace TimeForCode.Authorization.Application.Services
         private readonly RsaSecurityKey _rsaSecurityKey;
         private readonly IIdentityProviderServiceFactory _identityProviderServiceFactory;
         private readonly TimeProvider _timeProvider;
-        private readonly AuthenticationOptions _authenticationOptions;
+        private readonly TokenCreationOptions _tokenCreationOptions;
         private readonly IRefreshTokenRepository _refreshTokenRepository;
         private readonly IStateRepository _stateRepository;
         private readonly ILogger<TokenService> _logger;
@@ -27,11 +27,11 @@ namespace TimeForCode.Authorization.Application.Services
             TimeProvider timeProvider,
             IRefreshTokenRepository refreshTokenRepository,
             IStateRepository stateRepository,
-            IOptions<AuthenticationOptions> authenticationOptions,
+            IOptions<TokenCreationOptions> tokenCreationOptions,
             ILogger<TokenService> logger)
         {
             _rsaSecurityKey = new RsaSecurityKey(rsa);
-            _authenticationOptions = authenticationOptions.Value;
+            _tokenCreationOptions = tokenCreationOptions.Value;
             _identityProviderServiceFactory = identityProviderServiceFactory;
             _timeProvider = timeProvider;
             _refreshTokenRepository = refreshTokenRepository;
@@ -65,21 +65,23 @@ namespace TimeForCode.Authorization.Application.Services
 
         public AccessToken GenerateInternalToken(string userId)
         {
-            var claims = new Dictionary<string, object>
-            {
-                { "scope", "user" }
-            };
             var expiresAfter = _timeProvider.GetUtcNow()
-                .AddMinutes(_authenticationOptions.TokenExpiresInMinutes);
+                .AddMinutes(_tokenCreationOptions.TokenExpiresInMinutes);
 
             var tokenHandler = new JwtSecurityTokenHandler();
+
+            var claims = new Dictionary<string, object>
+            {
+                { "sub", userId },
+                { "scope", "user" },
+                { "aud", new[] { _tokenCreationOptions.Audiences } }
+            };
+
             var tokenDescriptor = new SecurityTokenDescriptor
             {
-                Subject = new ClaimsIdentity([new Claim("sub", userId)]),
                 Expires = expiresAfter.UtcDateTime,
                 NotBefore = _timeProvider.GetUtcNow().UtcDateTime,
-                Issuer = _authenticationOptions.Issuer,
-                Audience = _authenticationOptions.Audience,
+                Issuer = _tokenCreationOptions.Issuer,
                 Claims = claims,
                 SigningCredentials = new SigningCredentials(_rsaSecurityKey, SecurityAlgorithms.RsaSha256)
             };

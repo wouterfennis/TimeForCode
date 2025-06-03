@@ -23,16 +23,10 @@ namespace TimeForCode.Authorization.Application.Options
         public required string Audience { get; init; }
 
         /// <summary>
-        /// Token expiration time in minutes
+        /// Valid redirect uris
         /// </summary>
         [Required]
-        public required int TokenExpiresInMinutes { get; init; }
-
-        /// <summary>
-        /// Default refresh token expiration time in days
-        /// </summary>
-        [Required]
-        public required int DefaultRefreshTokenExpirationAfterInDays { get; init; }
+        public required List<string> ValidRedirectUris { get; init; }
 
         /// <summary>
         /// Bind the configuration to the AuthenticationOptions
@@ -43,8 +37,7 @@ namespace TimeForCode.Authorization.Application.Options
             {
                 Audience = configuration.GetSection(SectionName).GetValue<string>(nameof(Audience))!,
                 Issuer = configuration.GetSection(SectionName).GetValue<string>(nameof(Issuer))!,
-                TokenExpiresInMinutes = configuration.GetSection(SectionName).GetValue<int>(nameof(TokenExpiresInMinutes)),
-                DefaultRefreshTokenExpirationAfterInDays = configuration.GetSection(SectionName).GetValue<int>(nameof(DefaultRefreshTokenExpirationAfterInDays)),
+                ValidRedirectUris = configuration.GetSection(SectionName).GetValue<List<string>>(nameof(ValidRedirectUris))!,
             };
 
             return authenticationOptions;

@@ -67,6 +67,22 @@ module apiAppServiceModule 'modules/appService.bicep' = {
         value: '7'
       }
       {
+        name: 'TokenCreationOptions__Issuer'
+        value: 'https://timeforcode-auth-api.azurewebsites.net'
+      }
+      {
+        name: 'TokenCreationOptions__Audiences__0'
+        value: 'https://timeforcode-website.azurewebsites.net'
+      }
+      {
+        name: 'TokenCreationOptions__TokenExpiresInMinutes'
+        value: '60'
+      }
+      {
+        name: 'ATokenCreationOptions__DefaultRefreshTokenExpirationAfterInDays'
+        value: '7'
+      }
+      {
         name: 'AuthenticationOptions__Issuer'
         value: 'https://timeforcode-auth-api.azurewebsites.net'
       }
@@ -75,12 +91,8 @@ module apiAppServiceModule 'modules/appService.bicep' = {
         value: 'https://timeforcode-website.azurewebsites.net'
       }
       {
-        name: 'AuthenticationOptions__TokenExpiresInMinutes'
-        value: '60'
-      }
-      {
-        name: 'AuthenticationOptions__DefaultRefreshTokenExpirationAfterInDays'
-        value: '7'
+        name: 'AuthenticationOptions__ValidRedirectUris__0'
+        value: 'https://timeforcode-website.azurewebsites.net'
       }
       {
         name: 'RsaOptions__Base64Certificate'
