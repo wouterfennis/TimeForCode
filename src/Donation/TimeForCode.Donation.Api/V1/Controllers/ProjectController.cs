@@ -45,7 +45,8 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         [HttpGet("test", Name = nameof(Get))]
         [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
         [Authorize(Policy = "ApiUser")]
-        public string Get() {
+        public string Get()
+        {
             _logger.LogDebug("Get endpoint called.");
             return "Project registration endpoint is not implemented yet.";
         }

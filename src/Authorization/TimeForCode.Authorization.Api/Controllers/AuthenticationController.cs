@@ -121,7 +121,7 @@ namespace TimeForCode.Authorization.Api.Controllers
 
         private bool IsInvalidRedirectUri(Uri redirectUri)
         {
-            foreach(var validRedirectUri in _authenticationOptions.Value.ValidRedirectUris)
+            foreach (var validRedirectUri in _authenticationOptions.Value.ValidRedirectUris)
             {
                 if (redirectUri.AbsoluteUri.StartsWith(validRedirectUri + '/'))
                 {
