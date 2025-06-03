@@ -74,7 +74,7 @@ namespace TimeForCode.Authorization.Application.Services
             {
                 { "sub", userId },
                 { "scope", "user" },
-                { "aud", new[] { _tokenCreationOptions.Audiences } }
+                { "aud", _tokenCreationOptions.Audiences }
             };
 
             var tokenDescriptor = new SecurityTokenDescriptor
