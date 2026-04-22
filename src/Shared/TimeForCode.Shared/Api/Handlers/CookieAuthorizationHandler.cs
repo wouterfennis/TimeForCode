@@ -6,15 +6,16 @@ using TimeForCode.Shared.Api.Authentication.Models;
 
 namespace TimeForCode.Shared.Api.Handlers
 {
-    public class CookieAuthorizationHandler : DelegatingHandler
+    public class CookieAuthorizationHandler(IHttpContextAccessor httpContextAccessor) : DelegatingHandler
     {
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
 
-        public CookieAuthorizationHandler(IHttpContextAccessor httpContextAccessor)
-        {
-            _httpContextAccessor = httpContextAccessor;
-        }
-
+        /// <summary>
+        /// Sends an HTTP request with the access token from the cookie if it exists.
+        /// </summary>
+        /// <param name="request">The HTTP request message.</param>
+        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+        /// <returns>A task that represents the asynchronous operation.</returns>
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             var token = _httpContextAccessor.HttpContext?.Request.Cookies[CookieConstants.TokenKey];
