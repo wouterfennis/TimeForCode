@@ -79,7 +79,7 @@ module apiAppServiceModule 'modules/appService.bicep' = {
         value: '60'
       }
       {
-        name: 'ATokenCreationOptions__DefaultRefreshTokenExpirationAfterInDays'
+        name: 'TokenCreationOptions__DefaultRefreshTokenExpirationAfterInDays'
         value: '7'
       }
       {
