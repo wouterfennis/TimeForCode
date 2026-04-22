@@ -11,7 +11,7 @@ This is the documentation anchor for the TimeForCode platform. All requirements,
 Documents that reflect the system as it exists in code today.
 
 | Document | Purpose |
-|---|---|
+| --- | --- |
 | [Overview](current/overview.md) | Implemented capabilities by bounded context |
 | [Capability Status](current/capability-status.md) | Feature-level implementation status (done / partial / missing) |
 | [API Surface](current/api-surface.md) | Existing endpoints and contracts |
@@ -25,7 +25,7 @@ Documents that reflect the system as it exists in code today.
 Documents that define what the platform should become. These are the build instructions for future implementation.
 
 | Document | Purpose |
-|---|---|
+| --- | --- |
 | [Product Vision](target/product-vision.md) | Mission, user segments, and value proposition |
 | [Personas and Journeys](target/personas-and-journeys.md) | Key actors and end-to-end user journeys |
 | [Requirements](target/requirements.md) | Functional and non-functional requirements |
@@ -42,7 +42,7 @@ Documents that define what the platform should become. These are the build instr
 Architecture is documented using the [Arc42](https://arc42.org) template. All architecture-impacting changes must update the relevant Arc42 section. See [docs/architecture/arc42/README.md](architecture/arc42/README.md) for the index and governance rules.
 
 | Section | Title |
-|---|---|
+| --- | --- |
 | [01](architecture/arc42/01-introduction-and-goals.md) | Introduction and Goals |
 | [02](architecture/arc42/02-architecture-constraints.md) | Architecture Constraints |
 | [03](architecture/arc42/03-context-and-scope.md) | Context and Scope |
@@ -61,7 +61,7 @@ Architecture is documented using the [Arc42](https://arc42.org) template. All ar
 ## Reference
 
 | Document | Purpose |
-|---|---|
+| --- | --- |
 | [Glossary](reference/glossary.md) | Shared domain and technical terms |
 | [ADR Index](reference/adr/README.md) | Architecture Decision Records |
 | [Docs Conventions](README.md) | Documentation standards, status labels, and authoring rules |
@@ -71,6 +71,6 @@ Architecture is documented using the [Arc42](https://arc42.org) template. All ar
 ## Workflow Documentation
 
 | Document | Purpose |
-|---|---|
+| --- | --- |
 | [Authentication Flow](authentication/authentication_flow_design.md) | OAuth 2.0 login and token lifecycle (implemented) |
 | [Donation Workflows](donation/donation-sequence-diagrams.md) | Project onboarding and donation lifecycle |

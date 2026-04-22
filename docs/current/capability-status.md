@@ -11,7 +11,7 @@ This document provides an explicit, feature-level view of what is implemented, p
 ## Authentication and Identity
 
 | Capability | Status | Notes |
-|---|---|---|
+| --- | --- | --- |
 | GitHub OAuth 2.0 login | ✅ | Full flow implemented |
 | Internal JWT issuance (RS256) | ✅ | Access token + refresh token |
 | Refresh token rotation | ✅ | 7-day expiry, rotated on use |
@@ -26,7 +26,7 @@ This document provides an explicit, feature-level view of what is implemented, p
 ## Project Management
 
 | Capability | Status | Notes |
-|---|---|---|
+| --- | --- | --- |
 | Register a project (API endpoint) | ⚠️ | Route exists; logic not implemented |
 | Fetch project metadata from GitHub | ⚠️ | Sequence designed; not implemented |
 | List projects | ❌ | No endpoint |
@@ -40,7 +40,7 @@ This document provides an explicit, feature-level view of what is implemented, p
 ## Donations
 
 | Capability | Status | Notes |
-|---|---|---|
+| --- | --- | --- |
 | Create a donation pledge | ❌ | Domain model exists; no API |
 | List donations for a project | ❌ | No endpoint |
 | Donation state transitions (Pending → Active → Completed) | ❌ | State machine not implemented |
@@ -53,7 +53,7 @@ This document provides an explicit, feature-level view of what is implemented, p
 ## Organizations and Contributors
 
 | Capability | Status | Notes |
-|---|---|---|
+| --- | --- | --- |
 | Register a donor organization | ❌ | Domain model exists; no API |
 | Manage organization employees | ❌ | Not implemented |
 | Register as an individual contributor | ❌ | Not implemented |
@@ -64,7 +64,7 @@ This document provides an explicit, feature-level view of what is implemented, p
 ## Matchmaking
 
 | Capability | Status | Notes |
-|---|---|---|
+| --- | --- | --- |
 | Match donated hours to project needs | ❌ | No implementation |
 | Suggest projects based on skills | ❌ | No implementation |
 | Campaign and spotlight features | ❌ | Concept only |
@@ -74,7 +74,7 @@ This document provides an explicit, feature-level view of what is implemented, p
 ## Reporting and Impact
 
 | Capability | Status | Notes |
-|---|---|---|
+| --- | --- | --- |
 | Hours donated per organization | ❌ | Not implemented |
 | Hours spent per project | ❌ | Not implemented |
 | Contribution history for a user | ❌ | Not implemented |
@@ -86,7 +86,7 @@ This document provides an explicit, feature-level view of what is implemented, p
 ## Website UI
 
 | Capability | Status | Notes |
-|---|---|---|
+| --- | --- | --- |
 | Login / logout | ⚠️ | Auth integration present; UI minimal |
 | Project listing page | ❌ | Not implemented |
 | Project detail page | ❌ | Not implemented |

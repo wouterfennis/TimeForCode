@@ -60,7 +60,7 @@ graph LR
 ### Components
 
 | Component | Responsibility |
-|---|---|
+| --- | --- |
 | `TimeForCode.Authorization.Api` | REST endpoints: login, callback, refresh, logout, user, JWKS |
 | `TimeForCode.Authorization.Application` | MediatR command handlers; token service; account linking |
 | `TimeForCode.Authorization.Domain` | OAuth constants and domain primitives |
@@ -103,7 +103,7 @@ graph LR
 ### Domain Entities
 
 | Entity | Responsibility |
-|---|---|
+| --- | --- |
 | `Project` | Registered open-source project; linked to a GitHub repository |
 | `Donation` | Hours pledged by an organisation or individual to a project |
 | `DonationTransaction` | Single hour-log entry against an active donation |
@@ -119,7 +119,7 @@ graph LR
 The Website is a Blazor application that acts as the user-facing shell. It does not contain business logic. It calls the Authorization API and the Donation API via typed HTTP clients.
 
 | Component | Responsibility |
-|---|---|
+| --- | --- |
 | `TimeForCode.Website` | Blazor pages and components |
 | `TimeForCode.Authorization.Api.Client` | Typed client for Authorization API |
 | `TimeForCode.Donation.Api.Client` | Typed client for Donation API |
@@ -130,5 +130,5 @@ The Website is a Blazor application that acts as the user-facing shell. It does 
 ## Level 2 — Shared
 
 | Component | Responsibility |
-|---|---|
+| --- | --- |
 | `TimeForCode.Shared` | `CookieAuthorizationHandler` reads the JWT cookie and attaches it as a bearer token on outgoing HTTP calls. `AuthorizeFilter` validates the token on incoming requests. |

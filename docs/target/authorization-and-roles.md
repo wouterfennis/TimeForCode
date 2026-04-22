@@ -11,7 +11,7 @@ This document defines the role model and permission boundaries for the TimeForCo
 The platform defines four roles. A user may hold more than one role (e.g. a developer can be both a Maintainer and a Contributor).
 
 | Role | Description |
-|---|---|
+| --- | --- |
 | `Admin` | Platform operator. Can approve projects, manage organizations, and moderate content. |
 | `Maintainer` | Owns and manages one or more registered open-source projects. |
 | `DonorOrganizationMember` | Member of a registered donor organization. Can make or manage donations on behalf of the organization. |
@@ -26,7 +26,7 @@ Anonymous users (not authenticated) can only read public project listings.
 Roles are stored as claims inside the internal JWT issued by the Authorization API. They are not delegated from GitHub.
 
 | Role | How assigned |
-|---|---|
+| --- | --- |
 | `Admin` | Manually assigned by an existing admin; cannot be self-assigned |
 | `Maintainer` | Granted when a user registers a project for the first time |
 | `DonorOrganizationMember` | Granted when a user is added to an organization by an existing org member or admin |
@@ -41,7 +41,7 @@ The table below defines which roles are authorised for each operation. A checkma
 ### Project Operations
 
 | Operation | Anonymous | Contributor | Maintainer | DonorOrgMember | Admin |
-|---|---|---|---|---|---|
+| --- | --- | --- | --- | --- | --- |
 | View active project listings | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Submit a project for registration | | | ✅ | | ✅ |
 | Edit own project details | | | ✅ (own) | | ✅ |
@@ -51,7 +51,7 @@ The table below defines which roles are authorised for each operation. A checkma
 ### Donation Operations
 
 | Operation | Contributor | Maintainer | DonorOrgMember | Admin |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | Pledge hours (organization) | | | ✅ | ✅ |
 | Pledge hours (individual) | ✅ | ✅ | ✅ | ✅ |
 | View own donations | ✅ | | ✅ | ✅ |
@@ -62,7 +62,7 @@ The table below defines which roles are authorised for each operation. A checkma
 ### Hour Tracking Operations
 
 | Operation | Contributor | DonorOrgMember | Admin |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | Log hours against active donation | ✅ (assigned) | ✅ (assigned) | ✅ |
 | View own hour logs | ✅ | ✅ | ✅ |
 | Edit own hour logs (within 24h) | ✅ | ✅ | ✅ |
@@ -71,7 +71,7 @@ The table below defines which roles are authorised for each operation. A checkma
 ### Organization Operations
 
 | Operation | Contributor | DonorOrgMember | Admin |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | Register new organization | ✅ | | ✅ |
 | View own organization | | ✅ | ✅ |
 | Edit own organization | | ✅ (owner) | ✅ |
@@ -81,7 +81,7 @@ The table below defines which roles are authorised for each operation. A checkma
 ### Reporting
 
 | Operation | Contributor | Maintainer | DonorOrgMember | Admin |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | View own contribution history | ✅ | | ✅ | ✅ |
 | View project donation report | | ✅ (own) | | ✅ |
 | View organization impact report | | | ✅ (own) | ✅ |

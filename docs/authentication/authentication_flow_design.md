@@ -97,26 +97,41 @@ https://github.com/login/oauth/authorize?client_id=the_client_id
 ### Points to consider when implementing
 
 1. **State Handling**
-  - Always create and validate a `state` value for the authorization flow.
-  - Store enough information with the `state` to restore the intended post-login redirect and identity provider context.
 
-2. **Token Expiration and Refresh**
-  - Internal access tokens should be short-lived.
-  - Use refresh tokens to keep the session alive without forcing the user to log in repeatedly.
-  - Rotate refresh tokens when issuing new ones.
+   - Always create and validate a `state` value for the authorization flow.
+   - Store enough information with the `state` to restore the intended
+     post-login redirect and identity provider context.
 
-3. **Security**
-  - Prefer secure HttpOnly cookies over local storage for browser-based authentication flows.
-  - Use `Secure` cookies and enforce HTTPS.
-  - Consider appropriate `SameSite` settings for the application flow.
-  - Validate redirect URIs against an allow-list.
+1. **Token Expiration and Refresh**
 
-4. **Scopes and Claims**
-  - Internal scopes and claims should reflect application permissions, not just external provider permissions.
-  - Keep the internal authorization model separate from the external provider model.
+   - Internal access tokens should be short-lived.
+   - Use refresh tokens to keep the session alive without forcing the user
+     to log in repeatedly.
+   - Rotate refresh tokens when issuing new ones.
 
-5. **Single Sign-On (SSO)**
-  - If multiple identity providers are supported, the authentication service should be able to map multiple external identities to a single internal account where required.
+1. **Security**
 
-6. **Error Handling**
-  - Handle cases such as invalid or expired authorization codes, unknown `state`, denied consent, invalid redirect URIs, expired refresh tokens, or missing internal account mappings.
+   - Prefer secure HttpOnly cookies over local storage for browser-based
+     authentication flows.
+   - Use `Secure` cookies and enforce HTTPS.
+   - Consider appropriate `SameSite` settings for the application flow.
+   - Validate redirect URIs against an allow-list.
+
+1. **Scopes and Claims**
+
+   - Internal scopes and claims should reflect application permissions,
+     not just external provider permissions.
+   - Keep the internal authorization model separate from the external
+     provider model.
+
+1. **Single Sign-On (SSO)**
+
+   - If multiple identity providers are supported, the authentication
+     service should be able to map multiple external identities to a
+     single internal account where required.
+
+1. **Error Handling**
+
+   - Handle cases such as invalid or expired authorization codes, unknown
+     `state`, denied consent, invalid redirect URIs, expired refresh
+     tokens, or missing internal account mappings.

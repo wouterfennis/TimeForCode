@@ -9,7 +9,7 @@ This section summarises the fundamental decisions and strategies that shape the 
 ## Technology Decisions
 
 | Concern | Decision | Rationale |
-|---|---|---|
+| --- | --- | --- |
 | Backend language | .NET / C# | Strong typing, mature ecosystem, team expertise |
 | Frontend | Blazor (WebAssembly or Server) | Allows sharing domain types with the backend; avoids a separate TypeScript stack |
 | Storage | MongoDB | Document model accommodates evolving schemas; well-supported in .NET |
@@ -28,6 +28,7 @@ This section summarises the fundamental decisions and strategies that shape the 
 The platform is structured around bounded contexts, each with its own domain model, application layer, infrastructure layer, and API. Contexts do not share databases or domain models. Cross-context communication goes through APIs, not direct database access.
 
 Current bounded contexts:
+
 - **Authorization** — identity, authentication, token issuance.
 - **Donation** — projects, donations, hour tracking, organisations.
 - **Website** — Blazor frontend (drives both contexts via API clients).
@@ -40,7 +41,7 @@ Commands and queries are dispatched via MediatR handlers. This separates the int
 
 Each bounded context follows this dependency direction:
 
-```
+```text
 Domain ← Application ← Infrastructure ← API
 ```
 
@@ -62,7 +63,7 @@ The domain has no external dependencies. Infrastructure implements interfaces de
 ## Key Design Decisions
 
 | Decision | Record |
-|---|---|
+| --- | --- |
 | Use internal JWT instead of passing GitHub tokens to downstream services | [ADR-001](../../reference/adr/README.md) |
 | Use MongoDB as the primary data store | [ADR-002](../../reference/adr/README.md) |
 | Use Arc42 for architecture documentation | [ADR-003](../../reference/adr/README.md) |

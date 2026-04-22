@@ -16,7 +16,7 @@ The Authorization API exposes OAuth 2.0 endpoints and an OpenID Connect discover
 ### Authentication Endpoints
 
 | Method | Path | Status | Description |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `GET` | `/api/authentication/login` | ✅ | Initiates OAuth 2.0 login; redirects to GitHub |
 | `GET` | `/api/authentication/callback` | ✅ | Handles OAuth 2.0 callback; exchanges code for tokens |
 | `POST` | `/api/authentication/refresh` | ✅ | Issues a new access token using the refresh token |
@@ -25,13 +25,13 @@ The Authorization API exposes OAuth 2.0 endpoints and an OpenID Connect discover
 ### User Endpoints
 
 | Method | Path | Status | Description |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `GET` | `/api/user` | ✅ | Returns the currently authenticated user's profile |
 
 ### OpenID Connect / JWKS
 
 | Method | Path | Status | Description |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `GET` | `/.well-known/openid-configuration` | ✅ | OpenID Connect discovery document |
 | `GET` | `/.well-known/jwks` | ✅ | Public key set for JWT validation |
 
@@ -46,7 +46,7 @@ The Donation API is responsible for projects, donations, organizations, and cont
 ### Project Endpoints
 
 | Method | Path | Status | Description |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `POST` | `/api/v1/project` | ⚠️ | Route exists; registers a project using a GitHub repo URL. Logic not implemented. |
 | `GET` | `/api/v1/project` | ❌ | List all projects |
 | `GET` | `/api/v1/project/{id}` | ❌ | Get a single project |
@@ -56,7 +56,7 @@ The Donation API is responsible for projects, donations, organizations, and cont
 ### Donation Endpoints
 
 | Method | Path | Status | Description |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `POST` | `/api/v1/donation` | ❌ | Create a donation pledge |
 | `GET` | `/api/v1/donation` | ❌ | List donations |
 | `GET` | `/api/v1/donation/{id}` | ❌ | Get donation details |
@@ -65,7 +65,7 @@ The Donation API is responsible for projects, donations, organizations, and cont
 ### Organization Endpoints
 
 | Method | Path | Status | Description |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `POST` | `/api/v1/organization` | ❌ | Register a donor organization |
 | `GET` | `/api/v1/organization/{id}` | ❌ | Get organization details |
 | `PUT` | `/api/v1/organization/{id}` | ❌ | Update organization details |
@@ -73,7 +73,7 @@ The Donation API is responsible for projects, donations, organizations, and cont
 ### Contributor Endpoints
 
 | Method | Path | Status | Description |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `POST` | `/api/v1/contributor` | ❌ | Register as a contributor |
 | `GET` | `/api/v1/contributor/{id}` | ❌ | Get contributor details |
 

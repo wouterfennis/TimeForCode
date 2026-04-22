@@ -20,21 +20,27 @@ This document defines the intended API surface for the TimeForCode platform. End
 ## Authorization API
 
 ### POST /api/authentication/login
+
 Initiates GitHub OAuth 2.0 login. Returns a redirect to the GitHub authorization page.
 
 ### GET /api/authentication/callback
+
 OAuth 2.0 callback. Exchanges the authorization code, creates an internal user, issues JWT and refresh token cookies.
 
 ### POST /api/authentication/refresh
+
 Issues a new access token using the refresh token cookie.
 
 ### POST /api/authentication/logout
+
 Clears both token cookies.
 
 ### GET /api/user
+
 Returns the currently authenticated user's profile.
 
 **Response**:
+
 ```json
 {
   "id": "uuid",
@@ -42,6 +48,7 @@ Returns the currently authenticated user's profile.
   "email": "string",
   "roles": ["Contributor"]
 }
+
 ```
 
 ---
@@ -51,16 +58,20 @@ Returns the currently authenticated user's profile.
 ### Projects
 
 #### POST /api/v1/project ⚠️
+
 Register a new project.
 
 **Request**:
+
 ```json
 {
   "githubUrl": "https://github.com/owner/repo"
 }
+
 ```
 
 **Response** (201 Created):
+
 ```json
 {
   "id": "uuid",
@@ -70,14 +81,17 @@ Register a new project.
   "status": "PendingApproval",
   "githubUrl": "https://github.com/owner/repo"
 }
+
 ```
 
 #### GET /api/v1/project ❌
+
 List active projects with optional filters.
 
 **Query params**: `?language=C%23&tag=testing&page=1&pageSize=20`
 
 **Response** (200 OK):
+
 ```json
 {
   "items": [ { "id": "uuid", "name": "string", "description": "string", "language": "string", "tags": [] } ],
@@ -85,17 +99,22 @@ List active projects with optional filters.
   "page": 1,
   "pageSize": 20
 }
+
 ```
 
 #### GET /api/v1/project/{id} ❌
+
 Get a single project's full details.
 
 #### PATCH /api/v1/project/{id}/status ❌
+
 Admin only. Approve or reject a project.
 
 **Request**:
+
 ```json
 { "status": "Active" }
+
 ```
 
 ---
@@ -103,18 +122,22 @@ Admin only. Approve or reject a project.
 ### Donations
 
 #### POST /api/v1/donation ❌
+
 Create a donation pledge.
 
 **Request**:
+
 ```json
 {
   "projectId": "uuid",
   "donorOrganizationId": "uuid",
   "hoursCommitted": 40
 }
+
 ```
 
 **Response** (201 Created):
+
 ```json
 {
   "id": "uuid",
@@ -124,26 +147,34 @@ Create a donation pledge.
   "status": "Pending",
   "createdAt": "2026-04-22T10:00:00Z"
 }
+
 ```
 
 #### GET /api/v1/donation ❌
+
 List donations for the authenticated user's organization or as an individual.
 
 #### GET /api/v1/donation/{id} ❌
+
 Get full donation details including all transactions.
 
 #### PATCH /api/v1/donation/{id}/status ❌
+
 Transition donation status (Pending → Active, Active → Cancelled, etc.).
 
 **Request**:
+
 ```json
 { "status": "Active" }
+
 ```
 
 #### POST /api/v1/donation/{id}/transaction ❌
+
 Log hours against an active donation.
 
 **Request**:
+
 ```json
 {
   "contributorId": "uuid",
@@ -151,9 +182,11 @@ Log hours against an active donation.
   "description": "Implemented feature X",
   "githubReference": "https://github.com/owner/repo/pull/42"
 }
+
 ```
 
 **Response** (201 Created):
+
 ```json
 {
   "id": "uuid",
@@ -162,9 +195,11 @@ Log hours against an active donation.
   "description": "string",
   "loggedAt": "2026-04-22T14:00:00Z"
 }
+
 ```
 
 #### GET /api/v1/donation/{id}/transaction ❌
+
 List all hour-log transactions for a donation.
 
 ---
@@ -172,9 +207,11 @@ List all hour-log transactions for a donation.
 ### Organizations
 
 #### POST /api/v1/organization ❌
+
 Register a donor organization.
 
 **Request**:
+
 ```json
 {
   "name": "Acme Corp",
@@ -182,9 +219,11 @@ Register a donor organization.
   "country": "NL",
   "hoursAvailable": 200
 }
+
 ```
 
 **Response** (201 Created):
+
 ```json
 {
   "id": "uuid",
@@ -194,20 +233,26 @@ Register a donor organization.
   "hoursAvailable": 200,
   "hoursSpent": 0
 }
+
 ```
 
 #### GET /api/v1/organization/{id} ❌
+
 Get organization details.
 
 #### PUT /api/v1/organization/{id} ❌
+
 Update organization details.
 
 #### POST /api/v1/organization/{id}/member ❌
+
 Add a contributor to the organization.
 
 **Request**:
+
 ```json
 { "userId": "uuid" }
+
 ```
 
 ---
@@ -215,18 +260,22 @@ Add a contributor to the organization.
 ### Contributors
 
 #### POST /api/v1/contributor ❌
+
 Register the current user as an independent contributor.
 
 **Request**:
+
 ```json
 {
   "role": "Backend Developer",
   "skills": ["C#", ".NET", "MongoDB"],
   "hoursAvailable": 8
 }
+
 ```
 
 #### GET /api/v1/contributor/{id} ❌
+
 Get contributor profile.
 
 ---
@@ -234,9 +283,11 @@ Get contributor profile.
 ### Reporting
 
 #### GET /api/v1/organization/{id}/report ❌
+
 Organization impact report.
 
 **Response**:
+
 ```json
 {
   "organizationId": "uuid",
@@ -245,7 +296,9 @@ Organization impact report.
   "projectsSupported": 3,
   "donations": []
 }
+
 ```
 
 #### GET /api/v1/project/{id}/report ❌
+
 Project donation report (maintainer view).

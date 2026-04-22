@@ -78,7 +78,7 @@ graph LR
 A registered open-source software project that is seeking donated developer hours.
 
 | Attribute | Type | Description |
-|---|---|---|
+| --- | --- | --- |
 | id | UUID | Internal identifier |
 | githubUrl | URL | GitHub repository URL |
 | name | string | Repository name (synced from GitHub) |
@@ -97,7 +97,7 @@ A project starts as a `Draft` when submitted, becomes `PendingApproval` when sub
 A pledge of a specific number of developer hours from a donor to a project.
 
 | Attribute | Type | Description |
-|---|---|---|
+| --- | --- | --- |
 | id | UUID | Internal identifier |
 | donorOrganizationId | UUID? | Linked organization (null for individual donations) |
 | individualDonorId | UUID? | Linked individual donor (null for organization donations) |
@@ -115,7 +115,7 @@ The donation lifecycle is: `Pending` (pledge made, awaiting start) → `Active` 
 A single record of hours logged by a contributor against an active donation.
 
 | Attribute | Type | Description |
-|---|---|---|
+| --- | --- | --- |
 | id | UUID | Internal identifier |
 | donationId | UUID | The donation this transaction belongs to |
 | contributorId | UUID | The contributor who logged the hours |
@@ -129,7 +129,7 @@ A single record of hours logged by a contributor against an active donation.
 A company or organisation registered as a donor.
 
 | Attribute | Type | Description |
-|---|---|---|
+| --- | --- | --- |
 | id | UUID | Internal identifier |
 | name | string | Organisation name |
 | industry | string | Industry sector |
@@ -144,7 +144,7 @@ A company or organisation registered as a donor.
 A developer who logs hours against a donation. Can belong to an organisation or be independent.
 
 | Attribute | Type | Description |
-|---|---|---|
+| --- | --- | --- |
 | id | UUID | Internal identifier |
 | userId | UUID | Linked user account |
 | name | string | Display name |
@@ -160,7 +160,7 @@ A developer who logs hours against a donation. Can belong to an organisation or 
 A developer who owns or maintains a registered project.
 
 | Attribute | Type | Description |
-|---|---|---|
+| --- | --- | --- |
 | id | UUID | Internal identifier |
 | userId | UUID | Linked user account |
 | name | string | Display name |
@@ -172,7 +172,7 @@ A developer who owns or maintains a registered project.
 A phase or goal within a project that a donation may target.
 
 | Attribute | Type | Description |
-|---|---|---|
+| --- | --- | --- |
 | id | UUID | Internal identifier |
 | projectId | UUID | Parent project |
 | githubMilestoneId | int | GitHub milestone number |

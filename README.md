@@ -59,7 +59,7 @@ See [docs/current/capability-status.md](docs/current/capability-status.md) for t
 ## Tech Stack
 
 | Concern | Technology |
-|---|---|
+| --- | --- |
 | Frontend | Blazor (.NET) |
 | Backend | ASP.NET Core (.NET) |
 | Database | MongoDB |
@@ -85,11 +85,11 @@ docker compose up --build
 ```
 
 | Service | URL |
-|---|---|
-| Website | http://localhost:8083 |
-| Authorization API | http://localhost:8080 |
-| Donation API | http://localhost:8082 |
-| Identity Provider Mock | http://localhost:8081 |
+| --- | --- |
+| Website | <http://localhost:8083> |
+| Authorization API | <http://localhost:8080> |
+| Donation API | <http://localhost:8082> |
+| Identity Provider Mock | <http://localhost:8081> |
 
 See [docs/current/deployment-status.md](docs/current/deployment-status.md) for environment details and configuration.
 

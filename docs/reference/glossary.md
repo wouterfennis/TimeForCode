@@ -7,7 +7,7 @@ This glossary covers general project and domain terms used in the TimeForCode do
 ---
 
 | Term | Definition |
-|---|---|
+| --- | --- |
 | Campaign | An admin-curated group of projects with a shared theme (e.g. security, accessibility, documentation). Used to help donors discover relevant projects. |
 | Commitment | The total number of developer hours pledged in a single donation. |
 | Completion Rate | The ratio of hours logged to hours committed across all donations for an organisation or project. A measure of follow-through. |

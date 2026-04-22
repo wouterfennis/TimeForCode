@@ -22,7 +22,7 @@ The platform enables:
 The following quality goals drive the architecture. They are ordered by priority.
 
 | Priority | Quality Goal | Motivation |
-|---|---|---|
+| --- | --- | --- |
 | 1 | Security | User identities, tokens, and contribution records must be protected. Authentication and authorization must be robust and auditable. |
 | 2 | Correctness | Donation hours pledged and logged must be accurate. Incorrect records undermine trust in the platform. |
 | 3 | Maintainability | The platform is expected to evolve significantly. Bounded contexts and clear layering must allow independent delivery by small teams or AI agents. |
@@ -34,7 +34,7 @@ The following quality goals drive the architecture. They are ordered by priority
 ## Stakeholders
 
 | Role | Concern |
-|---|---|
+| --- | --- |
 | Donor organizations | Can they register, pledge hours, and see the impact of their contributions? |
 | Individual contributors | Can they find projects matching their skills and log hours easily? |
 | Project maintainers | Can they register their project and attract reliable contributors? |

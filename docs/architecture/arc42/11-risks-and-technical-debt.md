@@ -9,7 +9,7 @@ This section tracks known risks and technical debt that could affect the platfor
 ## Risks
 
 | ID | Risk | Likelihood | Impact | Mitigation |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | RISK-01 | GitHub API rate limiting blocks project registration | Medium | Medium | Cache metadata after first fetch; implement exponential backoff; use authenticated requests to raise rate limit |
 | RISK-02 | GitHub as single identity provider creates a hard dependency | Low | High | Architecture already supports multiple providers; adding a second provider is a configuration change, not a rewrite |
 | RISK-03 | MongoDB schema drift as domain evolves | Medium | Medium | Use versioned document schemas or migration scripts; add integration tests that validate schema compatibility |
@@ -22,7 +22,7 @@ This section tracks known risks and technical debt that could affect the platfor
 ## Technical Debt
 
 | ID | Item | Affected Area | Impact | Effort to Resolve |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | DEBT-01 | Tech stack in README was T.B.D. | Repository entry point | Stale onboarding experience | Fixed — README updated |
 | DEBT-02 | Authorization API does not use URL-versioned routes | Authorization API | Inconsistency with Donation API; harder to version in future | Low effort; add `/api/v1/` prefix |
 | DEBT-03 | No secrets manager in production | Authorization API | Secrets passed as App Settings are visible in Azure Portal | Implement Key Vault references in Bicep |

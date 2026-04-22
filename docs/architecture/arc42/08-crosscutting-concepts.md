@@ -11,6 +11,7 @@ This section describes concepts, patterns, and rules that apply across all bound
 All API endpoints (except public project listings and the login flow) require a valid internal JWT. The token is issued by the Authorization API and validated by each downstream service independently.
 
 **Token validation rules** (all services):
+
 1. Verify the RS256 signature against the Authorization API's JWKS endpoint.
 2. Verify the token has not expired (`exp` claim).
 3. Verify the `iss` (issuer) matches the Authorization API base URL.
@@ -27,7 +28,7 @@ See [authorization and roles](../../target/authorization-and-roles.md) for the f
 
 Every bounded context follows the same dependency direction:
 
-```
+```text
 Domain  ←  Application  ←  Infrastructure  ←  API
 ```
 
@@ -68,6 +69,7 @@ Configuration follows the ASP.NET Core options pattern:
 - In production, values are supplied via Azure App Service Application Settings or Key Vault references.
 
 **Sensitive values** (client secrets, signing keys, database credentials) must not be committed to source control. They are:
+
 - Injected as environment variables in `docker-compose.yaml` for local use only.
 - Stored in Azure Key Vault for production (target).
 
@@ -78,7 +80,7 @@ Configuration follows the ASP.NET Core options pattern:
 All services use the ASP.NET Core `ILogger<T>` abstraction. Structured logging with log levels:
 
 | Level | Use |
-|---|---|
+| --- | --- |
 | `Debug` | Development-only detail; disabled in production |
 | `Information` | Normal operation events (user logged in, project registered) |
 | `Warning` | Unexpected but recoverable conditions |

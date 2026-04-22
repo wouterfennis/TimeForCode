@@ -67,7 +67,7 @@ Internal operators responsible for moderating project listings, verifying organi
 ## Value Proposition
 
 | Stakeholder | Value |
-|---|---|
+| --- | --- |
 | Donor organizations | Structured, accountable, and visible open-source contribution |
 | Individual donors | A platform that connects personal skills to real-world impact |
 | Project maintainers | Reliable contributors with predictable commitment levels |
@@ -89,7 +89,7 @@ The platform is **not**:
 ## Success Metrics
 
 | Metric | Description |
-|---|---|
+| --- | --- |
 | Registered projects | Number of open-source projects listed on the platform |
 | Active donors | Number of organizations and individuals with active pledges |
 | Hours pledged | Total developer hours committed per period |

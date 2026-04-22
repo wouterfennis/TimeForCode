@@ -37,11 +37,11 @@ graph LR
 The Identity Provider Mock replaces GitHub in local development. The Authorization API is configured to direct OAuth 2.0 requests to the mock instead of `github.com`.
 
 | Service | URL | Notes |
-|---|---|---|
-| Website | http://localhost:8083 | Blazor frontend |
-| Authorization API | http://localhost:8080 | OAuth 2.0 + JWT |
-| Identity Provider Mock | http://localhost:8081 | Simulates GitHub OAuth |
-| Donation API | http://localhost:8082 | Project and donation management |
+| --- | --- | --- |
+| Website | <http://localhost:8083> | Blazor frontend |
+| Authorization API | <http://localhost:8080> | OAuth 2.0 + JWT |
+| Identity Provider Mock | <http://localhost:8081> | Simulates GitHub OAuth |
+| Donation API | <http://localhost:8082> | Project and donation management |
 | MongoDB | mongodb://localhost:27017 | Shared database instance |
 
 ### Configuration
@@ -81,7 +81,7 @@ graph LR
 The infrastructure is defined as code using Azure Bicep templates in the `deploy/` folder.
 
 | Template | Purpose |
-|---|---|
+| --- | --- |
 | `deploy/application.bicep` | Top-level orchestration; references modules |
 | `deploy/applicationInfrastructure.bicep` | Shared infrastructure (App Service Plan) |
 | `deploy/modules/appService.bicep` | App Service definition and settings |
@@ -95,7 +95,7 @@ The infrastructure is defined as code using Azure Bicep templates in the `deploy
 ### Known Gaps
 
 | Gap | Notes |
-|---|---|
+| --- | --- |
 | Donation API not deployed | Only the Authorization API is currently deployed to Azure |
 | Website not deployed to Azure | Only runs locally |
 | MongoDB managed service | Local compose uses a dev MongoDB; production database provisioning not yet defined in Bicep |

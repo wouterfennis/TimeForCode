@@ -7,7 +7,7 @@ This glossary defines the terms used throughout the TimeForCode architecture doc
 ---
 
 | Term | Definition |
-|---|---|
+| --- | --- |
 | Access Token | A short-lived JWT issued by the Authorization API. Used by the Website and downstream services to authenticate API calls. Expires in 60 minutes by default. |
 | ADR | Architecture Decision Record. A document that captures the context, decision, and consequences of a significant architectural choice. |
 | Arc42 | A lightweight, practical template for software architecture documentation. See [arc42.org](https://arc42.org). |

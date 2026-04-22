@@ -9,7 +9,7 @@ Arc42 is the single source of truth for all architecture decisions, structural v
 ## Sections
 
 | Section | Title | Mermaid Required |
-|---|---|---|
+| --- | --- | --- |
 | [01](01-introduction-and-goals.md) | Introduction and Goals | |
 | [02](02-architecture-constraints.md) | Architecture Constraints | |
 | [03](03-context-and-scope.md) | Context and Scope | ✅ |

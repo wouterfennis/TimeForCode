@@ -5,7 +5,7 @@ Status: Mixed
 This document maps every target platform capability against its current implementation status. Use this as the gap analysis for planning implementation work.
 
 | Status | Meaning |
-|---|---|
+| --- | --- |
 | ✅ Done | Implemented and tested |
 | ⚠️ Partial | Started but incomplete |
 | ❌ Not started | Defined in requirements; not yet implemented |
@@ -15,7 +15,7 @@ This document maps every target platform capability against its current implemen
 ## Authentication and Identity
 
 | Capability | Current | Target | Gap |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | GitHub OAuth 2.0 login | ✅ | ✅ | None |
 | Internal JWT (RS256) | ✅ | ✅ | None |
 | Refresh token rotation | ✅ | ✅ | None |
@@ -30,7 +30,7 @@ This document maps every target platform capability against its current implemen
 ## Project Management
 
 | Capability | Current | Target | Gap |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | Register project via GitHub URL | ⚠️ Stub | ✅ Must | Implement handler, GitHub fetch, persistence |
 | Admin approval workflow | ❌ | ✅ Must | Full workflow needed |
 | List and search projects | ❌ | ✅ Must | Query endpoint needed |
@@ -45,7 +45,7 @@ This document maps every target platform capability against its current implemen
 ## Donations
 
 | Capability | Current | Target | Gap |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | Create donation pledge | ❌ | ✅ Must | Domain model exists; API and handler needed |
 | Donation lifecycle (state machine) | ❌ | ✅ Must | Pending → Active → Completed / Cancelled |
 | List donations | ❌ | ✅ Must | Not started |
@@ -58,7 +58,7 @@ This document maps every target platform capability against its current implemen
 ## Hour Tracking
 
 | Capability | Current | Target | Gap |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | Log hours against a donation | ❌ | ✅ Must | DonationTransaction domain exists; API needed |
 | Progress tracking | ❌ | ✅ Must | Calculation logic needed |
 | Auto-complete at 100% | ❌ | ⚠️ Should | Business rule needed |
@@ -69,7 +69,7 @@ This document maps every target platform capability against its current implemen
 ## Organizations and Contributors
 
 | Capability | Current | Target | Gap |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | Register donor organization | ❌ | ✅ Must | Domain model exists; API needed |
 | Manage available hours | ❌ | ✅ Must | Not started |
 | Assign contributors to donations | ❌ | ✅ Must | Not started |
@@ -81,7 +81,7 @@ This document maps every target platform capability against its current implemen
 ## Matchmaking
 
 | Capability | Current | Target | Gap |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | Suggest projects to donors | ❌ | ⚠️ Should | Not started |
 | Surface donors to maintainers | ❌ | ⚠️ Should | Not started |
 | Themed campaigns | ❌ | ⚠️ Could | Not started |
@@ -91,7 +91,7 @@ This document maps every target platform capability against its current implemen
 ## Reporting and Impact
 
 | Capability | Current | Target | Gap |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | Organization contribution summary | ❌ | ✅ Must | Not started |
 | Project donation received report | ❌ | ✅ Must | Not started |
 | Export contribution history | ❌ | ⚠️ Should | Not started |
@@ -103,7 +103,7 @@ This document maps every target platform capability against its current implemen
 ## Website UI
 
 | Capability | Current | Target | Gap |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | Login / logout | ⚠️ | ✅ Must | UI work needed |
 | Project listing page | ❌ | ✅ Must | Not started |
 | Project detail page | ❌ | ✅ Must | Not started |

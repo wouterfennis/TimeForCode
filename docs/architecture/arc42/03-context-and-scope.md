@@ -37,7 +37,7 @@ graph LR
 ### External Systems
 
 | System | Purpose | Direction |
-|---|---|---|
+| --- | --- | --- |
 | GitHub | OAuth 2.0 identity provider for user authentication | Authorization API calls GitHub OAuth endpoints |
 | GitHub API | Source of project metadata (name, description, language, milestones) | Donation API calls GitHub REST API |
 
@@ -76,7 +76,7 @@ graph LR
 ### Communication Protocols
 
 | From | To | Protocol | Auth |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | Browser | Website | HTTPS | Session cookie (JWT) |
 | Website | Authorization API | HTTPS REST | HttpOnly JWT cookie forwarded as Bearer token |
 | Website | Donation API | HTTPS REST | HttpOnly JWT cookie forwarded as Bearer token |

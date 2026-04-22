@@ -9,7 +9,7 @@ This file defines the authoring rules for all documentation in the `docs/` folde
 Every document should declare its status at the top, directly after the heading:
 
 | Label | Meaning |
-|---|---|
+| --- | --- |
 | `Status: Current` | Reflects the implemented system as it exists in code today |
 | `Status: Target` | Defines intended future behaviour; not yet implemented |
 | `Status: Mixed` | Covers both current and target; sections must be clearly labelled |
@@ -27,7 +27,7 @@ Status: Current
 
 ## Folder Structure
 
-```
+```text
 docs/
 ├── index.md                          # Main navigation hub
 ├── README.md                         # This file — conventions and rules
@@ -56,7 +56,7 @@ docs/
 Supported Mermaid diagram types for this project:
 
 | Diagram type | Use for |
-|---|---|
+| --- | --- |
 | `graph` / `flowchart` | Context diagrams, decision flows |
 | `sequenceDiagram` | Runtime interactions between services |
 | `stateDiagram-v2` | Lifecycle states (e.g. donation states) |

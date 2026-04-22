@@ -31,6 +31,7 @@ graph LR
 ```
 
 To start:
+
 ```powershell
 docker compose up --build
 ```
@@ -94,7 +95,7 @@ graph LR
 ### Target Infrastructure Requirements
 
 | Component | Technology | Notes |
-|---|---|---|
+| --- | --- | --- |
 | Website | Azure App Service (container) | Static assets + Blazor server |
 | Authorization API | Azure App Service (container) | Current deployment extended |
 | Donation API | Azure App Service (container) | Not yet deployed |
@@ -108,7 +109,7 @@ graph LR
 ## Environment Summary
 
 | Environment | Services | Notes |
-|---|---|---|
+| --- | --- | --- |
 | Local (`docker-compose`) | All services + IdP Mock + MongoDB | Dev only; HTTP; uses mock identity provider |
 | Production (Azure) | Authorization API | Only service currently deployed |
 | Target Production | All services | Full deployment not yet defined in Bicep |

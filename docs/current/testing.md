@@ -60,6 +60,7 @@ Unit tests for the Infrastructure layer, covering data access, token storage, an
 A lightweight ASP.NET Core application that simulates a GitHub OAuth 2.0 provider. Used during local development and integration tests to avoid requiring a real GitHub OAuth application.
 
 The mock implements:
+
 - `/login/oauth/authorize` — simulates the GitHub authorization redirect.
 - `/login/oauth/access_token` — returns a test access token.
 - GitHub REST API stubs for user profile retrieval.
@@ -86,7 +87,7 @@ All tests pass as of the current implementation state. The CI pipeline runs the 
 ## Known Gaps
 
 | Area | Gap |
-|---|---|
+| --- | --- |
 | Donation context | No architecture tests; no specification tests |
 | Website | No component or end-to-end tests |
 | Matchmaking | No test coverage (feature not implemented) |

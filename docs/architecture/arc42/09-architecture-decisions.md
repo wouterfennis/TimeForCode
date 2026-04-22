@@ -11,7 +11,7 @@ ADR documents live in [docs/reference/adr/](../../reference/adr/README.md).
 ## Decision Index
 
 | ID | Title | Status | Date |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | [ADR-001](../../reference/adr/README.md#adr-001) | Use internal JWT instead of forwarding GitHub tokens | Accepted | 2025 |
 | [ADR-002](../../reference/adr/README.md#adr-002) | Use MongoDB as the primary data store | Accepted | 2025 |
 | [ADR-003](../../reference/adr/README.md#adr-003) | Use Arc42 for architecture documentation | Accepted | 2026 |

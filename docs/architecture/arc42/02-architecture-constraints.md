@@ -9,7 +9,7 @@ This section lists all constraints that are not negotiable. They must be respect
 ## Technical Constraints
 
 | Constraint | Rationale |
-|---|---|
+| --- | --- |
 | Backend must use .NET (ASP.NET Core) | Existing codebase and team expertise. |
 | Frontend must use Blazor | Existing codebase; allows sharing .NET types across client and server. |
 | Storage must use MongoDB | Existing decision; document model suits the domain's flexible schemas. |
@@ -24,7 +24,7 @@ This section lists all constraints that are not negotiable. They must be respect
 ## Architectural Constraints
 
 | Constraint | Rationale |
-|---|---|
+| --- | --- |
 | Each bounded context must follow Domain → Application → Infrastructure → API layering | Enforced by Architecture.Tests in each context; prevents circular dependencies. |
 | Architecture tests are mandatory for every new bounded context | Prevents layering violations from silently accumulating. |
 | Only the Authorization API may issue tokens | All other services validate tokens; none of them sign or issue new ones. |
@@ -37,7 +37,7 @@ This section lists all constraints that are not negotiable. They must be respect
 ## Organisational Constraints
 
 | Constraint | Rationale |
-|---|---|
+| --- | --- |
 | Project is open source (MIT licence) | All dependencies must be compatible with the MIT licence. |
 | Documentation must be maintained alongside code | The `docs/` folder is the anchor for requirements and architecture; docs drift is not acceptable. |
 | Any significant architecture decision must be recorded as an ADR | Provides a traceable history of decisions for future developers and AI agents. |

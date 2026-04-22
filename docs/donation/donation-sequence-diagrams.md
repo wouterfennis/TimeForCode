@@ -36,6 +36,7 @@ sequenceDiagram
 The project is not publicly visible until an administrator approves it. This prevents spam and ensures listing quality.
 
 **Key points**:
+
 - The platform enriches the registration automatically from GitHub; the maintainer does not need to duplicate information.
 - If the GitHub API is unavailable, the registration should fail gracefully with a meaningful error — not silently create an incomplete project.
 - The maintainer is notified of the approval outcome.
@@ -131,6 +132,7 @@ sequenceDiagram
 ```
 
 **Key points**:
+
 - A contributor can only log hours if they are assigned to the donation. This prevents unauthorized entries.
 - Hours cannot exceed the committed total. Any attempt is rejected with a 400 error.
 - The donation auto-completes when the logged total reaches the committed total.
@@ -174,4 +176,3 @@ stateDiagram-v2
     Completed --> [*]
     Cancelled --> [*]
 ```
-
