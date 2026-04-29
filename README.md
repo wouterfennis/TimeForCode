@@ -64,7 +64,7 @@ See [docs/current/capability-status.md](docs/current/capability-status.md) for t
 | Backend | ASP.NET Core (.NET) |
 | Database | MongoDB |
 | Authentication | OAuth 2.0 (GitHub), JWT (RSA-signed) |
-| Containerisation | Docker, Docker Compose |
+| Containerisation | Podman, Docker Compose |
 | Infrastructure | Azure App Service, Azure Bicep (IaC) |
 | CI/CD | GitHub Actions |
 | Code quality | SonarCloud |
@@ -76,12 +76,19 @@ See [docs/current/capability-status.md](docs/current/capability-status.md) for t
 
 ### Prerequisites
 
-- Docker
+- [Podman](https://podman.io/docs/installation) 4.x or later (Docker Desktop is not used in this project)
+- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8) (for running tests and local development outside containers)
+
+> **Windows**: After installing Podman, open a new terminal and initialise the Podman machine once:
+> ```powershell
+> podman machine init
+> podman machine start
+> ```
 
 ### Run locally
 
 ```powershell
-docker compose up --build
+podman compose up --build
 ```
 
 | Service | URL |
@@ -90,6 +97,16 @@ docker compose up --build
 | Authorization API | <http://localhost:8080> |
 | Donation API | <http://localhost:8082> |
 | Identity Provider Mock | <http://localhost:8081> |
+
+### Verify the stack
+
+A smoke-test script checks every service and walks through the full authentication flow:
+
+```powershell
+.\scripts\smoke-test.ps1
+```
+
+All 17 checks should report `[PASS]`. The script exits with code `0` on success.
 
 See [docs/current/deployment-status.md](docs/current/deployment-status.md) for environment details and configuration.
 

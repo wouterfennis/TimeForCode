@@ -64,12 +64,45 @@ provide as much detail as possible, including:
  endpoints.
 - [x] You have added or updated tests for your changes.
 
-### 4. Development Guidelines
+### 4. Development Setup
+
+Install the following tools before starting:
+
+| Tool | Version | Purpose |
+| --- | --- | --- |
+| [.NET SDK](https://dotnet.microsoft.com/download/dotnet/8) | 8.x | Build and test |
+| [Podman](https://podman.io/docs/installation) | 4.x+ | Run the full stack locally |
+
+> **Why Podman?** Docker Desktop requires a paid licence in many organisations. Podman is a free, daemonless alternative that is fully compatible with Docker Compose files. The Dockerfiles in this project already use a non-root `appuser`, which is best-practice for Podman rootless mode.
+
+**Windows first-time setup:**
+
+```powershell
+# One-time machine initialisation (after installing Podman)
+podman machine init
+podman machine start
+```
+
+**Start the full stack:**
+
+```powershell
+podman compose up --build
+```
+
+**Verify everything works:**
+
+```powershell
+.\scripts\smoke-test.ps1
+```
+
+Expected output: `Result: PASSED (17/17)`
+
+### 5. Development Guidelines
 
 Code style
 
-- Follow the style guid for consistent code formatting
-- Use meaningful commit messages
+- Follow the style guide for consistent code formatting.
+- Use meaningful commit messages.
 
 Testing
 

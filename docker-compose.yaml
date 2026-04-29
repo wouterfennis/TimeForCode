@@ -6,19 +6,19 @@ services:
     image: timeforcode-authorization-api:latest
     container_name: timeforcode-authorization-api
     ports:
-      - "8080:80"
+      - "8080:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:80
+      - ASPNETCORE_URLS=http://+:8080
       - Logging__LogLevel__Default=Debug
       - Logging__LogLevel__Microsoft.AspNetCore=Warning
       - ExternalIdentityProviderOptions__CallbackUri=http://localhost:8080/api/authentication/callback
       - ExternalIdentityProviderOptions__Github__LoginHost=localhost
       - ExternalIdentityProviderOptions__Github__LoginHostPort=8081
       - ExternalIdentityProviderOptions__Github__AccessTokenHost=identity-provider-mock
-      - ExternalIdentityProviderOptions__Github__AccessTokenHostPort=80
+      - ExternalIdentityProviderOptions__Github__AccessTokenHostPort=8080
       - ExternalIdentityProviderOptions__Github__RestApiHost=identity-provider-mock
-      - ExternalIdentityProviderOptions__Github__RestApiPort=80
+      - ExternalIdentityProviderOptions__Github__RestApiPort=8080
       - ExternalIdentityProviderOptions__Github__ClientId=test-client
       - ExternalIdentityProviderOptions__Github__ClientSecret=test-secret
       - ExternalIdentityProviderOptions__Github__Issuer=http://localhost:8081
@@ -47,10 +47,10 @@ services:
     image: identity-provider-mock:latest
     container_name: identity-provider-mock
     ports:
-      - "8081:80"
+      - "8081:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:80
+      - ASPNETCORE_URLS=http://+:8080
       - Logging__LogLevel__Default=Debug
       - Logging__LogLevel__Microsoft.AspNetCore=Warning
       - AuthenticationOptions__Issuer=http://localhost:8081
@@ -68,17 +68,18 @@ services:
     image: timeforcode-donation-api:latest
     container_name: timeforcode-donation-api
     ports:
-      - "8082:80"
+      - "8082:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:80
+      - ASPNETCORE_URLS=http://+:8080
       - Logging__LogLevel__Default=Debug
       - Logging__LogLevel__Microsoft.AspNetCore=Warning
-      - AuthenticationOptions__Authority=http://localhost:8080/.well-known/openid-configuration
+      - AuthenticationOptions__Authority=http://authorization-api:8080
       - AuthenticationOptions__Issuer=http://localhost:8080
       - AuthenticationOptions__Audience=http://localhost:8082
     depends_on:
       - mongo
+      - authorization-api
     networks:
       - app-network
 
@@ -89,15 +90,20 @@ services:
     image: timeforcode-website:latest
     container_name: timeforcode-website
     ports:
-      - "8083:80"
+      - "8083:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:80
+      - ASPNETCORE_URLS=http://+:8080
       - Logging__LogLevel__Default=Debug
       - Logging__LogLevel__Microsoft.AspNetCore=Warning
-      - AuthorizationServiceOptions__BaseUri=http://localhost:8080
-      - DonationServiceOptions__BaseUri=http://localhost:8082
+      - AuthorizationServiceOptions__BaseUri=http://authorization-api:8080
+      - DonationServiceOptions__BaseUri=http://donation-api:8080
       - StorageOptions__StoragePath=/storage
+    volumes:
+      - website-storage:/storage
+    depends_on:
+      - authorization-api
+      - donation-api
     networks:
       - app-network
 
@@ -121,3 +127,4 @@ networks:
 
 volumes:
   mongo-data:
+  website-storage:

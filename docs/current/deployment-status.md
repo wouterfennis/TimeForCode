@@ -8,10 +8,27 @@ This document describes how the platform is deployed today, both locally and in 
 
 ## Local Development
 
-The full platform runs locally via Docker Compose. The compose file at the repository root starts all services.
+The full platform runs locally via Podman and Docker Compose. The compose file at the repository root starts all services.
+
+> **Why Podman?** Docker Desktop requires a paid licence in many organisations. Podman is a free, daemonless drop-in replacement. The `docker-compose.yaml` in this repository works with `podman compose` without modification.
+
+**Windows first-time setup (once per machine):**
 
 ```powershell
-docker compose up --build
+podman machine init
+podman machine start
+```
+
+**Start the stack:**
+
+```powershell
+podman compose up --build
+```
+
+**Smoke test:**
+
+```powershell
+.\scripts\smoke-test.ps1
 ```
 
 ### Services and Ports
@@ -43,6 +60,18 @@ The Identity Provider Mock replaces GitHub in local development. The Authorizati
 | Identity Provider Mock | <http://localhost:8081> | Simulates GitHub OAuth |
 | Donation API | <http://localhost:8082> | Project and donation management |
 | MongoDB | mongodb://localhost:27017 | Shared database instance |
+
+### Container port note
+
+All .NET services in this stack listen on port **8080** inside the container (not the traditional 80). This is required because the containers run as a non-root user (`appuser`) under Podman rootless mode — ports below 1024 are privileged and unavailable to non-root processes. The host-to-container port mapping in `docker-compose.yaml` still exposes the familiar ports (8080–8083) on the host machine.
+
+| Container | Internal port | Host port |
+| --- | --- | --- |
+| authorization-api | 8080 | 8080 |
+| identity-provider-mock | 8080 | 8081 |
+| donation-api | 8080 | 8082 |
+| website | 8080 | 8083 |
+| mongo | 27017 | 27017 |
 
 ### Configuration
 
