@@ -4,8 +4,13 @@ description: Guides a feature from idea to implementation by coordinating the Pl
 argument-hint: Describe the feature you want to build
 model: GPT-5 mini (copilot)
 tools:
-  - run_in_terminal
+  - grep_search
+  - file_search
+  - semantic_search
   - vscode/askQuestions
+  - run_in_terminal
+  - replace_string_in_file
+  - multi_replace_string_in_file
   - agent
 agents:
   - Plan
