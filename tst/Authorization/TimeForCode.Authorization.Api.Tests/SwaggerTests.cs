@@ -2,8 +2,6 @@ using FluentAssertions;
 
 namespace TimeForCode.Authorization.Api.Tests
 {
-    // write test to check if the dependencies are registered correctly
-
     [TestClass]
     public class SwaggerTests : VerifyBase
     {

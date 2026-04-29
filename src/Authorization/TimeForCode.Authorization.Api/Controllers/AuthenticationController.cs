@@ -8,6 +8,7 @@ using TimeForCode.Authorization.Api.Models;
 using TimeForCode.Authorization.Application.Options;
 using TimeForCode.Authorization.Commands;
 using TimeForCode.Authorization.Values;
+using TimeForCode.Shared.Api.Authentication;
 
 namespace TimeForCode.Authorization.Api.Controllers
 {
@@ -120,10 +121,12 @@ namespace TimeForCode.Authorization.Api.Controllers
 
         private bool IsInvalidRedirectUri(Uri redirectUri)
         {
-            var trustedParty = _authenticationOptions.Value.Audience + '/';
-            if (redirectUri.AbsoluteUri.StartsWith(trustedParty))
+            foreach (var validRedirectUri in _authenticationOptions.Value.ValidRedirectUris)
             {
-                return false;
+                if (redirectUri.AbsoluteUri.StartsWith(validRedirectUri + '/'))
+                {
+                    return false;
+                }
             }
 
             return true;

@@ -10,6 +10,7 @@ using TimeForCode.Authorization.Api.Client;
 using TimeForCode.Authorization.Api.Client.Extensions;
 using TimeForCode.Authorization.Application.Interfaces;
 using TimeForCode.Authorization.Values;
+using TimeForCode.Shared.Api.Authentication;
 
 namespace TimeForCode.Authorization.Specifications.Steps
 {
@@ -53,7 +54,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
                 ExpiresAfter = DateTime.UtcNow.AddHours(-1),
             };
 
-            var uri = new Uri("http://localhost:8082");
+            var uri = new Uri("http://localhost:8083");
             var cookieValue = HttpUtility.UrlEncode(JsonSerializer.Serialize(refreshToken));
             _cookieContainer.Add(uri, new Cookie(CookieConstants.RefreshTokenKey, cookieValue));
 
@@ -79,7 +80,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
                 ExpiresAfter = DateTime.UtcNow.AddHours(1),
             };
 
-            var uri = new Uri("http://localhost:8082");
+            var uri = new Uri("http://localhost:8083");
             var cookieValue = HttpUtility.UrlEncode(JsonSerializer.Serialize(refreshToken));
             _cookieContainer.Add(uri, new Cookie(CookieConstants.RefreshTokenKey, cookieValue));
 

@@ -6,23 +6,19 @@
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=wouterfennis_TimeForCode&metric=coverage)](https://sonarcloud.io/summary/new_code?id=wouterfennis_TimeForCode)
 [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=wouterfennis_TimeForCode&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=wouterfennis_TimeForCode)
 
-Welcome to **TimeForCode**, an initiative aimed at connecting companies and
- individuals willing to donate their time and skills to open-source projects.
-  This repository contains the software that powers the **TimeForCode**
-   platform, including the website, backend, and supporting documentation.
+**TimeForCode** is a community platform that connects companies and individuals willing to donate developer time to open-source projects. Organizations pledge hours, open-source projects list their needs, and the platform handles matchmaking, tracking, and impact reporting.
+
+> Full documentation lives in [docs/](docs/index.md).
+
+---
 
 ## Table of Contents
 
 - [About the Project](#about-the-project)
-- [Features](#features)
+- [Current Status](#current-status)
 - [Tech Stack](#tech-stack)
 - [Getting Started](#getting-started)
-  - [Prerequisites](#prerequisites)
-  - [Installation](#installation)
-- [Usage](#usage)
 - [Contributing](#contributing)
-  - [Code of Conduct](#code-of-conduct)
-  - [How to Contribute](#how-to-contribute)
 - [License](#license)
 - [Contact](#contact)
 
@@ -30,40 +26,49 @@ Welcome to **TimeForCode**, an initiative aimed at connecting companies and
 
 ## About the Project
 
-**TimeForCode** is a platform designed to foster collaboration between
- companies and the open-source community. Organizations can donate developer
-  hours to open-source projects, empowering teams to work on impactful
-   initiatives while gaining valuable experience.
+TimeForCode makes it easy for companies to give back to open source in a structured, transparent way. Rather than ad-hoc contributions, organizations register their available developer hours, choose open-source projects to support, and contributors log time against those donations. Projects get the help they need; companies get a transparent record of their open-source investment.
 
-This repository houses:
+This repository contains:
 
-- The **website** where companies can register and pledge hours.
-- The **backend** API that manages project listings, donations, and participant
- information.
-- The **documentation** for contributors, API usage, and general guidelines.
+- **Authorization API** — OAuth 2.0 login via GitHub, JWT issuance and refresh.
+- **Donation API** — Project registration, donation management, and contribution tracking.
+- **Website** — Blazor frontend for donors, contributors, and project maintainers.
+- **Infrastructure** — Azure Bicep deployment templates and Docker Compose local setup.
+- **Documentation** — Architecture (Arc42), product requirements, and implementation guides.
 
 ---
 
-## Features
+## Current Status
 
-- **Company and Individual Accounts**: Register as a company or an individual
- donor.
-- **Project Listings**: Browse open-source projects in need of contributions.
-- **Hour Donations**: Companies and individuals can pledge development hours
- to specific projects.
-- **Collaboration Tools**: Built-in tools for time tracking and reporting
- on contributions.
+The platform is under active development. The following areas are production-ready or near-complete:
+
+- GitHub OAuth 2.0 authentication with internal JWT issuance and refresh.
+- User account creation and linking to external identity providers.
+
+The following areas are in progress:
+
+- Project registration and the donation lifecycle.
+- Contributor hour allocation and time tracking.
+- Matchmaking between donated hours and project needs.
+- Reporting and impact dashboards.
+
+See [docs/current/capability-status.md](docs/current/capability-status.md) for the full implementation status.
 
 ---
 
 ## Tech Stack
 
-- **Frontend**: T.B.D.
-- **Backend**: T.B.D.
-- **Database**: T.B.D.
-- **Authentication**: OAuth 2.0, JWT
-- **Documentation**: Markdown, Swagger for API documentation
-- **Deployment**: CI/CD with GitHub Actions
+| Concern | Technology |
+| --- | --- |
+| Frontend | Blazor (.NET) |
+| Backend | ASP.NET Core (.NET) |
+| Database | MongoDB |
+| Authentication | OAuth 2.0 (GitHub), JWT (RSA-signed) |
+| Containerisation | Podman, Docker Compose |
+| Infrastructure | Azure App Service, Azure Bicep (IaC) |
+| CI/CD | GitHub Actions |
+| Code quality | SonarCloud |
+| API documentation | Swagger / OpenAPI |
 
 ---
 
@@ -71,51 +76,60 @@ This repository houses:
 
 ### Prerequisites
 
-- Running Docker
+- [Podman](https://podman.io/docs/installation) 4.x or later (Docker Desktop is not used in this project)
+- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8) (for running tests and local development outside containers)
 
-### Installation
+> **Windows**: After installing Podman, open a new terminal and initialise the Podman machine once:
+> ```powershell
+> podman machine init
+> podman machine start
+> ```
+
+### Run locally
 
 ```powershell
-docker compose up --build
+podman compose up --build
 ```
 
-## Usage
+| Service | URL |
+| --- | --- |
+| Website | <http://localhost:8083> |
+| Authorization API | <http://localhost:8080> |
+| Donation API | <http://localhost:8082> |
+| Identity Provider Mock | <http://localhost:8081> |
 
-1. Navigate to [http://localhost:8082] to visit the website
+### Verify the stack
+
+A smoke-test script checks every service and walks through the full authentication flow:
+
+```powershell
+.\scripts\smoke-test.ps1
+```
+
+All 17 checks should report `[PASS]`. The script exits with code `0` on success.
+
+See [docs/current/deployment-status.md](docs/current/deployment-status.md) for environment details and configuration.
+
+---
 
 ## Contributing
 
-We welcome contributions to TimeForCode! Please take a moment to review our
- guidelines to help us keep this project accessible and collaborative.
+Contributions are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) and the [Code of Conduct](CODE_OF_CONDUCT.md) before submitting a pull request.
 
-## Code of Conduct
+Before submitting:
 
-By participating in this project, you agree to abide by the Code of Conduct.
- Please be respectful and constructive in your interactions with others.
+- Ensure all automated checks and tests pass.
+- Document any new functionality or API changes in the relevant `docs/` file.
+- Any architectural change must update the relevant [Arc42 section](docs/architecture/arc42/README.md).
 
-### How to Contribute
-
-Fork the repository.
-Create a new feature branch (git checkout -b feature/AmazingFeature).
-Commit your changes (git commit -m 'Add some AmazingFeature').
-Push to the branch (git push origin feature/AmazingFeature).
-Open a Pull Request.
-Before submitting your PR, make sure to:
-
-Your branch passes the automated sanity checks and tests
-Ensure your code adheres to the style guide.
-Document any new functionality or endpoints.
+---
 
 ## License
 
-Distributed under the MIT License. See LICENSE for more information.
+Distributed under the MIT License. See [LICENSE](LICENSE) for more information.
+
+---
 
 ## Contact
 
-If you have any questions or suggestions, feel free to contact the project
- maintainers:
-
-Name: Wouter Fennis
-GitHub: @wouterfennis
-
-Happy coding, and thank you for contributing to open-source with TimeForCode!
+Wouter Fennis — [@wouterfennis](https://github.com/wouterfennis)

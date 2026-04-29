@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.DataProtection;
 using System.Diagnostics.CodeAnalysis;
 using TimeForCode.Authorization.Api.Client.Extensions;
+using TimeForCode.Donation.Api.Client.Extensions;
 using TimeForCode.Website.Components;
 using TimeForCode.Website.Options;
 
@@ -30,8 +31,14 @@ namespace TimeForCode.Website
                 .Configure<AuthorizationServiceOptions>(options => builder.Configuration.GetSection(AuthorizationServiceOptions.SectionName)
                 .Bind(options));
 
+            builder.Services
+                .Configure<DonationServiceOptions>(options => builder.Configuration.GetSection(DonationServiceOptions.SectionName)
+                .Bind(options));
+
             var authorizationServiceOptions = AuthorizationServiceOptions.Bind(builder.Configuration);
+            var donationServiceOptions = DonationServiceOptions.Bind(builder.Configuration);
             builder.Services.AddAuthClient(new Uri(authorizationServiceOptions.BaseUri));
+            builder.Services.AddDonationClient(new Uri(donationServiceOptions.BaseUri));
 
             var app = builder.Build();
 

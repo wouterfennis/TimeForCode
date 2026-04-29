@@ -1,0 +1,46 @@
+# Use the official .NET SDK image to build the application
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+
+# Set the working directory
+WORKDIR /app
+
+# Copy the entire solution and restore dependencies
+COPY ./src ./src
+COPY ./tst ./tst
+COPY ./TimeForCode.sln ./
+RUN dotnet restore ./TimeForCode.sln
+
+# Build the entire solution
+RUN dotnet build ./TimeForCode.sln \
+--no-restore \
+--configuration Debug
+
+# Publish the application
+RUN dotnet publish ./src/Donation/TimeForCode.Donation.Api/*.csproj \
+--no-build \
+--configuration Debug \
+--output /app/publish
+
+# Use the official .NET runtime image to run the application
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
+
+# Set the working directory
+WORKDIR /app
+
+# Create a non-root user and group
+RUN addgroup --system appgroup && adduser --system --ingroup appgroup appuser
+
+# Copy the published application from the build stage
+COPY --from=build /app/publish .
+
+# Change ownership of the application files to the non-root user
+RUN chown -R appuser:appgroup /app
+
+# Switch to the non-root user
+USER appuser
+
+# Expose the port the application runs on
+EXPOSE 80
+
+# Set the entry point for the container
+ENTRYPOINT ["dotnet", "TimeForCode.Donation.Api.dll"]

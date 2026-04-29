@@ -1,10 +1,9 @@
 using IdentityProviderMockService.Models;
-using IdentityProviderMockService.Options;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.Net.Mime;
 using System.Security.Cryptography;
+using TimeForCode.Shared.Api.Authentication.Models;
 
 namespace IdentityProviderMockService.Controllers
 {
@@ -20,11 +19,11 @@ namespace IdentityProviderMockService.Controllers
             RSA rsa)
         {
             _logger = logger;
-            _rsaParameters = rsa.ExportParameters(includePrivateParameters: true);
+            _rsaParameters = rsa.ExportParameters(includePrivateParameters: false);
         }
 
         [HttpGet("jwks.json")]
-        [ProducesResponseType(typeof(UserResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(JwksResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public IActionResult GetJwksJson()
         {

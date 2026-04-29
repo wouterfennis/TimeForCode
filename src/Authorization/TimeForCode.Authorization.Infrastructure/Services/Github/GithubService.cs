@@ -39,7 +39,7 @@ namespace TimeForCode.Authorization.Infrastructure.Services.Github
             {
                 Host = _identityProviderOptions.AccessTokenHost,
                 Path = OAuthConstants.AccessTokenEndpoint,
-                Scheme = Uri.UriSchemeHttps
+                Scheme = _identityProviderOptions.IsHttps ? Uri.UriSchemeHttps : Uri.UriSchemeHttp
             };
 
             uriBuilder.Port = _identityProviderOptions.AccessTokenHostPort ?? uriBuilder.Port;
@@ -74,7 +74,7 @@ namespace TimeForCode.Authorization.Infrastructure.Services.Github
             {
                 Host = _identityProviderOptions.RestApiHost,
                 Path = UserEndpoint,
-                Scheme = Uri.UriSchemeHttps
+                Scheme = _identityProviderOptions.IsHttps ? Uri.UriSchemeHttps : Uri.UriSchemeHttp
             };
 
             uriBuilder.Port = _identityProviderOptions.RestApiPort ?? uriBuilder.Port;

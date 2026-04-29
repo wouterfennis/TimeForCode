@@ -11,16 +11,16 @@ namespace TimeForCode.Authorization.Application.Services
     {
         private readonly TimeProvider _timeProvider;
         private readonly IRandomGenerator _randomGenerator;
-        private readonly AuthenticationOptions _authenticationOptions;
+        private readonly TokenCreationOptions _tokenCreationOptions;
         private readonly IRefreshTokenRepository _refreshTokenRepository;
 
         public RefreshTokenService(
             TimeProvider timeProvider,
             IRandomGenerator randomGenerator,
             IRefreshTokenRepository refreshTokenRepository,
-            IOptions<AuthenticationOptions> authenticationOptions)
+            IOptions<TokenCreationOptions> tokenCreationOptions)
         {
-            _authenticationOptions = authenticationOptions.Value;
+            _tokenCreationOptions = tokenCreationOptions.Value;
             _timeProvider = timeProvider;
             _randomGenerator = randomGenerator;
             _refreshTokenRepository = refreshTokenRepository;
@@ -32,7 +32,7 @@ namespace TimeForCode.Authorization.Application.Services
             var refreshToken = new Domain.Entities.RefreshToken
             {
                 Id = ObjectId.GenerateNewId(),
-                ExpiresAfter = _timeProvider.GetUtcNow().AddDays(_authenticationOptions.DefaultRefreshTokenExpirationAfterInDays),
+                ExpiresAfter = _timeProvider.GetUtcNow().AddDays(_tokenCreationOptions.DefaultRefreshTokenExpirationAfterInDays),
                 Token = token,
                 UserId = userId
             };

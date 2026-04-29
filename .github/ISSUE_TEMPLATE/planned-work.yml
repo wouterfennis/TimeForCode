@@ -1,0 +1,102 @@
+name: Planned Work
+description: A structured issue created through the Plan Agent workflow. Use this template for features, improvements, bug fixes, technical debt, and documentation work.
+title: "[Type]: "
+labels: ["planned"]
+body:
+  - type: dropdown
+    id: type
+    attributes:
+      label: Issue Type
+      description: Select the type of work this issue represents.
+      options:
+        - Feature
+        - Bug Fix
+        - Improvement
+        - Technical Debt
+        - Documentation
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Affected Area
+      description: Which primary area of the system does this issue concern?
+      multiple: true
+      options:
+        - Authorization
+        - Donation
+        - Website
+        - Infrastructure
+        - Shared
+        - Documentation
+    validations:
+      required: true
+
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Motivation / Context
+      description: >
+        Why is this work needed? What problem does it solve or what value does it add?
+        Explain this clearly enough that a developer with no prior context can understand it.
+      placeholder: |
+        Currently, the system does not support [X], which means [Y].
+        This leads to [Z] for users / maintainers / operators.
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: >
+        High-level description of the intended approach. Do not include implementation
+        code — describe what should happen, not how to write it.
+      placeholder: |
+        The solution is to introduce [X] that [Y].
+        This will integrate with [Z] to provide [outcome].
+    validations:
+      required: true
+
+  - type: textarea
+    id: affected-areas
+    attributes:
+      label: Affected Components
+      description: >
+        List the specific components, APIs, or files that are likely involved.
+        Reference concrete paths from the repository.
+      placeholder: |
+        - `src/Authorization/TimeForCode.Authorization.Api/` — needs new endpoint
+        - `src/Donation/TimeForCode.Donation.Domain/` — domain model changes
+        - `docs/current/api-surface.md` — documentation update required
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance Criteria
+      description: >
+        Specific, independently testable conditions that must all be true for this issue
+        to be considered complete. Use checkboxes.
+      placeholder: |
+        - [ ] The new endpoint returns HTTP 200 with the expected response shape
+        - [ ] Existing tests continue to pass without modification
+        - [ ] Integration test covers the happy path and the primary error case
+        - [ ] API surface documentation is updated
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: >
+        Any other relevant information: links to architecture docs, related issues,
+        sequence diagrams, prior discussion, or known constraints.
+      placeholder: |
+        Related to #123
+        Architecture decision: docs/architecture/arc42/09-architecture-decisions.md
+    validations:
+      required: false
