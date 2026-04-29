@@ -3,15 +3,7 @@ name: Review
 description: Performs a holistic post-implementation review covering code quality, architecture compliance, arc42 documentation currency, and test coverage. Reports findings as a comment on the originating GitHub issue.
 argument-hint: Provide the GitHub issue number that was just implemented
 model: Claude Sonnet 4.6 (copilot)
-tools:
-  - vscode/askQuestions
-  - run_in_terminal
-  - semantic_search
-  - grep_search
-  - file_search
-  - read_file
-  - list_dir
-  - get_errors
+tools: [vscode/askQuestions, execute/runNotebookCell, execute/getTerminalOutput, execute/killTerminal, execute/sendToTerminal, execute/createAndRunTask, execute/runInTerminal, execute/runTests, read/getNotebookSummary, read/problems, read/readFile, read/viewImage, read/readNotebookCellOutput, read/terminalSelection, read/terminalLastCommand, search/changes, search/codebase, search/fileSearch, search/listDirectory, search/textSearch, search/searchSubagent, search/usages, browser/openBrowserPage, browser/readPage, browser/screenshotPage, browser/navigatePage, browser/clickElement, browser/dragElement, browser/hoverElement, browser/typeInPage, browser/runPlaywrightCode, browser/handleDialog, todo]
 ---
 
 # Review Agent

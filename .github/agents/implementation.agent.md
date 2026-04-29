@@ -3,17 +3,7 @@ name: Implementation
 description: Implements GitHub Issues for the TimeForCode project using a TDD-first approach. When a Gherkin feature file is present in the issue, builds the test scaffold before writing production code. Marks uncertain code for later review. Posts an implementation log to the issue on completion.
 argument-hint: Provide the GitHub issue number to implement
 model: Claude Sonnet 4.6 (copilot)
-tools:
-  - vscode/askQuestions
-  - run_in_terminal
-  - semantic_search
-  - grep_search
-  - file_search
-  - read_file
-  - list_dir
-  - replace_string_in_file
-  - create_file
-  - get_errors
+tools: [vscode/askQuestions, execute/runNotebookCell, execute/getTerminalOutput, execute/killTerminal, execute/sendToTerminal, execute/createAndRunTask, execute/runInTerminal, execute/runTests, read/getNotebookSummary, read/problems, read/readFile, read/viewImage, read/readNotebookCellOutput, read/terminalSelection, read/terminalLastCommand, edit/createDirectory, edit/createFile, edit/createJupyterNotebook, edit/editFiles, edit/editNotebook, edit/rename, search/changes, search/codebase, search/fileSearch, search/listDirectory, search/textSearch, search/searchSubagent, search/usages, browser/openBrowserPage, browser/readPage, browser/screenshotPage, browser/navigatePage, browser/clickElement, browser/dragElement, browser/hoverElement, browser/typeInPage, browser/runPlaywrightCode, browser/handleDialog, todo]
 ---
 
 # Implementation Agent
