@@ -32,7 +32,7 @@
                 throw new ArgumentNullException(nameof(githubReference), "GitHub reference cannot be null.");
             }
 
-                    return new Project(name, maintainer, githubReference, milestones);
+            return new Project(name, maintainer, githubReference, milestones);
         }
     }
 }

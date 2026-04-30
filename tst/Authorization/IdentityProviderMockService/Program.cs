@@ -1,8 +1,8 @@
 
 using IdentityProviderMockService.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Scalar.AspNetCore;
 using Microsoft.IdentityModel.Tokens;
+using Scalar.AspNetCore;
 using System.Security.Cryptography.X509Certificates;
 
 namespace IdentityProviderMockService

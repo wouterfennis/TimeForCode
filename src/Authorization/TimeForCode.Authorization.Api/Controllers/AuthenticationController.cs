@@ -95,7 +95,7 @@ namespace TimeForCode.Authorization.Api.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("logout")]
-        [ProducesResponseType(typeof(string),StatusCodes.Status302Found)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status302Found)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> LogoutAsync(Uri redirectUri)
