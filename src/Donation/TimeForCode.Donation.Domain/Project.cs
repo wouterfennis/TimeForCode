@@ -15,7 +15,7 @@
             Milestones = milestones;
         }
 
-        public static Project Create(string name, Maintainer maintainer, Uri githubReference, List<Milestone> milestones = null)
+        public static Project Create(string name, Maintainer maintainer, Uri githubReference, List<Milestone> milestones)
         {
             if (string.IsNullOrWhiteSpace(name))
             {
@@ -32,9 +32,7 @@
                 throw new ArgumentNullException(nameof(githubReference), "GitHub reference cannot be null.");
             }
 
-            var newMilestones = milestones ?? new List<Milestone>();
-
-            return new Project(name, maintainer, githubReference, newMilestones);
+                    return new Project(name, maintainer, githubReference, milestones);
         }
     }
 }

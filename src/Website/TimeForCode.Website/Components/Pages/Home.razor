@@ -21,7 +21,6 @@ Welcome to your new app.
 @{
     string logoutUri = $"{authorizationServiceOptions.Value.BaseUri}/api/Authentication/logout?RedirectUri={NavigationManager.Uri}";
     string loginUri = $"{authorizationServiceOptions.Value.BaseUri}/api/Authentication/login?IdentityProvider=Github&RedirectUri={NavigationManager.Uri}";
-    string testUri = $"{donationServiceOptions.Value.BaseUri}/api/v1/project/test";
 }
 @if (authenticated.HasValue && authenticated.Value)
 {
