@@ -49,22 +49,26 @@ else
             authenticatedMessage = "You are logged in.";
             authenticated = true;
 
-            await AuthClient.UserAsync().ContinueWith(task =>
+            try
             {
-                if (task.IsCompletedSuccessfully)
-                {
-                    userName = task.Result.Name;
-                    InvokeAsync(StateHasChanged);
-                }
-            });
+                var user = await AuthClient.UserAsync();
+                userName = user.Name;
+                StateHasChanged();
+            }
+            catch (Exception)
+            {
+                // User info unavailable; leave userName null
+            }
 
-            await DonationClient.GetAsync().ContinueWith(task =>
+            try
             {
-                if (task.IsCompletedSuccessfully)
-                {
-                    InvokeAsync(StateHasChanged);
-                }
-            });
+                await DonationClient.GetAsync();
+                StateHasChanged();
+            }
+            catch (Exception)
+            {
+                // Donation data unavailable; continue without it
+            }
         }
     }
 }
