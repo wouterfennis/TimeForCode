@@ -26,7 +26,7 @@ namespace IdentityProviderMockService
 
             var certificateBytes = Convert.FromBase64String(rsaOptions.Base64Certificate);
 
-            var certificate = new X509Certificate2(certificateBytes, (string?)null, X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.PersistKeySet | X509KeyStorageFlags.Exportable);
+            var certificate = X509CertificateLoader.LoadPkcs12(certificateBytes, (string?)null, X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.PersistKeySet | X509KeyStorageFlags.Exportable);
 
             var rsa = certificate.GetRSAPrivateKey()!;
 

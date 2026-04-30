@@ -58,7 +58,7 @@ namespace TimeForCode.Authorization.Application.Extensions
                 return RSA.Create();
             }
 
-            var certificate = new X509Certificate2(certificateBytes, (string?)null);
+            var certificate = X509CertificateLoader.LoadPkcs12(certificateBytes, (string?)null);
             return certificate.GetRSAPrivateKey()!;
         }
     }
