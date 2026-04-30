@@ -77,7 +77,7 @@ See [docs/current/capability-status.md](docs/current/capability-status.md) for t
 ### Prerequisites
 
 - [Podman](https://podman.io/docs/installation) 4.x or later (Docker Desktop is not used in this project)
-- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8) (for running tests and local development outside containers)
+- [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10) (for running tests and local development outside containers)
 
 > **Windows**: After installing Podman, open a new terminal and initialise the Podman machine once:
 >

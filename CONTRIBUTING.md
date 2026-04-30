@@ -70,7 +70,7 @@ Install the following tools before starting:
 
 | Tool | Version | Purpose |
 | --- | --- | --- |
-| [.NET SDK](https://dotnet.microsoft.com/download/dotnet/8) | 8.x | Build and test |
+| [.NET SDK](https://dotnet.microsoft.com/download/dotnet/10) | 10.x | Build and test |
 | [Podman](https://podman.io/docs/installation) | 4.x+ | Run the full stack locally |
 
 > **Why Podman?** Docker Desktop requires a paid licence in many organisations. Podman is a free, daemonless alternative that is fully compatible with Docker Compose files. The Dockerfiles in this project already use a non-root `appuser`, which is best-practice for Podman rootless mode.
