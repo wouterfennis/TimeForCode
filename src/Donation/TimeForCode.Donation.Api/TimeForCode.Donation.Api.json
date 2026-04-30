@@ -1,5 +1,5 @@
 {
-  "openapi": "3.0.4",
+  "openapi": "3.1.1",
   "info": {
     "title": "Donation API",
     "description": "API to interact with the donation backend",
@@ -31,7 +31,8 @@
                 "$ref": "#/components/schemas/RegisterProjectRequest"
               }
             }
-          }
+          },
+          "required": true
         },
         "responses": {
           "200": {
@@ -94,12 +95,7 @@
               }
             }
           }
-        },
-        "security": [
-          {
-            "Bearer": [ ]
-          }
-        ]
+        }
       }
     },
     "/api/v1/Project/test": {
@@ -111,7 +107,7 @@
         "operationId": "Get",
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "A response indicating the result of the registration process.",
             "content": {
               "text/plain": {
                 "schema": {
@@ -130,12 +126,7 @@
               }
             }
           }
-        },
-        "security": [
-          {
-            "Bearer": [ ]
-          }
-        ]
+        }
       }
     }
   },
@@ -145,28 +136,39 @@
         "type": "object",
         "properties": {
           "type": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "title": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "status": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
           },
           "detail": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "instance": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ]
           }
-        },
-        "additionalProperties": { }
+        }
       },
       "RegisterProjectRequest": {
         "required": [
@@ -177,21 +179,16 @@
           "githubRepositoryUrl": {
             "type": "string",
             "description": "The Github repository URL of the project.",
-            "format": "uri",
-            "nullable": true
+            "format": "uri"
           }
         },
-        "additionalProperties": false,
         "description": "Represents a request to register a project."
       }
-    },
-    "securitySchemes": {
-      "Bearer": {
-        "type": "apiKey",
-        "description": "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
-        "name": "Authorization",
-        "in": "header"
-      }
     }
-  }
+  },
+  "tags": [
+    {
+      "name": "Project"
+    }
+  ]
 }

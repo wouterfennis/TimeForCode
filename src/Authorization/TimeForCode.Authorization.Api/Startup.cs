@@ -1,12 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
-using System.Reflection;
+using Microsoft.OpenApi;
+using Scalar.AspNetCore;
 using System.Text.Json.Serialization;
 using TimeForCode.Authorization.Application.Extensions;
 using TimeForCode.Authorization.Application.Options;
 using TimeForCode.Authorization.Infrastructure.Extensions;
-using TimeForCode.Shared.Api.Filters;
 
 namespace TimeForCode.Authorization.Api
 {
@@ -30,22 +29,18 @@ namespace TimeForCode.Authorization.Api
         /// </summary>
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSwaggerGen(c =>
+            services.AddOpenApi("v1", options =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Authorization API", Version = "v1", Description = "API to interact with the authorization backend" });
-                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-                c.IncludeXmlComments(xmlPath);
-                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                options.AddDocumentTransformer((document, context, cancellationToken) =>
                 {
-                    Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
-                    Name = "Authorization",
-                    In = ParameterLocation.Header,
-                    Type = SecuritySchemeType.ApiKey,
-                    Scheme = "Bearer"
+                    document.Info = new OpenApiInfo
+                    {
+                        Title = "Authorization API",
+                        Version = "v1",
+                        Description = "API to interact with the authorization backend"
+                    };
+                    return Task.CompletedTask;
                 });
-
-                c.OperationFilter<AuthorizeFilter>();
             });
 
             services.AddControllers()
@@ -89,13 +84,6 @@ namespace TimeForCode.Authorization.Api
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseSwagger();
-            app.UseSwaggerUI(c =>
-            {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Authorization API v1");
-                c.RoutePrefix = string.Empty;
-            });
-
             app.UseRouting();
 
             app.UseAuthentication();
@@ -104,6 +92,8 @@ namespace TimeForCode.Authorization.Api
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapOpenApi();
+                endpoints.MapScalarApiReference();
             });
         }
     }
