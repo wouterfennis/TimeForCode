@@ -38,7 +38,7 @@ namespace TimeForCode.Authorization.Application.Options
         {
             var tokenCreationOptions = new TokenCreationOptions
             {
-                Audiences = configuration.GetSection(SectionName).GetValue<List<string>>(nameof(Audiences))!,
+                Audiences = configuration.GetSection($"{SectionName}:{nameof(Audiences)}").Get<List<string>>()!,
                 Issuer = configuration.GetSection(SectionName).GetValue<string>(nameof(Issuer))!,
                 TokenExpiresInMinutes = configuration.GetSection(SectionName).GetValue<int>(nameof(TokenExpiresInMinutes)),
                 DefaultRefreshTokenExpirationAfterInDays = configuration.GetSection(SectionName).GetValue<int>(nameof(DefaultRefreshTokenExpirationAfterInDays)),
