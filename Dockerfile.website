@@ -25,28 +25,21 @@ FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 # Set the working directory
 WORKDIR /app
 
-# Install gosu for clean privilege dropping at runtime
-RUN apt-get update && apt-get install -y --no-install-recommends gosu && rm -rf /var/lib/apt/lists/*
-
 # Create a non-root user and group
 RUN groupadd --system appgroup && useradd --system --no-create-home --gid appgroup appuser
 
 # Copy the published application from the build stage
 COPY --from=build /app/publish .
 
-# Copy and prepare the entrypoint script
-COPY entrypoint.website.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+# Create the Data Protection keys directory inside /app and set ownership.
+# Docker/Podman seed new named volumes from the image directory on first use,
+# so the appuser ownership is preserved when the volume is mounted here.
+RUN mkdir -p /app/dataprotection && chown -R appuser:appgroup /app
 
-# Create the storage directory for Data Protection keys
-RUN mkdir -p /storage
-
-# Change ownership of the application files to the non-root user
-# /storage ownership is fixed at runtime by the entrypoint script
-RUN chown -R appuser:appgroup /app
+# Switch to the non-root user
+USER appuser
 
 # Expose the port the application runs on
 EXPOSE 8080
 
-# The entrypoint script fixes /storage ownership then drops to appuser
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["dotnet", "TimeForCode.Website.dll"]

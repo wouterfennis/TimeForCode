@@ -99,9 +99,9 @@ services:
       - AuthorizationServiceOptions__BaseUri=http://authorization-api:8080
       - AuthorizationServiceOptions__PublicBaseUri=http://localhost:8080
       - DonationServiceOptions__BaseUri=http://donation-api:8080
-      - StorageOptions__StoragePath=/storage
+      - StorageOptions__StoragePath=/app/dataprotection
     volumes:
-      - website-storage:/storage
+      - website-storage:/app/dataprotection
     depends_on:
       - authorization-api
       - donation-api
