@@ -4,21 +4,20 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 # Set the working directory
 WORKDIR /app
 
-# Copy the entire solution and restore dependencies
+# Copy the source and test service (has a project reference into src/Shared)
 COPY ./src ./src
 COPY ./tst ./tst
-COPY ./TimeForCode.sln ./
 RUN dotnet restore ./tst/Authorization/IdentityProviderMockService/IdentityProviderMockService.csproj
 
-# Build the entire solution
+# Build the application
 RUN dotnet build ./tst/Authorization/IdentityProviderMockService/IdentityProviderMockService.csproj \
 --no-restore \
---configuration Debug
+--configuration Release
 
 # Publish the application
 RUN dotnet publish ./tst/Authorization/IdentityProviderMockService/IdentityProviderMockService.csproj \
 --no-build \
---configuration Debug \
+--configuration Release \
 --output /app/publish
 
 # Use the official .NET runtime image to run the application

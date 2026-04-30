@@ -4,21 +4,19 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 # Set the working directory
 WORKDIR /app
 
-# Copy the entire solution and restore dependencies
+# Copy the source and restore dependencies
 COPY ./src ./src
-COPY ./tst ./tst
-COPY ./TimeForCode.sln ./
-RUN dotnet restore ./TimeForCode.sln
+RUN dotnet restore ./src/Donation/TimeForCode.Donation.Api/*.csproj
 
-# Build the entire solution
-RUN dotnet build ./TimeForCode.sln \
+# Build the application
+RUN dotnet build ./src/Donation/TimeForCode.Donation.Api/*.csproj \
 --no-restore \
---configuration Debug
+--configuration Release
 
 # Publish the application
 RUN dotnet publish ./src/Donation/TimeForCode.Donation.Api/*.csproj \
 --no-build \
---configuration Debug \
+--configuration Release \
 --output /app/publish
 
 # Use the official .NET runtime image to run the application
