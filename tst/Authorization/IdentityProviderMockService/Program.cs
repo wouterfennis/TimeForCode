@@ -1,6 +1,7 @@
 
 using IdentityProviderMockService.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Scalar.AspNetCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Cryptography.X509Certificates;
 
@@ -13,8 +14,7 @@ namespace IdentityProviderMockService
             var builder = WebApplication.CreateBuilder(args);
 
             builder.Services.AddControllers();
-            builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+            builder.Services.AddOpenApi();
 
             builder.Services.AddMemoryCache();
             builder.Services.Configure<AuthenticationOptions>(builder.Configuration.GetSection(AuthenticationOptions.SectionName));
@@ -53,12 +53,8 @@ namespace IdentityProviderMockService
 
             var app = builder.Build();
 
-            app.UseSwagger();
-            app.UseSwaggerUI(c =>
-            {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Identity provider mock API v1");
-                c.RoutePrefix = string.Empty;
-            });
+            app.MapOpenApi();
+            app.MapScalarApiReference();
 
             app.UseHttpsRedirection();
 

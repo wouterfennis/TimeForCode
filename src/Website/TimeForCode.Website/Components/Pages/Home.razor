@@ -19,8 +19,8 @@ Welcome to your new app.
 @authenticatedMessage
 
 @{
-    string logoutUri = $"{authorizationServiceOptions.Value.BaseUri}/api/Authentication/logout?RedirectUri={NavigationManager.Uri}";
-    string loginUri = $"{authorizationServiceOptions.Value.BaseUri}/api/Authentication/login?IdentityProvider=Github&RedirectUri={NavigationManager.Uri}";
+    string logoutUri = $"{authorizationServiceOptions.Value.EffectivePublicBaseUri}/api/Authentication/logout?RedirectUri={NavigationManager.Uri}";
+    string loginUri = $"{authorizationServiceOptions.Value.EffectivePublicBaseUri}/api/Authentication/login?IdentityProvider=Github&RedirectUri={NavigationManager.Uri}";
 }
 @if (authenticated.HasValue && authenticated.Value)
 {
