@@ -25,16 +25,16 @@ FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 # Set the working directory
 WORKDIR /app
 
-# Create a non-root user and group
-RUN groupadd --system appgroup && useradd --system --no-create-home --gid appgroup appuser
-
 # Copy the published application from the build stage
 COPY --from=build /app/publish .
 
-# Create the Data Protection keys directory inside /app and set ownership.
+# Create a non-root user and group, then create the Data Protection keys directory.
 # Docker/Podman seed new named volumes from the image directory on first use,
 # so the appuser ownership is preserved when the volume is mounted here.
-RUN mkdir -p /app/dataprotection && chown -R appuser:appgroup /app
+RUN groupadd --system appgroup \
+    && useradd --system --no-create-home --gid appgroup appuser \
+    && mkdir -p /app/dataprotection \
+    && chown -R appuser:appgroup /app
 
 # Switch to the non-root user
 USER appuser
