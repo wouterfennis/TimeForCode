@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <OpenApiReference Include="..\TimeForCode.Authorization.Api\swagger.json" CodeGenerator="NSwagCSharp" Namespace="TimeForCode.Authorization.Api.Client" ClassName="AuthClient">
+    <OpenApiReference Include="TimeForCode.Authorization.Api.json" CodeGenerator="NSwagCSharp" Namespace="TimeForCode.Authorization.Api.Client" ClassName="AuthClient">
       <Options>/UseBaseUrl:false /GenerateClientInterfaces:true</Options>
     </OpenApiReference>
   </ItemGroup>

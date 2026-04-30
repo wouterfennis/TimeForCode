@@ -1,12 +1,14 @@
-﻿namespace TimeForCode.Authorization.Api.Client.Extensions
+﻿using TimeForCode.Authorization.Values;
+
+namespace TimeForCode.Authorization.Api.Client.Extensions
 {
     public static class AuthClientExtensions
     {
-        public static async Task<TryVoid<ApiException?>> TryLoginAsync(this IAuthClient client, IdentityProvider idenityProvider, Uri redirectUri)
+        public static async Task<TryVoid<ApiException?>> TryLoginAsync(this IAuthClient client, IdentityProvider identityProvider, Uri redirectUri)
         {
             try
             {
-                await client.LoginAsync(idenityProvider, redirectUri);
+                await client.LoginAsync((int)identityProvider, redirectUri);
             }
             catch (ApiException<ProblemDetails> exception)
             {

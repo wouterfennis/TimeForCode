@@ -95,7 +95,7 @@ namespace TimeForCode.Authorization.Api.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("logout")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string),StatusCodes.Status302Found)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> LogoutAsync(Uri redirectUri)
@@ -138,7 +138,7 @@ namespace TimeForCode.Authorization.Api.Controllers
         /// <returns>New access token and refresh token</returns>
         [HttpGet]
         [Route("refresh")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(CallbackResponseModel), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> RefreshAsync()

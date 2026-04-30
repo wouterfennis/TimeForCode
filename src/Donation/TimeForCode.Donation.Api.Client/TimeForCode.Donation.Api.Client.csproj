@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <OpenApiReference Include="..\TimeForCode.Donation.Api\swagger.json" CodeGenerator="NSwagCSharp" Namespace="TimeForCode.Donation.Api.Client" ClassName="DonationClient">
+    <OpenApiReference Include="TimeForCode.Donation.Api.json" CodeGenerator="NSwagCSharp" Namespace="TimeForCode.Donation.Api.Client" ClassName="DonationClient">
       <Options>/UseBaseUrl:false /GenerateClientInterfaces:true</Options>
     </OpenApiReference>
   </ItemGroup>
