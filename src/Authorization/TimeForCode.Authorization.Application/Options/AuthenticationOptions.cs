@@ -37,7 +37,7 @@ namespace TimeForCode.Authorization.Application.Options
             {
                 Audience = configuration.GetSection(SectionName).GetValue<string>(nameof(Audience))!,
                 Issuer = configuration.GetSection(SectionName).GetValue<string>(nameof(Issuer))!,
-                ValidRedirectUris = configuration.GetSection(SectionName).GetValue<List<string>>(nameof(ValidRedirectUris))!,
+                ValidRedirectUris = configuration.GetSection($"{SectionName}:{nameof(ValidRedirectUris)}").Get<List<string>>()!,
             };
 
             return authenticationOptions;
