@@ -9,6 +9,7 @@ agents:
   - FeatureWriter
   - Implementation
   - Review
+  - MarkdownLinter
 handoffs:
   - label: "Phase 1 — Run Plan Agent"
     agent: Plan
@@ -28,6 +29,11 @@ handoffs:
   - label: "Phase 4 — Run Review Agent"
     agent: Review
     prompt: "Review the implementation for the GitHub issue number identified in our conversation."
+    send: false
+    model: Claude Sonnet 4.6 (copilot)
+  - label: "Phase 5 — Run Markdown Linter Agent"
+    agent: MarkdownLinter
+    prompt: "Lint all Markdown files in the repository and post the report to the GitHub issue number identified in our conversation."
     send: false
     model: Claude Sonnet 4.6 (copilot)
 ---
@@ -124,15 +130,29 @@ Do not present or endorse the Phase 4 handoff until the log comment exists.
 
 ---
 
-### Phase 4 Complete
+### Phase 4 → Phase 5 Gate
 
 After the user reports that the Review agent has finished, run the same `gh issue view` command and check whether a review report comment is present (it contains the heading `## Code Review Report`).
 
+- **Gate OPEN**: Tell the user:
+  > "The review report is present. Select **Phase 5 — Run Markdown Linter Agent**. The issue number is `#<N>` — include it in the prompt."
+
+- **Gate CLOSED**:
+  > "The Review agent may not have posted its report yet. Check the issue on GitHub or re-run the Review agent."
+
+Do not present or endorse the Phase 5 handoff until the review report comment exists.
+
+---
+
+### Phase 5 Complete
+
+After the user reports that the Markdown Linter agent has finished, run the same `gh issue view` command and check whether a lint report comment is present (it contains the heading `## Markdown Lint Report`).
+
 If present:
-> "All four phases are complete. The review report has been posted to issue #`<N>`. The workflow is done. Check the report for any 🔴 critical findings that must be addressed before merging."
+> "All five phases are complete. The markdown lint report has been posted to issue #`<N>`. The workflow is done. Check the reports for any findings that must be addressed before merging."
 
 If absent:
-> "The Review agent may not have posted its report yet. Check the issue on GitHub or re-run the Review agent."
+> "The Markdown Linter agent may not have posted its report yet. Check the issue on GitHub or re-run the Markdown Linter agent."
 
 ---
 
@@ -147,6 +167,7 @@ After every check, output a compact status table so the user always knows where 
 | FeatureWriter (Gherkin) | ⏳ Awaiting approval on GitHub |
 | Implementation          | ⬜ Not started |
 | Review                  | ⬜ Not started |
+| Markdown Lint           | ⬜ Not started |
 ```
 
 Use ✅ for complete, ⏳ for in progress or awaiting action, ⬜ for not yet started.

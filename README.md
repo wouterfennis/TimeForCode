@@ -80,6 +80,7 @@ See [docs/current/capability-status.md](docs/current/capability-status.md) for t
 - [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8) (for running tests and local development outside containers)
 
 > **Windows**: After installing Podman, open a new terminal and initialise the Podman machine once:
+>
 > ```powershell
 > podman machine init
 > podman machine start
