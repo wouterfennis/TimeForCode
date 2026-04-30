@@ -129,7 +129,7 @@ Before writing a single line of code, check that you have enough information to 
 - If it seems like one should exist but doesn't, ask the user whether to proceed without it or wait
 
 **If acceptance criteria are vague or contradictory:**
-- Use #tool:vscode_askQuestions to resolve the ambiguity before continuing
+- Use #tool:vscode/askQuestions to resolve the ambiguity before continuing
 - Do not guess at domain intent
 
 Record: the issue number, all acceptance criteria, and whether a feature file is present.
@@ -170,7 +170,7 @@ Produce a concise, ordered task list. Categorise each item:
 | **API** | New controller actions, request/response models, mappers |
 | **Architecture tests** | New ArchUnitNET rules if new structural patterns are introduced |
 
-Present the plan to the user via plain text (not #tool:vscode_askQuestions) and proceed unless the user objects. You do not need explicit approval to start.
+Present the plan to the user via plain text (not #tool:vscode/askQuestions) and proceed unless the user objects. You do not need explicit approval to start.
 
 ---
 
