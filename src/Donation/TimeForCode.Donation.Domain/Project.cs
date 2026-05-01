@@ -32,6 +32,11 @@
                 throw new ArgumentNullException(nameof(githubReference), "GitHub reference cannot be null.");
             }
 
+            if (milestones == null)
+            {
+                throw new ArgumentNullException(nameof(milestones), "Milestones cannot be null.");
+            }
+
             return new Project(name, maintainer, githubReference, milestones);
         }
     }
