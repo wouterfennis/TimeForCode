@@ -5,6 +5,8 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /app
 
 # Copy the source and restore dependencies
+COPY Directory.Packages.props .
+COPY Directory.Build.props .
 COPY ./src ./src
 RUN dotnet restore ./src/Donation/TimeForCode.Donation.Api/*.csproj
 

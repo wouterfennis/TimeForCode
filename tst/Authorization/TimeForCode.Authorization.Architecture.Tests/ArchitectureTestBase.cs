@@ -30,10 +30,10 @@ namespace TimeForCode.Authorization.Architecture.Tests
                 System.Reflection.Assembly.Load(typeof(Infrastructure.Anchor).Assembly.GetName().Name!)
             ).Build();
 
-            ApiLayer = Types().That().ResideInNamespace(ApiLayerNamespace, useRegularExpressions: true).As("Api Layer");
-            ApplicationLayer = Types().That().ResideInNamespace(ApplicationLayerNamespace, useRegularExpressions: true).As("Application Layer");
-            DomainLayer = Types().That().ResideInNamespace(DomainLayerNamespace, useRegularExpressions: true).As("Domain Layer");
-            InfrastructureLayer = Types().That().ResideInNamespace(InfrastructureLayerNamespace, useRegularExpressions: true).As("Infrastructure Layer");
+            ApiLayer = Types().That().ResideInNamespaceMatching(ApiLayerNamespace).As("Api Layer");
+            ApplicationLayer = Types().That().ResideInNamespaceMatching(ApplicationLayerNamespace).As("Application Layer");
+            DomainLayer = Types().That().ResideInNamespaceMatching(DomainLayerNamespace).As("Domain Layer");
+            InfrastructureLayer = Types().That().ResideInNamespaceMatching(InfrastructureLayerNamespace).As("Infrastructure Layer");
         }
 
         public void Evaluate(IArchRule exampleLayerShouldNotAccessForbiddenLayer)

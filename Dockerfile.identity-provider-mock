@@ -5,6 +5,8 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /app
 
 # Copy the source and test service (has a project reference into src/Shared)
+COPY Directory.Packages.props .
+COPY Directory.Build.props .
 COPY ./src ./src
 COPY ./tst ./tst
 RUN dotnet restore ./tst/Authorization/IdentityProviderMockService/IdentityProviderMockService.csproj

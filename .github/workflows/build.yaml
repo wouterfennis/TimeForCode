@@ -94,7 +94,9 @@ jobs:
       run: dotnet format ./TimeForCode.sln --no-restore --verify-no-changes
 
     - name: Run NuGet security scan
-      run: dotnet list ./TimeForCode.sln package --vulnerable --include-transitive
+      run: |
+        dotnet list ./TimeForCode.sln package --vulnerable --include-transitive 2>&1 | tee vuln-report.txt
+        ! grep -q "has the following vulnerable packages" vuln-report.txt
 
     - name: Build Docker image API
       uses: docker/build-push-action@v4
@@ -118,7 +120,7 @@ jobs:
         password: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Push Docker image API
-      uses: docker/build-push-action@v3
+      uses: docker/build-push-action@v4
       with:
         context: .
         file: ./Dockerfile.authorization-api
@@ -126,7 +128,7 @@ jobs:
         tags: ghcr.io/wouterfennis/timeforcode/timeforcode-authorization-api:${{ env.IMAGE_TAG }}
 
     - name: Push Docker image Website
-      uses: docker/build-push-action@v3
+      uses: docker/build-push-action@v4
       with:
         context: .
         file: ./Dockerfile.website

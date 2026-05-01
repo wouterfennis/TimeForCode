@@ -29,7 +29,7 @@ namespace TimeForCode.Authorization.Architecture.Tests
         {
             // Arrange
             var rule = Types().That().ImplementInterface(typeof(IRequestHandler<>)).Should()
-               .ResideInNamespace(".*\\.Authorization\\.Application\\..*", useRegularExpressions: true)
+               .ResideInNamespaceMatching(".*\\.Authorization\\.Application\\..*")
                .Because("Command Handlers should always be in the application layer");
 
             // Assert
