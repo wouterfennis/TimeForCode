@@ -9,7 +9,7 @@ namespace TimeForCode.Donation.Api.Tests
         public async Task Verify_GeneratedSwaggerFile_ShouldNotChangeUnlessIntended()
         {
             // Arrange
-            var swagger = await File.ReadAllTextAsync("TimeForCode.Donation.Api.json");
+            var swagger = await File.ReadAllTextAsync("TimeForCode.Donation.Api.json", CancellationToken.None);
 
             // Act
 
