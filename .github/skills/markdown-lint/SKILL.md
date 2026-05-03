@@ -15,10 +15,10 @@ This skill runs a full lint-fix-scan cycle for all Markdown files in the **TimeF
 markdownlint --version
 ```
 
-**Expected output:** A version string such as `0.x.y`.
+**Expected output:** Version `0.48.0` (to match CI).
 
 **If not found:** Stop and report:
-> "`markdownlint-cli` is not installed. Install it with `npm install -g markdownlint-cli` and re-run this agent."
+> "`markdownlint-cli@0.48.0` is not installed. Install it with `npm install -g markdownlint-cli@0.48.0` and re-run this agent."
 
 Do not attempt to install it yourself.
 
