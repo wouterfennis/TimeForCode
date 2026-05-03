@@ -6,6 +6,6 @@ namespace TimeForCode.Authorization.Application.Interfaces
     {
         Task<AccountInformation> GetByIdentityProviderIdAsync(string identityProviderId);
         Task<AccountInformation> GetByInternalIdAsync(string internalId);
-        Task<AccountInformation> CreateOrUpdateAsync(AccountInformation entity);
+        Task<CreateOrUpdateResult> CreateOrUpdateAsync(AccountInformation entity);
     }
 }

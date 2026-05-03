@@ -24,18 +24,18 @@ namespace TimeForCode.Authorization.Infrastructure.Persistence.Database
             return await _collection.Find(Builders<AccountInformation>.Filter.Eq("_id", new ObjectId(internalId))).FirstOrDefaultAsync();
         }
 
-        public async Task<AccountInformation> CreateOrUpdateAsync(AccountInformation entity)
+        public async Task<CreateOrUpdateResult> CreateOrUpdateAsync(AccountInformation entity)
         {
             var existingEntity = await GetByIdentityProviderIdAsync(entity.IdentityProviderId);
             if (existingEntity == null)
             {
                 await CreateAsync(entity);
-                return entity;
+                return new CreateOrUpdateResult(entity, IsNewAccount: true);
             }
             else
             {
                 await UpdateAsync(entity);
-                return existingEntity;
+                return new CreateOrUpdateResult(existingEntity, IsNewAccount: false);
             }
         }
 

@@ -33,6 +33,8 @@ namespace TimeForCode.Authorization.Specifications.Steps
                 Login = "johndoe",
                 NodeId = "",
                 Company = "",
+                Bio = "Software developer",
+                Location = "Netherlands"
             };
 
             mockHttp.When("http://localhost:8081/user")

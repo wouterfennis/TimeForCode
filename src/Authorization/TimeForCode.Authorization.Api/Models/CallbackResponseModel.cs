@@ -21,5 +21,10 @@ namespace TimeForCode.Authorization.Api.Models
         /// </summary>
         [Required]
         public required RefreshToken RefreshToken { get; init; }
+
+        /// <summary>
+        /// Indicates whether this is the user's first login (new account was created).
+        /// </summary>
+        public bool IsNewUser { get; init; }
     }
 }

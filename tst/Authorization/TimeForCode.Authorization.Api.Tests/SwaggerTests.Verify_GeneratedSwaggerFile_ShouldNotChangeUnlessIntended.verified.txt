@@ -1,4 +1,4 @@
-﻿{
+{
   "openapi": "3.1.1",
   "info": {
     "title": "Authorization API",
@@ -262,6 +262,55 @@
           }
         }
       }
+    },
+    "/api/User/repositories": {
+      "get": {
+        "tags": [
+          "User"
+        ],
+        "summary": "Get user's public repositories from GitHub.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RepositoryResponse"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -296,6 +345,10 @@
           "refreshToken": {
             "description": "The access token.",
             "$ref": "#/components/schemas/RefreshToken"
+          },
+          "isNewUser": {
+            "type": "boolean",
+            "description": "Indicates whether this is the user's first login (new account was created)."
           }
         },
         "description": "Represents the model for a callback response."
@@ -406,6 +459,47 @@
           }
         }
       },
+      "RepositoryResponse": {
+        "required": [
+          "name",
+          "url"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Repository name"
+          },
+          "description": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Repository description"
+          },
+          "starCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "Number of stars",
+            "format": "int32"
+          },
+          "language": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Primary language"
+          },
+          "url": {
+            "type": "string",
+            "description": "Repository URL"
+          }
+        },
+        "description": "Repository response model"
+      },
       "UserResponse": {
         "required": [
           "id",
@@ -448,6 +542,20 @@
           "email": {
             "type": "string",
             "description": "User email"
+          },
+          "bio": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "User bio"
+          },
+          "location": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "User location"
           }
         },
         "description": "User response model"

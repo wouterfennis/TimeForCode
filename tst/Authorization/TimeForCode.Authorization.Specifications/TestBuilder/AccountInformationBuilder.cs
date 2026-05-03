@@ -20,7 +20,9 @@ namespace TimeForCode.Authorization.Specifications.TestBuilder
                 Login = "Login",
                 NodeId = "NodeId",
                 Name = "Name",
-                Email = "Email"
+                Email = "Email",
+                Bio = null,
+                Location = null
             };
         }
     }

@@ -9,5 +9,8 @@ namespace TimeForCode.Authorization.Domain.Entities
         public required string Name { get; init; }
         public required string? Company { get; init; }
         public required string Email { get; init; }
+        public required string? Bio { get; init; }
+        public required string? Location { get; init; }
+        public string? EncryptedGitHubAccessToken { get; set; }
     }
 }

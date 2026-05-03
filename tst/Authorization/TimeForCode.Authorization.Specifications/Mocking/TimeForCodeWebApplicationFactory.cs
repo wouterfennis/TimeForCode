@@ -59,7 +59,7 @@ namespace TimeForCode.Authorization.Specifications.Mocking
         {
             var mockAccountInformationRepository = new Mock<IAccountInformationRepository>();
             mockAccountInformationRepository.Setup(x => x.CreateOrUpdateAsync(It.IsAny<AccountInformation>()))
-                .ReturnsAsync(AccountInformationBuilder.Build());
+                .ReturnsAsync(new CreateOrUpdateResult(AccountInformationBuilder.Build(), IsNewAccount: false));
 
             var mockRefreshTokenRepository = new Mock<IRefreshTokenRepository>();
 

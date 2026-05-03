@@ -68,5 +68,24 @@ namespace TimeForCode.Authorization.Api.Client.Extensions
 
             return TryVoid<ApiException<ProblemDetails>?>.Create(default);
         }
+
+        public static async Task<TryResponse<ICollection<RepositoryResponse>?, ApiException?>> TryUserRepositoriesAsync(this IAuthClient client)
+        {
+            ICollection<RepositoryResponse>? response = default;
+            try
+            {
+                response = await client.RepositoriesAsync();
+            }
+            catch (ApiException<ProblemDetails> exception)
+            {
+                return TryResponse<ICollection<RepositoryResponse>?, ApiException?>.Create(response, exception);
+            }
+            catch (ApiException exception)
+            {
+                return TryResponse<ICollection<RepositoryResponse>?, ApiException?>.Create(response, exception);
+            }
+
+            return TryResponse<ICollection<RepositoryResponse>?, ApiException?>.Create(response, default);
+        }
     }
 }
