@@ -46,7 +46,18 @@ namespace TimeForCode.Authorization.Infrastructure.Persistence.Database
 
         private async Task UpdateAsync(AccountInformation entity)
         {
-            await _collection.ReplaceOneAsync(Builders<AccountInformation>.Filter.Eq("_id", (entity as dynamic).Id), entity);
+            var filter = Builders<AccountInformation>.Filter.Eq(x => x.IdentityProviderId, entity.IdentityProviderId);
+            var update = Builders<AccountInformation>.Update
+                .Set(x => x.Login, entity.Login)
+                .Set(x => x.NodeId, entity.NodeId)
+                .Set(x => x.AvatarUrl, entity.AvatarUrl)
+                .Set(x => x.Name, entity.Name)
+                .Set(x => x.Company, entity.Company)
+                .Set(x => x.Email, entity.Email)
+                .Set(x => x.Bio, entity.Bio)
+                .Set(x => x.Location, entity.Location)
+                .Set(x => x.EncryptedGitHubAccessToken, entity.EncryptedGitHubAccessToken);
+            await _collection.UpdateOneAsync(filter, update);
         }
     }
 }
