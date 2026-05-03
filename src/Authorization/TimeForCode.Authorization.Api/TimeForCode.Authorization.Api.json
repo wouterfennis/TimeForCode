@@ -123,31 +123,11 @@
           "Authentication"
         ],
         "summary": "Logout endpoint.",
-        "parameters": [
-          {
-            "name": "redirectUri",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "uri"
-            }
-          }
-        ],
         "responses": {
-          "200": {
-            "description": "OK",
+          "204": {
+            "description": "No Content",
             "content": {
               "application/json": { }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
             }
           },
           "500": {
@@ -169,7 +149,11 @@
           "200": {
             "description": "OK",
             "content": {
-              "application/json": { }
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CallbackResponseModel"
+                }
+              }
             }
           },
           "400": {

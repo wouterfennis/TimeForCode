@@ -40,11 +40,10 @@ namespace TimeForCode.Authorization.Api.Controllers
         {
             _logger.LogDebug("OpenIdConfiguration is returned");
 
-            var requestBase = $"{Request.Scheme}://{Request.Host}";
             var discoveryDocument = new DiscoveryDocumentResponse
             {
                 Issuer = _authenticationOptions.Issuer,
-                JwksUri = $"{requestBase}/.well-known/jwks.json"
+                JwksUri = $"{_authenticationOptions.Issuer}/.well-known/jwks.json"
             };
 
             return Ok(discoveryDocument);

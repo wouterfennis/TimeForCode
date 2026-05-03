@@ -32,7 +32,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="..\..\..\src\Authorization\TimeForCode.Authorization.Api\swagger.json">
+    <Content Include="..\..\..\src\Authorization\TimeForCode.Authorization.Api\TimeForCode.Authorization.Api.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
