@@ -42,5 +42,39 @@ namespace IdentityProviderMockService.Controllers
 
             return Ok(user);
         }
+
+        [HttpGet("repos")]
+        [ProducesResponseType(typeof(IEnumerable<RepositoryResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public IActionResult GetUserRepos()
+        {
+            _logger.LogDebug("user repos are returned");
+
+#pragma warning disable S1075 // URIs should not be hardcoded, this is a mock
+            var repos = new List<RepositoryResponse>
+            {
+                new RepositoryResponse
+                {
+                    Name = "mock-repo-one",
+                    Description = "A mock public repository",
+                    StargazersCount = 42,
+                    Language = "C#",
+                    HtmlUrl = "https://github.com/johndoe/mock-repo-one",
+                    IsPrivate = false
+                },
+                new RepositoryResponse
+                {
+                    Name = "mock-repo-two",
+                    Description = "Another mock public repository",
+                    StargazersCount = 7,
+                    Language = "TypeScript",
+                    HtmlUrl = "https://github.com/johndoe/mock-repo-two",
+                    IsPrivate = false
+                }
+            };
+#pragma warning restore S1075 // URIs should not be hardcoded
+
+            return Ok(repos);
+        }
     }
 }
