@@ -33,7 +33,7 @@ namespace TimeForCode.Shared.Tests.Api.Handlers
             var accessToken = new AccessToken { Token = "valid-access-token", ExpiresAfter = DateTimeOffset.UtcNow.AddHours(1) };
             SetupCookieWithToken(accessToken);
 
-            await _client.GetAsync("http://example.com/api/test");
+            await _client.GetAsync("http://example.com/api/test", CancellationToken.None);
 
             _innerHandler.LastRequest!.Headers.Authorization.Should().NotBeNull();
             _innerHandler.LastRequest.Headers.Authorization!.Scheme.Should().Be("Bearer");
@@ -45,7 +45,7 @@ namespace TimeForCode.Shared.Tests.Api.Handlers
         {
             _httpContextAccessorMock.Setup(a => a.HttpContext).Returns((HttpContext?)null);
 
-            await _client.GetAsync("http://example.com/api/test");
+            await _client.GetAsync("http://example.com/api/test", CancellationToken.None);
 
             _innerHandler.LastRequest!.Headers.Authorization.Should().BeNull();
         }
@@ -55,7 +55,7 @@ namespace TimeForCode.Shared.Tests.Api.Handlers
         {
             SetupCookieWithToken(null);
 
-            await _client.GetAsync("http://example.com/api/test");
+            await _client.GetAsync("http://example.com/api/test", CancellationToken.None);
 
             _innerHandler.LastRequest!.Headers.Authorization.Should().BeNull();
         }
@@ -65,7 +65,7 @@ namespace TimeForCode.Shared.Tests.Api.Handlers
         {
             SetupCookieValue(string.Empty);
 
-            await _client.GetAsync("http://example.com/api/test");
+            await _client.GetAsync("http://example.com/api/test", CancellationToken.None);
 
             _innerHandler.LastRequest!.Headers.Authorization.Should().BeNull();
         }
@@ -76,7 +76,7 @@ namespace TimeForCode.Shared.Tests.Api.Handlers
             var accessToken = new AccessToken { Token = "some-token", ExpiresAfter = DateTimeOffset.UtcNow.AddHours(1) };
             SetupCookieWithToken(accessToken);
 
-            var response = await _client.GetAsync("http://example.com/api/test");
+            var response = await _client.GetAsync("http://example.com/api/test", CancellationToken.None);
 
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             _innerHandler.CallCount.Should().Be(1);
@@ -87,7 +87,7 @@ namespace TimeForCode.Shared.Tests.Api.Handlers
         {
             _httpContextAccessorMock.Setup(a => a.HttpContext).Returns((HttpContext?)null);
 
-            var response = await _client.GetAsync("http://example.com/api/test");
+            var response = await _client.GetAsync("http://example.com/api/test", CancellationToken.None);
 
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             _innerHandler.CallCount.Should().Be(1);
