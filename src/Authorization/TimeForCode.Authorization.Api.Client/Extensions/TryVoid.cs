@@ -1,6 +1,6 @@
 ﻿namespace TimeForCode.Authorization.Api.Client.Extensions
 {
-    public class TryVoid<ExceptionClass> where ExceptionClass : Exception?
+    public class TryVoid<ExceptionClass> where ExceptionClass : System.Exception?
     {
         public ExceptionClass? Exception { get; private set; }
 

@@ -17,11 +17,11 @@ namespace TimeForCode.Authorization.Specifications.Steps
     internal class CallbackSteps
     {
         private readonly IAuthClient _authClient;
-        private readonly IServiceProvider _provider;
+        private readonly System.IServiceProvider _provider;
         private readonly CookieContainer _cookieContainer;
-        private TryResponse<CallbackResponseModel?, Exception?>? _result = null;
+        private TryResponse<CallbackResponseModel?, System.Exception?>? _result = null;
 
-        public CallbackSteps(IAuthClient authClient, IServiceProvider provider, CookieContainer cookieContainer)
+        public CallbackSteps(IAuthClient authClient, System.IServiceProvider provider, CookieContainer cookieContainer)
         {
             _authClient = authClient;
             _provider = provider;

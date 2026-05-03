@@ -22,7 +22,7 @@ namespace TimeForCode.Authorization.Api.Client.Extensions
             return TryVoid<ApiException?>.Create(default);
         }
 
-        public static async Task<TryResponse<CallbackResponseModel?, Exception?>> TryCallbackAsync(this IAuthClient client, string code, string state)
+        public static async Task<TryResponse<CallbackResponseModel?, System.Exception?>> TryCallbackAsync(this IAuthClient client, string code, string state)
         {
             CallbackResponseModel? response = default;
             try
@@ -31,14 +31,14 @@ namespace TimeForCode.Authorization.Api.Client.Extensions
             }
             catch (ApiException<ProblemDetails> exception)
             {
-                return TryResponse<CallbackResponseModel?, Exception?>.Create(response, exception);
+                return TryResponse<CallbackResponseModel?, System.Exception?>.Create(response, exception);
             }
             catch (ApiException exception)
             {
-                return TryResponse<CallbackResponseModel?, Exception?>.Create(response, exception);
+                return TryResponse<CallbackResponseModel?, System.Exception?>.Create(response, exception);
             }
 
-            return TryResponse<CallbackResponseModel?, Exception?>.Create(response, default);
+            return TryResponse<CallbackResponseModel?, System.Exception?>.Create(response, default);
         }
 
         public static async Task<TryVoid<ApiException?>> TryLogoutAsync(this IAuthClient client, Uri redirectUri)

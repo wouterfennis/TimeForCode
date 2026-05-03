@@ -139,7 +139,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "string"
+                  "$ref": "#/components/schemas/RedirectResult"
                 }
               }
             }
@@ -306,6 +306,260 @@
           }
         }
       },
+      "ActionContext": {
+        "type": "object",
+        "properties": {
+          "actionDescriptor": {
+            "$ref": "#/components/schemas/ActionDescriptor"
+          },
+          "httpContext": {
+            "$ref": "#/components/schemas/HttpContext"
+          },
+          "modelState": {
+            "type": [
+              "null",
+              "object"
+            ],
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ModelStateEntry"
+            }
+          },
+          "routeData": {
+            "$ref": "#/components/schemas/RouteData"
+          }
+        }
+      },
+      "ActionDescriptor": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "routeValues": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "attributeRouteInfo": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/AttributeRouteInfo"
+              }
+            ]
+          },
+          "actionConstraints": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/IActionConstraintMetadata"
+            }
+          },
+          "endpointMetadata": {
+            "type": "array"
+          },
+          "parameters": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ParameterDescriptor"
+            }
+          },
+          "boundProperties": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ParameterDescriptor"
+            }
+          },
+          "filterDescriptors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FilterDescriptor"
+            }
+          },
+          "displayName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "properties": {
+            "type": "object"
+          }
+        }
+      },
+      "AddressFamily": {
+        "type": "integer"
+      },
+      "AsnEncodedData": {
+        "type": "object",
+        "properties": {
+          "oid": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/Oid"
+              }
+            ]
+          },
+          "rawData": {
+            "type": "string",
+            "format": "byte"
+          }
+        }
+      },
+      "AsymmetricAlgorithm": {
+        "type": "object",
+        "properties": {
+          "keySize": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "legalKeySizes": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/KeySizes"
+            }
+          },
+          "signatureAlgorithm": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "keyExchangeAlgorithm": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "AttributeRouteInfo": {
+        "type": "object",
+        "properties": {
+          "template": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "order": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "name": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "suppressLinkGeneration": {
+            "type": "boolean"
+          },
+          "suppressPathMatching": {
+            "type": "boolean"
+          }
+        }
+      },
+      "BindingInfo": {
+        "type": "object",
+        "properties": {
+          "bindingSource": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/BindingSource"
+              }
+            ]
+          },
+          "binderModelName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "binderType": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/Type"
+              }
+            ]
+          },
+          "propertyFilterProvider": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/IPropertyFilterProvider"
+              }
+            ]
+          },
+          "requestPredicate": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/FuncOfActionContextAndboolean"
+              }
+            ]
+          },
+          "emptyBodyBehavior": {
+            "$ref": "#/components/schemas/EmptyBodyBehavior"
+          },
+          "serviceKey": { }
+        }
+      },
+      "BindingSource": {
+        "required": [
+          "displayName",
+          "id",
+          "isGreedy",
+          "isFromRequest"
+        ],
+        "type": "object",
+        "properties": {
+          "displayName": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "isGreedy": {
+            "type": "boolean"
+          },
+          "isFromRequest": {
+            "type": "boolean"
+          }
+        }
+      },
       "CallbackResponseModel": {
         "required": [
           "accessToken",
@@ -324,6 +578,197 @@
         },
         "description": "Represents the model for a callback response."
       },
+      "CancellationToken": {
+        "type": "object",
+        "properties": {
+          "isCancellationRequested": {
+            "type": "boolean"
+          },
+          "canBeCanceled": {
+            "type": "boolean"
+          },
+          "waitHandle": {
+            "$ref": "#/components/schemas/WaitHandle"
+          }
+        }
+      },
+      "Claim": {
+        "type": "object",
+        "properties": {
+          "issuer": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "originalIssuer": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "properties": {
+            "type": [
+              "null",
+              "object"
+            ],
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "subject": {
+            "$ref": "#/components/schemas/ClaimsIdentity"
+          },
+          "type": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "value": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "valueType": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "ClaimsIdentity": {
+        "type": "object",
+        "properties": {
+          "authenticationType": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "isAuthenticated": {
+            "type": "boolean"
+          },
+          "actor": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/ClaimsIdentity"
+              }
+            ]
+          },
+          "bootstrapContext": { },
+          "claims": { },
+          "label": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "name": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "nameClaimType": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "roleClaimType": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "ClaimsPrincipal": {
+        "type": "object",
+        "properties": {
+          "claims": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/Claim"
+            }
+          },
+          "identities": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/ClaimsIdentity"
+            }
+          },
+          "identity": {
+            "$ref": "#/components/schemas/IIdentity"
+          }
+        }
+      },
+      "ConnectionInfo": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "remoteIpAddress": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/IPAddress"
+              }
+            ]
+          },
+          "remotePort": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "localIpAddress": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/IPAddress"
+              }
+            ]
+          },
+          "localPort": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "clientCertificate": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/X509Certificate2"
+              }
+            ]
+          }
+        }
+      },
       "DiscoveryDocumentResponse": {
         "required": [
           "issuer",
@@ -339,9 +784,423 @@
           }
         }
       },
+      "EmptyBodyBehavior": {
+        "type": "integer"
+      },
+      "Exception": {
+        "type": "object",
+        "properties": {
+          "targetSite": {
+            "$ref": "#/components/schemas/MethodBase"
+          },
+          "message": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "data": {
+            "type": [
+              "null",
+              "object"
+            ]
+          },
+          "innerException": {
+            "$ref": "#/components/schemas/Exception"
+          },
+          "helpLink": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "source": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "hResult": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "stackTrace": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "FilterDescriptor": {
+        "required": [
+          "filter"
+        ],
+        "type": "object",
+        "properties": {
+          "filter": {
+            "$ref": "#/components/schemas/IFilterMetadata"
+          },
+          "order": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "scope": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "FuncOfActionContextAndboolean": { },
+      "FuncOfModelMetadataAndboolean": { },
+      "HostString": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "hasValue": {
+            "type": "boolean"
+          },
+          "host": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "port": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "HttpContext": {
+        "type": "object",
+        "properties": {
+          "features": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/KeyValuePairOfTypeAndObject"
+            }
+          },
+          "request": {
+            "$ref": "#/components/schemas/HttpRequest"
+          },
+          "response": {
+            "$ref": "#/components/schemas/HttpResponse"
+          },
+          "connection": {
+            "$ref": "#/components/schemas/ConnectionInfo"
+          },
+          "webSockets": {
+            "$ref": "#/components/schemas/WebSocketManager"
+          },
+          "user": {
+            "$ref": "#/components/schemas/ClaimsPrincipal"
+          },
+          "items": {
+            "type": "object"
+          },
+          "requestServices": {
+            "$ref": "#/components/schemas/IServiceProvider"
+          },
+          "requestAborted": {
+            "$ref": "#/components/schemas/CancellationToken"
+          },
+          "traceIdentifier": {
+            "type": "string"
+          },
+          "session": {
+            "$ref": "#/components/schemas/ISession"
+          }
+        }
+      },
+      "HttpRequest": {
+        "type": "object",
+        "properties": {
+          "httpContext": {
+            "$ref": "#/components/schemas/HttpContext"
+          },
+          "method": {
+            "type": "string"
+          },
+          "scheme": {
+            "type": "string"
+          },
+          "isHttps": {
+            "type": "boolean"
+          },
+          "host": {
+            "$ref": "#/components/schemas/HostString"
+          },
+          "pathBase": {
+            "$ref": "#/components/schemas/PathString"
+          },
+          "path": {
+            "$ref": "#/components/schemas/PathString"
+          },
+          "queryString": {
+            "$ref": "#/components/schemas/QueryString"
+          },
+          "query": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/KeyValuePairOfstringAndStringValues"
+            }
+          },
+          "protocol": {
+            "type": "string"
+          },
+          "headers": {
+            "type": [
+              "null",
+              "object"
+            ],
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "cookies": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/KeyValuePairOfstringAndstring"
+            }
+          },
+          "contentLength": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "contentType": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "body": {
+            "$ref": "#/components/schemas/Stream"
+          },
+          "bodyReader": {
+            "$ref": "#/components/schemas/PipeReader"
+          },
+          "hasFormContentType": {
+            "type": "boolean"
+          },
+          "form": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/KeyValuePairOfstringAndStringValues"
+            }
+          },
+          "routeValues": {
+            "type": "object"
+          }
+        }
+      },
+      "HttpResponse": {
+        "type": "object",
+        "properties": {
+          "httpContext": {
+            "$ref": "#/components/schemas/HttpContext"
+          },
+          "statusCode": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "headers": {
+            "type": [
+              "null",
+              "object"
+            ],
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "body": {
+            "$ref": "#/components/schemas/Stream"
+          },
+          "bodyWriter": {
+            "$ref": "#/components/schemas/PipeWriter"
+          },
+          "contentLength": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "contentType": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "cookies": {
+            "$ref": "#/components/schemas/IResponseCookies"
+          },
+          "hasStarted": {
+            "type": "boolean"
+          }
+        }
+      },
+      "IActionConstraintMetadata": {
+        "type": "object"
+      },
       "IdentityProvider": {
         "type": "integer",
         "description": "Represents the identity providers supported by the application."
+      },
+      "IFilterMetadata": {
+        "type": "object"
+      },
+      "IIdentity": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "authenticationType": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "isAuthenticated": {
+            "type": "boolean"
+          }
+        }
+      },
+      "IPAddress": {
+        "type": "object",
+        "properties": {
+          "addressFamily": {
+            "$ref": "#/components/schemas/AddressFamily"
+          },
+          "scopeId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "isIPv6Multicast": {
+            "type": "boolean"
+          },
+          "isIPv6LinkLocal": {
+            "type": "boolean"
+          },
+          "isIPv6SiteLocal": {
+            "type": "boolean"
+          },
+          "isIPv6Teredo": {
+            "type": "boolean"
+          },
+          "isIPv6UniqueLocal": {
+            "type": "boolean"
+          },
+          "isIPv4MappedToIPv6": {
+            "type": "boolean"
+          },
+          "address": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          }
+        }
+      },
+      "IPropertyFilterProvider": {
+        "type": "object",
+        "properties": {
+          "propertyFilter": {
+            "$ref": "#/components/schemas/FuncOfModelMetadataAndboolean"
+          }
+        }
+      },
+      "IResponseCookies": {
+        "type": "object"
+      },
+      "IRouter": {
+        "type": "object"
+      },
+      "IServiceProvider": {
+        "type": "object"
+      },
+      "ISession": {
+        "type": "object",
+        "properties": {
+          "isAvailable": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "keys": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "IUrlHelper": {
+        "type": "object",
+        "properties": {
+          "actionContext": {
+            "$ref": "#/components/schemas/ActionContext"
+          }
+        }
       },
       "JwkResponse": {
         "required": [
@@ -373,6 +1232,224 @@
             "items": {
               "$ref": "#/components/schemas/JwkResponse"
             }
+          }
+        }
+      },
+      "KeySizes": {
+        "required": [
+          "minSize",
+          "maxSize",
+          "skipSize"
+        ],
+        "type": "object",
+        "properties": {
+          "minSize": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "maxSize": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "skipSize": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "KeyValuePairOfstringAndstring": {
+        "required": [
+          "key",
+          "value"
+        ],
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "value": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "KeyValuePairOfstringAndStringValues": {
+        "required": [
+          "key",
+          "value"
+        ],
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "value": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "KeyValuePairOfTypeAndObject": {
+        "required": [
+          "key",
+          "value"
+        ],
+        "type": "object",
+        "properties": {
+          "key": {
+            "$ref": "#/components/schemas/Type"
+          },
+          "value": { }
+        }
+      },
+      "MethodBase": { },
+      "ModelError": {
+        "type": "object",
+        "properties": {
+          "exception": {
+            "$ref": "#/components/schemas/Exception"
+          },
+          "errorMessage": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "ModelStateEntry": {
+        "type": "object",
+        "properties": {
+          "rawValue": { },
+          "attemptedValue": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "errors": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/ModelError"
+            }
+          },
+          "validationState": {
+            "$ref": "#/components/schemas/ModelValidationState"
+          },
+          "isContainerNode": {
+            "type": "boolean"
+          },
+          "children": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/ModelStateEntry"
+            }
+          }
+        }
+      },
+      "ModelValidationState": {
+        "type": "integer"
+      },
+      "Oid": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "friendlyName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "ParameterDescriptor": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "parameterType": {
+            "$ref": "#/components/schemas/Type"
+          },
+          "bindingInfo": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/BindingInfo"
+              }
+            ]
+          }
+        }
+      },
+      "PathString": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "hasValue": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PipeReader": {
+        "type": [
+          "null",
+          "string"
+        ],
+        "format": "binary"
+      },
+      "PipeWriter": {
+        "type": "object",
+        "properties": {
+          "canGetUnflushedBytes": {
+            "type": "boolean"
+          },
+          "unflushedBytes": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
           }
         }
       },
@@ -414,6 +1491,64 @@
           }
         }
       },
+      "PublicKey": {
+        "type": "object",
+        "properties": {
+          "encodedKeyValue": {
+            "$ref": "#/components/schemas/AsnEncodedData"
+          },
+          "encodedParameters": {
+            "$ref": "#/components/schemas/AsnEncodedData"
+          },
+          "key": {
+            "$ref": "#/components/schemas/AsymmetricAlgorithm"
+          },
+          "oid": {
+            "$ref": "#/components/schemas/Oid"
+          }
+        }
+      },
+      "QueryString": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "hasValue": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ReadOnlyMemoryOfbyte": {
+        "type": "string"
+      },
+      "RedirectResult": {
+        "type": "object",
+        "properties": {
+          "permanent": {
+            "type": "boolean"
+          },
+          "preserveMethod": {
+            "type": "boolean"
+          },
+          "url": {
+            "type": "string"
+          },
+          "urlHelper": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/IUrlHelper"
+              }
+            ]
+          }
+        }
+      },
       "RefreshToken": {
         "required": [
           "token",
@@ -430,6 +1565,48 @@
           }
         }
       },
+      "RouteData": {
+        "type": "object",
+        "properties": {
+          "dataTokens": {
+            "type": [
+              "null",
+              "object"
+            ]
+          },
+          "routers": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/IRouter"
+            }
+          },
+          "values": {
+            "type": [
+              "null",
+              "object"
+            ]
+          }
+        }
+      },
+      "SafeWaitHandle": {
+        "type": "object",
+        "properties": {
+          "isInvalid": {
+            "type": "boolean"
+          },
+          "isClosed": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Stream": {
+        "type": "string",
+        "format": "binary"
+      },
+      "Type": { },
       "UserResponse": {
         "required": [
           "id",
@@ -475,6 +1652,185 @@
           }
         },
         "description": "User response model"
+      },
+      "WaitHandle": {
+        "type": "object",
+        "properties": {
+          "handle": { },
+          "safeWaitHandle": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/SafeWaitHandle"
+              }
+            ]
+          }
+        }
+      },
+      "WebSocketManager": {
+        "type": "object",
+        "properties": {
+          "isWebSocketRequest": {
+            "type": "boolean"
+          },
+          "webSocketRequestedProtocols": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "X500DistinguishedName": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "oid": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/Oid"
+              }
+            ]
+          },
+          "rawData": {
+            "type": "string",
+            "format": "byte"
+          }
+        }
+      },
+      "X509Certificate2": {
+        "type": "object",
+        "properties": {
+          "archived": {
+            "type": "boolean"
+          },
+          "extensions": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/X509Extension"
+            }
+          },
+          "friendlyName": {
+            "type": "string"
+          },
+          "hasPrivateKey": {
+            "type": "boolean"
+          },
+          "privateKey": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/AsymmetricAlgorithm"
+              }
+            ]
+          },
+          "issuerName": {
+            "$ref": "#/components/schemas/X500DistinguishedName"
+          },
+          "notAfter": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "notBefore": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "publicKey": {
+            "$ref": "#/components/schemas/PublicKey"
+          },
+          "rawData": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "byte"
+          },
+          "rawDataMemory": {
+            "$ref": "#/components/schemas/ReadOnlyMemoryOfbyte"
+          },
+          "serialNumber": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "signatureAlgorithm": {
+            "$ref": "#/components/schemas/Oid"
+          },
+          "subjectName": {
+            "$ref": "#/components/schemas/X500DistinguishedName"
+          },
+          "thumbprint": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "version": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "handle": { },
+          "issuer": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "subject": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "serialNumberBytes": {
+            "$ref": "#/components/schemas/ReadOnlyMemoryOfbyte"
+          }
+        }
+      },
+      "X509Extension": {
+        "type": "object",
+        "properties": {
+          "critical": {
+            "type": "boolean"
+          },
+          "oid": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/Oid"
+              }
+            ]
+          },
+          "rawData": {
+            "type": "string",
+            "format": "byte"
+          }
+        }
       }
     }
   },
