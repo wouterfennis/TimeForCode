@@ -1,10 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
-using System.Reflection;
+using Microsoft.OpenApi;
+using Scalar.AspNetCore;
 using System.Text.Json.Serialization;
 using TimeForCode.Donation.Api.Options;
-using TimeForCode.Shared.Api.Filters;
 
 namespace TimeForCode.Donation.Api
 {
@@ -28,22 +27,18 @@ namespace TimeForCode.Donation.Api
         /// </summary>
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSwaggerGen(c =>
+            services.AddOpenApi("v1", options =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Donation API", Version = "v1", Description = "API to interact with the donation backend" });
-                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-                c.IncludeXmlComments(xmlPath);
-                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                options.AddDocumentTransformer((document, context, cancellationToken) =>
                 {
-                    Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
-                    Name = "Donation",
-                    In = ParameterLocation.Header,
-                    Type = SecuritySchemeType.ApiKey,
-                    Scheme = "Bearer"
+                    document.Info = new OpenApiInfo
+                    {
+                        Title = "Donation API",
+                        Version = "v1",
+                        Description = "API to interact with the donation backend"
+                    };
+                    return Task.CompletedTask;
                 });
-
-                c.OperationFilter<AuthorizeFilter>();
             });
 
             services.AddControllers()
@@ -84,13 +79,6 @@ namespace TimeForCode.Donation.Api
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseSwagger();
-            app.UseSwaggerUI(c =>
-            {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Donation API v1");
-                c.RoutePrefix = string.Empty;
-            });
-
             app.UseRouting();
 
             app.UseAuthentication();
@@ -99,6 +87,8 @@ namespace TimeForCode.Donation.Api
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapOpenApi();
+                endpoints.MapScalarApiReference();
             });
         }
     }

@@ -95,16 +95,10 @@ namespace TimeForCode.Authorization.Api.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("logout")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> LogoutAsync(Uri redirectUri)
+        public async Task<IActionResult> LogoutAsync()
         {
-            if (IsInvalidRedirectUri(redirectUri))
-            {
-                return BadRequest(ProblemDetailsMapper.BadRequest("The supplied redirect uri is invalid"));
-            }
-
             var refreshToken = GetRefreshToken();
 
             var command = new LogoutCommand
@@ -114,22 +108,13 @@ namespace TimeForCode.Authorization.Api.Controllers
 
             await _sender.Send(command);
 
-            DeleteTokenResponseCookies();
-
-            return Redirect(redirectUri.AbsoluteUri);
+            return NoContent();
         }
 
         private bool IsInvalidRedirectUri(Uri redirectUri)
         {
-            foreach (var validRedirectUri in _authenticationOptions.Value.ValidRedirectUris)
-            {
-                if (redirectUri.AbsoluteUri.StartsWith(validRedirectUri + '/'))
-                {
-                    return false;
-                }
-            }
-
-            return true;
+            return !_authenticationOptions.Value.ValidRedirectUris
+                .Any(validRedirectUri => redirectUri.AbsoluteUri.StartsWith(validRedirectUri + '/'));
         }
 
         /// <summary>
@@ -138,7 +123,7 @@ namespace TimeForCode.Authorization.Api.Controllers
         /// <returns>New access token and refresh token</returns>
         [HttpGet]
         [Route("refresh")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(CallbackResponseModel), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> RefreshAsync()
@@ -212,12 +197,6 @@ namespace TimeForCode.Authorization.Api.Controllers
             }
 
             return null;
-        }
-
-        private void DeleteTokenResponseCookies()
-        {
-            HttpContext.Response.Cookies.Delete(CookieConstants.TokenKey);
-            HttpContext.Response.Cookies.Delete(CookieConstants.RefreshTokenKey);
         }
     }
 }

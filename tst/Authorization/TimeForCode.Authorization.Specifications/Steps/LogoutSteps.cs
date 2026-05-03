@@ -1,5 +1,4 @@
 ﻿using FluentAssertions;
-using Microsoft.AspNetCore.Http;
 using Reqnroll;
 using System.Net;
 using System.Text.Json;
@@ -47,21 +46,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
         [When("The user logs out from the external platform")]
         public async Task WhenTheUserLogsOutFromTheExternalPlatformAsync()
         {
-            _result = await _authClient.TryLogoutAsync(new Uri("http://localhost:8083"));
-        }
-
-        [When("The user logs out from the external platform with invalid redirect url")]
-        public async Task WhenTheUserLogsOutFromTheExternalPlatformWithInvalidRedirectUrlAsync()
-        {
-            _result = await _authClient.TryLogoutAsync(new Uri("http://invalid-uri.com"));
-        }
-
-        [Then("The user is informed the logout redirect uri is rejected")]
-        public void ThenTheUserIsInformedTheLogoutRedirectUriIsRejected()
-        {
-            _result.Should().NotBeNull();
-            _result!.Exception.Should().NotBeNull();
-            _result!.Exception!.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
+            _result = await _authClient.TryLogoutAsync();
         }
 
         [Then("The logout is confirmed")]

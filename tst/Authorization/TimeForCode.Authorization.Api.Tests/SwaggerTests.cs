@@ -9,7 +9,7 @@ namespace TimeForCode.Authorization.Api.Tests
         public async Task Verify_GeneratedSwaggerFile_ShouldNotChangeUnlessIntended()
         {
             // Arrange
-            var swagger = await File.ReadAllTextAsync("swagger.json");
+            var swagger = await File.ReadAllTextAsync("TimeForCode.Authorization.Api.json", CancellationToken.None);
 
             // Act
 

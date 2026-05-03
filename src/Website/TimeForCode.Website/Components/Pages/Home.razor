@@ -1,71 +1,67 @@
-﻿@inject IHttpContextAccessor HttpContextAccessor
-@inject IAuthClient AuthClient
-@inject IDonationClient DonationClient
-@inject NavigationManager NavigationManager
-@inject IOptions<AuthorizationServiceOptions> authorizationServiceOptions
-@inject IOptions<DonationServiceOptions> donationServiceOptions
-@page "/"
+﻿@page "/"
 @using Microsoft.Extensions.Options
 @using TimeForCode.Authorization.Api.Client
 @using TimeForCode.Donation.Api.Client
 @using TimeForCode.Website.Options
+@inject IAuthClient AuthClient
+@inject IDonationClient DonationClient
+@inject NavigationManager NavigationManager
+@inject IOptions<AuthorizationServiceOptions> AuthorizationServiceOptions
 
-<PageTitle>Home</PageTitle>
+<PageTitle>TimeForCode</PageTitle>
 
-<h1>Hello, @userName</h1>
+<h1>TimeForCode</h1>
 
-Welcome to your new app.
-
-@authenticatedMessage
-
-@{
-    string logoutUri = $"{authorizationServiceOptions.Value.BaseUri}/api/Authentication/logout?RedirectUri={NavigationManager.Uri}";
-    string loginUri = $"{authorizationServiceOptions.Value.BaseUri}/api/Authentication/login?IdentityProvider=Github&RedirectUri={NavigationManager.Uri}";
-    string testUri = $"{donationServiceOptions.Value.BaseUri}/api/v1/project/test";
-}
-@if (authenticated.HasValue && authenticated.Value)
+@if (_isLoggedIn)
 {
-    <a href="@logoutUri">Log out</a>
+    <p>Welcome, <strong>@_userName</strong>!</p>
+    <p>Donation API: @_donationResult</p>
+    <a href="/logout">Log out</a>
 }
 else
 {
-    <a href="@loginUri">Log in with Github</a>
+    <p>You are not logged in.</p>
+    <a href="@_loginUri">Log in with GitHub</a>
 }
 
 @code {
-    private bool? authenticated;
-    private string? authenticatedMessage;
-    private string? userName;
+    [CascadingParameter]
+    public HttpContext? HttpContext { get; set; }
 
-    protected async override Task OnInitializedAsync()
+    private bool _isLoggedIn;
+    private string? _userName;
+    private string? _donationResult;
+    private string _loginUri = string.Empty;
+
+    protected override async Task OnInitializedAsync()
     {
-        var cookieValue = HttpContextAccessor.HttpContext?.Request.Cookies["AccessToken"];
-        if (string.IsNullOrEmpty(cookieValue))
-        {
-            authenticatedMessage = $"You are not logged in";
-            authenticated = false;
-        }
-        else
-        {
-            authenticatedMessage = "You are logged in.";
-            authenticated = true;
+        var publicBaseUri = AuthorizationServiceOptions.Value.EffectivePublicBaseUri;
+        var encodedReturnUrl = Uri.EscapeDataString(NavigationManager.Uri);
+        _loginUri = $"{publicBaseUri}/api/Authentication/login?IdentityProvider=Github&RedirectUri={encodedReturnUrl}";
 
-            await AuthClient.UserAsync().ContinueWith(task =>
-            {
-                if (task.IsCompletedSuccessfully)
-                {
-                    userName = task.Result.Name;
-                    InvokeAsync(StateHasChanged);
-                }
-            });
+        var cookie = HttpContext?.Request.Cookies["AccessToken"];
+        _isLoggedIn = !string.IsNullOrEmpty(cookie);
 
-            await DonationClient.GetAsync().ContinueWith(task =>
+        if (_isLoggedIn)
+        {
+            try
             {
-                if (task.IsCompletedSuccessfully)
-                {
-                    InvokeAsync(StateHasChanged);
-                }
-            });
+                var user = await AuthClient.UserAsync();
+                _userName = user.Name;
+            }
+            catch
+            {
+                _userName = "(unavailable)";
+            }
+
+            try
+            {
+                _donationResult = await DonationClient.GetAsync();
+            }
+            catch
+            {
+                _donationResult = "(unavailable)";
+            }
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace TimeForCode.Authorization.Api.Client.Extensions
 {
-    public class TryResponse<ResponseClass, ExceptionClass> where ResponseClass : class? where ExceptionClass : Exception?
+    public class TryResponse<ResponseClass, ExceptionClass> where ResponseClass : class? where ExceptionClass : System.Exception?
     {
         public ResponseClass? Response { get; private set; }
         public ExceptionClass? Exception { get; private set; }

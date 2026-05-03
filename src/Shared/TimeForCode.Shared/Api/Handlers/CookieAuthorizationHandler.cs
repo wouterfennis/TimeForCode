@@ -21,8 +21,18 @@ namespace TimeForCode.Shared.Api.Handlers
             var token = _httpContextAccessor.HttpContext?.Request.Cookies[CookieConstants.TokenKey];
             if (!string.IsNullOrEmpty(token))
             {
-                var accessToken = JsonSerializer.Deserialize<AccessToken>(token);
-                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken!.Token);
+                try
+                {
+                    var accessToken = JsonSerializer.Deserialize<AccessToken>(token);
+                    if (!string.IsNullOrEmpty(accessToken?.Token))
+                    {
+                        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken.Token);
+                    }
+                }
+                catch (JsonException)
+                {
+                    // Cookie value is not valid JSON; skip setting the Authorization header.
+                }
             }
             return base.SendAsync(request, cancellationToken);
         }

@@ -1,5 +1,5 @@
 ﻿{
-  "openapi": "3.0.4",
+  "openapi": "3.1.1",
   "info": {
     "title": "Authorization API",
     "description": "API to interact with the authorization backend",
@@ -17,7 +17,6 @@
             "name": "IdentityProvider",
             "in": "query",
             "description": "Gets or sets the identity provider for the login request.",
-            "required": true,
             "schema": {
               "$ref": "#/components/schemas/IdentityProvider"
             }
@@ -26,7 +25,6 @@
             "name": "RedirectUri",
             "in": "query",
             "description": "Gets or sets the redirect URI for the login request.",
-            "required": true,
             "schema": {
               "type": "string",
               "format": "uri"
@@ -35,7 +33,10 @@
         ],
         "responses": {
           "302": {
-            "description": "Found"
+            "description": "Found",
+            "content": {
+              "application/json": { }
+            }
           },
           "400": {
             "description": "Bad Request",
@@ -48,7 +49,10 @@
             }
           },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": { }
+            }
           }
         }
       }
@@ -58,13 +62,12 @@
         "tags": [
           "Authentication"
         ],
-        "summary": "Callback endpoint that is being called by the external identity provider. After the redirect initiated by M:TimeForCode.Authorization.Api.Controllers.AuthenticationController.LoginAsync(TimeForCode.Authorization.Api.Models.LoginRequestModel).",
+        "summary": "Callback endpoint that is being called by the external identity provider. After the redirect initiated by Task&lt;IActionResult&gt; AuthenticationController.LoginAsync(LoginRequestModel loginModel).",
         "parameters": [
           {
             "name": "Code",
             "in": "query",
             "description": "Gets or sets the authorization code.",
-            "required": true,
             "schema": {
               "type": "string"
             }
@@ -73,7 +76,6 @@
             "name": "State",
             "in": "query",
             "description": "Gets or sets the state parameter.",
-            "required": true,
             "schema": {
               "type": "string"
             }
@@ -91,7 +93,10 @@
             }
           },
           "302": {
-            "description": "Found"
+            "description": "Found",
+            "content": {
+              "application/json": { }
+            }
           },
           "400": {
             "description": "Bad Request",
@@ -104,7 +109,10 @@
             }
           },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": { }
+            }
           }
         }
       }
@@ -115,32 +123,18 @@
           "Authentication"
         ],
         "summary": "Logout endpoint.",
-        "parameters": [
-          {
-            "name": "redirectUri",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "uri"
-            }
-          }
-        ],
         "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "400": {
-            "description": "Bad Request",
+          "204": {
+            "description": "No Content",
             "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
+              "application/json": { }
             }
           },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": { }
+            }
           }
         }
       }
@@ -153,7 +147,14 @@
         "summary": "Refresh endpoint.",
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CallbackResponseModel"
+                }
+              }
+            }
           },
           "400": {
             "description": "Bad Request",
@@ -166,7 +167,10 @@
             }
           },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": { }
+            }
           }
         }
       }
@@ -189,7 +193,10 @@
             }
           },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": { }
+            }
           }
         }
       }
@@ -212,7 +219,10 @@
             }
           },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": { }
+            }
           }
         }
       }
@@ -245,14 +255,12 @@
             }
           },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": { }
+            }
           }
-        },
-        "security": [
-          {
-            "Bearer": [ ]
-          }
-        ]
+        }
       }
     }
   },
@@ -260,21 +268,19 @@
     "schemas": {
       "AccessToken": {
         "required": [
-          "expiresAfter",
-          "token"
+          "token",
+          "expiresAfter"
         ],
         "type": "object",
         "properties": {
           "token": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "expiresAfter": {
             "type": "string",
             "format": "date-time"
           }
-        },
-        "additionalProperties": false
+        }
       },
       "CallbackResponseModel": {
         "required": [
@@ -284,13 +290,14 @@
         "type": "object",
         "properties": {
           "accessToken": {
+            "description": "The access token.",
             "$ref": "#/components/schemas/AccessToken"
           },
           "refreshToken": {
+            "description": "The access token.",
             "$ref": "#/components/schemas/RefreshToken"
           }
         },
-        "additionalProperties": false,
         "description": "Represents the model for a callback response."
       },
       "DiscoveryDocumentResponse": {
@@ -301,45 +308,35 @@
         "type": "object",
         "properties": {
           "issuer": {
-            "minLength": 1,
             "type": "string"
           },
           "jwks_uri": {
-            "minLength": 1,
             "type": "string"
           }
-        },
-        "additionalProperties": false
+        }
       },
       "IdentityProvider": {
-        "enum": [
-          "Github"
-        ],
-        "type": "string",
+        "type": "integer",
         "description": "Represents the identity providers supported by the application."
       },
       "JwkResponse": {
         "required": [
-          "e",
           "kty",
+          "e",
           "n"
         ],
         "type": "object",
         "properties": {
           "kty": {
-            "minLength": 1,
             "type": "string"
           },
           "e": {
-            "minLength": 1,
             "type": "string"
           },
           "n": {
-            "minLength": 1,
             "type": "string"
           }
-        },
-        "additionalProperties": false
+        }
       },
       "JwksResponse": {
         "required": [
@@ -353,113 +350,122 @@
               "$ref": "#/components/schemas/JwkResponse"
             }
           }
-        },
-        "additionalProperties": false
+        }
       },
       "ProblemDetails": {
         "type": "object",
         "properties": {
           "type": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "title": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "status": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
           },
           "detail": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "instance": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ]
           }
-        },
-        "additionalProperties": { }
+        }
       },
       "RefreshToken": {
         "required": [
-          "expiresAfter",
-          "token"
+          "token",
+          "expiresAfter"
         ],
         "type": "object",
         "properties": {
           "token": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "expiresAfter": {
             "type": "string",
             "format": "date-time"
           }
-        },
-        "additionalProperties": false
+        }
       },
       "UserResponse": {
         "required": [
-          "avatarUrl",
-          "company",
-          "email",
           "id",
           "login",
+          "nodeId",
+          "avatarUrl",
           "name",
-          "nodeId"
+          "company",
+          "email"
         ],
         "type": "object",
         "properties": {
           "id": {
             "type": "string",
-            "description": "User id",
-            "nullable": true
+            "description": "User id"
           },
           "login": {
             "type": "string",
-            "description": "User login",
-            "nullable": true
+            "description": "User login"
           },
           "nodeId": {
             "type": "string",
-            "description": "User node id",
-            "nullable": true
+            "description": "User node id"
           },
           "avatarUrl": {
             "type": "string",
-            "description": "User avatar url",
-            "nullable": true
+            "description": "User avatar url"
           },
           "name": {
             "type": "string",
-            "description": "User name",
-            "nullable": true
+            "description": "User name"
           },
           "company": {
-            "type": "string",
-            "description": "User company",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "User company"
           },
           "email": {
             "type": "string",
-            "description": "User email",
-            "nullable": true
+            "description": "User email"
           }
         },
-        "additionalProperties": false,
         "description": "User response model"
       }
-    },
-    "securitySchemes": {
-      "Bearer": {
-        "type": "apiKey",
-        "description": "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
-        "name": "Authorization",
-        "in": "header"
-      }
     }
-  }
+  },
+  "tags": [
+    {
+      "name": "Authentication"
+    },
+    {
+      "name": "Jwks"
+    },
+    {
+      "name": "OpenIdConfiguration"
+    },
+    {
+      "name": "User"
+    }
+  ]
 }

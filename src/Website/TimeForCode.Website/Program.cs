@@ -17,8 +17,7 @@ namespace TimeForCode.Website
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            builder.Services.AddRazorComponents()
-                .AddInteractiveServerComponents();
+            builder.Services.AddRazorComponents();
 
             var storageOptions = StorageOptions.Bind(builder.Configuration);
             builder.Services.AddDataProtection()
@@ -53,8 +52,7 @@ namespace TimeForCode.Website
             app.UseStaticFiles();
             app.UseAntiforgery();
 
-            app.MapRazorComponents<App>()
-                .AddInteractiveServerRenderMode();
+            app.MapRazorComponents<App>();
 
             app.Run();
         }

@@ -1,12 +1,14 @@
-﻿namespace TimeForCode.Authorization.Api.Client.Extensions
+﻿using TimeForCode.Authorization.Values;
+
+namespace TimeForCode.Authorization.Api.Client.Extensions
 {
     public static class AuthClientExtensions
     {
-        public static async Task<TryVoid<ApiException?>> TryLoginAsync(this IAuthClient client, IdentityProvider idenityProvider, Uri redirectUri)
+        public static async Task<TryVoid<ApiException?>> TryLoginAsync(this IAuthClient client, IdentityProvider identityProvider, Uri redirectUri)
         {
             try
             {
-                await client.LoginAsync(idenityProvider, redirectUri);
+                await client.LoginAsync((int)identityProvider, redirectUri);
             }
             catch (ApiException<ProblemDetails> exception)
             {
@@ -20,7 +22,7 @@
             return TryVoid<ApiException?>.Create(default);
         }
 
-        public static async Task<TryResponse<CallbackResponseModel?, Exception?>> TryCallbackAsync(this IAuthClient client, string code, string state)
+        public static async Task<TryResponse<CallbackResponseModel?, System.Exception?>> TryCallbackAsync(this IAuthClient client, string code, string state)
         {
             CallbackResponseModel? response = default;
             try
@@ -29,21 +31,21 @@
             }
             catch (ApiException<ProblemDetails> exception)
             {
-                return TryResponse<CallbackResponseModel?, Exception?>.Create(response, exception);
+                return TryResponse<CallbackResponseModel?, System.Exception?>.Create(response, exception);
             }
             catch (ApiException exception)
             {
-                return TryResponse<CallbackResponseModel?, Exception?>.Create(response, exception);
+                return TryResponse<CallbackResponseModel?, System.Exception?>.Create(response, exception);
             }
 
-            return TryResponse<CallbackResponseModel?, Exception?>.Create(response, default);
+            return TryResponse<CallbackResponseModel?, System.Exception?>.Create(response, default);
         }
 
-        public static async Task<TryVoid<ApiException?>> TryLogoutAsync(this IAuthClient client, Uri redirectUri)
+        public static async Task<TryVoid<ApiException?>> TryLogoutAsync(this IAuthClient client)
         {
             try
             {
-                await client.LogoutAsync(redirectUri);
+                await client.LogoutAsync();
             }
             catch (ApiException exception)
             {

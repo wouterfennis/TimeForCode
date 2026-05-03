@@ -9,8 +9,8 @@ using System.Web;
 using TimeForCode.Authorization.Api.Client;
 using TimeForCode.Authorization.Api.Client.Extensions;
 using TimeForCode.Authorization.Application.Interfaces;
-using TimeForCode.Authorization.Values;
 using TimeForCode.Shared.Api.Authentication;
+using IServiceProvider = System.IServiceProvider;
 
 namespace TimeForCode.Authorization.Specifications.Steps
 {
