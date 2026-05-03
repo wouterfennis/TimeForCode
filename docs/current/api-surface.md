@@ -33,7 +33,7 @@ The Authorization API exposes OAuth 2.0 endpoints and an OpenID Connect discover
 | Method | Path | Status | Description |
 | --- | --- | --- | --- |
 | `GET` | `/.well-known/openid-configuration` | ✅ | OpenID Connect discovery document |
-| `GET` | `/.well-known/jwks` | ✅ | Public key set for JWT validation |
+| `GET` | `/.well-known/jwks.json` | ✅ | Public key set for JWT validation |
 
 ---
 
