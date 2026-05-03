@@ -1,0 +1,27 @@
+@page "/logout"
+@using TimeForCode.Authorization.Api.Client
+@using TimeForCode.Shared.Api.Authentication
+@inject IAuthClient AuthClient
+@inject NavigationManager NavigationManager
+
+@code {
+    [CascadingParameter]
+    public HttpContext? HttpContext { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await AuthClient.LogoutAsync();
+        }
+        catch
+        {
+            // Best effort — proceed with local cookie deletion regardless
+        }
+
+        HttpContext?.Response.Cookies.Delete(CookieConstants.TokenKey);
+        HttpContext?.Response.Cookies.Delete(CookieConstants.RefreshTokenKey);
+
+        NavigationManager.NavigateTo("/");
+    }
+}

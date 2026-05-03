@@ -31,7 +31,7 @@ Use these facts during every implementation session. Do not make assumptions tha
 ### Runtime & Frameworks
 - **Target framework:** `net10.0`, nullable reference types enabled, implicit usings enabled
 - **Dependency injection:** Microsoft.Extensions.DependencyInjection (constructor injection everywhere)
-- **Mediator:** MediatR 12.x — all application logic is triggered via `IMediator.Send(command)`
+- **Mediator:** MediatR — all application logic is triggered via `IMediator.Send(command)`
 - **Persistence:** MongoDB via `MongoDB.Driver` — entities inherit `DocumentEntity` (which carries an `ObjectId Id`)
 - **HTTP clients to external services:** RestSharp `RestClient` (not `HttpClient`)
 - **Authentication:** JWT Bearer with RSA key validation; policy `"ApiUser"` requires `scope: user` claim

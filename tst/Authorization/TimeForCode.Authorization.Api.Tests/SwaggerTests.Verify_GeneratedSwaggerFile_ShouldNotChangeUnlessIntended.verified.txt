@@ -115,29 +115,9 @@
           "Authentication"
         ],
         "summary": "Logout endpoint.",
-        "parameters": [
-          {
-            "name": "redirectUri",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "uri"
-            }
-          }
-        ],
         "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
+          "204": {
+            "description": "No Content"
           },
           "500": {
             "description": "Internal Server Error"

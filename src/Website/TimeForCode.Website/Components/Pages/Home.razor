@@ -16,7 +16,7 @@
 {
     <p>Welcome, <strong>@_userName</strong>!</p>
     <p>Donation API: @_donationResult</p>
-    <a href="@_logoutUri">Log out</a>
+    <a href="/logout">Log out</a>
 }
 else
 {
@@ -32,14 +32,12 @@ else
     private string? _userName;
     private string? _donationResult;
     private string _loginUri = string.Empty;
-    private string _logoutUri = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
         var publicBaseUri = AuthorizationServiceOptions.Value.EffectivePublicBaseUri;
         var encodedReturnUrl = Uri.EscapeDataString(NavigationManager.Uri);
         _loginUri = $"{publicBaseUri}/api/Authentication/login?IdentityProvider=Github&RedirectUri={encodedReturnUrl}";
-        _logoutUri = $"{publicBaseUri}/api/Authentication/logout?RedirectUri={encodedReturnUrl}";
 
         var cookie = HttpContext?.Request.Cookies["AccessToken"];
         _isLoggedIn = !string.IsNullOrEmpty(cookie);

@@ -95,16 +95,10 @@ namespace TimeForCode.Authorization.Api.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("logout")]
-        [ProducesResponseType(typeof(RedirectResult), StatusCodes.Status302Found)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> LogoutAsync(Uri redirectUri)
+        public async Task<IActionResult> LogoutAsync()
         {
-            if (IsInvalidRedirectUri(redirectUri))
-            {
-                return BadRequest(ProblemDetailsMapper.BadRequest("The supplied redirect uri is invalid"));
-            }
-
             var refreshToken = GetRefreshToken();
 
             var command = new LogoutCommand
@@ -114,9 +108,7 @@ namespace TimeForCode.Authorization.Api.Controllers
 
             await _sender.Send(command);
 
-            DeleteTokenResponseCookies();
-
-            return Redirect(redirectUri.AbsoluteUri);
+            return NoContent();
         }
 
         private bool IsInvalidRedirectUri(Uri redirectUri)
@@ -205,12 +197,6 @@ namespace TimeForCode.Authorization.Api.Controllers
             }
 
             return null;
-        }
-
-        private void DeleteTokenResponseCookies()
-        {
-            HttpContext.Response.Cookies.Delete(CookieConstants.TokenKey);
-            HttpContext.Response.Cookies.Delete(CookieConstants.RefreshTokenKey);
         }
     }
 }

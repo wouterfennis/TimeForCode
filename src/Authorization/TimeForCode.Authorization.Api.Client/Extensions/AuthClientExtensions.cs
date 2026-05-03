@@ -41,11 +41,11 @@ namespace TimeForCode.Authorization.Api.Client.Extensions
             return TryResponse<CallbackResponseModel?, System.Exception?>.Create(response, default);
         }
 
-        public static async Task<TryVoid<ApiException?>> TryLogoutAsync(this IAuthClient client, Uri redirectUri)
+        public static async Task<TryVoid<ApiException?>> TryLogoutAsync(this IAuthClient client)
         {
             try
             {
-                await client.LogoutAsync(redirectUri);
+                await client.LogoutAsync();
             }
             catch (ApiException exception)
             {

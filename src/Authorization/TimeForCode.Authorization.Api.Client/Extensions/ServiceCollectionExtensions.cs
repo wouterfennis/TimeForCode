@@ -9,11 +9,13 @@ namespace TimeForCode.Authorization.Api.Client.Extensions
         {
             services.AddHttpContextAccessor();
             services.AddScoped<CookieAuthorizationHandler>();
+            services.AddScoped<RefreshTokenForwardingHandler>();
             services.AddHttpClient<IAuthClient, AuthClient>((client) =>
             {
                 client.BaseAddress = baseAddress;
             })
-            .AddHttpMessageHandler<CookieAuthorizationHandler>();
+            .AddHttpMessageHandler<CookieAuthorizationHandler>()
+            .AddHttpMessageHandler<RefreshTokenForwardingHandler>();
 
             return services;
         }
