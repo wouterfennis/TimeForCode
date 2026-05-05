@@ -9,6 +9,7 @@ using TimeForCode.Authorization.Api.Client;
 using TimeForCode.Authorization.Api.Client.Extensions;
 using TimeForCode.Authorization.Application.Interfaces;
 using TimeForCode.Authorization.Domain.Entities;
+using TimeForCode.Authorization.Specifications.TestBuilder;
 using TimeForCode.Shared.Api.Authentication;
 
 namespace TimeForCode.Authorization.Specifications.Steps
@@ -66,6 +67,34 @@ namespace TimeForCode.Authorization.Specifications.Steps
             var repository = _provider.GetRequiredService<Mock<IAccountInformationRepository>>();
 
             repository.Verify(r => r.CreateOrUpdateAsync(It.IsAny<AccountInformation>()));
+        }
+
+        [Given("The user does not yet have a profile on the time for code platform")]
+        public void GivenTheUserDoesNotYetHaveAProfileOnTheTimeForCodePlatform()
+        {
+            var repository = _provider.GetRequiredService<Mock<IAccountInformationRepository>>();
+            repository.Setup(x => x.CreateOrUpdateAsync(It.IsAny<AccountInformation>()))
+                .ReturnsAsync(new CreateOrUpdateResult(AccountInformationBuilder.Build(), IsNewAccount: true));
+        }
+
+        [Given("The user already has a profile on the time for code platform")]
+        public static void GivenTheUserAlreadyHasAProfileOnTheTimeForCodePlatform()
+        {
+            // The factory default already returns IsNewAccount: false
+        }
+
+        [Then("The time for code platform notifies the user that their profile has been created")]
+        public void ThenTheTimeForCodePlatformNotifiesTheUserThatTheirProfileHasBeenCreated()
+        {
+            var isNewUserCookie = _cookieContainer.GetAllCookies()["IsNewUser"];
+            isNewUserCookie.Should().NotBeNull();
+        }
+
+        [Then("The time for code platform does not notify the user of a new profile")]
+        public void ThenTheTimeForCodePlatformDoesNotNotifyTheUserOfANewProfile()
+        {
+            var isNewUserCookie = _cookieContainer.GetAllCookies()["IsNewUser"];
+            isNewUserCookie.Should().BeNull();
         }
 
         [Then("An access token is not returned")]

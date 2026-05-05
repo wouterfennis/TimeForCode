@@ -21,8 +21,9 @@ namespace TimeForCode.Authorization.Specifications.TestBuilder
                 NodeId = "NodeId",
                 Name = "Name",
                 Email = "Email",
-                Bio = null,
-                Location = null
+                Bio = "Software developer",
+                Location = "Netherlands",
+                EncryptedGitHubAccessToken = "github_test_token"
             };
         }
     }

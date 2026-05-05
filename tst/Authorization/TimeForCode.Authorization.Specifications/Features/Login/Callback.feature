@@ -37,3 +37,23 @@ Scenario: User has an account at the external platform
 	When The external platform calls the time for code platform to complete the authorization
 	Then An access token is returned
 	And The user information is saved in the time for code platform
+
+Scenario: First-time user's profile is created on login
+	Given The user has an account at the external platform
+	And The user does not yet have a profile on the time for code platform
+	And The user logs in at the time for code platform
+	And The user logs in at the external platform
+	When The external platform calls the time for code platform to complete the authorization
+	Then An access token is returned
+	And The user information is saved in the time for code platform
+	And The time for code platform notifies the user that their profile has been created
+
+Scenario: Returning user's profile is updated on login
+	Given The user has an account at the external platform
+	And The user already has a profile on the time for code platform
+	And The user logs in at the time for code platform
+	And The user logs in at the external platform
+	When The external platform calls the time for code platform to complete the authorization
+	Then An access token is returned
+	And The user information is saved in the time for code platform
+	And The time for code platform does not notify the user of a new profile

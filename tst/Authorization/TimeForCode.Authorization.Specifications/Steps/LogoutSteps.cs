@@ -1,10 +1,13 @@
 ﻿using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
+using MongoDB.Bson;
 using Reqnroll;
 using System.Net;
 using System.Text.Json;
 using System.Web;
 using TimeForCode.Authorization.Api.Client;
 using TimeForCode.Authorization.Api.Client.Extensions;
+using TimeForCode.Authorization.Application.Services;
 using TimeForCode.Authorization.Values;
 using TimeForCode.Shared.Api.Authentication;
 
@@ -15,12 +18,14 @@ namespace TimeForCode.Authorization.Specifications.Steps
     {
         private readonly IAuthClient _authClient;
         private readonly CookieContainer _cookieContainer;
+        private readonly IServiceProvider _provider;
         private TryVoid<ApiException?>? _result;
 
-        public LogoutSteps(IAuthClient authClient, CookieContainer cookieContainer)
+        public LogoutSteps(IAuthClient authClient, CookieContainer cookieContainer, IServiceProvider provider)
         {
             _authClient = authClient;
             _cookieContainer = cookieContainer;
+            _provider = provider;
         }
 
         [Given("The user has not logged in at the time for code platform")]
@@ -32,11 +37,9 @@ namespace TimeForCode.Authorization.Specifications.Steps
         [Given("The user has an access token")]
         public void GivenTheUserHasAnAccessToken()
         {
-            var accessToken = new AccessToken
-            {
-                Token = "token",
-                ExpiresAfter = DateTime.UtcNow.AddHours(1),
-            };
+            using var scope = _provider.CreateScope();
+            var tokenService = scope.ServiceProvider.GetRequiredService<ITokenService>();
+            var accessToken = tokenService.GenerateInternalToken(new ObjectId().ToString());
 
             var uri = new Uri("http://localhost:8083");
             var cookieValue = HttpUtility.UrlEncode(JsonSerializer.Serialize(accessToken));

@@ -35,15 +35,16 @@ If the output is different or an error occurs, instruct the user to navigate to 
 
 ## Step 3 — Post the Comment
 
-Use a here-string to preserve the Gherkin formatting exactly. Wrap the feature file content in a fenced code block tagged `gherkin` so GitHub renders it with syntax highlighting.
+Write the comment body to a temporary file, then pass it to `gh` with `--body-file`. This avoids PowerShell here-string issues with multiline content containing backticks or special characters.
 
-```powershell
-$comment = @"
+1. Use `create_file` to write the comment body to `comment_body.md` at the repository root. The file must follow this structure:
+
+```markdown
 ## Prepared Feature File
 
-``````gherkin
+```gherkin
 <full feature file content here>
-``````
+```
 
 ### New step definitions required
 
@@ -52,9 +53,18 @@ $comment = @"
 ### Reused step definitions
 
 <bulleted list of steps that already have implementations>
-"@
+```
 
-gh issue comment <issue-number> --body $comment
+2. Post the comment:
+
+```powershell
+gh issue comment <issue-number> --body-file comment_body.md
+```
+
+3. Delete the temporary file immediately after:
+
+```powershell
+Remove-Item comment_body.md
 ```
 
 Replace `<issue-number>` with the actual issue number, and fill in the three sections from the approved draft.

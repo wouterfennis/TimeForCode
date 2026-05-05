@@ -27,6 +27,7 @@ namespace TimeForCode.Authorization.Specifications.Mocking
                     typeof(IMongoDbContext),
                     typeof(IAccountInformationRepository),
                     typeof(IRefreshTokenRepository),
+                    typeof(IEncryptionService),
                     typeof(RestClient)
                 };
 
@@ -60,14 +61,22 @@ namespace TimeForCode.Authorization.Specifications.Mocking
             var mockAccountInformationRepository = new Mock<IAccountInformationRepository>();
             mockAccountInformationRepository.Setup(x => x.CreateOrUpdateAsync(It.IsAny<AccountInformation>()))
                 .ReturnsAsync(new CreateOrUpdateResult(AccountInformationBuilder.Build(), IsNewAccount: false));
+            mockAccountInformationRepository.Setup(x => x.GetByInternalIdAsync(It.IsAny<string>()))
+                .ReturnsAsync(AccountInformationBuilder.Build());
 
             var mockRefreshTokenRepository = new Mock<IRefreshTokenRepository>();
 
+            var mockEncryptionService = new Mock<IEncryptionService>();
+            mockEncryptionService.Setup(x => x.Encrypt(It.IsAny<string>())).Returns<string>(s => s);
+            mockEncryptionService.Setup(x => x.Decrypt(It.IsAny<string>())).Returns<string>(s => s);
+
             services.TryAddSingleton(mockAccountInformationRepository);
             services.TryAddSingleton(mockRefreshTokenRepository);
+            services.TryAddSingleton(mockEncryptionService);
 
             services.TryAddSingleton(mockAccountInformationRepository.Object);
             services.TryAddSingleton(mockRefreshTokenRepository.Object);
+            services.TryAddSingleton(mockEncryptionService.Object);
         }
     }
 
