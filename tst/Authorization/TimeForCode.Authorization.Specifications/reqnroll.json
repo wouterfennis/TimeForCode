@@ -1,0 +1,7 @@
+{
+  "formatters": {
+    "html": {
+      "outputFilePath": "TestResults/living-doc.html"
+    }
+  }
+}

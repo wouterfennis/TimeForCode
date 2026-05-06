@@ -27,8 +27,8 @@ namespace TimeForCode.Authorization.Specifications.Features.UserProfile
         
         private static string[] featureTags = ((string[])(null));
         
-        private static global::Reqnroll.FeatureInfo featureInfo = new global::Reqnroll.FeatureInfo(new global::System.Globalization.CultureInfo("en-US"), "Features/UserProfile", "User profile", "\tAs a user\r\n\tI want to retrieve my profile information from the time for code pla" +
-                "tform\r\n\tSo that I can view my GitHub profile data in one place", global::Reqnroll.ProgrammingLanguage.CSharp, featureTags, InitializeCucumberMessages());
+        private static global::Reqnroll.FeatureInfo featureInfo = new global::Reqnroll.FeatureInfo(new global::System.Globalization.CultureInfo("en-US"), "Features/UserProfile", "User profile", "\tAs a user\n\tI want to retrieve my profile information from the time for code plat" +
+                "form\n\tSo that I can view my GitHub profile data in one place", global::Reqnroll.ProgrammingLanguage.CSharp, featureTags, InitializeCucumberMessages());
         
 #line 1 "UserProfile.feature"
 #line hidden
