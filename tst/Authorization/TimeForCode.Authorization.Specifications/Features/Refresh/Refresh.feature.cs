@@ -27,8 +27,8 @@ namespace TimeForCode.Authorization.Specifications.Features.Refresh
         
         private static string[] featureTags = ((string[])(null));
         
-        private static global::Reqnroll.FeatureInfo featureInfo = new global::Reqnroll.FeatureInfo(new global::System.Globalization.CultureInfo("en-US"), "Features/Refresh", "Refresh token", "\tAs a user\n\tI want to refresh my authentication token\n\tSo that I won\'t have to lo" +
-                "g in again", global::Reqnroll.ProgrammingLanguage.CSharp, featureTags, InitializeCucumberMessages());
+        private static global::Reqnroll.FeatureInfo featureInfo = new global::Reqnroll.FeatureInfo(new global::System.Globalization.CultureInfo("en-US"), "Features/Refresh", "Refresh token", "\tAs a user\r\n\tI want to refresh my authentication token\r\n\tSo that I won\'t have to " +
+                "log in again", global::Reqnroll.ProgrammingLanguage.CSharp, featureTags, InitializeCucumberMessages());
         
 #line 1 "Refresh.feature"
 #line hidden

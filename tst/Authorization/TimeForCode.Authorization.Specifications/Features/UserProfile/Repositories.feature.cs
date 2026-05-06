@@ -27,8 +27,8 @@ namespace TimeForCode.Authorization.Specifications.Features.UserProfile
         
         private static string[] featureTags = ((string[])(null));
         
-        private static global::Reqnroll.FeatureInfo featureInfo = new global::Reqnroll.FeatureInfo(new global::System.Globalization.CultureInfo("en-US"), "Features/UserProfile", "User repositories", "\tAs a user\n\tI want to browse my public GitHub repositories from the time for code" +
-                " platform\n\tSo that my GitHub activity is visible on my profile", global::Reqnroll.ProgrammingLanguage.CSharp, featureTags, InitializeCucumberMessages());
+        private static global::Reqnroll.FeatureInfo featureInfo = new global::Reqnroll.FeatureInfo(new global::System.Globalization.CultureInfo("en-US"), "Features/UserProfile", "User repositories", "\tAs a user\r\n\tI want to browse my public GitHub repositories from the time for cod" +
+                "e platform\r\n\tSo that my GitHub activity is visible on my profile", global::Reqnroll.ProgrammingLanguage.CSharp, featureTags, InitializeCucumberMessages());
         
 #line 1 "Repositories.feature"
 #line hidden

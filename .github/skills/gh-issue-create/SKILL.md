@@ -61,10 +61,11 @@ If a suggested label does not exist, use the closest available label or omit it.
 
 ## Step 4 — Build and Submit the Issue
 
-Use a PowerShell here-string (`@" ... "@`) to construct the multi-line body and pass it to `gh issue create`. Replace all placeholder values with the actual approved content.
+Write the issue body to a temporary file, then pass it to `gh issue create` with `--body-file`. This avoids PowerShell here-string issues with multiline content containing backticks or special characters.
 
-```powershell
-$issueBody = @"
+1. Use `create_file` to write the issue body to `issue_body.md` at the repository root. The file must follow this structure:
+
+```markdown
 ## Motivation / Context
 
 [Replace with the full Motivation / Context section from the approved draft]
@@ -73,9 +74,9 @@ $issueBody = @"
 
 [Replace with the full Proposed Solution section from the approved draft]
 
-## Affected Components
+## Affected Areas
 
-[Replace with the full Affected Components section from the approved draft]
+[Replace with the full Affected Areas section from the approved draft]
 
 ## Acceptance Criteria
 
@@ -84,16 +85,25 @@ $issueBody = @"
 ## Additional Context
 
 [Replace with the Additional Context section, or omit the section header if empty]
-"@
+```
 
+2. Create the issue, referencing the file:
+
+```powershell
 gh issue create `
   --title "[Replace with the exact approved title, including the [Type]: prefix]" `
-  --body $issueBody `
+  --body-file issue_body.md `
   --label "[label1]" `
   --label "[label2]"
 ```
 
 > **Note:** Add one `--label` flag per label. Do not combine multiple labels in a single `--label` argument using commas.
+
+3. Delete the temporary file immediately after:
+
+```powershell
+Remove-Item issue_body.md
+```
 
 ---
 

@@ -4,6 +4,8 @@ using Microsoft.OpenApi;
 using Scalar.AspNetCore;
 using System.Text.Json.Serialization;
 using TimeForCode.Donation.Api.Options;
+using TimeForCode.Donation.Application.Extensions;
+using TimeForCode.Donation.Infrastructure.Extensions;
 
 namespace TimeForCode.Donation.Api
 {
@@ -67,6 +69,9 @@ namespace TimeForCode.Donation.Api
 
             services.AddAuthorizationBuilder()
                     .AddPolicy("ApiUser", policy => policy.RequireClaim("scope", "user"));
+
+            services.AddApplicationLayer();
+            services.AddInfrastructureLayer(_configuration);
         }
 
         /// <summary>

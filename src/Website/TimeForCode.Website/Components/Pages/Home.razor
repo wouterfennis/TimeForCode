@@ -65,7 +65,8 @@ else
 
             try
             {
-                _donationResult = await DonationClient.GetAsync();
+                var projects = await DonationClient.GetProjectsAsync(null, null);
+                _donationResult = $"{projects.TotalCount} published projects";
             }
             catch
             {

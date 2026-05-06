@@ -27,8 +27,8 @@ namespace TimeForCode.Authorization.Specifications.Features.Logout
         
         private static string[] featureTags = ((string[])(null));
         
-        private static global::Reqnroll.FeatureInfo featureInfo = new global::Reqnroll.FeatureInfo(new global::System.Globalization.CultureInfo("en-US"), "Features/Logout", "Logout", "\tAs a user\n\tI want to logout from the time for code platform\n\tSo that my session " +
-                "can no longer be used for authentication", global::Reqnroll.ProgrammingLanguage.CSharp, featureTags, InitializeCucumberMessages());
+        private static global::Reqnroll.FeatureInfo featureInfo = new global::Reqnroll.FeatureInfo(new global::System.Globalization.CultureInfo("en-US"), "Features/Logout", "Logout", "\tAs a user\r\n\tI want to logout from the time for code platform\r\n\tSo that my sessio" +
+                "n can no longer be used for authentication", global::Reqnroll.ProgrammingLanguage.CSharp, featureTags, InitializeCucumberMessages());
         
 #line 1 "Logout.feature"
 #line hidden
