@@ -134,3 +134,54 @@ jobs:
         file: ./Dockerfile.website
         push: true
         tags: ghcr.io/wouterfennis/timeforcode/timeforcode-website:${{ env.IMAGE_TAG }}
+
+  release-please:
+    name: Release Please
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+    steps:
+      - name: Run Release Please
+        uses: googleapis/release-please-action@7987652d64b4581673a76e33ad5e98e3dd56832f # v4
+        id: release
+        with:
+          release-type: simple
+
+  push-release-images:
+    name: Push versioned Docker images
+    needs: release-please
+    if: ${{ needs.release-please.outputs.release_created == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push Docker image API with version tag
+        uses: docker/build-push-action@0a97817b6ade9f46837855d676c4cca3a2471fc9 # v4
+        with:
+          context: .
+          file: ./Dockerfile.authorization-api
+          push: true
+          tags: ghcr.io/wouterfennis/timeforcode/timeforcode-authorization-api:${{ needs.release-please.outputs.tag_name }}
+
+      - name: Push Docker image Website with version tag
+        uses: docker/build-push-action@0a97817b6ade9f46837855d676c4cca3a2471fc9 # v4
+        with:
+          context: .
+          file: ./Dockerfile.website
+          push: true
+          tags: ghcr.io/wouterfennis/timeforcode/timeforcode-website:${{ needs.release-please.outputs.tag_name }}
