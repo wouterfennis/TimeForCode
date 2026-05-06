@@ -1,0 +1,129 @@
+@page "/profile"
+@using TimeForCode.Authorization.Api.Client
+@using TimeForCode.Authorization.Api.Client.Extensions
+@inject IAuthClient AuthClient
+@inject NavigationManager NavigationManager
+
+<PageTitle>Profile - TimeForCode</PageTitle>
+
+<h1>Profile</h1>
+
+@if (!_isLoggedIn)
+{
+    <p>You are not logged in. <a href="/">Go to home</a></p>
+}
+else if (_user == null)
+{
+    <p>Loading profile...</p>
+}
+else
+{
+    <div class="profile-header">
+        @if (!string.IsNullOrEmpty(_user.AvatarUrl))
+        {
+            <img src="@_user.AvatarUrl" alt="Avatar" width="100" height="100" />
+        }
+        <h2>@_user.Name</h2>
+        <p class="login">@@_user.Login</p>
+    </div>
+
+    <div class="profile-details">
+        @if (!string.IsNullOrEmpty(_user.Bio))
+        {
+            <p><strong>Bio:</strong> @_user.Bio</p>
+        }
+        @if (!string.IsNullOrEmpty(_user.Location))
+        {
+            <p><strong>Location:</strong> @_user.Location</p>
+        }
+        @if (!string.IsNullOrEmpty(_user.Email))
+        {
+            <p><strong>Email:</strong> @_user.Email</p>
+        }
+        @if (!string.IsNullOrEmpty(_user.Company))
+        {
+            <p><strong>Company:</strong> @_user.Company</p>
+        }
+    </div>
+
+    <h2>Repositories</h2>
+
+    @if (_repositoriesError != null)
+    {
+        <p class="error">@_repositoriesError <a href="/">Re-authenticate via GitHub</a></p>
+    }
+    else if (_repositories == null)
+    {
+        <p>Loading repositories...</p>
+    }
+    else if (!_repositories.Any())
+    {
+        <p>No public repositories found.</p>
+    }
+    else
+    {
+        <ul class="repositories">
+            @foreach (var repo in _repositories)
+            {
+                <li>
+                    <a href="@repo.Url" target="_blank"><strong>@repo.Name</strong></a>
+                    @if (!string.IsNullOrEmpty(repo.Description))
+                    {
+                        <span> — @repo.Description</span>
+                    }
+                    <span class="stars">⭐ @repo.StarCount</span>
+                    @if (!string.IsNullOrEmpty(repo.Language))
+                    {
+                        <span class="language">@repo.Language</span>
+                    }
+                </li>
+            }
+        </ul>
+    }
+}
+
+@code {
+    [CascadingParameter]
+    public HttpContext? HttpContext { get; set; }
+
+    private bool _isLoggedIn;
+    private UserResponse? _user;
+    private ICollection<RepositoryResponse>? _repositories;
+    private string? _repositoriesError;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var cookie = HttpContext?.Request.Cookies["AccessToken"];
+        _isLoggedIn = !string.IsNullOrEmpty(cookie);
+
+        if (!_isLoggedIn)
+        {
+            return;
+        }
+
+        try
+        {
+            _user = await AuthClient.UserAsync();
+        }
+        catch
+        {
+            _user = null;
+            return;
+        }
+
+        var repoResult = await AuthClient.TryUserRepositoriesAsync();
+
+        if (repoResult.Exception is ApiException<ProblemDetails> apiException && apiException.StatusCode == 401)
+        {
+            _repositoriesError = "Your GitHub access token is expired or revoked. Please re-authenticate.";
+        }
+        else if (repoResult.Exception != null)
+        {
+            _repositoriesError = "Unable to load repositories.";
+        }
+        else
+        {
+            _repositories = repoResult.Response;
+        }
+    }
+}

@@ -33,10 +33,27 @@ namespace TimeForCode.Authorization.Specifications.Steps
                 Login = "johndoe",
                 NodeId = "",
                 Company = "",
+                Bio = "Software developer",
+                Location = "Netherlands"
+            };
+
+            var repositories = new List<GithubRepository>
+            {
+                new GithubRepository
+                {
+                    Name = "my-repo",
+                    Description = "A test repository",
+                    StargazersCount = 42,
+                    Language = "C#",
+                    HtmlUrl = "https://github.com/johndoe/my-repo",
+                    IsPrivate = false
+                }
             };
 
             mockHttp.When("http://localhost:8081/user")
                     .Respond("application/json", JsonSerializer.Serialize(accountInformation));
+            mockHttp.When("http://localhost:8081/user/repos")
+                    .Respond("application/json", JsonSerializer.Serialize(repositories));
         }
 
         [Given("The user has no account at the external platform")]

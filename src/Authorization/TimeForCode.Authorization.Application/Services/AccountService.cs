@@ -10,38 +10,44 @@ namespace TimeForCode.Authorization.Application.Services
     {
         private readonly IIdentityProviderServiceFactory _identityProviderServiceFactory;
         private readonly IAccountInformationRepository _accountRepository;
+        private readonly IEncryptionService _encryptionService;
         private readonly ILogger<AccountService> _logger;
 
         public AccountService(
             IIdentityProviderServiceFactory identityProviderServiceFactory,
             IAccountInformationRepository accountRepository,
+            IEncryptionService encryptionService,
             ILogger<AccountService> logger)
         {
             _identityProviderServiceFactory = identityProviderServiceFactory;
             _accountRepository = accountRepository;
+            _encryptionService = encryptionService;
             _logger = logger;
         }
 
-        public async Task<Result<AccountInformation>> SaveAccountInformation(string state, ExternalAccessToken accessToken)
+        public async Task<Result<SaveAccountResult>> SaveAccountInformation(string state, ExternalAccessToken accessToken)
         {
             var identityProviderServiceResult = _identityProviderServiceFactory.GetIdentityProviderServiceFromState(state);
 
             if (identityProviderServiceResult.IsFailure)
             {
-                return Result<AccountInformation>.Failure(identityProviderServiceResult.ErrorMessage);
+                return Result<SaveAccountResult>.Failure(identityProviderServiceResult.ErrorMessage);
             }
 
             var accountInformationResult = await identityProviderServiceResult.Value.GetAccountInformation(accessToken);
 
             if (accountInformationResult.IsFailure)
             {
-                return Result<AccountInformation>.Failure(accountInformationResult.ErrorMessage);
+                return Result<SaveAccountResult>.Failure(accountInformationResult.ErrorMessage);
             }
 
-            var accountInformation = await _accountRepository.CreateOrUpdateAsync(accountInformationResult.Value);
+            var accountInformation = accountInformationResult.Value;
+            accountInformation.EncryptedGitHubAccessToken = _encryptionService.Encrypt(accessToken.Token);
 
-            _logger.LogDebug("Account information: {AccountInformation}", accountInformation);
-            return Result<AccountInformation>.Success(accountInformation);
+            var createOrUpdateResult = await _accountRepository.CreateOrUpdateAsync(accountInformation);
+
+            _logger.LogDebug("Account information: {AccountInformation}", createOrUpdateResult.AccountInformation);
+            return Result<SaveAccountResult>.Success(new SaveAccountResult(createOrUpdateResult.AccountInformation, createOrUpdateResult.IsNewAccount));
         }
     }
 }

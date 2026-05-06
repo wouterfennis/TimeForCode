@@ -17,6 +17,8 @@ namespace TimeForCode.Authorization.Infrastructure.Services.Github
         public required string Name { get; init; }
         public required string? Company { get; init; }
         public required string Email { get; init; }
+        public string? Bio { get; init; }
+        public string? Location { get; init; }
 
         internal AccountInformation MapToAccountInformation()
         {
@@ -29,7 +31,9 @@ namespace TimeForCode.Authorization.Infrastructure.Services.Github
                 AvatarUrl = AvatarUrl,
                 Name = Name,
                 Company = Company,
-                Email = Email
+                Email = Email,
+                Bio = Bio,
+                Location = Location
             };
         }
     }

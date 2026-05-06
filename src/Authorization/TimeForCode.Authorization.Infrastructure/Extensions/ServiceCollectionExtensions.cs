@@ -22,6 +22,7 @@ namespace TimeForCode.Authorization.Infrastructure.Extensions
             services.AddScoped<IIdentityProviderServiceFactory, IdentityProviderServiceFactory>();
             services.AddScoped<IRandomGenerator, RandomGenerator>();
             services.AddScoped<IIdentityProviderService, GithubService>();
+            services.AddScoped<IGithubApiService, GithubService>();
 
             services.AddSingleton(TimeProvider.System);
 
@@ -36,6 +37,9 @@ namespace TimeForCode.Authorization.Infrastructure.Extensions
 
             services.AddMemoryCache();
             services.AddSingleton<IStateRepository, StateRepository>();
+
+            services.AddDataProtection();
+            services.AddScoped<IEncryptionService, DataProtectionEncryptionService>();
 
             return services;
         }

@@ -1,6 +1,7 @@
 ﻿@page "/"
 @using Microsoft.Extensions.Options
 @using TimeForCode.Authorization.Api.Client
+@using TimeForCode.Authorization.Api.Client.Extensions
 @using TimeForCode.Donation.Api.Client
 @using TimeForCode.Website.Options
 @inject IAuthClient AuthClient
@@ -14,8 +15,15 @@
 
 @if (_isLoggedIn)
 {
+    @if (_isNewUser)
+    {
+        <div class="alert alert-success">
+            Welcome! Your profile has been created. <a href="/profile">View your profile</a>
+        </div>
+    }
     <p>Welcome, <strong>@_userName</strong>!</p>
     <p>Donation API: @_donationResult</p>
+    <a href="/profile">Profile</a>
     <a href="/logout">Log out</a>
 }
 else
@@ -29,6 +37,7 @@ else
     public HttpContext? HttpContext { get; set; }
 
     private bool _isLoggedIn;
+    private bool _isNewUser;
     private string? _userName;
     private string? _donationResult;
     private string _loginUri = string.Empty;
@@ -62,6 +71,9 @@ else
             {
                 _donationResult = "(unavailable)";
             }
+
+            var isNewUserCookie = HttpContext?.Request.Cookies["IsNewUser"];
+            _isNewUser = isNewUserCookie == "true";
         }
     }
 }

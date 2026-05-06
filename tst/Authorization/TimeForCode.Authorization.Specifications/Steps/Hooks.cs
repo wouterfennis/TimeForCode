@@ -22,9 +22,10 @@ namespace TimeForCode.Authorization.Specifications.Steps
         {
             var cookieContainer = new CookieContainer();
             var cookieHandler = new CookieContainerHandler(cookieContainer);
+            var bearerTokenHandler = new BearerTokenFromCookieHandler(cookieContainer);
 
             var httpClient = _objectContainer.Resolve<TimeForCodeWebApplicationFactory>()
-                .CreateDefaultClient(cookieHandler);
+                .CreateDefaultClient(bearerTokenHandler, cookieHandler);
 
             _objectContainer.RegisterInstanceAs(cookieContainer);
 

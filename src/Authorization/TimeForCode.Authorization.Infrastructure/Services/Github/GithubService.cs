@@ -7,6 +7,7 @@ using RestSharp;
 using System.Net.Mime;
 using System.Text.Json;
 using TimeForCode.Authorization.Application.Interfaces;
+using TimeForCode.Authorization.Application.Models;
 using TimeForCode.Authorization.Application.Options;
 using TimeForCode.Authorization.Commands;
 using TimeForCode.Authorization.Domain;
@@ -15,9 +16,10 @@ using TimeForCode.Authorization.Values;
 
 namespace TimeForCode.Authorization.Infrastructure.Services.Github
 {
-    internal class GithubService : IIdentityProviderService
+    internal class GithubService : IIdentityProviderService, IGithubApiService
     {
         private const string UserEndpoint = "/user";
+        private const string UserReposEndpoint = "/user/repos";
         private readonly ExternalIdentityProvider _identityProviderOptions;
         private readonly IOptions<ExternalIdentityProviderOptions> _options;
         private readonly RestClient _restClient;
@@ -93,6 +95,42 @@ namespace TimeForCode.Authorization.Infrastructure.Services.Github
             }
 
             return Result<AccountInformation>.Failure(response.Content!);
+        }
+
+        public async Task<Result<IEnumerable<RepositoryInfo>>> GetUserRepositoriesAsync(string githubAccessToken)
+        {
+            var uriBuilder = new UriBuilder
+            {
+                Host = _identityProviderOptions.RestApiHost,
+                Path = UserReposEndpoint,
+                Scheme = _identityProviderOptions.IsHttps ? Uri.UriSchemeHttps : Uri.UriSchemeHttp
+            };
+
+            uriBuilder.Port = _identityProviderOptions.RestApiPort ?? uriBuilder.Port;
+
+            _restClient.AcceptedContentTypes = [MediaTypeNames.Application.Json];
+
+            var request = new RestRequest(uriBuilder.ToString(), Method.Get);
+            request.AddHeader(OAuthConstants.AuthorizationHeader, $"{OAuthConstants.BearerPrefix}{githubAccessToken}");
+
+            var response = await _restClient.ExecuteAsync<List<GithubRepository>>(request);
+
+            if (response.IsSuccessful)
+            {
+                var repositories = response.Data!
+                    .Where(r => !r.IsPrivate)
+                    .Select(r => new RepositoryInfo
+                    {
+                        Name = r.Name,
+                        Description = r.Description,
+                        StarCount = r.StargazersCount,
+                        Language = r.Language,
+                        Url = r.HtmlUrl
+                    });
+                return Result<IEnumerable<RepositoryInfo>>.Success(repositories);
+            }
+
+            return Result<IEnumerable<RepositoryInfo>>.Failure(response.Content!);
         }
 
         public Task<TokenValidationParameters> GetTokenValidationParameters()

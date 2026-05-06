@@ -41,7 +41,7 @@ namespace TimeForCode.Authorization.Application.Handlers
                 return Result<TokenResult>.Failure(saveResult.ErrorMessage);
             }
 
-            var userId = saveResult.Value.Id.ToString();
+            var userId = saveResult.Value.AccountInformation.Id.ToString();
             var internalToken = _tokenService.GenerateInternalToken(userId);
             var refreshToken = await _refreshTokenService.CreateRefreshTokenAsync(userId);
             var redirectUri = _tokenService.GetRedirectUri(request.State);
@@ -49,6 +49,7 @@ namespace TimeForCode.Authorization.Application.Handlers
             return Result<TokenResult>.Success(new TokenResult
             {
                 RedirectUri = redirectUri,
+                IsNewUser = saveResult.Value.IsNewAccount,
                 InternalAccessToken = new AccessToken
                 {
                     Token = internalToken.Token,

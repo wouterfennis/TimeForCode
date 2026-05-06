@@ -24,18 +24,18 @@ namespace TimeForCode.Authorization.Infrastructure.Persistence.Database
             return await _collection.Find(Builders<AccountInformation>.Filter.Eq("_id", new ObjectId(internalId))).FirstOrDefaultAsync();
         }
 
-        public async Task<AccountInformation> CreateOrUpdateAsync(AccountInformation entity)
+        public async Task<CreateOrUpdateResult> CreateOrUpdateAsync(AccountInformation entity)
         {
             var existingEntity = await GetByIdentityProviderIdAsync(entity.IdentityProviderId);
             if (existingEntity == null)
             {
                 await CreateAsync(entity);
-                return entity;
+                return new CreateOrUpdateResult(entity, IsNewAccount: true);
             }
             else
             {
                 await UpdateAsync(entity);
-                return existingEntity;
+                return new CreateOrUpdateResult(existingEntity, IsNewAccount: false);
             }
         }
 
@@ -46,7 +46,18 @@ namespace TimeForCode.Authorization.Infrastructure.Persistence.Database
 
         private async Task UpdateAsync(AccountInformation entity)
         {
-            await _collection.ReplaceOneAsync(Builders<AccountInformation>.Filter.Eq("_id", (entity as dynamic).Id), entity);
+            var filter = Builders<AccountInformation>.Filter.Eq(x => x.IdentityProviderId, entity.IdentityProviderId);
+            var update = Builders<AccountInformation>.Update
+                .Set(x => x.Login, entity.Login)
+                .Set(x => x.NodeId, entity.NodeId)
+                .Set(x => x.AvatarUrl, entity.AvatarUrl)
+                .Set(x => x.Name, entity.Name)
+                .Set(x => x.Company, entity.Company)
+                .Set(x => x.Email, entity.Email)
+                .Set(x => x.Bio, entity.Bio)
+                .Set(x => x.Location, entity.Location)
+                .Set(x => x.EncryptedGitHubAccessToken, entity.EncryptedGitHubAccessToken);
+            await _collection.UpdateOneAsync(filter, update);
         }
     }
 }

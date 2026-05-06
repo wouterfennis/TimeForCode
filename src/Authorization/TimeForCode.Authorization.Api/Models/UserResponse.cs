@@ -39,5 +39,15 @@
         /// User email
         /// </summary>
         public required string Email { get; init; }
+
+        /// <summary>
+        /// User bio
+        /// </summary>
+        public string? Bio { get; init; }
+
+        /// <summary>
+        /// User location
+        /// </summary>
+        public string? Location { get; init; }
     }
 }

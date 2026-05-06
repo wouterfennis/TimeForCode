@@ -161,7 +161,8 @@ namespace TimeForCode.Authorization.Api.Controllers
             var response = new CallbackResponseModel
             {
                 AccessToken = tokenResult.Value!.InternalAccessToken,
-                RefreshToken = tokenResult.Value!.RefreshToken
+                RefreshToken = tokenResult.Value!.RefreshToken,
+                IsNewUser = tokenResult.Value!.IsNewUser
             };
 
             return response;
@@ -187,6 +188,19 @@ namespace TimeForCode.Authorization.Api.Controllers
 
             HttpContext.Response.Cookies.Append(CookieConstants.TokenKey, JsonSerializer.Serialize(result.InternalAccessToken), accessTokenCookieOptions);
             HttpContext.Response.Cookies.Append(CookieConstants.RefreshTokenKey, JsonSerializer.Serialize(result.RefreshToken), refreshTokenCookieOptions);
+
+            if (result.IsNewUser)
+            {
+                var isNewUserCookieOptions = new CookieOptions
+                {
+                    HttpOnly = false,
+                    Secure = true,
+                    SameSite = SameSiteMode.Strict,
+                    MaxAge = TimeSpan.FromMinutes(5)
+                };
+
+                HttpContext.Response.Cookies.Append("IsNewUser", "true", isNewUserCookieOptions);
+            }
         }
 
         private RefreshToken? GetRefreshToken()
