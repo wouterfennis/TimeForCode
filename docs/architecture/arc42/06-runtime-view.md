@@ -57,9 +57,7 @@ The Website does not need to re-direct the user; the `CookieAuthorizationHandler
 
 ---
 
-## Scenario 3 — Register a Project (Target)
-
-This scenario is not yet implemented. The sequence describes the intended behaviour.
+## Scenario 3 — Register a Project
 
 ```mermaid
 sequenceDiagram
@@ -69,15 +67,14 @@ sequenceDiagram
     participant MongoDB
 
     Website->>DonationAPI: POST /api/v1/project { githubUrl } (JWT bearer)
-    DonationAPI->>DonationAPI: Validate JWT (audience, issuer, role: Maintainer)
+    DonationAPI->>DonationAPI: Validate JWT (policy: ApiUser)
     DonationAPI->>GitHub: GET /repos/:owner/:repo
-    GitHub-->>DonationAPI: Repository metadata (name, description, language)
+    GitHub-->>DonationAPI: Repository metadata (name, description, language, topics, ...)
+    DonationAPI->>DonationAPI: Validate repository is public and not archived
     DonationAPI->>DonationAPI: Construct Project domain entity
-    DonationAPI->>MongoDB: Insert Project { status: PendingApproval }
-    DonationAPI-->>Website: 201 Created { projectId, status: PendingApproval }
+    DonationAPI->>MongoDB: Insert Project { status: Published }
+    DonationAPI-->>Website: 201 Created { projectId }
 ```
-
-> **Current**: The POST /api/v1/project route exists but returns a stub response. The GitHub fetch and persistence steps are not yet implemented.
 
 ---
 

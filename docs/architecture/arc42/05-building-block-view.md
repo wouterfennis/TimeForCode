@@ -79,9 +79,9 @@ The Donation context manages all concerns related to projects, donations, hour t
 graph LR
     subgraph Donation Bounded Context
         DonAPI_Ctrl["API Layer\n(Controllers)"]
-        DonApp["Application Layer\n(Handlers - target)"]
+        DonApp["Application Layer\n(Handlers)"]
         DonDomain["Domain Layer\n(Entities, Factories)"]
-        DonInfra["Infrastructure Layer\n(Repositories - target)"]
+        DonInfra["Infrastructure Layer\n(Repositories)"]
     end
 
     Client["Website"]
@@ -96,9 +96,17 @@ graph LR
     DonInfra -->|wire protocol| MongoDB
 ```
 
-> **Current**: The domain layer is well-defined. The API layer has one stubbed endpoint. The application and infrastructure layers are not yet implemented.
->
-> **Target**: Full implementation following the same pattern as the Authorization context.
+### Components
+
+| Component | Responsibility |
+| --- | --- |
+| `TimeForCode.Donation.Api` | REST endpoints: publish project (POST), list projects (GET), project detail (GET), unpublish project (DELETE) |
+| `TimeForCode.Donation.Application` | MediatR command handlers; GitHub metadata fetch interface |
+| `TimeForCode.Donation.Domain` | Project entity; GithubSnapshot record; DocumentEntity base class |
+| `TimeForCode.Donation.Infrastructure` | MongoDB project repository; GitHub public REST API client |
+| `TimeForCode.Donation.Commands` | MediatR command, query, and result types |
+| `TimeForCode.Donation.Values` | Shared value objects (ProjectStatus enum) |
+| `TimeForCode.Donation.Api.Client` | Typed HTTP client for the Website to call the Donation API |
 
 ### Domain Entities
 

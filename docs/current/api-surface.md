@@ -41,17 +41,16 @@ The Authorization API exposes OAuth 2.0 endpoints and an OpenID Connect discover
 
 Base URL (local): `http://localhost:8082`
 
-The Donation API is responsible for projects, donations, organizations, and contributors. Most endpoints are not yet implemented.
+The Donation API is responsible for projects, donations, organizations, and contributors.
 
 ### Project Endpoints
 
 | Method | Path | Status | Description |
 | --- | --- | --- | --- |
-| `POST` | `/api/v1/project` | ⚠️ | Route exists; registers a project using a GitHub repo URL. Logic not implemented. |
-| `GET` | `/api/v1/project` | ❌ | List all projects |
-| `GET` | `/api/v1/project/{id}` | ❌ | Get a single project |
-| `PUT` | `/api/v1/project/{id}` | ❌ | Update project details |
-| `DELETE` | `/api/v1/project/{id}` | ❌ | Remove a project |
+| `POST` | `/api/v1/project` | ✅ | Publishes a public GitHub repository as a project (JWT required); fetches full metadata from GitHub; returns 400 for private/archived repos, 409 for duplicate |
+| `GET` | `/api/v1/project` | ✅ | Returns a paginated list of published (non-archived) projects; no authentication required |
+| `GET` | `/api/v1/project/{id}` | ✅ | Returns full project details; no authentication required |
+| `DELETE` | `/api/v1/project/{id}` | ✅ | Archives (unpublishes) a project (JWT required; owner only); returns 403 if caller is not the owner, 404 if not found |
 
 ### Donation Endpoints
 

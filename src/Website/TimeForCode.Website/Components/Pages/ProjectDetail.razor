@@ -1,0 +1,85 @@
+@page "/projects/{Id}"
+@using TimeForCode.Donation.Api.Client
+@inject IDonationClient DonationClient
+
+<PageTitle>@(_project?.FullName ?? "Project") - TimeForCode</PageTitle>
+
+@if (_notFound)
+{
+    <h1>Project not found</h1>
+    <p>The project you are looking for does not exist or has been removed. <a href="/projects">Back to projects</a></p>
+}
+else if (_project == null)
+{
+    <p>Loading project...</p>
+}
+else
+{
+    <h1>@_project.FullName</h1>
+
+    <p><a href="@_project.GithubUrl" target="_blank">View on GitHub</a></p>
+
+    @if (!string.IsNullOrEmpty(_project.Description))
+    {
+        <p>@_project.Description</p>
+    }
+
+    <div class="project-details">
+        @if (!string.IsNullOrEmpty(_project.Language))
+        {
+            <p><strong>Language:</strong> @_project.Language</p>
+        }
+        @if (_project.Topics.Any())
+        {
+            <p><strong>Topics:</strong> @string.Join(", ", _project.Topics)</p>
+        }
+        <p><strong>Stars:</strong> @_project.StargazersCount</p>
+        <p><strong>Forks:</strong> @_project.ForksCount</p>
+        <p><strong>Open issues:</strong> @_project.OpenIssuesCount</p>
+        @if (!string.IsNullOrEmpty(_project.Homepage))
+        {
+            <p><strong>Homepage:</strong> <a href="@_project.Homepage" target="_blank">@_project.Homepage</a></p>
+        }
+        <p><strong>Default branch:</strong> @_project.DefaultBranch</p>
+        @if (!string.IsNullOrEmpty(_project.License))
+        {
+            <p><strong>License:</strong> @_project.License</p>
+        }
+        <p><strong>Owner:</strong>
+            @if (!string.IsNullOrEmpty(_project.OwnerAvatarUrl))
+            {
+                <img src="@_project.OwnerAvatarUrl" alt="@_project.OwnerLogin" width="24" height="24" />
+            }
+            @_project.OwnerLogin
+        </p>
+        <p><strong>Created:</strong> @_project.CreatedAt.ToString("yyyy-MM-dd")</p>
+        <p><strong>Last updated:</strong> @_project.UpdatedAt.ToString("yyyy-MM-dd")</p>
+        <p><strong>Last pushed:</strong> @_project.PushedAt.ToString("yyyy-MM-dd")</p>
+    </div>
+
+    <p><a href="/projects">Back to projects</a></p>
+}
+
+@code {
+    [Parameter]
+    public string Id { get; set; } = string.Empty;
+
+    private ProjectResponse? _project;
+    private bool _notFound;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _project = await DonationClient.GetProjectByIdAsync(Id);
+        }
+        catch (ApiException ex) when (ex.StatusCode == 404)
+        {
+            _notFound = true;
+        }
+        catch
+        {
+            _notFound = true;
+        }
+    }
+}

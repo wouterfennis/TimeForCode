@@ -41,5 +41,15 @@ namespace TimeForCode.Donation.Commands
 
             return new Result<T> { IsSuccess = false, _errorMessage = errorMessage, FailureStatusCode = HttpStatusCode.Conflict };
         }
+
+        public static Result<T> Forbidden(string? errorMessage)
+        {
+            if (string.IsNullOrEmpty(errorMessage))
+            {
+                throw new InvalidOperationException("The result does not contain any error message.");
+            }
+
+            return new Result<T> { IsSuccess = false, _errorMessage = errorMessage, FailureStatusCode = HttpStatusCode.Forbidden };
+        }
     }
 }

@@ -1,0 +1,61 @@
+@page "/projects"
+@using TimeForCode.Donation.Api.Client
+@inject IDonationClient DonationClient
+
+<PageTitle>Projects - TimeForCode</PageTitle>
+
+<h1>Projects</h1>
+
+@if (_error != null)
+{
+    <p class="error">@_error</p>
+}
+else if (_projects == null)
+{
+    <p>Loading projects...</p>
+}
+else if (!_projects.Projects.Any())
+{
+    <p>No published projects yet.</p>
+}
+else
+{
+    <ul class="projects">
+        @foreach (var project in _projects.Projects)
+        {
+            <li class="project-item">
+                <h3><a href="/projects/@project.Id">@project.FullName</a></h3>
+                @if (!string.IsNullOrEmpty(project.Description))
+                {
+                    <p>@project.Description</p>
+                }
+                <div class="project-meta">
+                    @if (!string.IsNullOrEmpty(project.Language))
+                    {
+                        <span class="language">@project.Language</span>
+                    }
+                    <span class="stars">⭐ @project.StargazersCount</span>
+                    <a href="@project.GithubUrl" target="_blank">View on GitHub</a>
+                </div>
+            </li>
+        }
+    </ul>
+    <p>Showing @_projects.Projects.Count of @_projects.TotalCount projects.</p>
+}
+
+@code {
+    private GetProjectsResponse? _projects;
+    private string? _error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _projects = await DonationClient.GetProjectsAsync(null, null);
+        }
+        catch
+        {
+            _error = "Could not load projects.";
+        }
+    }
+}

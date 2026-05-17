@@ -41,7 +41,17 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         [Authorize(Policy = "ApiUser")]
         public async Task<IActionResult> RegisterProject(RegisterProjectRequest request)
         {
-            var userId = User.Claims.Single(x => x.Type == ClaimTypes.NameIdentifier).Value;
+            var userId = User.Claims.SingleOrDefault(x => x.Type == ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return BadRequest(new ProblemDetails
+                {
+                    Title = "User identity could not be determined",
+                    Detail = "The token does not contain a valid user identifier.",
+                    Status = StatusCodes.Status400BadRequest
+                });
+            }
+
             var command = new RegisterProjectCommand
             {
                 GithubRepositoryUrl = request.GithubRepositoryUrl,
@@ -177,16 +187,38 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         /// <returns>No content on success.</returns>
         [HttpDelete("{id}", Name = nameof(UnpublishProject))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         [Authorize(Policy = "ApiUser")]
         public async Task<IActionResult> UnpublishProject(string id)
         {
-            var command = new UnpublishProjectCommand { ProjectId = id };
+            var userId = User.Claims.SingleOrDefault(x => x.Type == ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return BadRequest(new ProblemDetails
+                {
+                    Title = "User identity could not be determined",
+                    Detail = "The token does not contain a valid user identifier.",
+                    Status = StatusCodes.Status400BadRequest
+                });
+            }
+
+            var command = new UnpublishProjectCommand { ProjectId = id, UserId = userId };
             var result = await _mediator.Send(command);
 
             if (result.IsFailure)
             {
+                if (result.FailureStatusCode == HttpStatusCode.Forbidden)
+                {
+                    return StatusCode(StatusCodes.Status403Forbidden, new ProblemDetails
+                    {
+                        Title = "Not authorized",
+                        Detail = result.ErrorMessage,
+                        Status = StatusCodes.Status403Forbidden
+                    });
+                }
+
                 return NotFound(new ProblemDetails
                 {
                     Title = "Project not found",

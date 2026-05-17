@@ -48,6 +48,9 @@ StyleCopReport.xml
 
 # Files built by Visual Studio
 *.pdb
+
+# Reqnroll/SpecFlow generated code-behind files
+*.feature.cs
 *.cache
 *.ilk
 *.log

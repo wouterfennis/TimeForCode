@@ -22,6 +22,11 @@ namespace TimeForCode.Donation.Application.Handlers
                 return Result<UnpublishProjectResult>.Failure("Project not found.");
             }
 
+            if (project.PublishedByUserId != request.UserId)
+            {
+                return Result<UnpublishProjectResult>.Forbidden("You do not have permission to unpublish this project.");
+            }
+
             project.Status = ProjectStatus.Archived;
             await _projectRepository.UpdateAsync(project);
 

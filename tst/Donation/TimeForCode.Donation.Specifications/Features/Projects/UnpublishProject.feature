@@ -14,3 +14,9 @@ Scenario: Unpublishing a project requires authentication
 	Given The user does not have an access token
 	When The user unpublishes the project on the time for code platform
 	Then The user is informed they must be logged in
+
+Scenario: User attempts to unpublish a project they do not own
+	Given The user has an access token
+	And There is a project published by another user
+	When The user unpublishes the project on the time for code platform
+	Then The user is informed they do not have permission

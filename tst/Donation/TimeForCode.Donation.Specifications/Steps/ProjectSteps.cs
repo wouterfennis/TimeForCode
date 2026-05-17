@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using MongoDB.Bson;
 using Moq;
 using Reqnroll;
 using TimeForCode.Donation.Api.Client;
@@ -28,6 +29,26 @@ namespace TimeForCode.Donation.Specifications.Steps
         {
             _donationClient = donationClient;
             _provider = provider;
+        }
+
+        [Given("There is a project published by another user")]
+        public void GivenThereIsAProjectPublishedByAnotherUser()
+        {
+            var anotherUsersProject = new Project
+            {
+                Id = new ObjectId(Constants.TestProjectId),
+                Snapshot = ProjectBuilder.BuildSnapshot(),
+                GithubRepositoryUrl = new Uri(Constants.TestGithubRepositoryUrl),
+                Status = TimeForCode.Donation.Values.ProjectStatus.Published,
+                PublishedByUserId = "another-user-id",
+                PublishedAt = new DateTimeOffset(2024, 1, 1, 0, 0, 0, TimeSpan.Zero)
+            };
+
+            var mockProjectRepository = _provider.GetRequiredService<Mock<IProjectRepository>>();
+            mockProjectRepository.Setup(x => x.GetByIdAsync(anotherUsersProject.Id.ToString()))
+                .ReturnsAsync(anotherUsersProject);
+
+            _registeredProjectId = anotherUsersProject.Id.ToString();
         }
 
         [Given("The repository is public and active on the external platform")]
@@ -211,10 +232,21 @@ namespace TimeForCode.Donation.Specifications.Steps
             mockProjectRepository.Verify(x => x.CreateAsync(It.Is<Project>(p =>
                 p.Snapshot.Name != null &&
                 p.Snapshot.FullName != null &&
+                p.Snapshot.Description != null &&
                 p.Snapshot.HtmlUrl != null &&
+                p.Snapshot.Language != null &&
+                p.Snapshot.Topics != null &&
+                p.Snapshot.StargazersCount >= 0 &&
+                p.Snapshot.ForksCount >= 0 &&
+                p.Snapshot.OpenIssuesCount >= 0 &&
+                p.Snapshot.Homepage != null &&
                 p.Snapshot.DefaultBranch != null &&
+                p.Snapshot.License != null &&
                 p.Snapshot.OwnerLogin != null &&
-                p.Snapshot.OwnerAvatarUrl != null
+                p.Snapshot.OwnerAvatarUrl != null &&
+                p.Snapshot.CreatedAt != default &&
+                p.Snapshot.UpdatedAt != default &&
+                p.Snapshot.PushedAt != default
             )), Times.Once);
         }
 
@@ -230,6 +262,13 @@ namespace TimeForCode.Donation.Specifications.Steps
         {
             _exception.Should().NotBeNull();
             _exception!.StatusCode.Should().Be(StatusCodes.Status409Conflict);
+        }
+
+        [Then("The user is informed they do not have permission")]
+        public void ThenTheUserIsInformedTheyDoNotHavePermission()
+        {
+            _exception.Should().NotBeNull();
+            _exception!.StatusCode.Should().Be(StatusCodes.Status403Forbidden);
         }
 
         [Then("The user is informed they must be logged in")]
