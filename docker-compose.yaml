@@ -24,11 +24,11 @@ services:
       - ExternalIdentityProviderOptions__Github__Issuer=http://localhost:8081
       - ExternalIdentityProviderOptions__Github__IsHttps=false
       - RefreshTokenOptions__DefaultExpirationAfterInDays=7
-      - AuthenticationOptions__Issuer=http://localhost:8080
-      - AuthenticationOptions__Audience__0=http://localhost:8080
+      - AuthenticationOptions__Issuer=http://authorization-api:8080
+      - AuthenticationOptions__Audience__0=http://authorization-api:8080
       - AuthenticationOptions__ValidRedirectUris__0=http://localhost:8083
-      - TokenCreationOptions__Issuer=http://localhost:8080
-      - TokenCreationOptions__Audiences__0=http://localhost:8080
+      - TokenCreationOptions__Issuer=http://authorization-api:8080
+      - TokenCreationOptions__Audiences__0=http://authorization-api:8080
       - TokenCreationOptions__Audiences__1=http://localhost:8082
       - TokenCreationOptions__TokenExpiresInMinutes=60
       - TokenCreationOptions__DefaultRefreshTokenExpirationAfterInDays=7
@@ -75,7 +75,7 @@ services:
       - Logging__LogLevel__Default=Debug
       - Logging__LogLevel__Microsoft.AspNetCore=Warning
       - AuthenticationOptions__Authority=http://authorization-api:8080
-      - AuthenticationOptions__Issuer=http://localhost:8080
+      - AuthenticationOptions__Issuer=http://authorization-api:8080
       - AuthenticationOptions__Audience=http://localhost:8082
       - DbOptions__ConnectionString=mongodb://root:example@mongo:27017/?authSource=admin
       - DbOptions__DatabaseName=TimeForCode
