@@ -77,6 +77,8 @@ services:
       - AuthenticationOptions__Authority=http://authorization-api:8080
       - AuthenticationOptions__Issuer=http://localhost:8080
       - AuthenticationOptions__Audience=http://localhost:8082
+      - DbOptions__ConnectionString=mongodb://root:example@mongo:27017/?authSource=admin
+      - DbOptions__DatabaseName=TimeForCode
     depends_on:
       - mongo
       - authorization-api
