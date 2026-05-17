@@ -25,7 +25,7 @@ services:
       - ExternalIdentityProviderOptions__Github__IsHttps=false
       - RefreshTokenOptions__DefaultExpirationAfterInDays=7
       - AuthenticationOptions__Issuer=http://authorization-api:8080
-      - AuthenticationOptions__Audience__0=http://authorization-api:8080
+      - AuthenticationOptions__Audience=http://authorization-api:8080
       - AuthenticationOptions__ValidRedirectUris__0=http://localhost:8083
       - TokenCreationOptions__Issuer=http://authorization-api:8080
       - TokenCreationOptions__Audiences__0=http://authorization-api:8080
