@@ -33,6 +33,8 @@ namespace TimeForCode.Donation.Infrastructure.Persistence.Database
             var totalCount = (int)await _collection.CountDocumentsAsync(filter);
             var projects = await _collection
                 .Find(filter)
+                .SortByDescending(p => p.PublishedAt)
+                .ThenByDescending(p => p.Id)
                 .Skip((pageNumber - 1) * pageSize)
                 .Limit(pageSize)
                 .ToListAsync();
