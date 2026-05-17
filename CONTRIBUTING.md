@@ -75,19 +75,13 @@ Install the following tools before starting:
 
 > **Why Podman?** Docker Desktop requires a paid licence in many organisations. Podman is a free, daemonless alternative that is fully compatible with Docker Compose files. The Dockerfiles in this project already use a non-root `appuser`, which is best-practice for Podman rootless mode.
 
-**Windows first-time setup:**
-
-```powershell
-# One-time machine initialisation (after installing Podman)
-podman machine init
-podman machine start
-```
-
 **Start the full stack:**
 
 ```powershell
-podman compose up --build
+.\scripts\start-local.ps1
 ```
+
+> On Windows this script automatically starts the Podman machine if it is not already running, so you do not need to run `podman machine start` manually before each session.
 
 **Verify everything works:**
 
