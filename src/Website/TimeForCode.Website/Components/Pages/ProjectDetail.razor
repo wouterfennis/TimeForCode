@@ -17,7 +17,7 @@ else
 {
     <h1>@_project.FullName</h1>
 
-    <p><a href="@_project.GithubUrl" target="_blank">View on GitHub</a></p>
+    <p><a href="@_project.GithubUrl" target="_blank" rel="noopener noreferrer">View on GitHub</a></p>
 
     @if (!string.IsNullOrEmpty(_project.Description))
     {
@@ -38,7 +38,7 @@ else
         <p><strong>Open issues:</strong> @_project.OpenIssuesCount</p>
         @if (!string.IsNullOrEmpty(_project.Homepage))
         {
-            <p><strong>Homepage:</strong> <a href="@_project.Homepage" target="_blank">@_project.Homepage</a></p>
+            <p><strong>Homepage:</strong> <a href="@_project.Homepage" target="_blank" rel="noopener noreferrer">@_project.Homepage</a></p>
         }
         <p><strong>Default branch:</strong> @_project.DefaultBranch</p>
         @if (!string.IsNullOrEmpty(_project.License))

@@ -91,9 +91,30 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         /// <returns>A paginated list of published projects.</returns>
         [HttpGet(Name = nameof(GetProjects))]
         [ProducesResponseType(typeof(GetProjectsResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetProjects([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 20)
         {
+            if (pageNumber < 1)
+            {
+                return BadRequest(new ProblemDetails
+                {
+                    Title = "Invalid page number",
+                    Detail = "Page number must be greater than or equal to 1.",
+                    Status = StatusCodes.Status400BadRequest
+                });
+            }
+
+            if (pageSize < 1 || pageSize > 100)
+            {
+                return BadRequest(new ProblemDetails
+                {
+                    Title = "Invalid page size",
+                    Detail = "Page size must be between 1 and 100.",
+                    Status = StatusCodes.Status400BadRequest
+                });
+            }
+
             var query = new GetProjectsQuery { PageNumber = pageNumber, PageSize = pageSize };
             var result = await _mediator.Send(query);
 

@@ -1,6 +1,7 @@
 using MediatR;
 using TimeForCode.Donation.Application.Interfaces;
 using TimeForCode.Donation.Commands;
+using TimeForCode.Donation.Values;
 
 namespace TimeForCode.Donation.Application.Handlers
 {
@@ -16,7 +17,7 @@ namespace TimeForCode.Donation.Application.Handlers
         public async Task<Result<GetProjectByIdResult>> Handle(GetProjectByIdQuery request, CancellationToken cancellationToken)
         {
             var project = await _projectRepository.GetByIdAsync(request.ProjectId);
-            if (project == null)
+            if (project == null || project.Status != ProjectStatus.Published)
             {
                 return Result<GetProjectByIdResult>.Failure("Project not found.");
             }
