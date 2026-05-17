@@ -26,7 +26,7 @@ else
             <img src="@_user.AvatarUrl" alt="Avatar" width="100" height="100" />
         }
         <h2>@_user.Name</h2>
-        <p class="login">@@_user.Login</p>
+        <p class="login">@("@" + _user.Login)</p>
     </div>
 
     <div class="profile-details">
