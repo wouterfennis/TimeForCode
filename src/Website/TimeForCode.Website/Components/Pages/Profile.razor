@@ -71,7 +71,7 @@ else
                 var repoUrl = repo.Url;
                 var isPublished = _publishedRepos.TryGetValue(repoUrl, out var publishedProjectId);
                 <li>
-                    <a href="@repo.Url" target="_blank"><strong>@repo.Name</strong></a>
+                    <a href="@repo.Url" target="_blank" rel="noopener noreferrer"><strong>@repo.Name</strong></a>
                     @if (!string.IsNullOrEmpty(repo.Description))
                     {
                         <span> — @repo.Description</span>
