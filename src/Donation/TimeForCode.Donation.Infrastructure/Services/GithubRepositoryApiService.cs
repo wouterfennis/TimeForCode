@@ -17,7 +17,18 @@ namespace TimeForCode.Donation.Infrastructure.Services
 
         public async Task<Result<GithubSnapshot>> GetRepositoryMetadataAsync(Uri repositoryUrl)
         {
-            var repoPath = repositoryUrl.AbsolutePath.TrimStart('/');
+            if (!repositoryUrl.Host.Equals("github.com", StringComparison.OrdinalIgnoreCase))
+            {
+                return Result<GithubSnapshot>.Failure("URL must be a GitHub repository URL (github.com).");
+            }
+
+            var segments = repositoryUrl.AbsolutePath.Split('/', StringSplitOptions.RemoveEmptyEntries);
+            if (segments.Length != 2)
+            {
+                return Result<GithubSnapshot>.Failure("URL must point to a GitHub repository with exactly an owner and repository name.");
+            }
+
+            var repoPath = string.Join("/", segments);
             var request = new RestRequest($"{GithubApiBase}/repos/{repoPath}", Method.Get);
             request.AddHeader("User-Agent", "TimeForCode");
             request.AddHeader("Accept", "application/vnd.github+json");
