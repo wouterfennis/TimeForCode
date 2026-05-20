@@ -1,5 +1,6 @@
 using MongoDB.Bson;
 using MongoDB.Driver;
+using TimeForCode.Donation.Application.Exceptions;
 using TimeForCode.Donation.Application.Interfaces;
 using TimeForCode.Donation.Domain;
 using TimeForCode.Donation.Values;
@@ -13,6 +14,17 @@ namespace TimeForCode.Donation.Infrastructure.Persistence.Database
         public ProjectRepository(IMongoDbContext context)
         {
             _collection = context.GetCollection<Project>();
+
+            var indexModel = new CreateIndexModel<Project>(
+                Builders<Project>.IndexKeys.Ascending(p => p.GithubRepositoryUrl),
+                new CreateIndexOptions<Project>
+                {
+                    Name = "ux_published_projects_github_repository_url",
+                    Unique = true,
+                    PartialFilterExpression = Builders<Project>.Filter.Eq(p => p.Status, ProjectStatus.Published)
+                });
+
+            _collection.Indexes.CreateOne(indexModel);
         }
 
         public async Task<Project?> GetByIdAsync(string id)
@@ -44,7 +56,14 @@ namespace TimeForCode.Donation.Infrastructure.Persistence.Database
 
         public async Task CreateAsync(Project project)
         {
-            await _collection.InsertOneAsync(project);
+            try
+            {
+                await _collection.InsertOneAsync(project);
+            }
+            catch (MongoWriteException ex) when (ex.WriteError?.Category == ServerErrorCategory.DuplicateKey)
+            {
+                throw new RepositoryConflictException("Repository is already published.", ex);
+            }
         }
 
         public async Task UpdateAsync(Project project)

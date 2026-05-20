@@ -1,4 +1,5 @@
 using MediatR;
+using TimeForCode.Donation.Application.Exceptions;
 using TimeForCode.Donation.Application.Interfaces;
 using TimeForCode.Donation.Commands;
 using TimeForCode.Donation.Domain;
@@ -46,7 +47,14 @@ namespace TimeForCode.Donation.Application.Handlers
                 request.UserId,
                 DateTimeOffset.UtcNow);
 
-            await _projectRepository.CreateAsync(project);
+            try
+            {
+                await _projectRepository.CreateAsync(project);
+            }
+            catch (RepositoryConflictException)
+            {
+                return Result<RegisterProjectResult>.Conflict("Repository is already published.");
+            }
 
             return Result<RegisterProjectResult>.Success(new RegisterProjectResult
             {
