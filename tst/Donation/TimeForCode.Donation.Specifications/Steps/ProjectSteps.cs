@@ -159,6 +159,11 @@ namespace TimeForCode.Donation.Specifications.Steps
 
             var mockProjectRepository = _provider.GetRequiredService<Mock<IProjectRepository>>();
             mockProjectRepository.Setup(x => x.UpdateAsync(It.IsAny<Project>()))
+                .Callback<Project>(_ =>
+                {
+                    mockProjectRepository.Setup(x => x.GetAllPublishedAsync(It.IsAny<int>(), It.IsAny<int>()))
+                        .ReturnsAsync(((IReadOnlyList<Project>)new List<Project>(), 0));
+                })
                 .Returns(Task.CompletedTask);
 
             try
@@ -301,10 +306,6 @@ namespace TimeForCode.Donation.Specifications.Steps
         public async Task ThenTheProjectNoLongerAppearsInThePublicProjectListingAsync()
         {
             var projectId = _registeredProjectId ?? Constants.TestProjectId;
-
-            var mockProjectRepository = _provider.GetRequiredService<Mock<IProjectRepository>>();
-            mockProjectRepository.Setup(x => x.GetAllPublishedAsync(It.IsAny<int>(), It.IsAny<int>()))
-                .ReturnsAsync(((IReadOnlyList<Project>)new List<Project>(), 0));
 
             var result = await _donationClient.GetProjectsAsync(null, null);
             result.Projects.Should().NotContain(p => p.Id == projectId);
