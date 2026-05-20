@@ -25,7 +25,7 @@ namespace TimeForCode.Donation.Application.Handlers
             var metadataResult = await _githubService.GetRepositoryMetadataAsync(request.GithubRepositoryUrl);
             if (metadataResult.IsFailure)
             {
-                return Result<RegisterProjectResult>.Failure("Failed to retrieve repository information from GitHub.");
+                return Result<RegisterProjectResult>.Failure(metadataResult.ErrorMessage);
             }
 
             var snapshot = metadataResult.Value;
