@@ -44,6 +44,8 @@ namespace TimeForCode.Donation.Application.Handlers
             if (existing != null && existing.Status == ProjectStatus.Archived)
             {
                 existing.Status = ProjectStatus.Published;
+                existing.Snapshot = snapshot;
+                existing.PublishedAt = DateTimeOffset.UtcNow;
                 await _projectRepository.UpdateAsync(existing);
 
                 return Result<RegisterProjectResult>.Success(new RegisterProjectResult
