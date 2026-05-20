@@ -35,7 +35,15 @@ namespace TimeForCode.Donation.Application.Handlers
                 return Result<RegisterProjectResult>.Failure("Repository must be public and not archived.");
             }
 
-            var existing = await _projectRepository.GetByGithubUrlAsync(request.GithubRepositoryUrl);
+            var segments = request.GithubRepositoryUrl.AbsolutePath.Split('/', StringSplitOptions.RemoveEmptyEntries);
+            if (segments.Length < 2)
+            {
+                return Result<RegisterProjectResult>.Failure("Invalid GitHub repository URL.");
+            }
+
+            var normalizedUrl = new Uri($"{request.GithubRepositoryUrl.Scheme}://{request.GithubRepositoryUrl.Host}/{segments[0]}/{segments[1]}");
+
+            var existing = await _projectRepository.GetByGithubUrlAsync(normalizedUrl);
             if (existing != null && existing.Status == ProjectStatus.Published)
             {
                 return Result<RegisterProjectResult>.Conflict("Repository is already published.");
@@ -56,7 +64,7 @@ namespace TimeForCode.Donation.Application.Handlers
 
             var project = Project.Create(
                 snapshot,
-                request.GithubRepositoryUrl,
+                normalizedUrl,
                 request.UserId,
                 DateTimeOffset.UtcNow);
 
