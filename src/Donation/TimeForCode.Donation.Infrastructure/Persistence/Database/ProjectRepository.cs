@@ -89,7 +89,10 @@ namespace TimeForCode.Donation.Infrastructure.Persistence.Database
         public async Task UpdateAsync(Project project)
         {
             var filter = Builders<Project>.Filter.Eq("_id", project.Id);
-            var update = Builders<Project>.Update.Set(p => p.Status, project.Status);
+            var update = Builders<Project>.Update
+                .Set(p => p.Status, project.Status)
+                .Set(p => p.Snapshot, project.Snapshot)
+                .Set(p => p.PublishedAt, project.PublishedAt);
             await _collection.UpdateOneAsync(filter, update);
         }
 
