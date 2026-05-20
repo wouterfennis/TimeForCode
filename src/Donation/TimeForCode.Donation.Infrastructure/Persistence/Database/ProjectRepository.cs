@@ -9,11 +9,29 @@ namespace TimeForCode.Donation.Infrastructure.Persistence.Database
 {
     internal class ProjectRepository : IProjectRepository
     {
+        private static readonly object IndexCreationLock = new();
+        private static bool _publishedGithubUrlIndexCreated;
         private readonly IMongoCollection<Project> _collection;
 
         public ProjectRepository(IMongoDbContext context)
         {
             _collection = context.GetCollection<Project>();
+            EnsurePublishedGithubUrlIndex();
+        }
+
+        private void EnsurePublishedGithubUrlIndex()
+        {
+            if (_publishedGithubUrlIndexCreated)
+            {
+                return;
+            }
+
+            lock (IndexCreationLock)
+            {
+                if (_publishedGithubUrlIndexCreated)
+                {
+                    return;
+                }
 
             var indexModel = new CreateIndexModel<Project>(
                 Builders<Project>.IndexKeys.Ascending(p => p.GithubRepositoryUrl),
@@ -24,7 +42,9 @@ namespace TimeForCode.Donation.Infrastructure.Persistence.Database
                     PartialFilterExpression = Builders<Project>.Filter.Eq(p => p.Status, ProjectStatus.Published)
                 });
 
-            _collection.Indexes.CreateOne(indexModel);
+                _collection.Indexes.CreateOne(indexModel);
+                _publishedGithubUrlIndexCreated = true;
+            }
         }
 
         public async Task<Project?> GetByIdAsync(string id)
