@@ -1,4 +1,5 @@
 @page "/profile"
+@using Microsoft.AspNetCore.Components.Forms
 @using TimeForCode.Authorization.Api.Client
 @using TimeForCode.Authorization.Api.Client.Extensions
 @using TimeForCode.Donation.Api.Client
@@ -83,11 +84,22 @@ else
                     <span class="publish-toggle">
                         @if (isPublished)
                         {
-                            <button @onclick="() => UnpublishAsync(publishedProjectId!, repoUrl)">Unpublish</button>
+                            <form method="post" @formname="@($"project-action-{Uri.EscapeDataString(repoUrl)}")">
+                                <AntiforgeryToken />
+                                <input type="hidden" name="ProjectAction.Action" value="unpublish" />
+                                <input type="hidden" name="ProjectAction.ProjectId" value="@publishedProjectId" />
+                                <input type="hidden" name="ProjectAction.RepoUrl" value="@repoUrl" />
+                                <button type="submit">Unpublish</button>
+                            </form>
                         }
                         else
                         {
-                            <button @onclick="() => PublishAsync(repoUrl)">Publish</button>
+                            <form method="post" @formname="@($"project-action-{Uri.EscapeDataString(repoUrl)}")">
+                                <AntiforgeryToken />
+                                <input type="hidden" name="ProjectAction.Action" value="publish" />
+                                <input type="hidden" name="ProjectAction.RepoUrl" value="@repoUrl" />
+                                <button type="submit">Publish</button>
+                            </form>
                         }
                         @if (_repoActionErrors.TryGetValue(repoUrl, out var repoError) && repoError != null)
                         {
@@ -104,6 +116,16 @@ else
     [CascadingParameter]
     public HttpContext? HttpContext { get; set; }
 
+    [SupplyParameterFromForm]
+    public ProjectActionModel? ProjectAction { get; set; }
+
+    public class ProjectActionModel
+    {
+        public string? Action { get; set; }
+        public string? RepoUrl { get; set; }
+        public string? ProjectId { get; set; }
+    }
+
     private bool _isLoggedIn;
     private UserResponse? _user;
     private ICollection<RepositoryResponse>? _repositories;
@@ -119,6 +141,15 @@ else
         if (!_isLoggedIn)
         {
             return;
+        }
+
+        if (ProjectAction?.Action == "publish" && ProjectAction.RepoUrl != null)
+        {
+            await PublishAsync(ProjectAction.RepoUrl);
+        }
+        else if (ProjectAction?.Action == "unpublish" && ProjectAction.ProjectId != null && ProjectAction.RepoUrl != null)
+        {
+            await UnpublishAsync(ProjectAction.ProjectId, ProjectAction.RepoUrl);
         }
 
         try
