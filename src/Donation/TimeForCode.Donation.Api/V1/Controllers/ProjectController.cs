@@ -208,6 +208,7 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         /// <returns>No content on success.</returns>
         [HttpDelete("{id}", Name = nameof(UnpublishProject))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
