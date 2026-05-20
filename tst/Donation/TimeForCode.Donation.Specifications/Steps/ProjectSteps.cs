@@ -228,25 +228,33 @@ namespace TimeForCode.Donation.Specifications.Steps
             _registerResult.Should().NotBeNull();
             _registerResult!.ProjectId.Should().NotBeNullOrEmpty();
 
+            var fieldCheckers = new Dictionary<string, Func<Project, bool>>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["name"] = p => p.Snapshot.Name != null,
+                ["full_name"] = p => p.Snapshot.FullName != null,
+                ["description"] = p => p.Snapshot.Description != null,
+                ["html_url"] = p => p.Snapshot.HtmlUrl != null,
+                ["language"] = p => p.Snapshot.Language != null,
+                ["topics"] = p => p.Snapshot.Topics != null,
+                ["stargazers_count"] = p => p.Snapshot.StargazersCount >= 0,
+                ["forks_count"] = p => p.Snapshot.ForksCount >= 0,
+                ["open_issues_count"] = p => p.Snapshot.OpenIssuesCount >= 0,
+                ["homepage"] = p => p.Snapshot.Homepage != null,
+                ["default_branch"] = p => p.Snapshot.DefaultBranch != null,
+                ["license"] = p => p.Snapshot.License != null,
+                ["owner login"] = p => p.Snapshot.OwnerLogin != null,
+                ["owner avatar url"] = p => p.Snapshot.OwnerAvatarUrl != null,
+                ["created_at"] = p => p.Snapshot.CreatedAt != default,
+                ["updated_at"] = p => p.Snapshot.UpdatedAt != default,
+                ["pushed_at"] = p => p.Snapshot.PushedAt != default,
+            };
+
+            var fields = table.Rows.Select(row => row["Field"]).ToList();
+            fields.Should().AllSatisfy(field => fieldCheckers.Should().ContainKey(field));
+
             var mockProjectRepository = _provider.GetRequiredService<Mock<IProjectRepository>>();
             mockProjectRepository.Verify(x => x.CreateAsync(It.Is<Project>(p =>
-                p.Snapshot.Name != null &&
-                p.Snapshot.FullName != null &&
-                p.Snapshot.Description != null &&
-                p.Snapshot.HtmlUrl != null &&
-                p.Snapshot.Language != null &&
-                p.Snapshot.Topics != null &&
-                p.Snapshot.StargazersCount >= 0 &&
-                p.Snapshot.ForksCount >= 0 &&
-                p.Snapshot.OpenIssuesCount >= 0 &&
-                p.Snapshot.Homepage != null &&
-                p.Snapshot.DefaultBranch != null &&
-                p.Snapshot.License != null &&
-                p.Snapshot.OwnerLogin != null &&
-                p.Snapshot.OwnerAvatarUrl != null &&
-                p.Snapshot.CreatedAt != default &&
-                p.Snapshot.UpdatedAt != default &&
-                p.Snapshot.PushedAt != default
+                fields.All(field => fieldCheckers[field](p))
             )), Times.Once);
         }
 
