@@ -77,6 +77,26 @@ namespace TimeForCode.Donation.Specifications.Steps
                 .ReturnsAsync(Result<GithubSnapshot>.Success(archivedSnapshot));
         }
 
+        [Given("The user has previously unpublished the repository on the time for code platform")]
+        public void GivenTheUserHasPreviouslyUnpublishedTheRepositoryOnTheTimeForCodePlatform()
+        {
+            var archivedProject = new Project
+            {
+                Id = new ObjectId(Constants.TestProjectId),
+                Snapshot = ProjectBuilder.BuildSnapshot(),
+                GithubRepositoryUrl = new Uri(Constants.TestGithubRepositoryUrl),
+                Status = TimeForCode.Donation.Values.ProjectStatus.Archived,
+                PublishedByUserId = Constants.TestUserId,
+                PublishedAt = new DateTimeOffset(2024, 1, 1, 0, 0, 0, TimeSpan.Zero)
+            };
+
+            var mockProjectRepository = _provider.GetRequiredService<Mock<IProjectRepository>>();
+            mockProjectRepository.Setup(x => x.GetByGithubUrlAsync(It.IsAny<Uri>()))
+                .ReturnsAsync(archivedProject);
+            mockProjectRepository.Setup(x => x.UpdateAsync(It.IsAny<Project>()))
+                .Returns(Task.CompletedTask);
+        }
+
         [Given("The user has already published the repository on the time for code platform")]
         public void GivenTheUserHasAlreadyPublishedTheRepositoryOnTheTimeForCodePlatform()
         {

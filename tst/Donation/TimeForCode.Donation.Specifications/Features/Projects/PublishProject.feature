@@ -50,6 +50,13 @@ Scenario: User attempts to publish the same repository twice
 	When The user publishes the repository on the time for code platform
 	Then The user is informed the repository is already published
 
+Scenario: User republishes a previously unpublished repository
+	Given The user has an access token
+	And The repository is public and active on the external platform
+	And The user has previously unpublished the repository on the time for code platform
+	When The user publishes the repository on the time for code platform
+	Then The project is registered on the time for code platform
+
 Scenario: Publishing a repository requires authentication
 	Given The user does not have an access token
 	When The user publishes the repository on the time for code platform

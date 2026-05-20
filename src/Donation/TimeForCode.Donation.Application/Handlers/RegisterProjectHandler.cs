@@ -41,6 +41,17 @@ namespace TimeForCode.Donation.Application.Handlers
                 return Result<RegisterProjectResult>.Conflict("Repository is already published.");
             }
 
+            if (existing != null && existing.Status == ProjectStatus.Archived)
+            {
+                existing.Status = ProjectStatus.Published;
+                await _projectRepository.UpdateAsync(existing);
+
+                return Result<RegisterProjectResult>.Success(new RegisterProjectResult
+                {
+                    ProjectId = existing.Id.ToString()
+                });
+            }
+
             var project = Project.Create(
                 snapshot,
                 request.GithubRepositoryUrl,
