@@ -33,14 +33,14 @@ namespace TimeForCode.Donation.Infrastructure.Persistence.Database
                     return;
                 }
 
-            var indexModel = new CreateIndexModel<Project>(
-                Builders<Project>.IndexKeys.Ascending(p => p.GithubRepositoryUrl),
-                new CreateIndexOptions<Project>
-                {
-                    Name = "ux_published_projects_github_repository_url",
-                    Unique = true,
-                    PartialFilterExpression = Builders<Project>.Filter.Eq(p => p.Status, ProjectStatus.Published)
-                });
+                var indexModel = new CreateIndexModel<Project>(
+                    Builders<Project>.IndexKeys.Ascending(p => p.GithubRepositoryUrl),
+                    new CreateIndexOptions<Project>
+                    {
+                        Name = "ux_published_projects_github_repository_url",
+                        Unique = true,
+                        PartialFilterExpression = Builders<Project>.Filter.Eq(p => p.Status, ProjectStatus.Published)
+                    });
 
                 _collection.Indexes.CreateOne(indexModel);
                 _publishedGithubUrlIndexCreated = true;
