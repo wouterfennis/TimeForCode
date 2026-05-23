@@ -1,18 +1,21 @@
+using Microsoft.Extensions.Options;
 using RestSharp;
 using TimeForCode.Donation.Application.Interfaces;
 using TimeForCode.Donation.Commands;
 using TimeForCode.Donation.Domain;
+using TimeForCode.Donation.Infrastructure.Options;
 
 namespace TimeForCode.Donation.Infrastructure.Services
 {
     internal class GithubRepositoryApiService : IGithubRepositoryApiService
     {
-        private const string GithubApiBase = "https://api.github.com";
         private readonly RestClient _restClient;
+        private readonly GithubApiOptions _githubApiOptions;
 
-        public GithubRepositoryApiService(RestClient restClient)
+        public GithubRepositoryApiService(RestClient restClient, IOptions<GithubApiOptions> githubApiOptions)
         {
             _restClient = restClient;
+            _githubApiOptions = githubApiOptions.Value;
         }
 
         public async Task<Result<GithubSnapshot>> GetRepositoryMetadataAsync(Uri repositoryUrl)
@@ -29,7 +32,7 @@ namespace TimeForCode.Donation.Infrastructure.Services
             }
 
             var repoPath = string.Join("/", segments);
-            var request = new RestRequest($"{GithubApiBase}/repos/{repoPath}", Method.Get);
+            var request = new RestRequest($"{_githubApiOptions.BaseUrl}/repos/{repoPath}", Method.Get);
             request.AddHeader("User-Agent", "TimeForCode");
             request.AddHeader("Accept", "application/vnd.github+json");
 

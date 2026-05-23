@@ -7,6 +7,10 @@
 # and REST API traffic flows to the real GitHub endpoints instead.
 
 services:
+  donation-api:
+    environment:
+      - GithubApiOptions__BaseUrl=https://api.github.com
+
   authorization-api:
     environment:
       - ExternalIdentityProviderOptions__Github__LoginHost=github.com

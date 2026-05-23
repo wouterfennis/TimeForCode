@@ -79,6 +79,7 @@ services:
       - AuthenticationOptions__Audience=http://localhost:8082
       - DbOptions__ConnectionString=mongodb://root:example@mongo:27017/?authSource=admin
       - DbOptions__DatabaseName=TimeForCode
+      - GithubApiOptions__BaseUrl=http://identity-provider-mock:8080
     depends_on:
       - mongo
       - authorization-api
