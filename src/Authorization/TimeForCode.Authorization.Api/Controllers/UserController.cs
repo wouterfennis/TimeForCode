@@ -145,6 +145,7 @@ namespace TimeForCode.Authorization.Api.Controllers
         [ProducesResponseType(typeof(RepositoryResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status502BadGateway)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetRepositoryAsync(string owner, string repo)
         {
@@ -189,13 +190,24 @@ namespace TimeForCode.Authorization.Api.Controllers
                     return NotFound(problemDetails);
                 }
 
-                var unauthorizedProblemDetails = new ProblemDetails
+                if (repositoryResult.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 {
-                    Title = "Unauthorized",
-                    Detail = "The GitHub access token is expired or revoked. Please re-authenticate via GitHub."
+                    var unauthorizedProblemDetails = new ProblemDetails
+                    {
+                        Title = "Unauthorized",
+                        Detail = "The GitHub access token is expired or revoked. Please re-authenticate via GitHub."
+                    };
+
+                    return Unauthorized(unauthorizedProblemDetails);
+                }
+
+                var upstreamProblemDetails = new ProblemDetails
+                {
+                    Title = "Bad Gateway",
+                    Detail = $"An upstream error occurred while contacting GitHub: {repositoryResult.ErrorMessage}"
                 };
 
-                return Unauthorized(unauthorizedProblemDetails);
+                return StatusCode(StatusCodes.Status502BadGateway, upstreamProblemDetails);
             }
 
             var repository = new RepositoryResponse

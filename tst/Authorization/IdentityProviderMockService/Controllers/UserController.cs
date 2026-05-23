@@ -55,6 +55,7 @@ namespace IdentityProviderMockService.Controllers
 
         [HttpGet("/repos/{owner}/{repo}")]
         [ProducesResponseType(typeof(RepositoryResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public IActionResult GetRepo(string owner, string repo)
         {
@@ -66,19 +67,13 @@ namespace IdentityProviderMockService.Controllers
                 return Ok(match);
             }
 
-#pragma warning disable S1075 // URIs should not be hardcoded, this is a mock
-            var fallback = new RepositoryResponse
+            var problemDetails = new ProblemDetails
             {
-                Name = repo,
-                Description = $"A mock repository for {owner}/{repo}",
-                StargazersCount = 0,
-                Language = "Unknown",
-                HtmlUrl = $"https://github.com/{owner}/{repo}",
-                IsPrivate = false
+                Title = "Not Found",
+                Detail = $"Repository {owner}/{repo} was not found."
             };
-#pragma warning restore S1075 // URIs should not be hardcoded
 
-            return Ok(fallback);
+            return NotFound(problemDetails);
         }
 
 #pragma warning disable S1075 // URIs should not be hardcoded, this is a mock
