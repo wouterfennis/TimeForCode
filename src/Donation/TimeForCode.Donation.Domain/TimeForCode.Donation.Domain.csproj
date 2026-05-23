@@ -6,4 +6,12 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="MongoDB.Bson" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TimeForCode.Donation.Values\TimeForCode.Donation.Values.csproj" />
+  </ItemGroup>
+
 </Project>

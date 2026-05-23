@@ -1,43 +1,32 @@
-﻿namespace TimeForCode.Donation.Domain
+﻿using MongoDB.Bson;
+using TimeForCode.Donation.Domain.Entities;
+using TimeForCode.Donation.Values;
+
+namespace TimeForCode.Donation.Domain
 {
-    public class Project
+    public class Project : DocumentEntity
     {
-        public string Name { get; private init; }
-        public Maintainer Maintainer { get; private init; }
-        public Uri GithubReference { get; private init; }
-        public List<Milestone> Milestones { get; private init; }
+        public required GithubSnapshot Snapshot { get; set; }
+        public required Uri GithubRepositoryUrl { get; init; }
+        public required ProjectStatus Status { get; set; }
+        public required string PublishedByUserId { get; init; }
+        public required DateTimeOffset PublishedAt { get; set; }
 
-        private Project(string name, Maintainer maintainer, Uri githubReference, List<Milestone> milestones)
+        public static Project Create(
+            GithubSnapshot snapshot,
+            Uri githubRepositoryUrl,
+            string publishedByUserId,
+            DateTimeOffset publishedAt)
         {
-            Name = name;
-            Maintainer = maintainer;
-            GithubReference = githubReference;
-            Milestones = milestones;
-        }
-
-        public static Project Create(string name, Maintainer maintainer, Uri githubReference, List<Milestone> milestones)
-        {
-            if (string.IsNullOrWhiteSpace(name))
+            return new Project
             {
-                throw new ArgumentException("Project name cannot be null or empty.", nameof(name));
-            }
-
-            if (maintainer == null)
-            {
-                throw new ArgumentNullException(nameof(maintainer), "Maintainer cannot be null.");
-            }
-
-            if (githubReference == null)
-            {
-                throw new ArgumentNullException(nameof(githubReference), "GitHub reference cannot be null.");
-            }
-
-            if (milestones == null)
-            {
-                throw new ArgumentNullException(nameof(milestones), "Milestones cannot be null.");
-            }
-
-            return new Project(name, maintainer, githubReference, milestones);
+                Id = ObjectId.GenerateNewId(),
+                Snapshot = snapshot,
+                GithubRepositoryUrl = githubRepositoryUrl,
+                Status = ProjectStatus.Published,
+                PublishedByUserId = publishedByUserId,
+                PublishedAt = publishedAt
+            };
         }
     }
 }

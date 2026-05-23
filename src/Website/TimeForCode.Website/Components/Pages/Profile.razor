@@ -1,7 +1,10 @@
 @page "/profile"
+@using Microsoft.AspNetCore.Components.Forms
 @using TimeForCode.Authorization.Api.Client
 @using TimeForCode.Authorization.Api.Client.Extensions
+@using TimeForCode.Donation.Api.Client
 @inject IAuthClient AuthClient
+@inject IDonationClient DonationClient
 @inject NavigationManager NavigationManager
 
 <PageTitle>Profile - TimeForCode</PageTitle>
@@ -24,7 +27,7 @@ else
             <img src="@_user.AvatarUrl" alt="Avatar" width="100" height="100" />
         }
         <h2>@_user.Name</h2>
-        <p class="login">@@_user.Login</p>
+        <p class="login">@("@" + _user.Login)</p>
     </div>
 
     <div class="profile-details">
@@ -65,8 +68,10 @@ else
         <ul class="repositories">
             @foreach (var repo in _repositories)
             {
+                var repoUrl = repo.Url;
+                var isPublished = _publishedRepos.TryGetValue(repoUrl, out var publishedProjectId);
                 <li>
-                    <a href="@repo.Url" target="_blank"><strong>@repo.Name</strong></a>
+                    <a href="@repo.Url" target="_blank" rel="noopener noreferrer"><strong>@repo.Name</strong></a>
                     @if (!string.IsNullOrEmpty(repo.Description))
                     {
                         <span> — @repo.Description</span>
@@ -76,6 +81,31 @@ else
                     {
                         <span class="language">@repo.Language</span>
                     }
+                    <span class="publish-toggle">
+                        @if (isPublished)
+                        {
+                            <form method="post" @formname="@($"project-action-{Uri.EscapeDataString(repoUrl)}")">
+                                <AntiforgeryToken />
+                                <input type="hidden" name="ProjectAction.Action" value="unpublish" />
+                                <input type="hidden" name="ProjectAction.ProjectId" value="@publishedProjectId" />
+                                <input type="hidden" name="ProjectAction.RepoUrl" value="@repoUrl" />
+                                <button type="submit">Unpublish</button>
+                            </form>
+                        }
+                        else
+                        {
+                            <form method="post" @formname="@($"project-action-{Uri.EscapeDataString(repoUrl)}")">
+                                <AntiforgeryToken />
+                                <input type="hidden" name="ProjectAction.Action" value="publish" />
+                                <input type="hidden" name="ProjectAction.RepoUrl" value="@repoUrl" />
+                                <button type="submit">Publish</button>
+                            </form>
+                        }
+                        @if (_repoActionErrors.TryGetValue(repoUrl, out var repoError) && repoError != null)
+                        {
+                            <span class="error"> @repoError</span>
+                        }
+                    </span>
                 </li>
             }
         </ul>
@@ -86,10 +116,22 @@ else
     [CascadingParameter]
     public HttpContext? HttpContext { get; set; }
 
+    [SupplyParameterFromForm]
+    public ProjectActionModel? ProjectAction { get; set; }
+
+    public class ProjectActionModel
+    {
+        public string? Action { get; set; }
+        public string? RepoUrl { get; set; }
+        public string? ProjectId { get; set; }
+    }
+
     private bool _isLoggedIn;
     private UserResponse? _user;
     private ICollection<RepositoryResponse>? _repositories;
     private string? _repositoriesError;
+    private Dictionary<string, string> _publishedRepos = new();
+    private readonly Dictionary<string, string?> _repoActionErrors = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -99,6 +141,15 @@ else
         if (!_isLoggedIn)
         {
             return;
+        }
+
+        if (ProjectAction?.Action == "publish" && ProjectAction.RepoUrl != null)
+        {
+            await PublishAsync(ProjectAction.RepoUrl);
+        }
+        else if (ProjectAction?.Action == "unpublish" && ProjectAction.ProjectId != null && ProjectAction.RepoUrl != null)
+        {
+            await UnpublishAsync(ProjectAction.ProjectId, ProjectAction.RepoUrl);
         }
 
         try
@@ -113,7 +164,7 @@ else
 
         var repoResult = await AuthClient.TryUserRepositoriesAsync();
 
-        if (repoResult.Exception is ApiException<ProblemDetails> apiException && apiException.StatusCode == 401)
+        if (repoResult.Exception is TimeForCode.Authorization.Api.Client.ApiException<TimeForCode.Authorization.Api.Client.ProblemDetails> apiException && apiException.StatusCode == 401)
         {
             _repositoriesError = "Your GitHub access token is expired or revoked. Please re-authenticate.";
         }
@@ -124,6 +175,56 @@ else
         else
         {
             _repositories = repoResult.Response;
+        }
+
+        try
+        {
+            var published = await DonationClient.GetProjectsAsync(null, null);
+            _publishedRepos = published.Projects
+                .ToDictionary(p => p.GithubUrl, p => p.Id);
+        }
+        catch
+        {
+            // non-critical; publish/unpublish UI degrades gracefully
+        }
+    }
+
+    private async Task PublishAsync(string repoUrl)
+    {
+        _repoActionErrors[repoUrl] = null;
+        try
+        {
+            var result = await DonationClient.RegisterProjectAsync(new RegisterProjectRequest
+            {
+                GithubRepositoryUrl = new Uri(repoUrl)
+            });
+            _publishedRepos[repoUrl] = result.ProjectId;
+        }
+        catch (TimeForCode.Donation.Api.Client.ApiException<TimeForCode.Donation.Api.Client.ProblemDetails> ex)
+        {
+            _repoActionErrors[repoUrl] = ex.Result?.Detail ?? "Could not publish repository.";
+        }
+        catch
+        {
+            _repoActionErrors[repoUrl] = "Could not publish repository.";
+        }
+    }
+
+    private async Task UnpublishAsync(string projectId, string repoUrl)
+    {
+        _repoActionErrors[repoUrl] = null;
+        try
+        {
+            await DonationClient.UnpublishProjectAsync(projectId);
+            _publishedRepos.Remove(repoUrl);
+        }
+        catch (TimeForCode.Donation.Api.Client.ApiException<TimeForCode.Donation.Api.Client.ProblemDetails> ex)
+        {
+            _repoActionErrors[repoUrl] = ex.Result?.Detail ?? "Could not unpublish repository.";
+        }
+        catch
+        {
+            _repoActionErrors[repoUrl] = "Could not unpublish repository.";
         }
     }
 }

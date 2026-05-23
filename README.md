@@ -79,18 +79,13 @@ See [docs/current/capability-status.md](docs/current/capability-status.md) for t
 - [Podman](https://podman.io/docs/installation) 4.x or later (Docker Desktop is not used in this project)
 - [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10) (for running tests and local development outside containers)
 
-> **Windows**: After installing Podman, open a new terminal and initialise the Podman machine once:
->
-> ```powershell
-> podman machine init
-> podman machine start
-> ```
-
 ### Run locally
 
 ```powershell
-podman compose up --build
+.\scripts\start-local.ps1
 ```
+
+> On Windows this script automatically starts the Podman machine if it is not already running, so you do not need to run `podman machine start` manually. On Linux and macOS it calls `podman compose up --build` directly.
 
 | Service | URL |
 | --- | --- |

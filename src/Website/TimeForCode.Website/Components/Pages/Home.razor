@@ -22,7 +22,6 @@
         </div>
     }
     <p>Welcome, <strong>@_userName</strong>!</p>
-    <p>Donation API: @_donationResult</p>
     <a href="/profile">Profile</a>
     <a href="/logout">Log out</a>
 }
@@ -31,6 +30,8 @@ else
     <p>You are not logged in.</p>
     <a href="@_loginUri">Log in with GitHub</a>
 }
+
+<p>@_donationResult</p>
 
 @code {
     [CascadingParameter]
@@ -63,17 +64,18 @@ else
                 _userName = "(unavailable)";
             }
 
-            try
-            {
-                _donationResult = await DonationClient.GetAsync();
-            }
-            catch
-            {
-                _donationResult = "(unavailable)";
-            }
-
             var isNewUserCookie = HttpContext?.Request.Cookies["IsNewUser"];
             _isNewUser = isNewUserCookie == "true";
+        }
+
+        try
+        {
+            var projects = await DonationClient.GetProjectsAsync(null, null);
+            _donationResult = $"{projects.TotalCount} published projects";
+        }
+        catch
+        {
+            _donationResult = "(unavailable)";
         }
     }
 }

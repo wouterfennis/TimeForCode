@@ -27,9 +27,9 @@ This document provides an explicit, feature-level view of what is implemented, p
 
 | Capability | Status | Notes |
 | --- | --- | --- |
-| Register a project (API endpoint) | ⚠️ | Route exists; logic not implemented |
-| Fetch project metadata from GitHub | ⚠️ | Sequence designed; not implemented |
-| List projects | ❌ | No endpoint |
+| Register a project (API endpoint) | ✅ | POST /api/v1/project fully implemented; fetches full GitHub metadata on publish |
+| Fetch project metadata from GitHub | ✅ | GithubRepositoryApiService calls the GitHub public REST API on publish |
+| List projects | ✅ | GET /api/v1/project with pagination; no authentication required |
 | Search and filter projects | ❌ | No endpoint |
 | Update project details | ❌ | No endpoint |
 | Project milestone tracking | ❌ | Domain model exists; no API |
@@ -88,8 +88,9 @@ This document provides an explicit, feature-level view of what is implemented, p
 | Capability | Status | Notes |
 | --- | --- | --- |
 | Login / logout | ⚠️ | Auth integration present; UI minimal |
-| Project listing page | ❌ | Not implemented |
-| Project detail page | ❌ | Not implemented |
+| Publish/Unpublish toggle on profile | ✅ | Profile page shows Publish/Unpublish button per repository |
+| Project listing page | ✅ | /projects page lists all published projects |
+| Project detail page | ✅ | /projects/{id} page shows full project metadata |
 | Donation pledge form | ❌ | Not implemented |
 | Organization profile page | ❌ | Not implemented |
 | Contributor profile page | ❌ | Not implemented |
