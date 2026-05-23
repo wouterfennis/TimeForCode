@@ -21,6 +21,7 @@ graph LR
     end
 
     subgraph Donation Tests
+        DonSpecTests["Donation Specifications\n(BDD / acceptance)"]
         DonApiTests["Donation Api.Tests\n(integration)"]
     end
 ```
@@ -63,13 +64,21 @@ The mock implements:
 
 - `/login/oauth/authorize` — simulates the GitHub authorization redirect.
 - `/login/oauth/access_token` — returns a test access token.
-- GitHub REST API stubs for user profile retrieval.
+- `GET /user` — returns a stub GitHub user profile.
+- `GET /user/repos` — returns a list of stub repositories.
+- `GET /repos/{owner}/{repo}` — returns repository metadata for any owner/repo combination; used by the Donation API when registering a project locally.
+
+### Donation — Specifications
+
+**Path**: `tst/Donation/TimeForCode.Donation.Specifications`
+
+BDD-style acceptance tests for the Donation API. Covers the full project lifecycle: publishing a repository, browsing the project listing, and unpublishing a project. Uses a `WebApplicationFactory` with Moq and `MockHttp` to stub the MongoDB repositories and the GitHub API service.
 
 ### Donation — Api.Tests
 
 **Path**: `tst/Donation/TimeForCode.Donation.Api.Tests`
 
-Integration tests for the Donation API. Currently thin, as most endpoints are not yet implemented.
+Integration tests for the Donation API. Currently contains the Swagger snapshot test.
 
 ---
 
@@ -131,7 +140,7 @@ All tests pass as of the current implementation state. The CI pipeline runs the 
 
 | Area | Gap |
 | --- | --- |
-| Donation context | No architecture tests; no specification tests |
+| Donation context | No architecture tests |
 | Website | No component or end-to-end tests |
 | Matchmaking | No test coverage (feature not implemented) |
 | Performance | No load or stress tests |

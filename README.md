@@ -45,10 +45,11 @@ The platform is under active development. The following areas are production-rea
 
 - GitHub OAuth 2.0 authentication with internal JWT issuance and refresh.
 - User account creation and linking to external identity providers.
+- Project registration: publish, list, view, and unpublish GitHub repositories as projects.
 
 The following areas are in progress:
 
-- Project registration and the donation lifecycle.
+- The donation lifecycle (pledge, tracking, state transitions).
 - Contributor hour allocation and time tracking.
 - Matchmaking between donated hours and project needs.
 - Reporting and impact dashboards.
