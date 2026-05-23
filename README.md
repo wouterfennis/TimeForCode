@@ -18,6 +18,7 @@
 - [Current Status](#current-status)
 - [Tech Stack](#tech-stack)
 - [Getting Started](#getting-started)
+- [Running with Real GitHub API](#running-with-real-github-api)
 - [Contributing](#contributing)
 - [License](#license)
 - [Contact](#contact)
@@ -105,6 +106,31 @@ A smoke-test script checks every service and walks through the full authenticati
 All 17 checks should report `[PASS]`. The script exits with code `0` on success.
 
 See [docs/current/deployment-status.md](docs/current/deployment-status.md) for environment details and configuration.
+
+---
+
+## Running with Real GitHub API
+
+By default the local stack uses an identity-provider-mock service so no real GitHub credentials are needed. When you want to exercise the actual GitHub OAuth flow and REST API, use the provided compose override.
+
+### Setup
+
+1. Create a GitHub OAuth App at <https://github.com/settings/developers>
+   - Set **Authorization callback URL** to `http://localhost:8080/api/authentication/callback`
+2. Copy the example env file and fill in your credentials:
+
+```powershell
+Copy-Item .env.real-github.example .env.real-github
+# then edit .env.real-github and set GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET
+```
+
+3. Start the stack without the identity-provider-mock:
+
+```powershell
+podman compose -f docker-compose.yaml -f docker-compose.real-github.yml --env-file .env.real-github up --build
+```
+
+> `.env.real-github` is listed in `.gitignore` and will never be committed.
 
 ---
 

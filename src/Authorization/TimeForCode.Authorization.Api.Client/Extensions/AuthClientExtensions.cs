@@ -74,7 +74,7 @@ namespace TimeForCode.Authorization.Api.Client.Extensions
             ICollection<RepositoryResponse>? response = default;
             try
             {
-                response = await client.RepositoriesAsync();
+                response = await client.RepositoriesAllAsync();
             }
             catch (ApiException<ProblemDetails> exception)
             {

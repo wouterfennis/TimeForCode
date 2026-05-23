@@ -54,6 +54,8 @@ namespace TimeForCode.Authorization.Specifications.Steps
                     .Respond("application/json", JsonSerializer.Serialize(accountInformation));
             mockHttp.When("http://localhost:8081/user/repos")
                     .Respond("application/json", JsonSerializer.Serialize(repositories));
+            mockHttp.When("http://localhost:8081/repos/*")
+                    .Respond("application/json", JsonSerializer.Serialize(repositories.First()));
         }
 
         [Given("The user has no account at the external platform")]
