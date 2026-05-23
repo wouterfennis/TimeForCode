@@ -139,6 +139,8 @@ namespace TimeForCode.Donation.Api.V1.Controllers
                     GithubUrl = p.GithubUrl,
                     Language = p.Language,
                     StargazersCount = p.StargazersCount,
+                    ForksCount = p.ForksCount,
+                    OpenIssuesCount = p.OpenIssuesCount,
                     OwnerLogin = p.OwnerLogin,
                     OwnerAvatarUrl = p.OwnerAvatarUrl
                 }).ToList(),

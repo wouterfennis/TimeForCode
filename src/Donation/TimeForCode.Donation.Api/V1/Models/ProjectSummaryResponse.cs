@@ -26,6 +26,12 @@ namespace TimeForCode.Donation.Api.V1.Models
         /// <summary>Number of stars.</summary>
         public int StargazersCount { get; init; }
 
+        /// <summary>Number of forks.</summary>
+        public int ForksCount { get; init; }
+
+        /// <summary>Number of open issues.</summary>
+        public int OpenIssuesCount { get; init; }
+
         /// <summary>The owner login name.</summary>
         public required string OwnerLogin { get; init; }
 

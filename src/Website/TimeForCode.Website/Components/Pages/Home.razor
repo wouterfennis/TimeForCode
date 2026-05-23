@@ -31,7 +31,44 @@ else
     <a href="@_loginUri">Log in with GitHub</a>
 }
 
-<p>@_donationResult</p>
+<h2>Published Projects</h2>
+
+@if (_projectsError)
+{
+    <p>(unavailable)</p>
+}
+else if (_projects == null)
+{
+    <p>Loading projects...</p>
+}
+else if (!_projects.Projects.Any())
+{
+    <p>No projects yet.</p>
+}
+else
+{
+    <div class="project-tiles">
+        @foreach (var project in _projects.Projects)
+        {
+            <div class="project-tile">
+                <h3><a href="/projects/@project.Id">@project.FullName</a></h3>
+                @if (!string.IsNullOrEmpty(project.Description))
+                {
+                    <p>@project.Description</p>
+                }
+                <div class="project-meta">
+                    @if (!string.IsNullOrEmpty(project.Language))
+                    {
+                        <span class="language">@project.Language</span>
+                    }
+                    <span class="stars">⭐ @project.StargazersCount</span>
+                    <span class="forks">🍴 @project.ForksCount</span>
+                    <span class="issues">🐛 @project.OpenIssuesCount</span>
+                </div>
+            </div>
+        }
+    </div>
+}
 
 @code {
     [CascadingParameter]
@@ -40,7 +77,8 @@ else
     private bool _isLoggedIn;
     private bool _isNewUser;
     private string? _userName;
-    private string? _donationResult;
+    private GetProjectsResponse? _projects;
+    private bool _projectsError;
     private string _loginUri = string.Empty;
 
     protected override async Task OnInitializedAsync()
@@ -70,12 +108,11 @@ else
 
         try
         {
-            var projects = await DonationClient.GetProjectsAsync(null, null);
-            _donationResult = $"{projects.TotalCount} published projects";
+            _projects = await DonationClient.GetProjectsAsync(null, null);
         }
         catch
         {
-            _donationResult = "(unavailable)";
+            _projectsError = true;
         }
     }
 }
