@@ -124,7 +124,7 @@ Copy-Item .env.real-github.example .env.real-github
 # then edit .env.real-github and set GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET
 ```
 
-3. Start the stack without the identity-provider-mock:
+1. Start the stack without the identity-provider-mock:
 
 ```powershell
 podman compose -f docker-compose.yaml -f docker-compose.real-github.yml --env-file .env.real-github up --build

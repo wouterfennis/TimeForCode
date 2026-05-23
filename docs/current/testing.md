@@ -91,7 +91,7 @@ This failure is **intentional and deliberate**. It is a review gate, not a test 
 Before accepting a snapshot update, answer every question:
 
 | # | Question | Why it matters |
-|---|----------|----------------|
+| - | -------- | -------------- |
 | 1 | Was this API surface change intentional, or is it a side-effect of an internal refactor? | Unintentional changes break callers silently. |
 | 2 | Does the change remove or rename an existing field or endpoint? | Removals and renames are **breaking changes** for existing clients. |
 | 3 | Should a new API version (e.g. `/v2/`) be introduced instead of modifying the existing one? | Breaking changes in a versioned API require a new version so existing callers are not broken. |
