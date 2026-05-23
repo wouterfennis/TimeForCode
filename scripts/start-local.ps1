@@ -17,11 +17,11 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
 function Write-Info([string] $message) {
-    Write-Host $message -ForegroundColor Cyan
+    Write-Output "`e[36m${message}`e[0m"
 }
 
 function Write-Success([string] $message) {
-    Write-Host $message -ForegroundColor Green
+    Write-Output "`e[32m${message}`e[0m"
 }
 
 # ---------------------------------------------------------------------------

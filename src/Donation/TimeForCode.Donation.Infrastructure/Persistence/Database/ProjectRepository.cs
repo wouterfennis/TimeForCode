@@ -16,10 +16,10 @@ namespace TimeForCode.Donation.Infrastructure.Persistence.Database
         public ProjectRepository(IMongoDbContext context)
         {
             _collection = context.GetCollection<Project>();
-            EnsurePublishedGithubUrlIndex();
+            EnsurePublishedGithubUrlIndex(_collection);
         }
 
-        private void EnsurePublishedGithubUrlIndex()
+        private static void EnsurePublishedGithubUrlIndex(IMongoCollection<Project> collection)
         {
             if (_publishedGithubUrlIndexCreated)
             {
@@ -42,7 +42,7 @@ namespace TimeForCode.Donation.Infrastructure.Persistence.Database
                         PartialFilterExpression = Builders<Project>.Filter.Eq(p => p.Status, ProjectStatus.Published)
                     });
 
-                _collection.Indexes.CreateOne(indexModel);
+                collection.Indexes.CreateOne(indexModel);
                 _publishedGithubUrlIndexCreated = true;
             }
         }

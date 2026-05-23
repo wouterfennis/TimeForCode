@@ -131,7 +131,7 @@ else
     private ICollection<RepositoryResponse>? _repositories;
     private string? _repositoriesError;
     private Dictionary<string, string> _publishedRepos = new();
-    private Dictionary<string, string?> _repoActionErrors = new();
+    private readonly Dictionary<string, string?> _repoActionErrors = new();
 
     protected override async Task OnInitializedAsync()
     {
