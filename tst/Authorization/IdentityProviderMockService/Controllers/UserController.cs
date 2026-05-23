@@ -54,6 +54,7 @@ namespace IdentityProviderMockService.Controllers
         }
 
         [HttpGet("/repos/{owner}/{repo}")]
+        [AllowAnonymous]
         [ProducesResponseType(typeof(RepositoryResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public IActionResult GetRepo(string owner, string repo)
