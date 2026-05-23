@@ -53,13 +53,12 @@ namespace IdentityProviderMockService.Controllers
             return Ok(GetMockRepositories());
         }
 
-        [HttpGet("repos/{owner}/{repo}")]
+        [HttpGet("/repos/{owner}/{repo}")]
         [ProducesResponseType(typeof(RepositoryResponse), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public IActionResult GetRepo(string owner, string repo)
         {
-            _logger.LogDebug("repo {Owner}/{Repo} is returned", owner, repo);
+            _logger.LogDebug("single repo endpoint invoked");
 
             var match = GetMockRepositories().FirstOrDefault(r => r.Name == repo);
             if (match != null)

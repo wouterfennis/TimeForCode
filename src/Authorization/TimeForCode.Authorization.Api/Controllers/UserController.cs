@@ -178,13 +178,24 @@ namespace TimeForCode.Authorization.Api.Controllers
 
             if (repositoryResult.IsFailure)
             {
-                var problemDetails = new ProblemDetails
+                if (repositoryResult.StatusCode == System.Net.HttpStatusCode.NotFound)
+                {
+                    var problemDetails = new ProblemDetails
+                    {
+                        Title = "Repository not found",
+                        Detail = $"Repository {owner}/{repo} was not found on GitHub."
+                    };
+
+                    return NotFound(problemDetails);
+                }
+
+                var unauthorizedProblemDetails = new ProblemDetails
                 {
                     Title = "Unauthorized",
                     Detail = "The GitHub access token is expired or revoked. Please re-authenticate via GitHub."
                 };
 
-                return Unauthorized(problemDetails);
+                return Unauthorized(unauthorizedProblemDetails);
             }
 
             var repository = new RepositoryResponse

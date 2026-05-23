@@ -131,7 +131,7 @@ namespace TimeForCode.Authorization.Infrastructure.Services.Github
                 return Result<IEnumerable<RepositoryInfo>>.Success(repositories);
             }
 
-            return Result<IEnumerable<RepositoryInfo>>.Failure(response.Content!);
+            return Result<IEnumerable<RepositoryInfo>>.Failure(response.Content ?? $"GitHub API returned {(int)response.StatusCode}");
         }
 
         public async Task<Result<RepositoryInfo>> GetRepositoryAsync(string owner, string repo, string githubAccessToken)
@@ -165,7 +165,9 @@ namespace TimeForCode.Authorization.Infrastructure.Services.Github
                 return Result<RepositoryInfo>.Success(repositoryInfo);
             }
 
-            return Result<RepositoryInfo>.Failure(response.Content!);
+            return Result<RepositoryInfo>.Failure(
+                response.Content ?? $"GitHub API returned {(int)response.StatusCode}",
+                response.StatusCode);
         }
 
         public Task<TokenValidationParameters> GetTokenValidationParameters()
