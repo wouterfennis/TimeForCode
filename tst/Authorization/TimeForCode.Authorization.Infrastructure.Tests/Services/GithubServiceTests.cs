@@ -1,7 +1,6 @@
 using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
-using OptionsFactory = Microsoft.Extensions.Options.Options;
 using RestSharp;
 using RichardSzalay.MockHttp;
 using System.Net;
@@ -9,6 +8,7 @@ using System.Text.Json;
 using TimeForCode.Authorization.Application.Options;
 using TimeForCode.Authorization.Infrastructure.Services.Github;
 using TimeForCode.Authorization.Values;
+using OptionsFactory = Microsoft.Extensions.Options.Options;
 
 namespace TimeForCode.Authorization.Infrastructure.Tests.Services
 {
