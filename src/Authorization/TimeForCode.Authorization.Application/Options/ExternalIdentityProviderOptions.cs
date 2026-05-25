@@ -1,8 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 using TimeForCode.Authorization.Values;
 
 namespace TimeForCode.Authorization.Application.Options
 {
+    [ExcludeFromCodeCoverage(Justification = "Configuration POCO")]
     public class ExternalIdentityProviderOptions
     {
         public const string SectionName = "ExternalIdentityProviderOptions";

@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using RestSharp;
+using System.Diagnostics.CodeAnalysis;
 using TimeForCode.Authorization.Application.Interfaces;
 using TimeForCode.Authorization.Infrastructure.Options;
 using TimeForCode.Authorization.Infrastructure.Persistence.Database;
@@ -10,6 +11,7 @@ using TimeForCode.Authorization.Infrastructure.Services.Github;
 
 namespace TimeForCode.Authorization.Infrastructure.Extensions
 {
+    [ExcludeFromCodeCoverage(Justification = "DI registration")]
     public static class ServiceCollectionExtensions
     {
         /// <summary>

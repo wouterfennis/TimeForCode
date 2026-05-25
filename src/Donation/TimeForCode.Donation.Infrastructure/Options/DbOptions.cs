@@ -1,7 +1,9 @@
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 
 namespace TimeForCode.Donation.Infrastructure.Options
 {
+    [ExcludeFromCodeCoverage(Justification = "Configuration POCO")]
     public class DbOptions
     {
         public const string SectionName = "DbOptions";
