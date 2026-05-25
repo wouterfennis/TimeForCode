@@ -41,7 +41,6 @@ namespace TimeForCode.Authorization.Application.Services
 
         public async Task<Result<ExternalAccessToken>> GetAccessTokenFromExternalProviderAsync(string state, string code)
         {
-            _logger.LogDebug("GetAccessTokenFromExternalProviderAsync called with state: {State}, code: {Code}", state, code);
             var result = _identityProviderServiceFactory.GetIdentityProviderServiceFromState(state);
             if (result.IsFailure)
             {
@@ -49,7 +48,6 @@ namespace TimeForCode.Authorization.Application.Services
             }
             var identityProviderService = result.Value;
 
-            _logger.LogDebug("Getting access token from external provider with code: {Code}", code);
             var externalAccessTokenResult = await identityProviderService.GetAccessTokenAsync(code);
             if (externalAccessTokenResult.IsFailure)
             {

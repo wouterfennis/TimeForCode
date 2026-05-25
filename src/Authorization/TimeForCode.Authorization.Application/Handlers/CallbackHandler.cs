@@ -33,7 +33,6 @@ namespace TimeForCode.Authorization.Application.Handlers
                 return Result<TokenResult>.Failure(accessTokenResult.ErrorMessage);
             }
 
-            _logger.LogDebug("Saving account information for state: {State}", request.State);
             var saveResult = await _accountService.SaveAccountInformation(request.State, accessTokenResult.Value);
 
             if (saveResult.IsFailure)

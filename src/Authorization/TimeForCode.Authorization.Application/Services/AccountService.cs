@@ -46,7 +46,6 @@ namespace TimeForCode.Authorization.Application.Services
 
             var createOrUpdateResult = await _accountRepository.CreateOrUpdateAsync(accountInformation);
 
-            _logger.LogDebug("Account information: {AccountInformation}", createOrUpdateResult.AccountInformation);
             return Result<SaveAccountResult>.Success(new SaveAccountResult(createOrUpdateResult.AccountInformation, createOrUpdateResult.IsNewAccount));
         }
     }

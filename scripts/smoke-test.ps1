@@ -47,27 +47,27 @@ $passed = 0
 $failed = 0
 
 function Write-Pass([string] $label) {
-    Write-Host "  [PASS] $label" -ForegroundColor Green
+    Write-Output "  [PASS] $label"
     $script:passed++
 }
 
 function Write-Fail([string] $label, [string] $detail = "") {
-    Write-Host "  [FAIL] $label" -ForegroundColor Red
-    if ($detail) { Write-Host "         $detail" -ForegroundColor DarkRed }
+    Write-Output "  [FAIL] $label"
+    if ($detail) { Write-Output "         $detail" }
     $script:failed++
 }
 
 function Write-Section([string] $title) {
-    Write-Host ""
-    Write-Host $title -ForegroundColor Cyan
-    Write-Host ("-" * $title.Length) -ForegroundColor DarkCyan
+    Write-Output ""
+    Write-Output $title
+    Write-Output ("-" * $title.Length)
 }
 
 function Invoke-Step([string] $url, [hashtable] $curlArgs = @{}) {
     # Returns the raw response headers + body as an array of strings
-    $args = @("-si", "--max-redirs", "0") + ($curlArgs.GetEnumerator() |
-        ForEach-Object { $_.Key; if ($_.Value -ne $null) { $_.Value } })
-    return curl @args $url 2>&1
+    $curlParameters = @("-si", "--max-redirs", "0") + ($curlArgs.GetEnumerator() |
+        ForEach-Object { $_.Key; if ($null -ne $_.Value) { $_.Value } })
+    return curl @curlParameters $url 2>&1
 }
 
 function Get-StatusCode([string[]] $response) {
@@ -222,8 +222,8 @@ try {
     $r3 = curl -si --max-redirs 0 -c $cookieJar -b $cookieJar $callbackRedirect 2>&1
     $s3 = Get-StatusCode $r3
     $websiteRedirect = Get-HeaderValue $r3 "Location"
-    $hasAccessToken  = ($r3 | Select-String "Set-Cookie:.*AccessToken") -ne $null
-    $hasRefreshToken = ($r3 | Select-String "Set-Cookie:.*RefreshToken") -ne $null
+    $hasAccessToken  = $null -ne ($r3 | Select-String "Set-Cookie:.*AccessToken")
+    $hasRefreshToken = $null -ne ($r3 | Select-String "Set-Cookie:.*RefreshToken")
 
     if ($s3 -eq 302 -and $websiteRedirect -match [regex]::Escape($WebsiteBaseUrl)) {
         Write-Pass "Step 3.3: Auth API callback -> 302 to Website"

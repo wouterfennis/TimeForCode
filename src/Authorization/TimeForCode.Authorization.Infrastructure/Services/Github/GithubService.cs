@@ -49,7 +49,7 @@ namespace TimeForCode.Authorization.Infrastructure.Services.Github
 
             _restClient.AcceptedContentTypes = [MediaTypeNames.Application.Json];
 
-            _logger.LogDebug("Sending access token request towards: {Uri}", uriBuilder.ToString());
+            _logger.LogDebug("Sending access token request towards: {Uri}", uriBuilder);
 
             var request = new RestRequest(uriBuilder.ToString(), Method.Post);
             request.AddHeader("Content-Type", MediaTypeNames.Application.Json);

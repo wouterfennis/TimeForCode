@@ -25,7 +25,6 @@ namespace TimeForCode.Authorization.Infrastructure.Services
 
         public Result<IIdentityProviderService> GetIdentityProviderServiceFromState(string state)
         {
-            _logger.LogDebug("GetIdentityProviderServiceFromState called with state: {State}", state);
             var identityProviderResult = GetIdentityProvider(state);
 
             if (identityProviderResult.IsFailure)
