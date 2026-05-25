@@ -1,4 +1,3 @@
-
 # Time For Code — Documentation
 
 ![Project banner](images/banner.png)
