@@ -1,8 +1,10 @@
 ﻿using Microsoft.Extensions.Configuration;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 
 namespace TimeForCode.Authorization.Application.Options
 {
+    [ExcludeFromCodeCoverage(Justification = "Configuration POCO")]
     public class RsaOptions
     {
         public const string SectionName = "RsaOptions";

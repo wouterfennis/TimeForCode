@@ -1,7 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 
 namespace TimeForCode.Website.Options
 {
+    [ExcludeFromCodeCoverage(Justification = "Configuration POCO")]
     public class StorageOptions
     {
         public const string SectionName = "StorageOptions";

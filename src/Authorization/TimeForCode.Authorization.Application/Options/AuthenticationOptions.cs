@@ -1,11 +1,13 @@
 ﻿using Microsoft.Extensions.Configuration;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 
 namespace TimeForCode.Authorization.Application.Options
 {
     /// <summary>
     /// Options for authentication
     /// </summary>
+    [ExcludeFromCodeCoverage(Justification = "Configuration POCO")]
     public class AuthenticationOptions
     {
         public const string SectionName = "AuthenticationOptions";

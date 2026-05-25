@@ -1,8 +1,10 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using System.Diagnostics.CodeAnalysis;
 using TimeForCode.Shared.Api.Handlers;
 
 namespace TimeForCode.Authorization.Api.Client.Extensions
 {
+    [ExcludeFromCodeCoverage(Justification = "DI registration")]
     public static class ServiceCollectionExtensions
     {
         public static IServiceCollection AddAuthClient(this IServiceCollection services, Uri baseAddress)

@@ -1,8 +1,10 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using System.Diagnostics.CodeAnalysis;
 using TimeForCode.Shared.Api.Handlers;
 
 namespace TimeForCode.Donation.Api.Client.Extensions
 {
+    [ExcludeFromCodeCoverage(Justification = "DI registration")]
     public static class ServiceCollectionExtensions
     {
         public static IServiceCollection AddDonationClient(this IServiceCollection services, Uri baseAddress)
