@@ -103,3 +103,5 @@ $RECYCLE.BIN/
 *.coverage
 *.xml
 *.trx
+# Local real-GitHub credentials (never commit)
+.env.real-github

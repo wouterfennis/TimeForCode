@@ -16,6 +16,10 @@ namespace TimeForCode.Donation.Infrastructure.Extensions
                 .Configure<DbOptions>(options => configuration.GetSection(DbOptions.SectionName)
                 .Bind(options));
 
+            services
+                .Configure<GithubApiOptions>(options => configuration.GetSection(GithubApiOptions.SectionName)
+                .Bind(options));
+
             services.AddSingleton<RestClient>();
             services.AddSingleton<IMongoDbContext, MongoDbContext>();
             services.AddScoped<IProjectRepository, ProjectRepository>();
