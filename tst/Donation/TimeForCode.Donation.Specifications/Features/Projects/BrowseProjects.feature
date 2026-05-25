@@ -30,3 +30,9 @@ Scenario: Archived projects do not appear in the public listing
 	And One of the projects has been unpublished
 	When The user requests the list of published projects
 	Then The archived project is not included in the results
+
+Scenario: Project listing includes contribution metrics
+	Given There are published projects on the time for code platform
+	When The user requests the list of published projects
+	Then A paginated list of projects is returned
+	And Each project summary includes stars, forks, and open issues counts

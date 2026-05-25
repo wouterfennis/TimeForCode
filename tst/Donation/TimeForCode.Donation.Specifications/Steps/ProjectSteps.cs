@@ -347,6 +347,19 @@ namespace TimeForCode.Donation.Specifications.Steps
             _getProjectsResult!.Projects.Should().AllSatisfy(p => p.GithubUrl.Should().NotBeNullOrEmpty());
         }
 
+        [Then("Each project summary includes stars, forks, and open issues counts")]
+        public void ThenEachProjectSummaryIncludesStarsForksAndOpenIssuesCounts()
+        {
+            _getProjectsResult.Should().NotBeNull();
+            _getProjectsResult!.Projects.Should().NotBeEmpty();
+            _getProjectsResult!.Projects.Should().AllSatisfy(p =>
+            {
+                p.StargazersCount.Should().BeGreaterThanOrEqualTo(0);
+                p.ForksCount.Should().BeGreaterThanOrEqualTo(0);
+                p.OpenIssuesCount.Should().BeGreaterThanOrEqualTo(0);
+            });
+        }
+
         [Then("The full project details are returned")]
         public void ThenTheFullProjectDetailsAreReturned()
         {
