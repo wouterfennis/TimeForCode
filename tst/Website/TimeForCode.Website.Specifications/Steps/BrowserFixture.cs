@@ -38,21 +38,9 @@ namespace TimeForCode.Website.Specifications.Steps
 
         public async ValueTask DisposeAsync()
         {
-            if (Page != null)
-            {
-                await Page.CloseAsync();
-            }
-
-            if (Context != null)
-            {
-                await Context.CloseAsync();
-            }
-
-            if (_browser != null)
-            {
-                await _browser.CloseAsync();
-            }
-
+            await (Page?.CloseAsync() ?? Task.CompletedTask);
+            await (Context?.CloseAsync() ?? Task.CompletedTask);
+            await (_browser?.CloseAsync() ?? Task.CompletedTask);
             _playwright?.Dispose();
         }
     }
