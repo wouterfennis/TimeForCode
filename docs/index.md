@@ -1,5 +1,7 @@
 # Time For Code — Documentation
 
+![Project banner](images/banner.png)
+
 This is the documentation anchor for the TimeForCode platform. All requirements, architecture decisions, implementation references, and product designs live here. AI agents and human contributors should treat this folder as the single source of truth.
 
 > **Navigation**: Start with [Current Platform](#current-platform) to understand what is built, or [Target Platform](#target-platform) to understand what is being built. Architecture is always governed by the [Arc42](#architecture-arc42) documents.
