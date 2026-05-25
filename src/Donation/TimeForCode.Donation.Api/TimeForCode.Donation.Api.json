@@ -537,6 +537,24 @@
             "description": "Number of stars.",
             "format": "int32"
           },
+          "forksCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "Number of forks.",
+            "format": "int32"
+          },
+          "openIssuesCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "Number of open issues.",
+            "format": "int32"
+          },
           "ownerLogin": {
             "type": "string",
             "description": "The owner login name."
