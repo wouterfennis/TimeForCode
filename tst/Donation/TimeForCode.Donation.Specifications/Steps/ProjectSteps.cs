@@ -350,13 +350,15 @@ namespace TimeForCode.Donation.Specifications.Steps
         [Then("Each project summary includes stars, forks, and open issues counts")]
         public void ThenEachProjectSummaryIncludesStarsForksAndOpenIssuesCounts()
         {
+            var expectedSnapshot = ProjectBuilder.BuildSnapshot();
+
             _getProjectsResult.Should().NotBeNull();
             _getProjectsResult!.Projects.Should().NotBeEmpty();
             _getProjectsResult!.Projects.Should().AllSatisfy(p =>
             {
-                p.StargazersCount.Should().BeGreaterThanOrEqualTo(0);
-                p.ForksCount.Should().BeGreaterThanOrEqualTo(0);
-                p.OpenIssuesCount.Should().BeGreaterThanOrEqualTo(0);
+                p.StargazersCount.Should().Be(expectedSnapshot.StargazersCount);
+                p.ForksCount.Should().Be(expectedSnapshot.ForksCount);
+                p.OpenIssuesCount.Should().Be(expectedSnapshot.OpenIssuesCount);
             });
         }
 
