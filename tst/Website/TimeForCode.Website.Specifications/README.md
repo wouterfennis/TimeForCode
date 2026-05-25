@@ -1,0 +1,57 @@
+# TimeForCode.Website.Specifications
+
+Browser-level acceptance tests for the TimeForCode website, written with [Reqnroll](https://reqnroll.net/) (Gherkin / BDD) and [Microsoft Playwright](https://playwright.dev/dotnet/) for browser automation.
+
+## Scope
+
+This project tests user-facing journeys through the browser. It does **not** reference any Blazor or Website source assemblies. All selectors use `data-testid` attributes or ARIA roles so they remain valid after the frontend migrates away from Blazor.
+
+| Feature | Description |
+|---|---|
+| `Home` | Unauthenticated visitor sees the login link and the published-projects section |
+| `Projects` | Visitor browses `/projects` and sees tiles that link to the detail page |
+| `ProjectDetail` | Visitor navigates to a project detail URL and sees the heading and back link |
+| `Login` | OAuth login via the Identity Provider Mock lands the user back on the home page |
+| `Profile` | Logged-in user sees their GitHub login handle on `/profile` |
+| `Logout` | Logged-in user logs out and returns to the unauthenticated home page |
+
+## Prerequisites
+
+The full Docker Compose stack must be running before executing these tests:
+
+```bash
+docker-compose up --build
+```
+
+The tests expect:
+
+| Service | Default URL |
+|---|---|
+| Website | `http://localhost:8083` |
+| Identity Provider Mock | `http://localhost:8081` |
+
+## Running the tests
+
+```bash
+# From the repository root
+dotnet test tst/Website/TimeForCode.Website.Specifications/
+
+# Or from this directory
+dotnet test
+```
+
+### Playwright browser installation
+
+On a fresh machine, install the required Playwright browser binaries once:
+
+```bash
+pwsh tst/Website/TimeForCode.Website.Specifications/bin/Debug/net10.0/playwright.ps1 install chromium
+```
+
+## Relationship to other specification projects
+
+| Project | Scope | Mechanism |
+|---|---|---|
+| `TimeForCode.Authorization.Specifications` | OAuth token issuance, session management | HTTP via `WebApplicationFactory` |
+| `TimeForCode.Donation.Specifications` | Project publishing, listing, unpublishing | HTTP via `WebApplicationFactory` |
+| `TimeForCode.Website.Specifications` *(this project)* | User-facing browser journeys | Browser automation via Playwright |

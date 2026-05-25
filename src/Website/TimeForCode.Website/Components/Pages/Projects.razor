@@ -20,11 +20,11 @@ else if (!_projects.Projects.Any())
 }
 else
 {
-    <ul class="projects">
+    <ul class="projects" data-testid="project-list">
         @foreach (var project in _projects.Projects)
         {
-            <li class="project-item">
-                <h3><a href="/projects/@project.Id">@project.FullName</a></h3>
+            <li class="project-item" data-testid="project-tile">
+                <h3><a href="/projects/@project.Id" data-testid="project-link">@project.FullName</a></h3>
                 @if (!string.IsNullOrEmpty(project.Description))
                 {
                     <p>@project.Description</p>

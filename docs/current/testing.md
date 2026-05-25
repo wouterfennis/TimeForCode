@@ -24,6 +24,10 @@ graph LR
         DonSpecTests["Donation Specifications\n(BDD / acceptance)"]
         DonApiTests["Donation Api.Tests\n(integration)"]
     end
+
+    subgraph Website Tests
+        WebSpecTests["Website Specifications\n(BDD / browser)"]
+    end
 ```
 
 ### Authorization — Specifications
@@ -79,6 +83,29 @@ BDD-style acceptance tests for the Donation API. Covers the full project lifecyc
 **Path**: `tst/Donation/TimeForCode.Donation.Api.Tests`
 
 Integration tests for the Donation API. Currently contains the Swagger snapshot test.
+
+### Website — Specifications
+
+**Path**: `tst/Website/TimeForCode.Website.Specifications`
+
+Browser-level BDD acceptance tests that drive the TimeForCode website through real user journeys using [Microsoft Playwright](https://playwright.dev/dotnet/). Tests interact only with the public HTTP/DOM surface of the running application and require the full Docker Compose stack to be up (`docker-compose up --build`).
+
+Covered journeys:
+
+| Scenario | Description |
+| --- | --- |
+| Home (unauthenticated) | Visiting `/` shows the login link and the published-projects section |
+| Projects list | `/projects` shows at least one project tile; each tile links to the detail page |
+| Project detail | Navigating to `/projects/{id}` shows the project heading and a back link |
+| Login | Clicking the login link completes the OAuth flow via the Identity Provider Mock and returns to the home page authenticated |
+| Profile | `/profile` after login shows the user's GitHub login handle |
+| Logout | Triggering logout returns to the home page in an unauthenticated state |
+
+All selectors use `data-testid` attributes so they remain valid after the frontend migrates away from Blazor.
+
+This project has **no reference** to any Blazor or Website source assembly. It is purely a browser-automation client of the running application.
+
+See `tst/Website/TimeForCode.Website.Specifications/README.md` for setup and run instructions.
 
 ---
 
@@ -141,7 +168,7 @@ All tests pass as of the current implementation state. The CI pipeline runs the 
 | Area | Gap |
 | --- | --- |
 | Donation context | No architecture tests |
-| Website | No component or end-to-end tests |
+| Website | No component-level tests; browser-journey coverage provided by `Website.Specifications` |
 | Matchmaking | No test coverage (feature not implemented) |
 | Performance | No load or stress tests |
 | Security | No automated penetration tests or DAST coverage |

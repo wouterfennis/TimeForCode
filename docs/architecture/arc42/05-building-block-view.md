@@ -133,6 +133,23 @@ The Website is a Blazor application that acts as the user-facing shell. It does 
 | `TimeForCode.Donation.Api.Client` | Typed client for Donation API |
 | `TimeForCode.Shared` | CookieAuthorizationHandler; shared authorization utilities |
 
+### Website test layer
+
+Browser-level acceptance tests in `tst/Website/TimeForCode.Website.Specifications` exercise the same pages through Playwright. Interactive and informational elements are annotated with `data-testid` attributes so selectors remain framework-neutral after a future frontend migration.
+
+```mermaid
+graph LR
+    subgraph Website Tests
+        WebSpec["TimeForCode.Website.Specifications\n(Playwright / Reqnroll)"]
+    end
+
+    Website["TimeForCode.Website\n(running under Docker Compose)"]
+    IdpMock["IdentityProviderMockService\n(OAuth 2.0 mock)"]
+
+    WebSpec -->|HTTP + DOM| Website
+    Website -->|OAuth redirect| IdpMock
+```
+
 ---
 
 ## Level 2 — Shared
