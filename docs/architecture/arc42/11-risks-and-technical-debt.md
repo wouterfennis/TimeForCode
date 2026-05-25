@@ -27,7 +27,7 @@ This section tracks known risks and technical debt that could affect the platfor
 | DEBT-02 | Authorization API does not use URL-versioned routes | Authorization API | Inconsistency with Donation API; harder to version in future | Low effort; add `/api/v1/` prefix |
 | DEBT-03 | No secrets manager in production | Authorization API | Secrets passed as App Settings are visible in Azure Portal | Implement Key Vault references in Bicep |
 | DEBT-04 | Only Authorization API deployed to Azure; Donation API and Website are not | Deployment | Platform cannot be tested end-to-end in cloud | Extend Bicep templates for remaining services |
-| DEBT-05 | Donation API application and infrastructure layers are empty | Donation bounded context | Major feature gap; no donation lifecycle implemented | Core implementation work in Phase 2 |
+| DEBT-05 | Donation lifecycle (donations, hour tracking, organisations) not implemented | Donation bounded context | Core platform feature gap; project registration is done but donation pledging and time tracking are absent | Core implementation work in Phase 2 |
 | DEBT-06 | No E2E tests for the Website | Website | Login and donation flows not verified at UI level | Add Playwright tests in a future phase |
 | DEBT-07 | No structured logging aggregation in production | Operations | Debugging production issues requires manual log inspection | Add Application Insights or Azure Monitor integration |
 | DEBT-08 | GitHub client secret visible in `docker-compose.yaml` and `application.bicep` | Security | Credentials in repository history | Rotate secret; move to Key Vault; scrub git history if needed |

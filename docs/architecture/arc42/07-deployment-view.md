@@ -26,6 +26,7 @@ graph LR
     Website -->|HTTP :8080| AuthAPI
     Website -->|HTTP :8082| DonationAPI
     AuthAPI -->|HTTP :8081| IdpMock
+    DonationAPI -->|HTTP :8081| IdpMock
     AuthAPI -->|MongoDB wire protocol| MongoDB
     DonationAPI -->|MongoDB wire protocol| MongoDB
 ```
@@ -33,7 +34,7 @@ graph LR
 To start:
 
 ```powershell
-docker compose up --build
+podman compose up --build
 ```
 
 ---

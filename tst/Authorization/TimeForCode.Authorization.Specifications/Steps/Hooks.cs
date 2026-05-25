@@ -31,6 +31,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
 
             var authClient = new AuthClient(httpClient);
             _objectContainer.RegisterInstanceAs<IAuthClient>(authClient);
+            _objectContainer.RegisterInstanceAs(httpClient);
 
             var provider = _objectContainer.Resolve<TimeForCodeWebApplicationFactory>().Services;
             _objectContainer.RegisterInstanceAs(provider);

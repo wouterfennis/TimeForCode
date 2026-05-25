@@ -63,12 +63,14 @@ The Donation context has a well-defined domain model, but most of the API endpoi
 
 - Domain entities: `Project`, `Donation`, `DonorOrganization`, `Contributor`, `Maintainer`, `DonationTransaction`, `Milestone`, `MilestoneState`.
 - `GithubEntity` base class linking domain objects to GitHub repositories and users.
-- Project registration endpoint stub (route exists, logic not implemented).
+- Project registration endpoint (`POST /api/v1/project`): validates the GitHub URL, fetches repository metadata from GitHub, rejects private or archived repositories, and persists the project.
+- Project listing endpoint (`GET /api/v1/project`): returns a paginated list of published projects; no authentication required.
+- Project detail endpoint (`GET /api/v1/project/{id}`): returns full project details; no authentication required.
+- Project unpublish endpoint (`DELETE /api/v1/project/{id}`): archives a project; JWT required; owner-only.
 - Donation API is registered in Docker Compose and accepts JWT tokens from the Authorization API.
 
 **What is missing:**
 
-- Project registration logic (GitHub metadata fetch, persistence).
 - Donation creation, tracking, and state transitions.
 - Hour allocation and completion tracking.
 - Organization and contributor management APIs.

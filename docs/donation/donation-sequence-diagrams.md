@@ -10,9 +10,9 @@ For the full target requirements behind these workflows, see [target/requirement
 
 ## Workflow 1 — Register a Project
 
-A project maintainer registers an open-source project by submitting a GitHub repository URL. The platform fetches metadata from GitHub and creates a project listing pending admin approval.
+A project maintainer registers an open-source project by submitting a GitHub repository URL. The platform fetches metadata from GitHub and creates a project listing immediately visible in the public project directory.
 
-> **Current status**: The `POST /api/v1/project` route exists in code but the handler, GitHub fetch, and persistence steps are not yet implemented. This diagram describes the intended target behaviour.
+> **Current status**: Fully implemented. The `POST /api/v1/project` endpoint validates the JWT, fetches repository metadata from GitHub (or the Identity Provider Mock locally), rejects private or archived repositories, and persists the project with status `Published`.
 
 ```mermaid
 sequenceDiagram
@@ -23,23 +23,24 @@ sequenceDiagram
     participant MongoDB
 
     Maintainer->>Website: Submits GitHub repository URL
-    Website->>DonationAPI: POST /api/v1/project { githubUrl }
-    DonationAPI->>DonationAPI: Validate JWT (role: Maintainer)
+    Website->>DonationAPI: POST /api/v1/project { githubUrl } (JWT bearer)
+    DonationAPI->>DonationAPI: Validate JWT (policy: ApiUser)
     DonationAPI->>GitHub: GET /repos/:owner/:repo
-    GitHub-->>DonationAPI: Repository metadata (name, description, language, open issues)
-    DonationAPI->>DonationAPI: Construct Project entity (status: PendingApproval)
+    GitHub-->>DonationAPI: Repository metadata (name, description, language, topics, ...)
+    DonationAPI->>DonationAPI: Validate repository is public and not archived
+    DonationAPI->>DonationAPI: Construct Project entity (status: Published)
     DonationAPI->>MongoDB: Insert Project
-    DonationAPI-->>Website: 201 Created { projectId, status: PendingApproval }
-    Website-->>Maintainer: "Project submitted for review"
+    DonationAPI-->>Website: 201 Created { projectId }
+    Website-->>Maintainer: "Project published"
 ```
 
-The project is not publicly visible until an administrator approves it. This prevents spam and ensures listing quality.
+The project is immediately visible in the public project listing. There is no admin approval step.
 
 **Key points**:
 
 - The platform enriches the registration automatically from GitHub; the maintainer does not need to duplicate information.
-- If the GitHub API is unavailable, the registration should fail gracefully with a meaningful error — not silently create an incomplete project.
-- The maintainer is notified of the approval outcome.
+- If the GitHub API is unavailable, the registration fails gracefully with a meaningful error — not silently create an incomplete project.
+- Private or archived repositories are rejected with a 400 error.
 
 ---
 

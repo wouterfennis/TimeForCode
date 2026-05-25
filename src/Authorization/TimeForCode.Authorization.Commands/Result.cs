@@ -8,6 +8,7 @@ namespace TimeForCode.Authorization.Commands
         public bool IsSuccess { get; init; }
         public bool IsFailure => !IsSuccess;
         public string ErrorMessage => _errorMessage!;
+        public System.Net.HttpStatusCode? StatusCode { get; init; }
 
         public static Result<T> Success(T data)
         {
@@ -19,14 +20,14 @@ namespace TimeForCode.Authorization.Commands
             return new Result<T> { _value = data, IsSuccess = true };
         }
 
-        public static Result<T> Failure(string? errorMessage)
+        public static Result<T> Failure(string? errorMessage, System.Net.HttpStatusCode? statusCode = null)
         {
             if (string.IsNullOrEmpty(errorMessage))
             {
                 throw new InvalidOperationException("The result does not contain any error message.");
             }
 
-            return new Result<T> { IsSuccess = false, _errorMessage = errorMessage };
+            return new Result<T> { IsSuccess = false, _errorMessage = errorMessage, StatusCode = statusCode };
         }
     }
 }

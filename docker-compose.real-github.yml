@@ -1,0 +1,26 @@
+# Docker Compose override to run the stack against the real GitHub OAuth API.
+# Usage:
+#   1. Copy .env.real-github.example to .env.real-github and fill in your credentials.
+#   2. Run: docker compose -f docker-compose.yaml -f docker-compose.real-github.yml --env-file .env.real-github up --build
+#
+# The identity-provider-mock service is intentionally omitted; all authentication
+# and REST API traffic flows to the real GitHub endpoints instead.
+
+services:
+  donation-api:
+    environment:
+      - GithubApiOptions__BaseUrl=https://api.github.com
+
+  authorization-api:
+    environment:
+      - ExternalIdentityProviderOptions__Github__LoginHost=github.com
+      - ExternalIdentityProviderOptions__Github__LoginHostPort=
+      - ExternalIdentityProviderOptions__Github__AccessTokenHost=github.com
+      - ExternalIdentityProviderOptions__Github__AccessTokenHostPort=
+      - ExternalIdentityProviderOptions__Github__RestApiHost=api.github.com
+      - ExternalIdentityProviderOptions__Github__RestApiPort=
+      - ExternalIdentityProviderOptions__Github__ClientId=${GITHUB_CLIENT_ID}
+      - ExternalIdentityProviderOptions__Github__ClientSecret=${GITHUB_CLIENT_SECRET}
+      - ExternalIdentityProviderOptions__Github__Issuer=https://github.com
+      - ExternalIdentityProviderOptions__Github__IsHttps=true
+    depends_on: []

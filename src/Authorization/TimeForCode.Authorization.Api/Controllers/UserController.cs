@@ -134,5 +134,92 @@ namespace TimeForCode.Authorization.Api.Controllers
 
             return Ok(repositories);
         }
+
+        /// <summary>
+        /// Get a single public repository from GitHub by owner and repository name.
+        /// </summary>
+        /// <param name="owner">The GitHub username or organisation that owns the repository.</param>
+        /// <param name="repo">The repository name.</param>
+        /// <returns></returns>
+        [HttpGet("repositories/{owner}/{repo}")]
+        [ProducesResponseType(typeof(RepositoryResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status502BadGateway)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetRepositoryAsync(string owner, string repo)
+        {
+            var userId = User.Claims.Single(x => x.Type == ClaimTypes.NameIdentifier)?.Value!;
+            var userEntity = await _accountInformationRepository.GetByInternalIdAsync(userId);
+
+            if (userEntity == null)
+            {
+                var problemDetails = new ProblemDetails
+                {
+                    Title = "User not found",
+                    Detail = $"User with id {userId} not found"
+                };
+
+                return NotFound(problemDetails);
+            }
+
+            if (string.IsNullOrEmpty(userEntity.EncryptedGitHubAccessToken))
+            {
+                var problemDetails = new ProblemDetails
+                {
+                    Title = "Unauthorized",
+                    Detail = "No GitHub access token available. Please re-authenticate via GitHub."
+                };
+
+                return Unauthorized(problemDetails);
+            }
+
+            var githubToken = _encryptionService.Decrypt(userEntity.EncryptedGitHubAccessToken);
+            var repositoryResult = await _githubApiService.GetRepositoryAsync(owner, repo, githubToken);
+
+            if (repositoryResult.IsFailure)
+            {
+                if (repositoryResult.StatusCode == System.Net.HttpStatusCode.NotFound)
+                {
+                    var problemDetails = new ProblemDetails
+                    {
+                        Title = "Repository not found",
+                        Detail = $"Repository {owner}/{repo} was not found on GitHub."
+                    };
+
+                    return NotFound(problemDetails);
+                }
+
+                if (repositoryResult.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                {
+                    var unauthorizedProblemDetails = new ProblemDetails
+                    {
+                        Title = "Unauthorized",
+                        Detail = "The GitHub access token is expired or revoked. Please re-authenticate via GitHub."
+                    };
+
+                    return Unauthorized(unauthorizedProblemDetails);
+                }
+
+                var upstreamProblemDetails = new ProblemDetails
+                {
+                    Title = "Bad Gateway",
+                    Detail = $"An upstream error occurred while contacting GitHub: {repositoryResult.ErrorMessage}"
+                };
+
+                return StatusCode(StatusCodes.Status502BadGateway, upstreamProblemDetails);
+            }
+
+            var repository = new RepositoryResponse
+            {
+                Name = repositoryResult.Value.Name,
+                Description = repositoryResult.Value.Description,
+                StarCount = repositoryResult.Value.StarCount,
+                Language = repositoryResult.Value.Language,
+                Url = repositoryResult.Value.Url
+            };
+
+            return Ok(repository);
+        }
     }
 }

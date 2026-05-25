@@ -28,7 +28,7 @@ This document provides an explicit, feature-level view of what is implemented, p
 | Capability | Status | Notes |
 | --- | --- | --- |
 | Register a project (API endpoint) | ✅ | POST /api/v1/project fully implemented; fetches full GitHub metadata on publish |
-| Fetch project metadata from GitHub | ✅ | GithubRepositoryApiService calls the GitHub public REST API on publish |
+| Fetch project metadata from GitHub | ✅ | GithubRepositoryApiService calls the GitHub REST API on publish; locally routed to the Identity Provider Mock |
 | List projects | ✅ | GET /api/v1/project with pagination; no authentication required |
 | Search and filter projects | ❌ | No endpoint |
 | Update project details | ❌ | No endpoint |

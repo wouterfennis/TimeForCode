@@ -48,16 +48,17 @@ graph LR
     Website --> DonationAPI
     AuthAPI --> IdpMock
     AuthAPI --> Mongo
+    DonationAPI --> IdpMock
     DonationAPI --> Mongo
 ```
 
-The Identity Provider Mock replaces GitHub in local development. The Authorization API is configured to direct OAuth 2.0 requests to the mock instead of `github.com`.
+The Identity Provider Mock replaces GitHub in local development. The Authorization API is configured to direct OAuth 2.0 requests to the mock instead of `github.com`. The Donation API is configured to call the mock's `/repos/{owner}/{repo}` endpoint instead of `api.github.com` when fetching repository metadata on project publish.
 
 | Service | URL | Notes |
 | --- | --- | --- |
 | Website | <http://localhost:8083> | Blazor frontend |
 | Authorization API | <http://localhost:8080> | OAuth 2.0 + JWT |
-| Identity Provider Mock | <http://localhost:8081> | Simulates GitHub OAuth |
+| Identity Provider Mock | <http://localhost:8081> | Simulates GitHub OAuth and GitHub REST API |
 | Donation API | <http://localhost:8082> | Project and donation management |
 | MongoDB | mongodb://localhost:27017 | Shared database instance |
 

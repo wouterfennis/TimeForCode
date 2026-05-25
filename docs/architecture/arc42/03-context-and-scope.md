@@ -81,7 +81,7 @@ graph LR
 | Website | Authorization API | HTTPS REST | HttpOnly JWT cookie forwarded as Bearer token |
 | Website | Donation API | HTTPS REST | HttpOnly JWT cookie forwarded as Bearer token |
 | Authorization API | GitHub OAuth | HTTPS | Client ID + secret (server-side) |
-| Donation API | GitHub REST API | HTTPS | GitHub personal access token or unauthenticated |
+| Donation API | GitHub REST API | HTTPS | Unauthenticated; locally routed to Identity Provider Mock via configurable base URL |
 | Authorization API | MongoDB | MongoDB wire protocol | Username + password |
 | Donation API | MongoDB | MongoDB wire protocol | Username + password |
 
