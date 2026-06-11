@@ -16,6 +16,8 @@ namespace TimeForCode.Website.Specifications.Steps
         [BeforeScenario]
         public async Task InitialiseAsync()
         {
+            BaseUrl = WebsiteTestSettings.WebsiteBaseUrl;
+
             _playwright = await Playwright.CreateAsync();
             _browser = await _playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
             {
@@ -29,11 +31,6 @@ namespace TimeForCode.Website.Specifications.Steps
         public async Task TeardownAsync()
         {
             await DisposeAsync();
-        }
-
-        public void SetBaseUrl(string url)
-        {
-            BaseUrl = url.TrimEnd('/');
         }
 
         public async ValueTask DisposeAsync()

@@ -25,10 +25,10 @@ docker-compose up --build
 
 The tests expect:
 
-| Service | Default URL |
-|---|---|
-| Website | `http://localhost:8083` |
-| Identity Provider Mock | `http://localhost:8081` |
+| Service | Default URL | Override via |
+|---|---|---|
+| Website | `http://localhost:8083` | `WEBSITE_BASE_URL` env var |
+| Identity Provider Mock | `http://localhost:8081` | `IDP_MOCK_BASE_URL` env var |
 
 ## Running the tests
 
@@ -38,6 +38,12 @@ dotnet test tst/Website/TimeForCode.Website.Specifications/
 
 # Or from this directory
 dotnet test
+```
+
+To target a different environment, set the environment variables before running:
+
+```bash
+WEBSITE_BASE_URL=http://myhost:8083 dotnet test
 ```
 
 ### Playwright browser installation

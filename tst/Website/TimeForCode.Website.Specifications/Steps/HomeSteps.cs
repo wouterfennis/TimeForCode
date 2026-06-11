@@ -14,19 +14,6 @@ namespace TimeForCode.Website.Specifications.Steps
             _browser = browser;
         }
 
-        [Given("The website is running at {string}")]
-        public void GivenTheWebsiteIsRunningAt(string baseUrl)
-        {
-            _browser.SetBaseUrl(baseUrl);
-        }
-
-        [Given("The identity provider mock is running at {string}")]
-        public void GivenTheIdentityProviderMockIsRunningAt(string _)
-        {
-            // The identity provider mock URL is used implicitly by the website's login redirect;
-            // no additional browser configuration is required here.
-        }
-
         [When("The visitor navigates to the home page")]
         public async Task WhenTheVisitorNavigatesToTheHomePageAsync()
         {

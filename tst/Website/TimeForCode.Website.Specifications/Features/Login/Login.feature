@@ -4,8 +4,6 @@ Feature: Login
     So that I can access authenticated features of the platform
 
 Scenario: User completes OAuth login through the Identity Provider Mock
-    Given The website is running at "http://localhost:8083"
-    And The identity provider mock is running at "http://localhost:8081"
     When The visitor navigates to the home page
     And The visitor clicks the login link
     And The OAuth flow completes through the identity provider mock

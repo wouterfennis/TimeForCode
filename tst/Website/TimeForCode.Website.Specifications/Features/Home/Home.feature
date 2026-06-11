@@ -4,7 +4,6 @@ Feature: Home Page
     So that I can discover published projects and log in
 
 Scenario: Unauthenticated visitor sees login link and published projects section
-    Given The website is running at "http://localhost:8083"
     When The visitor navigates to the home page
     Then The login link is visible
     And The published projects section is visible
