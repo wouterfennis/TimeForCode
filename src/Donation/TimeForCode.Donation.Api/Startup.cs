@@ -55,7 +55,7 @@ namespace TimeForCode.Donation.Api
                 .AddJwtBearer(options =>
                 {
                     options.Authority = authenticationOptions.Authority;
-                    options.RequireHttpsMetadata = false; // HTTPS is handled at the ingress/proxy level
+                    options.RequireHttpsMetadata = authenticationOptions.RequireHttpsMetadata;
                     options.TokenValidationParameters = new TokenValidationParameters
                     {
                         ValidateIssuer = true,

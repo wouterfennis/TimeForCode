@@ -1,5 +1,4 @@
 ﻿using MediatR;
-using Microsoft.Extensions.Logging;
 using TimeForCode.Authorization.Application.Services;
 using TimeForCode.Authorization.Commands;
 using TimeForCode.Authorization.Values;
@@ -12,17 +11,14 @@ namespace TimeForCode.Authorization.Application.Handlers
         private readonly IAccountService _accountService;
         private readonly ITokenService _tokenService;
         private readonly IRefreshTokenService _refreshTokenService;
-        private readonly ILogger<CallbackHandler> _logger;
 
         public CallbackHandler(IAccountService accountService,
             ITokenService tokenService,
-            IRefreshTokenService refreshTokenService,
-            ILogger<CallbackHandler> logger)
+            IRefreshTokenService refreshTokenService)
         {
             _accountService = accountService;
             _tokenService = tokenService;
             _refreshTokenService = refreshTokenService;
-            _logger = logger;
         }
 
         public async Task<Result<TokenResult>> Handle(CallbackCommand request, CancellationToken cancellationToken)
