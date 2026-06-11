@@ -1,0 +1,26 @@
+{
+  "name": "TimeForCode",
+  "image": "mcr.microsoft.com/devcontainers/dotnet:1-10.0-bookworm",
+
+  "features": {
+    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-dotnettools.csdevkit",
+        "ms-azuretools.vscode-docker",
+        "mongodb.mongodb-vscode",
+        "DavidAnson.vscode-markdownlint",
+        "GitHub.copilot",
+        "GitHub.copilot-chat"
+      ]
+    }
+  },
+
+  "postCreateCommand": "dotnet tool restore",
+
+  "remoteUser": "vscode"
+}
