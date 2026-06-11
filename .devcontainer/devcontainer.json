@@ -1,6 +1,8 @@
 {
   "name": "TimeForCode",
-  "image": "mcr.microsoft.com/devcontainers/dotnet:1-10.0-bookworm",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
 
   "features": {
     "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {},
