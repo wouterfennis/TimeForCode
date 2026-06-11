@@ -33,6 +33,11 @@ namespace TimeForCode.Donation.Api.Options
         public required string Audience { get; init; }
 
         /// <summary>
+        /// Whether the metadata endpoint must use HTTPS
+        /// </summary>
+        public bool RequireHttpsMetadata { get; init; } = true;
+
+        /// <summary>
         /// Bind the configuration to the AuthenticationOptions
         /// </summary>
         public static AuthenticationOptions Bind(IConfiguration configuration)
@@ -42,6 +47,7 @@ namespace TimeForCode.Donation.Api.Options
                 Authority = configuration.GetSection(SectionName).GetValue<string>(nameof(Authority))!,
                 Audience = configuration.GetSection(SectionName).GetValue<string>(nameof(Audience))!,
                 Issuer = configuration.GetSection(SectionName).GetValue<string>(nameof(Issuer))!,
+                RequireHttpsMetadata = configuration.GetSection(SectionName).GetValue(nameof(RequireHttpsMetadata), true),
             };
 
             return authenticationOptions;

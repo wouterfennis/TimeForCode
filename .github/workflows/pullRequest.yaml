@@ -56,8 +56,10 @@ jobs:
       run: dotnet restore ./TimeForCode.sln
 
     - name: SonarCloud Scan Start
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       run: |
-          dotnet dotnet-sonarscanner begin /k:"wouterfennis_TimeForCode" /o:"wouterfennis" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /d:sonar.cs.vstest.reportsPaths=**/TestResults/**/*.trx /d:sonar.cs.vscoveragexml.reportsPaths=**/TestResults/**/*.xml /d:sonar.scanner.scanAll=true /d:sonar.coverage.exclusions=tst/**,src/Website/Components/Pages/**
+          dotnet dotnet-sonarscanner begin /k:"wouterfennis_TimeForCode" /o:"wouterfennis" /d:sonar.token="$SONAR_TOKEN" /d:sonar.cs.vstest.reportsPaths=**/TestResults/**/*.trx /d:sonar.cs.vscoveragexml.reportsPaths=**/TestResults/**/*.xml /d:sonar.scanner.scanAll=true /d:sonar.coverage.exclusions=tst/**,src/Website/Components/Pages/**
 
     - name: Build
       run: |
@@ -68,8 +70,10 @@ jobs:
          dotnet test ./TimeForCode.sln --no-build --verbosity normal --configuration Release --no-build --collect "Code Coverage;Format=Xml" --logger trx --results-directory TestResults
 
     - name: SonarCloud Scan End
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       run: |
-          dotnet dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
+          dotnet dotnet-sonarscanner end /d:sonar.token="$SONAR_TOKEN"
 
     - name: Publish
       run: dotnet publish ./src/Authorization/TimeForCode.Authorization.Api/*.csproj --no-build --configuration Release --output ./publish

@@ -57,7 +57,7 @@ namespace TimeForCode.Donation.Api
                 .AddJwtBearer(options =>
                 {
                     options.Authority = authenticationOptions.Authority;
-                    options.RequireHttpsMetadata = false; // todo: temp
+                    options.RequireHttpsMetadata = authenticationOptions.RequireHttpsMetadata;
                     options.TokenValidationParameters = new TokenValidationParameters
                     {
                         ValidateIssuer = true,
