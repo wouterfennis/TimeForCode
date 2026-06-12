@@ -70,7 +70,10 @@ namespace TimeForCode.Website.Specifications.Steps
             await loginLink.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Visible });
             await loginLink.ClickAsync();
 
-            var authorizeButton = _browser.Page.Locator("button[type='submit']");
+            var idpBaseUrl = TimeForCode.Website.Specifications.WebsiteTestSettings.IdentityProviderMockBaseUrl.TrimEnd('/');
+            await _browser.Page.WaitForURLAsync(url => url.StartsWith(idpBaseUrl, StringComparison.OrdinalIgnoreCase), new PageWaitForURLOptions { Timeout = 10_000 });
+
+            var authorizeButton = _browser.Page.Locator("role=button[name=\"Authorize\"]");
             await authorizeButton.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Visible });
             await authorizeButton.ClickAsync();
 
