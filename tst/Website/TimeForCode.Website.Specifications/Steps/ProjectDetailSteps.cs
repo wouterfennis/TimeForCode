@@ -47,7 +47,8 @@ namespace TimeForCode.Website.Specifications.Steps
             await backLink.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Visible });
             (await backLink.IsVisibleAsync()).Should().BeTrue();
             var href = await backLink.GetAttributeAsync("href");
-            href.Should().Be("/projects");
+            href.Should().NotBeNullOrWhiteSpace();
+            href!.Should().Be("/projects");
         }
     }
 }
