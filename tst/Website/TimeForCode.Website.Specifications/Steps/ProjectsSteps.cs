@@ -39,7 +39,8 @@ namespace TimeForCode.Website.Specifications.Steps
             for (int i = 0; i < count; i++)
             {
                 var href = await links.Nth(i).GetAttributeAsync("href");
-                href.Should().MatchRegex(@"^/projects/\S+");
+                href.Should().NotBeNullOrWhiteSpace();
+                href!.Should().MatchRegex(@"^/projects/\S+");
             }
         }
     }
