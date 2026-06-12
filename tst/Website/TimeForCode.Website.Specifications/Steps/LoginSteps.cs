@@ -32,9 +32,12 @@ namespace TimeForCode.Website.Specifications.Steps
         [When("The OAuth flow completes through the identity provider mock")]
         public async Task WhenTheOAuthFlowCompletesThroughTheIdentityProviderMockAsync()
         {
+            var idpBaseUrl = TimeForCode.Website.Specifications.WebsiteTestSettings.IdentityProviderMockBaseUrl.TrimEnd('/');
+            await _browser.Page.WaitForURLAsync(url => url.StartsWith(idpBaseUrl, StringComparison.OrdinalIgnoreCase), new PageWaitForURLOptions { Timeout = 10_000 });
+
             // The identity provider mock shows an "Authorize" button; clicking it
             // posts the confirmation form and redirects back to the website.
-            var authorizeButton = _browser.Page.Locator("button[type='submit']");
+            var authorizeButton = _browser.Page.Locator("role=button[name=\"Authorize\"]");
             await authorizeButton.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Visible });
             await authorizeButton.ClickAsync();
         }
