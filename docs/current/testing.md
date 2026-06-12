@@ -105,7 +105,15 @@ All selectors use `data-testid` attributes so they remain valid after the fronte
 
 This project has **no reference** to any Blazor or Website source assembly. It is purely a browser-automation client of the running application.
 
-See `tst/Website/TimeForCode.Website.Specifications/README.md` for setup and run instructions.
+#### Trace Viewer
+
+Every scenario is recorded via Playwright tracing (screenshots, DOM snapshots, network). After a test run, one `.zip` per scenario is written to `TestResults/traces/` inside the test output directory. Open a trace with:
+
+```powershell
+pwsh tst/Website/TimeForCode.Website.Specifications/bin/Debug/net10.0/playwright.ps1 show-trace "<path-to-trace.zip>"
+```
+
+See `tst/Website/TimeForCode.Website.Specifications/README.md` for full setup and run instructions.
 
 ---
 

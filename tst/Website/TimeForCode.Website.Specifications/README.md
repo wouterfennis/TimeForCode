@@ -54,6 +54,21 @@ On a fresh machine, install the required Playwright browser binaries once:
 pwsh tst/Website/TimeForCode.Website.Specifications/bin/Debug/net10.0/playwright.ps1 install chromium
 ```
 
+### Trace Viewer
+
+Every scenario automatically records a Playwright trace. After a test run, one `.zip` file per scenario is written to:
+
+```
+tst/Website/TimeForCode.Website.Specifications/bin/Debug/net10.0/TestResults/traces/
+```
+
+Open a trace in the interactive Trace Viewer (screenshots, DOM snapshots, network calls, timeline):
+
+```powershell
+pwsh tst/Website/TimeForCode.Website.Specifications/bin/Debug/net10.0/playwright.ps1 show-trace `
+  "tst/Website/TimeForCode.Website.Specifications/bin/Debug/net10.0/TestResults/traces/<scenario-title>.zip"
+```
+
 ## Relationship to other specification projects
 
 | Project | Scope | Mechanism |
