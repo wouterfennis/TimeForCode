@@ -22,8 +22,7 @@ namespace TimeForCode.Website.Specifications.Steps
         [BeforeScenario]
         public async Task InitialiseAsync()
         {
-            BaseUrl = WebsiteTestSettings.WebsiteBaseUrl;
-
+            BaseUrl = WebsiteTestSettings.WebsiteBaseUrl.TrimEnd('/');
             _playwright = await Playwright.CreateAsync();
             _browser = await _playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
             {
