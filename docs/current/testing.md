@@ -88,7 +88,7 @@ Integration tests for the Donation API. Currently contains the Swagger snapshot 
 
 **Path**: `tst/Website/TimeForCode.Website.Specifications`
 
-Browser-level BDD acceptance tests that drive the TimeForCode website through real user journeys using [Microsoft Playwright](https://playwright.dev/dotnet/). Tests interact only with the public HTTP/DOM surface of the running application and require the full Docker Compose stack to be up (`docker-compose up --build`).
+Browser-level BDD acceptance tests that drive the TimeForCode website through real user journeys using [Microsoft Playwright](https://playwright.dev/dotnet/). Tests interact only with the public HTTP/DOM surface of the running application and require the full Docker Compose stack to be up (`podman compose up --build`).
 
 Covered journeys:
 
