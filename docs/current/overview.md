@@ -112,3 +112,19 @@ The Shared context provides common utilities used across services.
 - **Containerisation**: Docker Compose orchestrates all services for local development.
 - **Deployment**: Azure App Service via Azure Bicep IaC templates.
 - **CI/CD**: GitHub Actions with SonarCloud quality gate.
+
+---
+
+## Developer Setup
+
+The recommended way to work on this project is via the **dev container** defined in `.devcontainer/devcontainer.json`.
+
+Opening the repository in VS Code (or GitHub Codespaces) and accepting the "Reopen in Container" prompt will:
+
+1. Provision a Debian Bookworm container with the .NET 10 SDK.
+2. Install Docker-outside-of-Docker so `docker compose up` works against the host daemon.
+3. Install the GitHub CLI so `gh` commands and agent skills work out of the box.
+4. Install all recommended VS Code extensions (C# Dev Kit, Docker, MongoDB, markdownlint, GitHub Copilot, GitHub Copilot Chat).
+5. Run `dotnet tool restore` to install local tools (`reportgenerator`, `dotnet-sonarscanner`).
+
+Secrets and environment-specific values are **not** baked into the container. Copy `.env.real-github.example` to `.env.real-github` and fill in your credentials before running the full stack.

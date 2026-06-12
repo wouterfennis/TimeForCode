@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using TimeForCode.Authorization.Application.Handlers;
@@ -8,6 +9,7 @@ using TimeForCode.Authorization.Application.Services;
 
 namespace TimeForCode.Authorization.Application.Extensions
 {
+    [ExcludeFromCodeCoverage(Justification = "DI registration")]
     public static class ServiceCollectionExtensions
     {
         /// <summary>

@@ -2,9 +2,9 @@
 {
     public class DonorOrganization
     {
-        public string Name { get; private init; }
-        public List<Contributor> EmployeeContributors { get; private init; }
+        public required string Name { get; init; }
+        public required List<Contributor> EmployeeContributors { get; init; }
 
-        public List<Donation> Donations { get; set; }
+        public List<Donation> Donations { get; set; } = [];
     }
 }

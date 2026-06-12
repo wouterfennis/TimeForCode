@@ -2,6 +2,7 @@
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using Scalar.AspNetCore;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using TimeForCode.Authorization.Application.Extensions;
 using TimeForCode.Authorization.Application.Options;
@@ -12,6 +13,7 @@ namespace TimeForCode.Authorization.Api
     /// <summary>
     /// Startup class.
     /// </summary>
+    [ExcludeFromCodeCoverage(Justification = "Application startup wiring")]
     public class Startup
     {
         private IConfiguration _configuration { get; }

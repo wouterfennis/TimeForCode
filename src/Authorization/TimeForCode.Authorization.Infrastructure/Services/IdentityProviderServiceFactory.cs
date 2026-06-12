@@ -1,6 +1,4 @@
-﻿using DnsClient.Internal;
-using Microsoft.Extensions.Logging;
-using TimeForCode.Authorization.Application.Interfaces;
+﻿using TimeForCode.Authorization.Application.Interfaces;
 using TimeForCode.Authorization.Commands;
 using TimeForCode.Authorization.Domain.Entities;
 using TimeForCode.Authorization.Infrastructure.Services.Github;
@@ -12,20 +10,16 @@ namespace TimeForCode.Authorization.Infrastructure.Services
     {
         private readonly IEnumerable<IIdentityProviderService> _services;
         private readonly IStateRepository _stateRepository;
-        private readonly ILogger<IdentityProviderServiceFactory> _logger;
 
         public IdentityProviderServiceFactory(IEnumerable<IIdentityProviderService> services,
-            IStateRepository stateRepository,
-            ILogger<IdentityProviderServiceFactory> logger)
+            IStateRepository stateRepository)
         {
             _services = services;
             _stateRepository = stateRepository;
-            _logger = logger;
         }
 
         public Result<IIdentityProviderService> GetIdentityProviderServiceFromState(string state)
         {
-            _logger.LogDebug("GetIdentityProviderServiceFromState called with state: {State}", state);
             var identityProviderResult = GetIdentityProvider(state);
 
             if (identityProviderResult.IsFailure)

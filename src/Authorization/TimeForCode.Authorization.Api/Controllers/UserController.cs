@@ -16,6 +16,8 @@ namespace TimeForCode.Authorization.Api.Controllers
     [Authorize(Policy = "ApiUser")]
     public class UserController : ControllerBase
     {
+        private const string UnauthorizedTitle = "Unauthorized";
+
         private readonly IAccountInformationRepository _accountInformationRepository;
         private readonly IGithubApiService _githubApiService;
         private readonly IEncryptionService _encryptionService;
@@ -102,7 +104,7 @@ namespace TimeForCode.Authorization.Api.Controllers
             {
                 var problemDetails = new ProblemDetails
                 {
-                    Title = "Unauthorized",
+                    Title = UnauthorizedTitle,
                     Detail = "No GitHub access token available. Please re-authenticate via GitHub."
                 };
 
@@ -116,7 +118,7 @@ namespace TimeForCode.Authorization.Api.Controllers
             {
                 var problemDetails = new ProblemDetails
                 {
-                    Title = "Unauthorized",
+                    Title = UnauthorizedTitle,
                     Detail = "The GitHub access token is expired or revoked. Please re-authenticate via GitHub."
                 };
 
@@ -167,7 +169,7 @@ namespace TimeForCode.Authorization.Api.Controllers
             {
                 var problemDetails = new ProblemDetails
                 {
-                    Title = "Unauthorized",
+                    Title = UnauthorizedTitle,
                     Detail = "No GitHub access token available. Please re-authenticate via GitHub."
                 };
 
@@ -194,7 +196,7 @@ namespace TimeForCode.Authorization.Api.Controllers
                 {
                     var unauthorizedProblemDetails = new ProblemDetails
                     {
-                        Title = "Unauthorized",
+                        Title = UnauthorizedTitle,
                         Detail = "The GitHub access token is expired or revoked. Please re-authenticate via GitHub."
                     };
 

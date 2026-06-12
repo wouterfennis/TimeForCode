@@ -1,7 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 
 namespace TimeForCode.Website.Options
 {
+    [ExcludeFromCodeCoverage(Justification = "Configuration POCO")]
     public class DonationServiceOptions
     {
         public const string SectionName = "DonationServiceOptions";

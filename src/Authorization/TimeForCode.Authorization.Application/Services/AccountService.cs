@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using TimeForCode.Authorization.Application.Interfaces;
+﻿using TimeForCode.Authorization.Application.Interfaces;
 using TimeForCode.Authorization.Commands;
 using TimeForCode.Authorization.Domain.Entities;
 using TimeForCode.Authorization.Values;
@@ -11,18 +10,15 @@ namespace TimeForCode.Authorization.Application.Services
         private readonly IIdentityProviderServiceFactory _identityProviderServiceFactory;
         private readonly IAccountInformationRepository _accountRepository;
         private readonly IEncryptionService _encryptionService;
-        private readonly ILogger<AccountService> _logger;
 
         public AccountService(
             IIdentityProviderServiceFactory identityProviderServiceFactory,
             IAccountInformationRepository accountRepository,
-            IEncryptionService encryptionService,
-            ILogger<AccountService> logger)
+            IEncryptionService encryptionService)
         {
             _identityProviderServiceFactory = identityProviderServiceFactory;
             _accountRepository = accountRepository;
             _encryptionService = encryptionService;
-            _logger = logger;
         }
 
         public async Task<Result<SaveAccountResult>> SaveAccountInformation(string state, ExternalAccessToken accessToken)
@@ -46,7 +42,6 @@ namespace TimeForCode.Authorization.Application.Services
 
             var createOrUpdateResult = await _accountRepository.CreateOrUpdateAsync(accountInformation);
 
-            _logger.LogDebug("Account information: {AccountInformation}", createOrUpdateResult.AccountInformation);
             return Result<SaveAccountResult>.Success(new SaveAccountResult(createOrUpdateResult.AccountInformation, createOrUpdateResult.IsNewAccount));
         }
     }
