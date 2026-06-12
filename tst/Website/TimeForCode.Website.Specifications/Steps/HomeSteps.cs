@@ -33,7 +33,7 @@ namespace TimeForCode.Website.Specifications.Steps
         {
             // The projects section heading is always rendered; the tile container
             // appears only when there are published projects.
-            var heading = _browser.Page.Locator("h2", new PageLocatorOptions { HasTextString = "Published Projects" });
+            var heading = _browser.Page.Locator("role=heading[name=\"Published Projects\"]");
             await heading.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Visible });
             (await heading.IsVisibleAsync()).Should().BeTrue();
         }
