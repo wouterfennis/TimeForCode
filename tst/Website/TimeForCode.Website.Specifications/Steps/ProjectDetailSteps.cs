@@ -29,7 +29,7 @@ namespace TimeForCode.Website.Specifications.Steps
         [When("The visitor navigates to the project detail page")]
         public async Task WhenTheVisitorNavigatesToTheProjectDetailPageAsync()
         {
-            await _browser.Page.GotoAsync(_browser.BaseUrl + _projectDetailUrl);
+            await _browser.Page.GotoAsync(_browser.BaseUrl + _projectDetailUrl!);
         }
 
         [Then("The project heading is visible")]
