@@ -20,7 +20,7 @@ This project tests user-facing journeys through the browser. It does **not** ref
 The full Docker Compose stack must be running before executing these tests:
 
 ```bash
-docker-compose up --build
+podman compose up --build
 ```
 
 The tests expect:
