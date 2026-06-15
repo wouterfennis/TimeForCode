@@ -12,6 +12,17 @@ You are a senior reviewer for the **TimeForCode** project. Your job is to take a
 
 ---
 
+## Inventory Metadata
+
+| Field | Value |
+|-------|-------|
+| Owner | `Review` |
+| Status | `active` |
+| Overlap risk | `none` |
+| Review cadence | `per-release` |
+
+---
+
 ## Core Constraints
 
 - **Read-only**: You may only read files. You must never create, edit, or delete any file in the repository.

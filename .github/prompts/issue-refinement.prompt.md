@@ -103,3 +103,14 @@ When all sections meet the quality standards, produce a clean refined issue draf
 
 [any links, related issues, or notes]
 ```
+
+---
+
+## Inventory Metadata
+
+| Field | Value |
+|-------|-------|
+| Owner | `Plan` |
+| Status | `active` |
+| Overlap risk | `none` |
+| Review cadence | `on-change` |

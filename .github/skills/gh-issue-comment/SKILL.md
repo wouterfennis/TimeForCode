@@ -9,6 +9,43 @@ This skill posts an approved Gherkin feature file as a comment on a GitHub issue
 
 ---
 
+## Inventory Metadata
+
+| Field | Value |
+|-------|-------|
+| Owner | `FeatureWriter` |
+| Status | `active` |
+| Overlap risk | `none` |
+| Review cadence | `on-change` |
+
+---
+
+## Trigger Conditions
+
+Invoke this skill when:
+
+- The FeatureWriter agent has a fully approved Gherkin feature file ready to attach to an issue
+- The user has confirmed the feature file content and explicitly authorised posting
+
+---
+
+## Required Inputs
+
+| Input | Source |
+|-------|--------|
+| Approved Gherkin feature file content | Provided by the FeatureWriter agent |
+| Issue number | Provided by the calling agent |
+| Authenticated `gh` CLI | Verified in Step 1 |
+
+---
+
+## Expected Outputs
+
+- A GitHub issue comment URL
+- Confirmation returned to the calling agent: `COMMENT_POSTED` with the comment URL
+
+---
+
 ## Step 1 — Verify Authentication
 
 ```powershell

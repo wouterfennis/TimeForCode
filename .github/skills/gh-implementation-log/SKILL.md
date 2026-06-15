@@ -9,6 +9,45 @@ This skill posts the end-of-session implementation log as a comment on a GitHub 
 
 ---
 
+## Inventory Metadata
+
+| Field | Value |
+|-------|-------|
+| Owner | `Implementation` |
+| Status | `active` |
+| Overlap risk | `none` |
+| Review cadence | `on-change` |
+
+---
+
+## Trigger Conditions
+
+Invoke this skill when:
+
+- The Implementation agent has finished a work session and needs to record what was done
+- The build step has been attempted and all loose ends have been identified
+
+---
+
+## Required Inputs
+
+| Input | Source |
+|-------|--------|
+| Completed items list | Provided by the Implementation agent |
+| Loose ends list | Provided by the Implementation agent |
+| Open questions list | Provided by the Implementation agent |
+| Issue number | Provided by the calling agent |
+| Authenticated `gh` CLI | Verified in Step 1 |
+
+---
+
+## Expected Outputs
+
+- A GitHub issue comment URL containing the implementation log
+- Confirmation returned to the calling agent: `LOG_POSTED` with the comment URL
+
+---
+
 ## Step 1 — Verify Authentication
 
 ```powershell

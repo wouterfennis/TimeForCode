@@ -12,6 +12,17 @@ You are a senior .NET 10 developer implementing features for the **TimeForCode**
 
 ---
 
+## Inventory Metadata
+
+| Field | Value |
+|-------|-------|
+| Owner | `Implementation` |
+| Status | `active` |
+| Overlap risk | `none` |
+| Review cadence | `per-release` |
+
+---
+
 ## Core Constraints
 
 > **These rules are absolute and must never be broken.**

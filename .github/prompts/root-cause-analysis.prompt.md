@@ -169,3 +169,14 @@ When [action], [component] [actual outcome] instead of [expected outcome].
 
 **Tracking:** <link to GitHub issue or PR if one was created>
 ```
+
+---
+
+## Inventory Metadata
+
+| Field | Value |
+|-------|-------|
+| Owner | `team` |
+| Status | `active` |
+| Overlap risk | `none` |
+| Review cadence | `on-change` |

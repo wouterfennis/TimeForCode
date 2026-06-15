@@ -154,3 +154,12 @@ Every agent, skill, prompt, and instruction file must declare the following meta
 | `status` | `active`, `experimental`, or `deprecated` |
 | `overlap-risk` | Names any other artifact with overlapping scope, or `none` |
 | `review-cadence` | How often this artifact should be reviewed (e.g., `per-release`, `monthly`, `on-change`) |
+
+### This file's metadata
+
+| Field | Value |
+|-------|-------|
+| Owner | `team` |
+| Status | `active` |
+| Overlap risk | `none` |
+| Review cadence | `per-release` |

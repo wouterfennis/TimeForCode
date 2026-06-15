@@ -9,6 +9,44 @@ This skill runs a full lint-fix-scan cycle for all Markdown files in the **TimeF
 
 ---
 
+## Inventory Metadata
+
+| Field | Value |
+|-------|-------|
+| Owner | `MarkdownLinter` |
+| Status | `active` |
+| Overlap risk | `none` |
+| Review cadence | `on-change` |
+
+---
+
+## Trigger Conditions
+
+Invoke this skill when:
+
+- The MarkdownLinter agent is performing a full lint cycle
+- CI reports Markdown violations that need to be fixed
+- A maintenance pass includes Markdown hygiene
+
+---
+
+## Required Inputs
+
+| Input | Source |
+|-------|--------|
+| `markdownlint-cli` version `0.48.0` installed | Verified in Step 1 |
+| Repository root path | Working directory |
+| `.markdownlint.json` config at repository root | Must exist before running |
+
+---
+
+## Expected Outputs
+
+- A summary table of files scanned, violations found, auto-fixed, manually fixed, and remaining
+- All safe violations resolved; remaining violations reported for human decision
+
+---
+
 ## Step 1 — Verify markdownlint-cli Is Available
 
 ```powershell

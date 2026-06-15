@@ -81,3 +81,14 @@ Produce a final acceptance criteria list in GitHub checkbox format:
 ```
 
 Ask the contributor to confirm the list before it is used.
+
+---
+
+## Inventory Metadata
+
+| Field | Value |
+|-------|-------|
+| Owner | `Plan` |
+| Status | `active` |
+| Overlap risk | `none` |
+| Review cadence | `on-change` |

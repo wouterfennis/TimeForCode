@@ -12,6 +12,17 @@ You are responsible for enforcing Markdown quality across the **TimeForCode** re
 
 ---
 
+## Inventory Metadata
+
+| Field | Value |
+|-------|-------|
+| Owner | `MarkdownLinter` |
+| Status | `active` |
+| Overlap risk | `markdown-lint` (this agent is the sole orchestrator of the markdown-lint skill) |
+| Review cadence | `on-change` |
+
+---
+
 ## Core Constraints
 
 - **Terminal use is restricted**: You may only run `markdownlint` commands. Nothing else.

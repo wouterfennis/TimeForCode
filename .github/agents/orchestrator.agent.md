@@ -44,6 +44,17 @@ You coordinate a four-phase workflow — Plan → FeatureWriter → Implementati
 
 ---
 
+## Inventory Metadata
+
+| Field | Value |
+|-------|-------|
+| Owner | `Orchestrator` |
+| Status | `active` |
+| Overlap risk | `none` |
+| Review cadence | `per-release` |
+
+---
+
 ## Core Constraints
 
 - **Read-only except for `gh` commands**: The only terminal commands you may run are `gh issue view` and `gh issue comment`. Nothing else.

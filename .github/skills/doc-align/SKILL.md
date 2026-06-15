@@ -9,6 +9,43 @@ This skill walks every documentation file that describes the **current** state o
 
 ---
 
+## Inventory Metadata
+
+| Field | Value |
+|-------|-------|
+| Owner | `maintenance` |
+| Status | `active` |
+| Overlap risk | `none` |
+| Review cadence | `per-release` |
+
+---
+
+## Trigger Conditions
+
+Invoke this skill when:
+
+- Documentation alignment is requested after a significant implementation phase
+- The Maintenance agent runs its documentation hygiene pass
+- The Release Manager agent's release-readiness check includes documentation currency
+
+---
+
+## Required Inputs
+
+| Input | Source |
+|-------|--------|
+| Repository root path | Working directory |
+| Authenticated `dotnet` SDK (for build verification where needed) | Verified before running any command |
+
+---
+
+## Expected Outputs
+
+- A structured alignment report with three sections: Accurate, Updated, Skipped (Target)
+- A list of files edited with one-line descriptions of each change
+
+---
+
 ## Scope Rules
 
 ### Files to review — must match code exactly

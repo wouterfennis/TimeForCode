@@ -117,3 +117,14 @@ Produce a focused review checklist for this specific PR:
 ```
 
 Tailor every item to the actual changes in this PR. Do not include checklist items that are irrelevant to the change type.
+
+---
+
+## Inventory Metadata
+
+| Field | Value |
+|-------|-------|
+| Owner | `team` |
+| Status | `active` |
+| Overlap risk | `none` |
+| Review cadence | `on-change` |

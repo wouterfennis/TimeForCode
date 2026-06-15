@@ -9,6 +9,43 @@ This skill guides you through submitting an approved issue draft to GitHub via t
 
 ---
 
+## Inventory Metadata
+
+| Field | Value |
+|-------|-------|
+| Owner | `Plan` |
+| Status | `active` |
+| Overlap risk | `none` |
+| Review cadence | `on-change` |
+
+---
+
+## Trigger Conditions
+
+Invoke this skill when:
+
+- The Plan agent has a fully approved issue draft ready to submit to GitHub
+- The user has confirmed the issue content and explicitly authorised submission
+
+---
+
+## Required Inputs
+
+| Input | Source |
+|-------|--------|
+| Approved issue title and body | Provided by the Plan agent |
+| Label names to apply | Derived from `gh label list` during Step 3 |
+| Authenticated `gh` CLI | Verified in Step 1 |
+
+---
+
+## Expected Outputs
+
+- A newly created GitHub issue URL
+- Confirmation returned to the calling agent: `ISSUE_CREATED` with the issue number and URL
+
+---
+
 ## Step 1 — Verify Authentication
 
 Run the following command to confirm the GitHub CLI is authenticated and targeting the correct repository:
