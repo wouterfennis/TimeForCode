@@ -87,7 +87,7 @@ Write the issue body to a temporary file, then pass it to `gh issue create` with
 [Replace with the Additional Context section, or omit the section header if empty]
 ```
 
-2. Create the issue, referencing the file:
+1. Create the issue, referencing the file:
 
 ```powershell
 gh issue create `
@@ -99,7 +99,7 @@ gh issue create `
 
 > **Note:** Add one `--label` flag per label. Do not combine multiple labels in a single `--label` argument using commas.
 
-3. Delete the temporary file immediately after:
+1. Delete the temporary file immediately after:
 
 ```powershell
 Remove-Item issue_body.md
@@ -116,6 +116,7 @@ Issue created successfully: https://github.com/wouterfennis/TimeForCode/issues/[
 ```
 
 If the command fails, read the error message carefully:
+
 - **Authentication error** → Repeat Step 1
 - **Label not found** → Repeat Step 3 and correct the label names
 - **Repository not found** → Repeat Step 2

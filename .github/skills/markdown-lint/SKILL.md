@@ -45,6 +45,7 @@ Each output line follows this format:
 ```
 
 Group violations by file. For each file compute:
+
 - Total violation count
 - List of unique rule IDs triggered
 
@@ -80,6 +81,7 @@ markdownlint "**/*.md" --ignore node_modules --ignore .git 2>&1
 For each violation that `--fix` could not resolve, open the offending `.md` file and correct it directly. Only fix what `markdownlint` flagged — do not rewrite surrounding prose, restructure headings, or alter document meaning.
 
 **Safe manual corrections include:**
+
 - Adding or removing blank lines around headings, lists, or code fences
 - Correcting heading levels to be consistent
 - Replacing bare URLs with `[text](url)` links when the rule requires it
@@ -95,6 +97,7 @@ markdownlint "**/*.md" --ignore node_modules --ignore .git 2>&1
 ```
 
 Record:
+
 - Violations resolved by auto-fix
 - Violations resolved by manual edit
 - Violations remaining for human decision

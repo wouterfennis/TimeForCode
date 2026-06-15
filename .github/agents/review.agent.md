@@ -34,6 +34,7 @@ gh issue view <number> --json number,title,body,comments --jq '{number:.number, 
 ```
 
 From the response extract:
+
 - The original **acceptance criteria** from the issue body
 - The **implementation log** comment (heading `## Implementation Run Log`) — record Completed items, Loose Ends, and Open Questions
 - The **feature file** comment (fenced `gherkin` block) — this is the specification the implementation must satisfy
@@ -59,6 +60,7 @@ dotnet test TimeForCode.sln --no-build --logger "console;verbosity=normal" 2>&1
 ```
 
 Record:
+
 - Total tests, passed, failed, skipped
 - Names of any failing tests
 - Any skipped tests that look relevant to this issue
@@ -72,12 +74,14 @@ Explore the files changed as part of the implementation (use the implementation 
 Check each changed file against these criteria:
 
 #### Layer compliance
+
 - Does each file live in the correct project for its layer?
 - Does no Application-layer file import from Infrastructure or API?
 - Does no Domain-layer file import from any layer in this solution?
 - Use `grep_search` to check `using` directives for cross-layer imports.
 
 #### Naming and conventions
+
 - Commands follow `<Verb><Noun>Command`
 - Handlers follow `<Verb><Noun>Handler`
 - Interfaces follow `I<Noun>`
@@ -85,15 +89,18 @@ Check each changed file against these criteria:
 - Step classes follow `<Feature>Steps`
 
 #### Error handling
+
 - Failures return `Result<T>.Failure("message")` — not thrown exceptions
 - API error responses use `ProblemDetails` — not raw strings or custom models
 - No `catch (Exception)` blocks that silently swallow errors
 
 #### `// TODO(review):` markers
+
 - Use `grep_search` with pattern `TODO\(review\)` to find all unresolved markers
 - Each marker is a finding that must appear in the review report
 
 #### Step definition quality
+
 - New Reqnroll steps use the established "The user" / "The external platform" / "The time for code platform" persona convention
 - No step text contains class names, HTTP verbs, status codes, or internal identifiers
 
@@ -102,6 +109,7 @@ Check each changed file against these criteria:
 ### Step 5 — Acceptance Criteria Coverage
 
 For each acceptance criterion from the issue:
+
 - Identify which scenario(s) in the feature file cover it
 - Identify which test(s) exercise that scenario
 - Mark it as ✅ Covered, ⚠️ Partially covered (tested but not all paths), or ❌ Not covered

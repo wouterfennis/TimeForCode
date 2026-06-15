@@ -20,20 +20,20 @@ argument-hint: 'Optionally specify a severity level (info, warn, error) or a spe
 dotnet format ./TimeForCode.sln
 ```
 
-2. If only specific diagnostics need fixing, target them explicitly:
+1. If only specific diagnostics need fixing, target them explicitly:
 
 ```powershell
 dotnet format ./TimeForCode.sln --diagnostics IDE0005   # unused imports
 dotnet format ./TimeForCode.sln --severity warn
 ```
 
-3. After formatting, verify no build errors were introduced:
+1. After formatting, verify no build errors were introduced:
 
 ```powershell
 dotnet build ./TimeForCode.sln
 ```
 
-4. Review and stage the changed files:
+1. Review and stage the changed files:
 
 ```powershell
 git diff --name-only

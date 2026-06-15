@@ -59,11 +59,13 @@ Use the following tools:
 - `semantic_search` — to find related scenarios or domain concepts
 
 **Always check:**
+
 - All `.feature` files under `tst/Authorization/TimeForCode.Authorization.Specifications/Features/`
 - All `*Steps.cs` files under `tst/Authorization/TimeForCode.Authorization.Specifications/Steps/`
 - Documentation in `docs/current/` for relevant API surface or capability context
 
 Record:
+
 - Which existing steps you can reuse verbatim
 - Which steps will need new step definitions (note them but do not write the code)
 - Which folder the new feature belongs in (or whether a new folder is needed)
@@ -108,6 +110,7 @@ Use `Scenario Outline` with `Examples:` only when multiple similar scenarios dif
 #### Language and Style Rules
 
 **DO:**
+
 - Write steps as plain English from the perspective of the user or system actor
 - Use the same wording as existing steps when the meaning is identical
 - Keep each step to one observable action or state
@@ -117,6 +120,7 @@ Use `Scenario Outline` with `Examples:` only when multiple similar scenarios dif
 - Use `{string}` placeholder tokens in step text for variable values (e.g., error messages)
 
 **DO NOT:**
+
 - Reference class names, method names, HTTP status codes, database tables, or internal identifiers in step text
 - Write steps that require implementation knowledge to understand (e.g., "Given the IRefreshTokenRepository mock returns null")
 - Use vague steps like "Given the system is set up" with no observable meaning
@@ -155,15 +159,18 @@ Revise the draft until all checks pass.
 Present the complete feature file content to the user with syntax-highlighted Gherkin.
 
 Also show:
+
 - The intended repository path (from Step 3)
 - A list of **new step definitions** that a developer will need to implement (step text only, no code)
 - A list of **reused steps** that already have implementations
 
 Then use #tool:vscode_askQuestions to ask:
+
 - "Does this feature file accurately capture the scenarios from the issue?"
 - "Should I post this as a comment on issue #`<number>`?"
 
 If changes are requested:
+
 1. Incorporate the feedback
 2. Re-run the self-verification checklist (Step 5)
 3. Present the revised draft and ask for confirmation again
@@ -177,6 +184,7 @@ Do not post until the user explicitly confirms.
 Once the user confirms, use the `gh-issue-comment` skill to post the approved content as a comment on the originating issue.
 
 The comment must contain:
+
 1. The intended file path
 2. The full Gherkin content in a fenced `gherkin` code block
 3. A list of new step definitions that still need to be implemented

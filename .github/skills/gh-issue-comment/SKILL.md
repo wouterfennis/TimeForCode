@@ -55,13 +55,13 @@ Write the comment body to a temporary file, then pass it to `gh` with `--body-fi
 <bulleted list of steps that already have implementations>
 ```
 
-2. Post the comment:
+1. Post the comment:
 
 ```powershell
 gh issue comment <issue-number> --body-file comment_body.md
 ```
 
-3. Delete the temporary file immediately after:
+1. Delete the temporary file immediately after:
 
 ```powershell
 Remove-Item comment_body.md
