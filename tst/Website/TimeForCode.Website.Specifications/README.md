@@ -7,7 +7,7 @@ Browser-level acceptance tests for the TimeForCode website, written with [Reqnro
 This project tests user-facing journeys through the browser. It does **not** reference any Blazor or Website source assemblies. All selectors use `data-testid` attributes or ARIA roles so they remain valid after the frontend migrates away from Blazor.
 
 | Feature | Description |
-|---|---|
+| --- | --- |
 | `Home` | Unauthenticated visitor sees the login link and the published-projects section |
 | `Projects` | Visitor browses `/projects` and sees tiles that link to the detail page |
 | `ProjectDetail` | Visitor navigates to a project detail URL and sees the heading and back link |
@@ -26,7 +26,7 @@ podman compose up --build
 The tests expect:
 
 | Service | Default URL | Override via |
-|---|---|---|
+| --- | --- | --- |
 | Website | `http://localhost:8083` | `WEBSITE_BASE_URL` env var |
 | Identity Provider Mock | `http://localhost:8081` | `IDP_MOCK_BASE_URL` env var |
 
@@ -58,7 +58,7 @@ pwsh tst/Website/TimeForCode.Website.Specifications/bin/Debug/net10.0/playwright
 
 Every scenario automatically records a Playwright trace. After a test run, one `.zip` file per scenario is written to:
 
-```
+```text
 tst/Website/TimeForCode.Website.Specifications/bin/Debug/net10.0/TestResults/traces/
 ```
 
@@ -72,7 +72,7 @@ pwsh tst/Website/TimeForCode.Website.Specifications/bin/Debug/net10.0/playwright
 ## Relationship to other specification projects
 
 | Project | Scope | Mechanism |
-|---|---|---|
+| --- | --- | --- |
 | `TimeForCode.Authorization.Specifications` | OAuth token issuance, session management | HTTP via `WebApplicationFactory` |
 | `TimeForCode.Donation.Specifications` | Project publishing, listing, unpublishing | HTTP via `WebApplicationFactory` |
 | `TimeForCode.Website.Specifications` *(this project)* | User-facing browser journeys | Browser automation via Playwright |
