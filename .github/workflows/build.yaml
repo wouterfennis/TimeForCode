@@ -52,7 +52,7 @@ jobs:
       run: dotnet tool restore
 
     - name: Restore dependencies
-      run: dotnet restore ./TimeForCode.sln
+      run: dotnet restore ./TimeForCode.CI.slnf
 
     - name: SonarCloud Scan Start
       env:
@@ -62,11 +62,11 @@ jobs:
 
     - name: Build
       run: |
-          dotnet build ./TimeForCode.sln --no-restore --configuration Release
+          dotnet build ./TimeForCode.CI.slnf --no-restore --configuration Release
 
     - name: Run tests
       run: |
-         dotnet test ./TimeForCode.sln --no-build --verbosity normal --configuration Release --no-build --collect "Code Coverage;Format=Xml" --logger trx --results-directory TestResults
+         dotnet test ./TimeForCode.CI.slnf --no-build --verbosity normal --configuration Release --no-build --collect "Code Coverage;Format=Xml" --logger trx --results-directory TestResults
 
     - name: SonarCloud Scan End
       env:
