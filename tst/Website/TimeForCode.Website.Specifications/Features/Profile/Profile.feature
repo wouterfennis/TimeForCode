@@ -1,3 +1,4 @@
+@E2E
 Feature: Profile
     As a logged-in user
     I want to view my profile

@@ -15,6 +15,10 @@ This project tests user-facing journeys through the browser. It does **not** ref
 | `Profile` | Logged-in user sees their GitHub login handle on `/profile` |
 | `Logout` | Logged-in user logs out and returns to the unauthenticated home page |
 
+## CI exclusion
+
+All scenarios are tagged `@E2E`. The CI pipelines pass `--filter "TestCategory!=E2E"` to `dotnet test`, so these tests are never executed during automated builds. They are designed to run against a fully deployed environment only.
+
 ## Prerequisites
 
 The full Docker Compose stack must be running before executing these tests:

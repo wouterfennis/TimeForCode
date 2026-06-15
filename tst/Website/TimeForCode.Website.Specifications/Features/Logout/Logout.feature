@@ -1,3 +1,4 @@
+@E2E
 Feature: Logout
     As a logged-in user
     I want to log out

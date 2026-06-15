@@ -1,3 +1,4 @@
+@E2E
 Feature: Home Page
     As a visitor
     I want to see the home page

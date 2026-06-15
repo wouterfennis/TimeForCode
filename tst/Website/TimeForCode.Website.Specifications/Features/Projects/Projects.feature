@@ -1,3 +1,4 @@
+@E2E
 Feature: Projects List
     As a visitor
     I want to browse published projects

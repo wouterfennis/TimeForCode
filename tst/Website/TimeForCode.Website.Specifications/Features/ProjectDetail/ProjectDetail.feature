@@ -1,3 +1,4 @@
+@E2E
 Feature: Project Detail Page
     As a visitor
     I want to view the details of a specific project
