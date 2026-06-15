@@ -17,18 +17,18 @@
 {
     @if (_isNewUser)
     {
-        <div class="alert alert-success">
+        <div class="alert alert-success" data-testid="new-user-welcome">
             Welcome! Your profile has been created. <a href="/profile">View your profile</a>
         </div>
     }
-    <p>Welcome, <strong>@_userName</strong>!</p>
+    <p>Welcome, <strong data-testid="user-name">@_userName</strong>!</p>
     <a href="/profile">Profile</a>
-    <a href="/logout">Log out</a>
+    <a href="/logout" data-testid="logout-link">Log out</a>
 }
 else
 {
     <p>You are not logged in.</p>
-    <a href="@_loginUri">Log in with GitHub</a>
+    <a href="@_loginUri" data-testid="login-link">Log in with GitHub</a>
 }
 
 <h2>Published Projects</h2>
@@ -47,10 +47,10 @@ else if (!_projects.Projects.Any())
 }
 else
 {
-    <div class="project-tiles">
+    <div class="project-tiles" data-testid="project-tiles">
         @foreach (var project in _projects.Projects)
         {
-            <div class="project-tile">
+            <div class="project-tile" data-testid="project-tile">
                 <h3><a href="/projects/@project.Id">@project.FullName</a></h3>
                 @if (!string.IsNullOrEmpty(project.Description))
                 {

@@ -13,7 +13,7 @@
 
 @if (!_isLoggedIn)
 {
-    <p>You are not logged in. <a href="/">Go to home</a></p>
+    <p data-testid="not-logged-in-message">You are not logged in. <a href="/">Go to home</a></p>
 }
 else if (_user == null)
 {
@@ -27,7 +27,7 @@ else
             <img src="@_user.AvatarUrl" alt="Avatar" width="100" height="100" />
         }
         <h2>@_user.Name</h2>
-        <p class="login">@("@" + _user.Login)</p>
+        <p class="login" data-testid="login-handle">@("@" + _user.Login)</p>
     </div>
 
     <div class="profile-details">
