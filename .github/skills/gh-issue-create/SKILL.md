@@ -9,6 +9,43 @@ This skill guides you through submitting an approved issue draft to GitHub via t
 
 ---
 
+## Inventory Metadata
+
+| Field | Value |
+|-------|-------|
+| Owner | `Plan` |
+| Status | `active` |
+| Overlap risk | `none` |
+| Review cadence | `on-change` |
+
+---
+
+## Trigger Conditions
+
+Invoke this skill when:
+
+- The Plan agent has a fully approved issue draft ready to submit to GitHub
+- The user has confirmed the issue content and explicitly authorised submission
+
+---
+
+## Required Inputs
+
+| Input | Source |
+|-------|--------|
+| Approved issue title and body | Provided by the Plan agent |
+| Label names to apply | Derived from `gh label list` during Step 3 |
+| Authenticated `gh` CLI | Verified in Step 1 |
+
+---
+
+## Expected Outputs
+
+- A newly created GitHub issue URL
+- Confirmation returned to the calling agent: `ISSUE_CREATED` with the issue number and URL
+
+---
+
 ## Step 1 — Verify Authentication
 
 Run the following command to confirm the GitHub CLI is authenticated and targeting the correct repository:
@@ -87,7 +124,7 @@ Write the issue body to a temporary file, then pass it to `gh issue create` with
 [Replace with the Additional Context section, or omit the section header if empty]
 ```
 
-2. Create the issue, referencing the file:
+1. Create the issue, referencing the file:
 
 ```powershell
 gh issue create `
@@ -99,7 +136,7 @@ gh issue create `
 
 > **Note:** Add one `--label` flag per label. Do not combine multiple labels in a single `--label` argument using commas.
 
-3. Delete the temporary file immediately after:
+1. Delete the temporary file immediately after:
 
 ```powershell
 Remove-Item issue_body.md
@@ -116,6 +153,7 @@ Issue created successfully: https://github.com/wouterfennis/TimeForCode/issues/[
 ```
 
 If the command fails, read the error message carefully:
+
 - **Authentication error** → Repeat Step 1
 - **Label not found** → Repeat Step 3 and correct the label names
 - **Repository not found** → Repeat Step 2

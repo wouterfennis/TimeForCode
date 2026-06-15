@@ -9,6 +9,44 @@ This skill runs a full lint-fix-scan cycle for all Markdown files in the **TimeF
 
 ---
 
+## Inventory Metadata
+
+| Field | Value |
+|-------|-------|
+| Owner | `MarkdownLinter` |
+| Status | `active` |
+| Overlap risk | `none` |
+| Review cadence | `on-change` |
+
+---
+
+## Trigger Conditions
+
+Invoke this skill when:
+
+- The MarkdownLinter agent is performing a full lint cycle
+- CI reports Markdown violations that need to be fixed
+- A maintenance pass includes Markdown hygiene
+
+---
+
+## Required Inputs
+
+| Input | Source |
+|-------|--------|
+| `markdownlint-cli` version `0.48.0` installed | Verified in Step 1 |
+| Repository root path | Working directory |
+| `.markdownlint.json` config at repository root | Must exist before running |
+
+---
+
+## Expected Outputs
+
+- A summary table of files scanned, violations found, auto-fixed, manually fixed, and remaining
+- All safe violations resolved; remaining violations reported for human decision
+
+---
+
 ## Step 1 — Verify markdownlint-cli Is Available
 
 ```powershell
@@ -45,6 +83,7 @@ Each output line follows this format:
 ```
 
 Group violations by file. For each file compute:
+
 - Total violation count
 - List of unique rule IDs triggered
 
@@ -80,6 +119,7 @@ markdownlint "**/*.md" --ignore node_modules --ignore .git 2>&1
 For each violation that `--fix` could not resolve, open the offending `.md` file and correct it directly. Only fix what `markdownlint` flagged — do not rewrite surrounding prose, restructure headings, or alter document meaning.
 
 **Safe manual corrections include:**
+
 - Adding or removing blank lines around headings, lists, or code fences
 - Correcting heading levels to be consistent
 - Replacing bare URLs with `[text](url)` links when the rule requires it
@@ -95,6 +135,7 @@ markdownlint "**/*.md" --ignore node_modules --ignore .git 2>&1
 ```
 
 Record:
+
 - Violations resolved by auto-fix
 - Violations resolved by manual edit
 - Violations remaining for human decision

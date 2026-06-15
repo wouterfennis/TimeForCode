@@ -44,6 +44,17 @@ You coordinate a four-phase workflow — Plan → FeatureWriter → Implementati
 
 ---
 
+## Inventory Metadata
+
+| Field | Value |
+|-------|-------|
+| Owner | `Orchestrator` |
+| Status | `active` |
+| Overlap risk | `none` |
+| Review cadence | `per-release` |
+
+---
+
 ## Core Constraints
 
 - **Read-only except for `gh` commands**: The only terminal commands you may run are `gh issue view` and `gh issue comment`. Nothing else.
@@ -98,13 +109,14 @@ Do not present or endorse the Phase 2 handoff until the gate is open.
 The user returns here after the FeatureWriter agent has finished. Run the same `gh issue view` command for the issue number, then check:
 
 **Gate condition — two things must both be true:**
+
 1. At least one comment contains a fenced `gherkin` code block (this is the feature file comment posted by the FeatureWriter agent)
 2. After that comment, there is at least one comment from a human (not a bot) containing any of: `approved`, `lgtm`, `looks good`, `✅`, or `:white_check_mark:`
 
 - **Gate OPEN**: Tell the user:
   > "The feature file has been reviewed and approved. Select **Phase 3 — Run Implementation Agent**. The issue number is `#<N>` — include it in the prompt."
 
-- **Gate CLOSED — feature file missing**: 
+- **Gate CLOSED — feature file missing**:
   > "No feature file comment was found on issue #`<N>`. Make sure the FeatureWriter agent has finished and posted its comment, then come back here."
 
 - **Gate CLOSED — approval missing**:
