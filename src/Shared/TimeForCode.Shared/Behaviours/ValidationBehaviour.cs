@@ -35,10 +35,9 @@ namespace TimeForCode.Shared.Behaviours
 
             if (failures.Count != 0)
             {
-                _logger.LogWarning("Validation failed for {RequestType} with {FailureCount} failure(s): {Failures}",
+                _logger.LogWarning("Validation failed for {RequestType} with {FailureCount} failure(s)",
                     typeof(TRequest).Name,
-                    failures.Count,
-                    string.Join("; ", failures.Select(f => f.ErrorMessage)));
+                    failures.Count);
 
                 throw new ValidationException(failures);
             }

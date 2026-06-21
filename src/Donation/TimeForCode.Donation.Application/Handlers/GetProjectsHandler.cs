@@ -22,7 +22,7 @@ namespace TimeForCode.Donation.Application.Handlers
 
             var (projects, totalCount) = await _projectRepository.GetAllPublishedAsync(request.PageNumber, request.PageSize);
 
-            _logger.LogDebug("Retrieved {Count} projects out of {TotalCount} total", projects.Count(), totalCount);
+            _logger.LogDebug("Retrieved {Count} projects out of {TotalCount} total", projects.Count, totalCount);
 
             var projectDtos = projects.Select(p => new ProjectDto
             {
