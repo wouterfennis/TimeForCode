@@ -18,7 +18,7 @@ namespace TimeForCode.Donation.Application.Tests.Validators
                 UserId = "user-123"
             };
 
-            var result = await _sut.ValidateAsync(command);
+            var result = await _sut.ValidateAsync(command, CancellationToken.None);
 
             result.IsValid.Should().BeTrue();
         }
@@ -32,7 +32,7 @@ namespace TimeForCode.Donation.Application.Tests.Validators
                 UserId = "user-123"
             };
 
-            var result = await _sut.ValidateAsync(command);
+            var result = await _sut.ValidateAsync(command, CancellationToken.None);
 
             result.IsValid.Should().BeFalse();
             result.Errors.Should().Contain(e => e.PropertyName == nameof(UnpublishProjectCommand.ProjectId));
@@ -47,7 +47,7 @@ namespace TimeForCode.Donation.Application.Tests.Validators
                 UserId = string.Empty
             };
 
-            var result = await _sut.ValidateAsync(command);
+            var result = await _sut.ValidateAsync(command, CancellationToken.None);
 
             result.IsValid.Should().BeFalse();
             result.Errors.Should().Contain(e => e.PropertyName == nameof(UnpublishProjectCommand.UserId));

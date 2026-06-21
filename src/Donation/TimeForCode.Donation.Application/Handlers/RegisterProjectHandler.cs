@@ -83,9 +83,9 @@ namespace TimeForCode.Donation.Application.Handlers
             {
                 await _projectRepository.CreateAsync(project);
             }
-            catch (RepositoryConflictException)
+            catch (RepositoryConflictException exception)
             {
-                _logger.LogWarning("Conflict while creating project for URL {NormalizedUrl}", normalizedUrl);
+                _logger.LogWarning(exception, "Conflict while creating project for URL {NormalizedUrl}", normalizedUrl);
                 return Result<RegisterProjectResult>.Conflict("Repository is already published.");
             }
 

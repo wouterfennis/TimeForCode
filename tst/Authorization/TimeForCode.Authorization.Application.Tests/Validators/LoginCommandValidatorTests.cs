@@ -19,7 +19,7 @@ namespace TimeForCode.Authorization.Application.Tests.Validators
                 RedirectUri = new Uri("https://example.com/callback")
             };
 
-            var result = await _sut.ValidateAsync(command);
+            var result = await _sut.ValidateAsync(command, CancellationToken.None);
 
             result.IsValid.Should().BeTrue();
         }
@@ -33,7 +33,7 @@ namespace TimeForCode.Authorization.Application.Tests.Validators
                 RedirectUri = new Uri("https://example.com/callback")
             };
 
-            var result = await _sut.ValidateAsync(command);
+            var result = await _sut.ValidateAsync(command, CancellationToken.None);
 
             result.IsValid.Should().BeFalse();
             result.Errors.Should().Contain(e => e.PropertyName == nameof(LoginCommand.IdentityProvider));

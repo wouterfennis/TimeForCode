@@ -18,7 +18,7 @@ namespace TimeForCode.Authorization.Application.Tests.Validators
                 State = "valid-state"
             };
 
-            var result = await _sut.ValidateAsync(command);
+            var result = await _sut.ValidateAsync(command, CancellationToken.None);
 
             result.IsValid.Should().BeTrue();
         }
@@ -32,7 +32,7 @@ namespace TimeForCode.Authorization.Application.Tests.Validators
                 State = "valid-state"
             };
 
-            var result = await _sut.ValidateAsync(command);
+            var result = await _sut.ValidateAsync(command, CancellationToken.None);
 
             result.IsValid.Should().BeFalse();
             result.Errors.Should().Contain(e => e.PropertyName == nameof(CallbackCommand.Code));
@@ -47,7 +47,7 @@ namespace TimeForCode.Authorization.Application.Tests.Validators
                 State = string.Empty
             };
 
-            var result = await _sut.ValidateAsync(command);
+            var result = await _sut.ValidateAsync(command, CancellationToken.None);
 
             result.IsValid.Should().BeFalse();
             result.Errors.Should().Contain(e => e.PropertyName == nameof(CallbackCommand.State));
