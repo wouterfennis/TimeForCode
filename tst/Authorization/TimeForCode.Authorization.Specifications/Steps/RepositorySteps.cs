@@ -45,7 +45,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
         [When(@"The user requests repository ""(.*)"" from the time for code platform")]
         public async Task WhenTheUserRequestsRepositoryFromTheTimeForCodePlatform(string ownerSlashRepo)
         {
-            _singleRepoResponse = await _httpClient.GetAsync($"api/user/repositories/{ownerSlashRepo}");
+            _singleRepoResponse = await _httpClient.GetAsync($"api/v1/user/repositories/{ownerSlashRepo}");
         }
 
         [Then("A list of public repositories is returned with name, description, star count, language, and URL")]

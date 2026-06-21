@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -19,13 +20,15 @@ namespace TimeForCode.Authorization.Application.Services
         private readonly TokenCreationOptions _tokenCreationOptions;
         private readonly IRefreshTokenRepository _refreshTokenRepository;
         private readonly IStateRepository _stateRepository;
+        private readonly ILogger<TokenService> _logger;
 
         public TokenService(RSA rsa,
             IIdentityProviderServiceFactory identityProviderServiceFactory,
             TimeProvider timeProvider,
             IRefreshTokenRepository refreshTokenRepository,
             IStateRepository stateRepository,
-            IOptions<TokenCreationOptions> tokenCreationOptions)
+            IOptions<TokenCreationOptions> tokenCreationOptions,
+            ILogger<TokenService> logger)
         {
             _rsaSecurityKey = new RsaSecurityKey(rsa);
             _tokenCreationOptions = tokenCreationOptions.Value;
@@ -33,13 +36,17 @@ namespace TimeForCode.Authorization.Application.Services
             _timeProvider = timeProvider;
             _refreshTokenRepository = refreshTokenRepository;
             _stateRepository = stateRepository;
+            _logger = logger;
         }
 
         public async Task<Result<ExternalAccessToken>> GetAccessTokenFromExternalProviderAsync(string state, string code)
         {
+            _logger.LogDebug("Getting access token from external provider for state {State}", state);
+
             var result = _identityProviderServiceFactory.GetIdentityProviderServiceFromState(state);
             if (result.IsFailure)
             {
+                _logger.LogWarning("Failed to get identity provider service from state: {Error}", result.ErrorMessage);
                 return Result<ExternalAccessToken>.Failure(result.ErrorMessage);
             }
             var identityProviderService = result.Value;
@@ -47,6 +54,7 @@ namespace TimeForCode.Authorization.Application.Services
             var externalAccessTokenResult = await identityProviderService.GetAccessTokenAsync(code);
             if (externalAccessTokenResult.IsFailure)
             {
+                _logger.LogWarning("Failed to get access token from identity provider: {Error}", externalAccessTokenResult.ErrorMessage);
                 return Result<ExternalAccessToken>.Failure(externalAccessTokenResult.ErrorMessage);
             }
 
@@ -59,6 +67,8 @@ namespace TimeForCode.Authorization.Application.Services
 
         public AccessToken GenerateInternalToken(string userId)
         {
+            _logger.LogDebug("Generating internal token for user {UserId}", userId);
+
             var expiresAfter = _timeProvider.GetUtcNow()
                 .AddMinutes(_tokenCreationOptions.TokenExpiresInMinutes);
 
@@ -91,15 +101,19 @@ namespace TimeForCode.Authorization.Application.Services
 
         public async Task<Result<AccessToken>> RefreshInternalTokenAsync(RefreshToken refreshToken)
         {
+            _logger.LogDebug("Refreshing internal token");
+
             Domain.Entities.RefreshToken? existingToken = await _refreshTokenRepository.GetByTokenAsync(refreshToken.Token);
 
             if (existingToken == null)
             {
+                _logger.LogWarning("Refresh token not found during refresh");
                 return Result<AccessToken>.Failure("Refresh token not found");
             }
 
             if (existingToken.IsExpired(_timeProvider.GetUtcNow()))
             {
+                _logger.LogWarning("Refresh token expired for user {UserId}", existingToken.UserId);
                 return Result<AccessToken>.Failure("Refresh token expired");
             }
 

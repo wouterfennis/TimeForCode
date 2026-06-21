@@ -11,7 +11,7 @@ namespace TimeForCode.Authorization.Api.Controllers
     /// User controller.
     /// </summary>
     [Produces(MediaTypeNames.Application.Json)]
-    [Route("api/[controller]")]
+    [Route("api/v1/[controller]")]
     [ApiController]
     [Authorize(Policy = "ApiUser")]
     public class UserController : ControllerBase
