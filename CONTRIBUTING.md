@@ -60,7 +60,7 @@ provide as much detail as possible, including:
 
 - [x] Your branch passes the automated tests and checks.
 - [x] Your code adheres to the project's style guide.
-- [x] You have added or updated documenation for any new functionality or
+- [x] You have added or updated documentation for any new functionality or
  endpoints.
 - [x] You have added or updated tests for your changes.
 
@@ -109,13 +109,52 @@ dotnet test
 
 Documentation
 
-- Update relevant documenation in the `docs/` folder for any new
+- Update relevant documentation in the `docs/` folder for any new
  features or changes.
 - Use clear and concise language.
+
+### 6. How to Run Tests Locally
+
+**Run all tests (unit, integration, architecture, acceptance):**
+
+```powershell
+# From the repository root
+dotnet test TimeForCode.sln
+```
+
+**Run tests for a single project:**
+
+```powershell
+# Replace the path with the project you want to target
+dotnet test tst/Donation/TimeForCode.Donation.Specifications/TimeForCode.Donation.Specifications.csproj
+```
+
+**Run only non-E2E tests (as CI does):**
+
+```powershell
+dotnet test TimeForCode.sln --filter "TestCategory!=E2E"
+```
+
+**Run E2E / browser tests (Website.Specifications):**
+
+E2E tests require the full Docker Compose stack. Start it first, then run the tests:
+
+```powershell
+# 1. Start the full stack
+.\scripts\start-local.ps1
+
+# 2. Install the Playwright browser binaries (first time only)
+pwsh tst/Website/TimeForCode.Website.Specifications/bin/Debug/net10.0/playwright.ps1 install chromium
+
+# 3. Run the E2E suite
+dotnet test tst/Website/TimeForCode.Website.Specifications/
+```
+
+See `tst/Website/TimeForCode.Website.Specifications/README.md` for full setup details.
 
 ## Need Help?
 
 If you have any questions or need assistance, feel free to reach out by
-opening an issue or joining our community descussions.
+opening an issue or joining our community discussions.
 
 Thank you for contributing to **TimeForCode**!
