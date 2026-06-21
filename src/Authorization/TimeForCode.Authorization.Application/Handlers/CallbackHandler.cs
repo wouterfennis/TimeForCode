@@ -27,7 +27,7 @@ namespace TimeForCode.Authorization.Application.Handlers
 
         public async Task<Result<TokenResult>> Handle(CallbackCommand request, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Handling callback for state {State}", request.State);
+            _logger.LogInformation("Handling callback");
 
             var accessTokenResult = await _tokenService.GetAccessTokenFromExternalProviderAsync(request.State, request.Code);
             if (accessTokenResult.IsFailure)
