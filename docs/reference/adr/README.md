@@ -150,7 +150,7 @@ Tokens are stored exclusively in HttpOnly, Secure cookies. The access token and 
 
 ## ADR-006
 
-**Date**: 2026
+**Date**: 2026-06-21
 **Status**: Accepted
 
 ### Context
