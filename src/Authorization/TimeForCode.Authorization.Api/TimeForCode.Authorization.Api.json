@@ -6,7 +6,7 @@
     "version": "v1"
   },
   "paths": {
-    "/api/Authentication/login": {
+    "/api/v1/Authentication/login": {
       "get": {
         "tags": [
           "Authentication"
@@ -57,7 +57,7 @@
         }
       }
     },
-    "/api/Authentication/callback": {
+    "/api/v1/Authentication/callback": {
       "get": {
         "tags": [
           "Authentication"
@@ -117,7 +117,7 @@
         }
       }
     },
-    "/api/Authentication/logout": {
+    "/api/v1/Authentication/logout": {
       "get": {
         "tags": [
           "Authentication"
@@ -139,7 +139,7 @@
         }
       }
     },
-    "/api/Authentication/refresh": {
+    "/api/v1/Authentication/refresh": {
       "get": {
         "tags": [
           "Authentication"
@@ -227,7 +227,7 @@
         }
       }
     },
-    "/api/User": {
+    "/api/v1/User": {
       "get": {
         "tags": [
           "User"
@@ -263,7 +263,7 @@
         }
       }
     },
-    "/api/User/repositories": {
+    "/api/v1/User/repositories": {
       "get": {
         "tags": [
           "User"
@@ -312,7 +312,7 @@
         }
       }
     },
-    "/api/User/repositories/{owner}/{repo}": {
+    "/api/v1/User/repositories/{owner}/{repo}": {
       "get": {
         "tags": [
           "User"

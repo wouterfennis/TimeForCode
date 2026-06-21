@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using TimeForCode.Authorization.Application.Interfaces;
 using TimeForCode.Authorization.Application.Options;
@@ -13,21 +14,26 @@ namespace TimeForCode.Authorization.Application.Services
         private readonly IRandomGenerator _randomGenerator;
         private readonly TokenCreationOptions _tokenCreationOptions;
         private readonly IRefreshTokenRepository _refreshTokenRepository;
+        private readonly ILogger<RefreshTokenService> _logger;
 
         public RefreshTokenService(
             TimeProvider timeProvider,
             IRandomGenerator randomGenerator,
             IRefreshTokenRepository refreshTokenRepository,
-            IOptions<TokenCreationOptions> tokenCreationOptions)
+            IOptions<TokenCreationOptions> tokenCreationOptions,
+            ILogger<RefreshTokenService> logger)
         {
             _tokenCreationOptions = tokenCreationOptions.Value;
             _timeProvider = timeProvider;
             _randomGenerator = randomGenerator;
             _refreshTokenRepository = refreshTokenRepository;
+            _logger = logger;
         }
 
         public async Task<RefreshToken> CreateRefreshTokenAsync(string userId)
         {
+            _logger.LogDebug("Creating refresh token for user {UserId}", userId);
+
             var token = _randomGenerator.GenerateRandomString();
             var refreshToken = new Domain.Entities.RefreshToken
             {
@@ -52,12 +58,16 @@ namespace TimeForCode.Authorization.Application.Services
 
             if (existingToken == null)
             {
+                _logger.LogWarning("Refresh token not found during replacement");
                 return Result<RefreshToken>.Failure("Refresh token not found");
             }
 
             await ExpireRefreshTokenAsync(existingToken);
 
             var newRefreshToken = await CreateRefreshTokenAsync(existingToken.UserId);
+
+            _logger.LogDebug("Refresh token replaced for user {UserId}", existingToken.UserId);
+
             return Result<RefreshToken>.Success(newRefreshToken);
         }
 
@@ -67,6 +77,7 @@ namespace TimeForCode.Authorization.Application.Services
 
             if (existingToken == null)
             {
+                _logger.LogDebug("Refresh token not found during expiry; nothing to expire");
                 return;
             }
 
@@ -75,6 +86,7 @@ namespace TimeForCode.Authorization.Application.Services
 
         private async Task ExpireRefreshTokenAsync(Domain.Entities.RefreshToken refreshToken)
         {
+            _logger.LogDebug("Expiring refresh token for user {UserId}", refreshToken.UserId);
             await _refreshTokenRepository.DeleteAsync(refreshToken);
         }
     }

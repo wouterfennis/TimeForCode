@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.Extensions.Logging;
 using TimeForCode.Authorization.Application.Services;
 using TimeForCode.Authorization.Commands;
 using TimeForCode.Authorization.Values;
@@ -11,21 +12,27 @@ namespace TimeForCode.Authorization.Application.Handlers
         private readonly IAccountService _accountService;
         private readonly ITokenService _tokenService;
         private readonly IRefreshTokenService _refreshTokenService;
+        private readonly ILogger<CallbackHandler> _logger;
 
         public CallbackHandler(IAccountService accountService,
             ITokenService tokenService,
-            IRefreshTokenService refreshTokenService)
+            IRefreshTokenService refreshTokenService,
+            ILogger<CallbackHandler> logger)
         {
             _accountService = accountService;
             _tokenService = tokenService;
             _refreshTokenService = refreshTokenService;
+            _logger = logger;
         }
 
         public async Task<Result<TokenResult>> Handle(CallbackCommand request, CancellationToken cancellationToken)
         {
+            _logger.LogInformation("Handling callback");
+
             var accessTokenResult = await _tokenService.GetAccessTokenFromExternalProviderAsync(request.State, request.Code);
             if (accessTokenResult.IsFailure)
             {
+                _logger.LogWarning("Failed to get access token from external provider: {Error}", accessTokenResult.ErrorMessage);
                 return Result<TokenResult>.Failure(accessTokenResult.ErrorMessage);
             }
 
@@ -33,6 +40,7 @@ namespace TimeForCode.Authorization.Application.Handlers
 
             if (saveResult.IsFailure)
             {
+                _logger.LogWarning("Failed to save account information: {Error}", saveResult.ErrorMessage);
                 return Result<TokenResult>.Failure(saveResult.ErrorMessage);
             }
 
@@ -40,6 +48,8 @@ namespace TimeForCode.Authorization.Application.Handlers
             var internalToken = _tokenService.GenerateInternalToken(userId);
             var refreshToken = await _refreshTokenService.CreateRefreshTokenAsync(userId);
             var redirectUri = _tokenService.GetRedirectUri(request.State);
+
+            _logger.LogInformation("Callback handled successfully for user {UserId}", userId);
 
             return Result<TokenResult>.Success(new TokenResult
             {

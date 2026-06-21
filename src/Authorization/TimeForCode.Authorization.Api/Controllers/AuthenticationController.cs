@@ -16,7 +16,7 @@ namespace TimeForCode.Authorization.Api.Controllers
     /// <summary>
     /// Authentication endpoints.
     /// </summary>
-    [Route("api/[controller]")]
+    [Route("api/v1/[controller]")]
     [Produces(MediaTypeNames.Application.Json)]
     [ApiController]
     public class AuthenticationController : ControllerBase

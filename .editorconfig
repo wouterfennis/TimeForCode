@@ -70,6 +70,9 @@ dotnet_code_quality_unused_parameters = all:silent
 # Suppression preferences
 dotnet_remove_unnecessary_suppression_exclusions = none
 
+# Diagnostic suppressions
+dotnet_diagnostic.CA1873.severity = none
+
 # New line preferences
 dotnet_style_allow_multiple_blank_lines_experimental = true
 dotnet_style_allow_statement_immediately_after_block_experimental = true
