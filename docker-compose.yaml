@@ -12,7 +12,7 @@ services:
       - ASPNETCORE_URLS=http://+:8080
       - Logging__LogLevel__Default=Debug
       - Logging__LogLevel__Microsoft.AspNetCore=Warning
-      - ExternalIdentityProviderOptions__CallbackUri=http://localhost:8080/api/authentication/callback
+      - ExternalIdentityProviderOptions__CallbackUri=http://localhost:8080/api/v1/authentication/callback
       - ExternalIdentityProviderOptions__Github__LoginHost=localhost
       - ExternalIdentityProviderOptions__Github__LoginHostPort=8081
       - ExternalIdentityProviderOptions__Github__AccessTokenHost=identity-provider-mock
