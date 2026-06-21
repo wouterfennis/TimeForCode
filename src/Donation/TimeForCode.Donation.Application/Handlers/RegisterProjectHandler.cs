@@ -120,6 +120,7 @@ namespace TimeForCode.Donation.Application.Handlers
         private static bool IsValidGithubSegment(string segment)
         {
             return !string.IsNullOrEmpty(segment) &&
+                   char.IsLetterOrDigit(segment[0]) &&
                    segment.All(c => char.IsLetterOrDigit(c) || c == '-' || c == '_' || c == '.');
         }
     }
