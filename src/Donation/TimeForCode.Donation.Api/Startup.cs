@@ -2,9 +2,7 @@
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
-using Scalar.AspNetCore;
 using System.Diagnostics.CodeAnalysis;
-using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 using TimeForCode.Donation.Api.Options;
 using TimeForCode.Donation.Application.Extensions;
@@ -48,11 +46,7 @@ namespace TimeForCode.Donation.Api
                 });
             });
 
-            services.AddControllers()
-            .AddJsonOptions(x =>
-            {
-                x.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-            });
+            services.AddDefaultControllers();
 
             var authenticationOptions = AuthenticationOptions.Bind(_configuration);
 
@@ -97,30 +91,7 @@ namespace TimeForCode.Donation.Api
         /// </summary>
         public static void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
-            else
-            {
-                app.UseHsts();
-            }
-
-            app.UseSecurityHeaders();
-
-            app.UseRateLimiter();
-
-            app.UseRouting();
-
-            app.UseAuthentication();
-            app.UseAuthorization();
-
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllers();
-                endpoints.MapOpenApi();
-                endpoints.MapScalarApiReference();
-            });
+            app.UseDefaultApiPipeline(env);
         }
     }
 }
