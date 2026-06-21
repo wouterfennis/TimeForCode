@@ -3,15 +3,15 @@
 **Date**: 2025
 **Status**: Accepted
 
-### Context
+## Context
 
 The platform needs a data store that can handle evolving schemas as the domain model grows, and must be straightforward to run locally in a Docker container.
 
-### Decision
+## Decision
 
 MongoDB is used as the primary data store for all services. Each bounded context owns its own MongoDB database.
 
-### Consequences
+## Consequences
 
 **Positive**: Schema flexibility suits a rapidly evolving domain. Strong .NET driver support. Easy to run locally with Docker. Azure Cosmos DB for MongoDB API provides a managed cloud option.
 

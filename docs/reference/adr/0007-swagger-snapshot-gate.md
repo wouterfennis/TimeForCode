@@ -3,11 +3,11 @@
 **Date**: 2026-06-21
 **Status**: Accepted
 
-### Context
+## Context
 
 The Authorization and Donation APIs expose an OpenAPI (Swagger) specification. Without a gate, internal refactors can silently alter the public API surface — breaking generated clients or external callers — without any code review step.
 
-### Decision
+## Decision
 
 Each `*.Api.Tests` project contains a single snapshot test (`SwaggerTests.cs`) that generates the OpenAPI JSON at test time and compares it against a committed `.verified.txt` file using the [Verify](https://github.com/VerifyTests/Verify) library. A mismatch fails the test and writes a `.received.txt` diff file.
 
@@ -22,7 +22,7 @@ Copy-Item `
 
 The updated `.verified.txt` must be committed alongside the code change in the same pull request so the diff is reviewable.
 
-### Consequences
+## Consequences
 
 **Positive**: Breaking changes to the public API surface are caught immediately in CI. Reviewers can see the exact OpenAPI diff in the pull request. The NSwag-generated client (`TimeForCode.Authorization.Api.Client`) is naturally included in the review checklist.
 

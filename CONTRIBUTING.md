@@ -115,12 +115,14 @@ Documentation
 
 ### 6. How to Run Tests Locally
 
-**Run all tests (including E2E / browser tests):**
+**Run all tests (including E2E / browser tests):**
 
-> Note: This runs `TimeForCode.Website.Specifications` (@E2E) and requires the full Docker Compose stack + Playwright (see below).
-
-    # From the repository root
-    dotnet test TimeForCode.sln
+> Note: This runs `TimeForCode.Website.Specifications` (@E2E) and requires the full Docker Compose stack + Playwright (see below).
+
+```powershell
+# From the repository root
+dotnet test TimeForCode.sln
+```
 
 **Run tests for a single project:**
 

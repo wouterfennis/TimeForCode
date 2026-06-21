@@ -3,15 +3,15 @@
 **Date**: 2025
 **Status**: Accepted
 
-### Context
+## Context
 
 The Application layer needs a way to dispatch commands and decouple the API layer from the implementation of business logic without introducing a full event-driven architecture.
 
-### Decision
+## Decision
 
 MediatR is used for in-process command dispatch. Each operation is modelled as a command (e.g. `LoginCommand`) handled by a corresponding handler. No event sourcing or external messaging is used at this stage.
 
-### Consequences
+## Consequences
 
 **Positive**: Clean separation between intent (command) and execution (handler). Handlers are independently testable. Easy to add cross-cutting concerns (logging, validation) as pipeline behaviours.
 

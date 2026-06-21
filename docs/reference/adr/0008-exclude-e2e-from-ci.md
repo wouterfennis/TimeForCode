@@ -3,11 +3,11 @@
 **Date**: 2026-06-21
 **Status**: Accepted
 
-### Context
+## Context
 
 The `TimeForCode.Website.Specifications` project contains browser-level E2E tests powered by Microsoft Playwright. These tests require the full Docker Compose stack to be running (Website, Authorization API, Donation API, Identity Provider Mock, MongoDB). Running the stack in CI requires container-in-container support and significantly increases build times.
 
-### Decision
+## Decision
 
 All scenarios in `TimeForCode.Website.Specifications` are tagged `@E2E`. The CI pipeline passes `--filter "TestCategory!=E2E"` to `dotnet test`, so E2E tests are **never executed during automated builds**.
 
@@ -26,7 +26,7 @@ pwsh tst/Website/TimeForCode.Website.Specifications/bin/Debug/net10.0/playwright
 dotnet test tst/Website/TimeForCode.Website.Specifications/
 ```
 
-### Consequences
+## Consequences
 
 **Positive**: CI remains fast. E2E failures do not block unrelated pull requests. Developers without a full local stack are not blocked.
 

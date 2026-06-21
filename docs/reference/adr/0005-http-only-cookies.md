@@ -3,15 +3,15 @@
 **Date**: 2025
 **Status**: Accepted
 
-### Context
+## Context
 
 JWTs must be stored in the browser after login. The choices were localStorage, sessionStorage, or HttpOnly cookies.
 
-### Decision
+## Decision
 
 Tokens are stored exclusively in HttpOnly, Secure cookies. The access token and refresh token are both set as HttpOnly cookies by the Authorization API after a successful login.
 
-### Consequences
+## Consequences
 
 **Positive**: Tokens cannot be accessed by JavaScript, preventing XSS-based token theft. Cookies are automatically sent with requests to the same origin.
 
