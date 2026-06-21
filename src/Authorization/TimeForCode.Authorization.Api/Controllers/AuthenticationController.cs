@@ -55,7 +55,8 @@ namespace TimeForCode.Authorization.Api.Controllers
         {
             if (IsInvalidRedirectUri(loginModel.RedirectUri))
             {
-                _logger.LogWarning("Redirect URI mismatch: '{RedirectUri}' is not in the allowed list.", loginModel.RedirectUri);
+                _logger.LogWarning("Redirect URI mismatch: '{RedirectUri}' is not in the allowed list.",
+                    SanitizeForLog(loginModel.RedirectUri?.AbsoluteUri));
                 return BadRequest(ProblemDetailsMapper.BadRequest("The supplied redirect uri is invalid"));
             }
 
@@ -224,6 +225,12 @@ namespace TimeForCode.Authorization.Api.Controllers
             }
 
             return null;
+        }
+
+        private static string SanitizeForLog(string? value)
+        {
+            if (value is null) return "(null)";
+            return value.Replace('\n', '_').Replace('\r', '_');
         }
     }
 }

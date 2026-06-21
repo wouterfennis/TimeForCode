@@ -9,6 +9,7 @@ using System.Threading.RateLimiting;
 using TimeForCode.Authorization.Application.Extensions;
 using TimeForCode.Authorization.Application.Options;
 using TimeForCode.Authorization.Infrastructure.Extensions;
+using TimeForCode.Shared.Api.Extensions;
 
 namespace TimeForCode.Authorization.Api
 {
@@ -105,13 +106,7 @@ namespace TimeForCode.Authorization.Api
                 app.UseHsts();
             }
 
-            app.Use(async (context, next) =>
-            {
-                context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
-                context.Response.Headers.Append("X-Frame-Options", "DENY");
-                context.Response.Headers.Append("X-XSS-Protection", "1; mode=block");
-                await next();
-            });
+            app.UseSecurityHeaders();
 
             app.UseRateLimiter();
 

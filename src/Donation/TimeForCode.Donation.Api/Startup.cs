@@ -9,6 +9,7 @@ using System.Threading.RateLimiting;
 using TimeForCode.Donation.Api.Options;
 using TimeForCode.Donation.Application.Extensions;
 using TimeForCode.Donation.Infrastructure.Extensions;
+using TimeForCode.Shared.Api.Extensions;
 
 namespace TimeForCode.Donation.Api
 {
@@ -105,13 +106,7 @@ namespace TimeForCode.Donation.Api
                 app.UseHsts();
             }
 
-            app.Use(async (context, next) =>
-            {
-                context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
-                context.Response.Headers.Append("X-Frame-Options", "DENY");
-                context.Response.Headers.Append("X-XSS-Protection", "1; mode=block");
-                await next();
-            });
+            app.UseSecurityHeaders();
 
             app.UseRateLimiter();
 
