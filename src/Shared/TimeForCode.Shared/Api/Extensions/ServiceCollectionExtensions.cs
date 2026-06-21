@@ -2,9 +2,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OpenApi;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
+using OpenApiInfo = Microsoft.OpenApi.OpenApiInfo;
 
 namespace TimeForCode.Shared.Api.Extensions
 {
@@ -51,7 +51,7 @@ namespace TimeForCode.Shared.Api.Extensions
         {
             return options =>
             {
-                options.AddDocumentTransformer((document, _, _) =>
+                options.AddDocumentTransformer((document, context, cancellationToken) =>
                 {
                     document.Info = new OpenApiInfo
                     {
