@@ -1,9 +1,6 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi;
 using System.Diagnostics.CodeAnalysis;
-using System.Threading.RateLimiting;
 using TimeForCode.Authorization.Application.Extensions;
 using TimeForCode.Authorization.Application.Options;
 using TimeForCode.Authorization.Infrastructure.Extensions;
@@ -32,20 +29,11 @@ namespace TimeForCode.Authorization.Api
         /// </summary>
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddOpenApi("v1", options =>
-            {
-                options.AddDocumentTransformer((document, context, cancellationToken) =>
-                {
-                    document.Info = new OpenApiInfo
-                    {
-                        Title = "Authorization API",
-                        Version = "v1",
-                        Description = "API to interact with the authorization backend"
-                    };
-                    return Task.CompletedTask;
-                });
-            });
-
+            services.AddOpenApi(
+                "v1",
+                TimeForCode.Shared.Api.Extensions.ServiceCollectionExtensions.CreateDefaultOpenApiOptions(
+                    "Authorization API",
+                    "API to interact with the authorization backend"));
             services.AddDefaultControllers();
 
             services.AddApplicationLayer(_configuration);
@@ -72,18 +60,7 @@ namespace TimeForCode.Authorization.Api
             services.AddAuthorizationBuilder()
                     .AddPolicy("ApiUser", policy => policy.RequireClaim("scope", "user"));
 
-            services.AddRateLimiter(options =>
-            {
-                options.AddSlidingWindowLimiter("auth", opt =>
-                {
-                    opt.Window = TimeSpan.FromMinutes(1);
-                    opt.SegmentsPerWindow = 6;
-                    opt.PermitLimit = 20;
-                    opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-                    opt.QueueLimit = 0;
-                });
-                options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
-            });
+            services.AddRateLimiter(options => options.AddDefaultSlidingWindowPolicy("auth", 20));
         }
 
         /// <summary>

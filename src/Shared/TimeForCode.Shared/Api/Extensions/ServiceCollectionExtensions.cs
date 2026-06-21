@@ -1,5 +1,10 @@
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.OpenApi;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.OpenApi;
 using System.Text.Json.Serialization;
+using System.Threading.RateLimiting;
 
 namespace TimeForCode.Shared.Api.Extensions
 {
@@ -18,6 +23,46 @@ namespace TimeForCode.Shared.Api.Extensions
                 {
                     x.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
                 });
+        }
+
+        /// <summary>
+        /// Adds the project's default sliding-window rate-limiter settings to a policy.
+        /// </summary>
+        public static RateLimiterOptions AddDefaultSlidingWindowPolicy(this RateLimiterOptions options, string policyName, int permitLimit)
+        {
+            options.AddSlidingWindowLimiter(policyName, limiterOptions =>
+            {
+                limiterOptions.Window = TimeSpan.FromMinutes(1);
+                limiterOptions.SegmentsPerWindow = 6;
+                limiterOptions.PermitLimit = permitLimit;
+                limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+                limiterOptions.QueueLimit = 0;
+            });
+
+            options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+            return options;
+        }
+
+        /// <summary>
+        /// Creates the default OpenAPI configuration for an API document.
+        /// </summary>
+        public static Action<OpenApiOptions> CreateDefaultOpenApiOptions(string title, string description)
+        {
+            return options =>
+            {
+                options.AddDocumentTransformer((document, _, _) =>
+                {
+                    document.Info = new OpenApiInfo
+                    {
+                        Title = title,
+                        Version = "v1",
+                        Description = description
+                    };
+
+                    return Task.CompletedTask;
+                });
+            };
         }
     }
 }
