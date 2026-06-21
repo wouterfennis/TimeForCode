@@ -150,7 +150,8 @@ Tokens are stored exclusively in HttpOnly, Secure cookies. The access token and 
 
 ## ADR-006
 
-**Date**: 2026-06-21
+**Date**: 2026-06-21
+
 **Status**: Accepted
 
 ### Context
@@ -178,7 +179,7 @@ Step text follows a persona convention — subjects are "The user", "The externa
 ---
 
 ## ADR-007
-
+**Date**: 2026-06-21
 **Date**: 2026
 **Status**: Accepted
 
