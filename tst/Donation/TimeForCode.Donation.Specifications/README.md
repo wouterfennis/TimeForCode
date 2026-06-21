@@ -1,6 +1,6 @@
 # TimeForCode.Donation.Specifications
 
-BDD-style acceptance tests for the Donation API, written with [Reqnroll](https://reqnroll.net/) (Gherkin) and xUnit. Tests run entirely in-process — no external services or databases are required.
+BDD-style acceptance tests for the Donation API, written with [Reqnroll](https://reqnroll.net/) (Gherkin) and MSTest. Tests run entirely in-process — no external services or databases are required.
 
 ## Scope
 
