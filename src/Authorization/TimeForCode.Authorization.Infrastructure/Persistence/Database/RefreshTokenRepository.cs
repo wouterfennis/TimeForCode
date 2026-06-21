@@ -27,5 +27,10 @@ namespace TimeForCode.Authorization.Infrastructure.Persistence.Database
         {
             return _collection.ReplaceOneAsync(Builders<RefreshToken>.Filter.Eq("token", existingToken.Token), existingToken);
         }
+
+        public Task DeleteAsync(RefreshToken existingToken)
+        {
+            return _collection.DeleteOneAsync(Builders<RefreshToken>.Filter.Eq("token", existingToken.Token));
+        }
     }
 }

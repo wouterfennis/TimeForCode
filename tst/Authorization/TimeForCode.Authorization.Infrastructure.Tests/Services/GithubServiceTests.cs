@@ -250,6 +250,7 @@ namespace TimeForCode.Authorization.Infrastructure.Tests.Services
             parameters.ValidateAudience.Should().BeTrue();
             parameters.ValidAudiences.Should().Contain("test-client");
             parameters.ValidateLifetime.Should().BeTrue();
+            parameters.ValidateIssuerSigningKey.Should().BeFalse();
         }
     }
 }

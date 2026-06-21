@@ -1,12 +1,11 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi;
-using Scalar.AspNetCore;
 using System.Diagnostics.CodeAnalysis;
-using System.Text.Json.Serialization;
 using TimeForCode.Donation.Api.Options;
 using TimeForCode.Donation.Application.Extensions;
 using TimeForCode.Donation.Infrastructure.Extensions;
+using TimeForCode.Shared.Api.Extensions;
+using SharedApiServiceCollectionExtensions = TimeForCode.Shared.Api.Extensions.ServiceCollectionExtensions;
 
 namespace TimeForCode.Donation.Api
 {
@@ -31,25 +30,12 @@ namespace TimeForCode.Donation.Api
         /// </summary>
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddOpenApi("v1", options =>
-            {
-                options.AddDocumentTransformer((document, context, cancellationToken) =>
-                {
-                    document.Info = new OpenApiInfo
-                    {
-                        Title = "Donation API",
-                        Version = "v1",
-                        Description = "API to interact with the donation backend"
-                    };
-                    return Task.CompletedTask;
-                });
-            });
-
-            services.AddControllers()
-            .AddJsonOptions(x =>
-            {
-                x.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-            });
+            services.AddOpenApi(
+                "v1",
+                SharedApiServiceCollectionExtensions.CreateDefaultOpenApiOptions(
+                    "Donation API",
+                    "API to interact with the donation backend"));
+            services.AddDefaultControllers();
 
             var authenticationOptions = AuthenticationOptions.Bind(_configuration);
 
@@ -74,6 +60,7 @@ namespace TimeForCode.Donation.Api
 
             services.AddApplicationLayer();
             services.AddInfrastructureLayer(_configuration);
+            services.AddRateLimiter(options => options.AddDefaultSlidingWindowPolicy("api", 60));
         }
 
         /// <summary>
@@ -81,22 +68,7 @@ namespace TimeForCode.Donation.Api
         /// </summary>
         public static void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
-
-            app.UseRouting();
-
-            app.UseAuthentication();
-            app.UseAuthorization();
-
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllers();
-                endpoints.MapOpenApi();
-                endpoints.MapScalarApiReference();
-            });
+            app.UseDefaultApiPipeline(env);
         }
     }
 }

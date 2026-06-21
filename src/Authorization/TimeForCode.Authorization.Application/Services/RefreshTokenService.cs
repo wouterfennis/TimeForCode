@@ -87,8 +87,7 @@ namespace TimeForCode.Authorization.Application.Services
         private async Task ExpireRefreshTokenAsync(Domain.Entities.RefreshToken refreshToken)
         {
             _logger.LogDebug("Expiring refresh token for user {UserId}", refreshToken.UserId);
-            refreshToken.SetExpiresAfter(_timeProvider.GetUtcNow());
-            await _refreshTokenRepository.UpdateAsync(refreshToken);
+            await _refreshTokenRepository.DeleteAsync(refreshToken);
         }
     }
 }

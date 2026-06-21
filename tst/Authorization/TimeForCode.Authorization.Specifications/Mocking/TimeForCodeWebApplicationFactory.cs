@@ -65,6 +65,8 @@ namespace TimeForCode.Authorization.Specifications.Mocking
                 .ReturnsAsync(AccountInformationBuilder.Build());
 
             var mockRefreshTokenRepository = new Mock<IRefreshTokenRepository>();
+            mockRefreshTokenRepository.Setup(x => x.DeleteAsync(It.IsAny<RefreshToken>()))
+                .Returns(Task.CompletedTask);
 
             var mockEncryptionService = new Mock<IEncryptionService>();
             mockEncryptionService.Setup(x => x.Encrypt(It.IsAny<string>())).Returns<string>(s => s);

@@ -11,7 +11,7 @@ Scenario: User has not logged in at the external platform
 Scenario: User has expired refresh token
 	Given The user has an expired refresh token
 	When The user calls the refresh token endpoint
-	Then The following refresh error message is returned: "Refresh token expired"
+	Then The following refresh error message is returned: "Token refresh failed."
 
 Scenario: User has valid refresh token
 	Given The user has a refresh token

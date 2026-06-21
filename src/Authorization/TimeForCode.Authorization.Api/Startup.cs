@@ -1,12 +1,11 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi;
-using Scalar.AspNetCore;
 using System.Diagnostics.CodeAnalysis;
-using System.Text.Json.Serialization;
 using TimeForCode.Authorization.Application.Extensions;
 using TimeForCode.Authorization.Application.Options;
 using TimeForCode.Authorization.Infrastructure.Extensions;
+using TimeForCode.Shared.Api.Extensions;
+using SharedApiServiceCollectionExtensions = TimeForCode.Shared.Api.Extensions.ServiceCollectionExtensions;
 
 namespace TimeForCode.Authorization.Api
 {
@@ -31,25 +30,12 @@ namespace TimeForCode.Authorization.Api
         /// </summary>
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddOpenApi("v1", options =>
-            {
-                options.AddDocumentTransformer((document, context, cancellationToken) =>
-                {
-                    document.Info = new OpenApiInfo
-                    {
-                        Title = "Authorization API",
-                        Version = "v1",
-                        Description = "API to interact with the authorization backend"
-                    };
-                    return Task.CompletedTask;
-                });
-            });
-
-            services.AddControllers()
-            .AddJsonOptions(x =>
-            {
-                x.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-            });
+            services.AddOpenApi(
+                "v1",
+                SharedApiServiceCollectionExtensions.CreateDefaultOpenApiOptions(
+                    "Authorization API",
+                    "API to interact with the authorization backend"));
+            services.AddDefaultControllers();
 
             services.AddApplicationLayer(_configuration);
             services.AddInfrastructureLayer(_configuration);
@@ -74,6 +60,8 @@ namespace TimeForCode.Authorization.Api
 
             services.AddAuthorizationBuilder()
                     .AddPolicy("ApiUser", policy => policy.RequireClaim("scope", "user"));
+
+            services.AddRateLimiter(options => options.AddDefaultSlidingWindowPolicy("auth", 20));
         }
 
         /// <summary>
@@ -81,22 +69,7 @@ namespace TimeForCode.Authorization.Api
         /// </summary>
         public static void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
-
-            app.UseRouting();
-
-            app.UseAuthentication();
-            app.UseAuthorization();
-
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllers();
-                endpoints.MapOpenApi();
-                endpoints.MapScalarApiReference();
-            });
+            app.UseDefaultApiPipeline(env);
         }
     }
 }
