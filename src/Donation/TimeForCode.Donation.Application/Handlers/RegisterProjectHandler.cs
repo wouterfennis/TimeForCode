@@ -39,7 +39,7 @@ namespace TimeForCode.Donation.Application.Handlers
             }
 
             var segments = request.GithubRepositoryUrl.AbsolutePath.Split('/', StringSplitOptions.RemoveEmptyEntries);
-            if (segments.Length < 2)
+            if (segments.Length != 2)
             {
                 return Result<RegisterProjectResult>.Failure("Invalid GitHub repository URL: must include owner and repository name.");
             }

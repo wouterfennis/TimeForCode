@@ -84,7 +84,7 @@ namespace TimeForCode.Authorization.Api.Controllers
 
             if (tokenResult.IsFailure)
             {
-                _logger.LogWarning("Authentication callback failed: {ErrorMessage}", tokenResult.ErrorMessage);
+                _logger.LogWarning("Authentication callback failed: {ErrorMessage}", SanitizeForLog(tokenResult.ErrorMessage));
                 return BadRequest(ProblemDetailsMapper.BadRequest("Authentication failed."));
             }
 
@@ -123,10 +123,10 @@ namespace TimeForCode.Authorization.Api.Controllers
         private bool IsInvalidRedirectUri(Uri redirectUri)
         {
             return !_authenticationOptions.Value.ValidRedirectUris
-                .Any(validRedirectUri => string.Equals(
-                    redirectUri.AbsoluteUri.TrimEnd('/'),
-                    validRedirectUri.TrimEnd('/'),
-                    StringComparison.OrdinalIgnoreCase));
+                .Select(validRedirectUri => Uri.TryCreate(validRedirectUri, UriKind.Absolute, out Uri? parsedValidRedirectUri)
+                    ? parsedValidRedirectUri
+                    : null)
+                .Any(validRedirectUri => validRedirectUri != null && RedirectUrisMatch(redirectUri, validRedirectUri));
         }
 
         /// <summary>
@@ -157,7 +157,7 @@ namespace TimeForCode.Authorization.Api.Controllers
 
             if (tokenResult.IsFailure)
             {
-                _logger.LogWarning("Token refresh denied: {ErrorMessage}", tokenResult.ErrorMessage);
+                _logger.LogWarning("Token refresh denied: {ErrorMessage}", SanitizeForLog(tokenResult.ErrorMessage));
                 return BadRequest(ProblemDetailsMapper.BadRequest("Token refresh failed."));
             }
 
@@ -232,6 +232,16 @@ namespace TimeForCode.Authorization.Api.Controllers
             if (value is null) return "(null)";
             // Replace control characters (ASCII < 0x20) to prevent log injection / terminal manipulation.
             return new string(value.Select(c => c < 0x20 ? '_' : c).ToArray());
+        }
+
+        private static bool RedirectUrisMatch(Uri requestedRedirectUri, Uri validRedirectUri)
+        {
+            return string.Equals(requestedRedirectUri.Scheme, validRedirectUri.Scheme, StringComparison.OrdinalIgnoreCase)
+                   && string.Equals(requestedRedirectUri.Host, validRedirectUri.Host, StringComparison.OrdinalIgnoreCase)
+                   && requestedRedirectUri.Port == validRedirectUri.Port
+                   && string.Equals(requestedRedirectUri.AbsolutePath.TrimEnd('/'), validRedirectUri.AbsolutePath.TrimEnd('/'), StringComparison.Ordinal)
+                   && string.Equals(requestedRedirectUri.Query, validRedirectUri.Query, StringComparison.Ordinal)
+                   && string.Equals(requestedRedirectUri.Fragment, validRedirectUri.Fragment, StringComparison.Ordinal);
         }
     }
 }

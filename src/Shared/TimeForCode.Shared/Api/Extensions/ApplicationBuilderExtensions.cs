@@ -27,9 +27,9 @@ namespace TimeForCode.Shared.Api.Extensions
 
             app.UseSecurityHeaders();
 
-            app.UseRateLimiter();
-
             app.UseRouting();
+
+            app.UseRateLimiter();
 
             app.UseAuthentication();
             app.UseAuthorization();
