@@ -8,7 +8,7 @@
     authentication flow works end-to-end:
 
         Browser -> Website -> Auth API -> IdP Mock -> Auth API callback
-                           -> JWT issued -> /api/user returns user profile
+                           -> JWT issued -> /api/v1/user returns user profile
 
 .PARAMETER AuthApiBaseUrl
     Base URL of the Authorization API. Default: http://localhost:8080
@@ -174,7 +174,7 @@ $cookieJar = [System.IO.Path]::GetTempFileName()
 try {
     # -- Step 3.1: Login endpoint -> redirect to IdP Mock ------------------
     $redirectUri = [System.Uri]::EscapeDataString($WebsiteBaseUrl)
-    $loginUrl    = "$AuthApiBaseUrl/api/authentication/login?IdentityProvider=Github&RedirectUri=$redirectUri"
+    $loginUrl    = "$AuthApiBaseUrl/api/v1/authentication/login?IdentityProvider=Github&RedirectUri=$redirectUri"
 
     $r1 = curl -si --max-redirs 0 -c $cookieJar $loginUrl 2>&1
     $s1 = Get-StatusCode $r1
@@ -264,16 +264,16 @@ try {
             if ($claims.sub) { Write-Pass "Step 3.4: JWT subject (user id) present ($($claims.sub))" }
             else              { Write-Fail "Step 3.4: JWT subject missing" }
 
-            # -- Step 3.5: Call protected /api/user with JWT ---------------
+            # -- Step 3.5: Call protected /api/v1/user with JWT ---------------
             $bearer  = $tokenJson.Token
-            $r5      = curl -si -H "Authorization: Bearer $bearer" "$AuthApiBaseUrl/api/user" 2>&1
+            $r5      = curl -si -H "Authorization: Bearer $bearer" "$AuthApiBaseUrl/api/v1/user" 2>&1
             $s5      = Get-StatusCode $r5
             $userBody = $r5 | Select-String '^\{' | Select-Object -First 1
 
             if ($s5 -eq 200) {
-                Write-Pass "Step 3.5: GET /api/user -> 200 OK"
+                Write-Pass "Step 3.5: GET /api/v1/user -> 200 OK"
             } else {
-                Write-Fail "Step 3.5: GET /api/user" "Status=$s5"
+                Write-Fail "Step 3.5: GET /api/v1/user" "Status=$s5"
             }
 
             if ($userBody -match '"login"') {
