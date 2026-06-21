@@ -27,7 +27,7 @@ namespace TimeForCode.Authorization.Application.Services
 
         public async Task<Result<SaveAccountResult>> SaveAccountInformation(string state, ExternalAccessToken accessToken)
         {
-            _logger.LogInformation("Saving account information for state {State}", state);
+            _logger.LogInformation("Saving account information");
 
             var identityProviderServiceResult = _identityProviderServiceFactory.GetIdentityProviderServiceFromState(state);
 
