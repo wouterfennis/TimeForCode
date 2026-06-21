@@ -17,16 +17,16 @@ The Authorization API exposes OAuth 2.0 endpoints and an OpenID Connect discover
 
 | Method | Path | Status | Description |
 | --- | --- | --- | --- |
-| `GET` | `/api/authentication/login` | ✅ | Initiates OAuth 2.0 login; redirects to GitHub |
-| `GET` | `/api/authentication/callback` | ✅ | Handles OAuth 2.0 callback; exchanges code for tokens |
-| `POST` | `/api/authentication/refresh` | ✅ | Issues a new access token using the refresh token |
-| `POST` | `/api/authentication/logout` | ✅ | Clears access and refresh token cookies |
+| `GET` | `/api/v1/authentication/login` | ✅ | Initiates OAuth 2.0 login; redirects to GitHub |
+| `GET` | `/api/v1/authentication/callback` | ✅ | Handles OAuth 2.0 callback; exchanges code for tokens |
+| `POST` | `/api/v1/authentication/refresh` | ✅ | Issues a new access token using the refresh token |
+| `POST` | `/api/v1/authentication/logout` | ✅ | Clears access and refresh token cookies |
 
 ### User Endpoints
 
 | Method | Path | Status | Description |
 | --- | --- | --- | --- |
-| `GET` | `/api/user` | ✅ | Returns the currently authenticated user's profile |
+| `GET` | `/api/v1/user` | ✅ | Returns the currently authenticated user's profile |
 
 ### OpenID Connect / JWKS
 
