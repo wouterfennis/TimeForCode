@@ -46,11 +46,36 @@ Integration tests that exercise the Authorization API endpoints directly.
 
 **Path**: `tst/Authorization/TimeForCode.Authorization.Architecture.Tests`
 
-Structural tests that enforce the layering and dependency rules of the Authorization bounded context. These tests use ArchUnitNET to verify that:
+Structural tests that enforce the layering and dependency rules of the Authorization bounded context. These tests use [ArchUnitNET](https://archunitnet.readthedocs.io/) to verify that:
 
 - Domain projects do not reference infrastructure.
 - Infrastructure does not reference the API.
 - Dependencies flow in one direction only.
+
+#### Enforcement scope
+
+All production assemblies in the Authorization bounded context are loaded before each test (via `[TestInitialize]`) in `ArchitectureTestBase`. Each rule is asserted with an `Evaluate(rule)` call that fails the test if any violation is found.
+
+#### Example rules
+
+```csharp
+// Domain must not depend on the API layer
+Types().That().Are(DomainLayer).Should()
+    .NotDependOnAny(ApiLayer)
+    .Because("Domain layer should not have references to other layers");
+
+// Application must not depend on Infrastructure
+Types().That().Are(ApplicationLayer).Should()
+    .NotDependOnAny(InfrastructureLayer)
+    .Because("Application layer should not have references to infrastructure layer");
+
+// All MediatR request handlers must live in the Application layer
+Types().That().ImplementInterface(typeof(IRequestHandler<>)).Should()
+    .ResideInNamespaceMatching(".*\\.Authorization\\.Application\\..*")
+    .Because("Command Handlers should always be in the application layer");
+```
+
+Adding a new rule is as simple as creating a new `[TestMethod]` in the appropriate test class (`DomainLayerTests`, `ApplicationLayerTests`, or `InfrastructureLayerTests`) and calling `Evaluate(rule)`.
 
 ### Authorization — Infrastructure.Tests
 
