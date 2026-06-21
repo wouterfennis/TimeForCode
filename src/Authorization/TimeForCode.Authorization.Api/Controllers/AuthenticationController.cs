@@ -230,7 +230,8 @@ namespace TimeForCode.Authorization.Api.Controllers
         private static string SanitizeForLog(string? value)
         {
             if (value is null) return "(null)";
-            return value.Replace('\n', '_').Replace('\r', '_');
+            // Replace control characters (ASCII < 0x20) to prevent log injection / terminal manipulation.
+            return new string(value.Select(c => c < 0x20 ? '_' : c).ToArray());
         }
     }
 }

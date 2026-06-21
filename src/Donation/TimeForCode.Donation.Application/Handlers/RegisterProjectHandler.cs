@@ -38,6 +38,16 @@ namespace TimeForCode.Donation.Application.Handlers
                 return Result<RegisterProjectResult>.Failure("Invalid GitHub repository URL: must include owner and repository name.");
             }
 
+            if (segments.Any(s => s == ".."))
+            {
+                return Result<RegisterProjectResult>.Failure("Invalid GitHub repository URL: path traversal is not allowed.");
+            }
+
+            if (!IsValidGithubSegment(segments[0]) || !IsValidGithubSegment(segments[1]))
+            {
+                return Result<RegisterProjectResult>.Failure("Invalid GitHub repository URL: owner or repository name contains invalid characters.");
+            }
+
             var metadataResult = await _githubService.GetRepositoryMetadataAsync(request.GithubRepositoryUrl);
             if (metadataResult.IsFailure)
             {
@@ -91,6 +101,13 @@ namespace TimeForCode.Donation.Application.Handlers
             {
                 ProjectId = project.Id.ToString()
             });
+        }
+
+        // GitHub allows alphanumeric characters, hyphens, underscores, and dots in owner/repo names.
+        private static bool IsValidGithubSegment(string segment)
+        {
+            return !string.IsNullOrEmpty(segment) &&
+                   segment.All(c => char.IsLetterOrDigit(c) || c == '-' || c == '_' || c == '.');
         }
     }
 }
