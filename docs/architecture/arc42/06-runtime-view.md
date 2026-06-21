@@ -20,12 +20,12 @@ sequenceDiagram
     Browser->>Website: GET / (unauthenticated)
     Website-->>Browser: Login page
     Browser->>Website: Click "Sign in with GitHub"
-    Website->>AuthAPI: GET /api/authentication/login
+    Website->>AuthAPI: GET /api/v1/authentication/login
     AuthAPI-->>Browser: 302 Redirect to GitHub (with state, client_id, scope)
     Browser->>GitHub: GET /login/oauth/authorize
     GitHub-->>Browser: GitHub login & consent page
     Browser->>GitHub: User approves
-    GitHub-->>AuthAPI: GET /api/authentication/callback?code=...&state=...
+    GitHub-->>AuthAPI: GET /api/v1/authentication/callback?code=...&state=...
     AuthAPI->>GitHub: POST /login/oauth/access_token (exchange code)
     GitHub-->>AuthAPI: External access token
     AuthAPI->>GitHub: GET /user (fetch profile)
@@ -47,7 +47,7 @@ sequenceDiagram
     participant Website
     participant AuthAPI as Authorization API
 
-    Website->>AuthAPI: POST /api/authentication/refresh (refresh token cookie)
+    Website->>AuthAPI: POST /api/v1/authentication/refresh (refresh token cookie)
     AuthAPI->>AuthAPI: Validate refresh token (expiry, revocation)
     AuthAPI->>AuthAPI: Issue new access token + rotate refresh token
     AuthAPI-->>Website: 200 OK (new HttpOnly cookies set)
