@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.Extensions.Logging;
 using TimeForCode.Donation.Application.Interfaces;
 using TimeForCode.Donation.Commands;
 
@@ -7,15 +8,21 @@ namespace TimeForCode.Donation.Application.Handlers
     internal class GetProjectsHandler : IRequestHandler<GetProjectsQuery, Result<GetProjectsResult>>
     {
         private readonly IProjectRepository _projectRepository;
+        private readonly ILogger<GetProjectsHandler> _logger;
 
-        public GetProjectsHandler(IProjectRepository projectRepository)
+        public GetProjectsHandler(IProjectRepository projectRepository, ILogger<GetProjectsHandler> logger)
         {
             _projectRepository = projectRepository;
+            _logger = logger;
         }
 
         public async Task<Result<GetProjectsResult>> Handle(GetProjectsQuery request, CancellationToken cancellationToken)
         {
+            _logger.LogInformation("Getting projects page {PageNumber} with page size {PageSize}", request.PageNumber, request.PageSize);
+
             var (projects, totalCount) = await _projectRepository.GetAllPublishedAsync(request.PageNumber, request.PageSize);
+
+            _logger.LogDebug("Retrieved {Count} projects out of {TotalCount} total", projects.Count, totalCount);
 
             var projectDtos = projects.Select(p => new ProjectDto
             {

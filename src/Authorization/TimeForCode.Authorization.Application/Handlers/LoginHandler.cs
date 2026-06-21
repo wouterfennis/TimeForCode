@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Web;
 using TimeForCode.Authorization.Application.Interfaces;
@@ -15,18 +16,23 @@ namespace TimeForCode.Authorization.Application.Handlers
         private readonly ExternalIdentityProviderOptions _options;
         private readonly IStateRepository _stateRepository;
         private readonly IRandomGenerator _randomGenerator;
+        private readonly ILogger<LoginHandler> _logger;
 
         public LoginHandler(IOptions<ExternalIdentityProviderOptions> options,
             IStateRepository stateRepository,
-            IRandomGenerator randomGenerator)
+            IRandomGenerator randomGenerator,
+            ILogger<LoginHandler> logger)
         {
             _options = options.Value;
             _stateRepository = stateRepository;
             _randomGenerator = randomGenerator;
+            _logger = logger;
         }
 
         public Task<Uri> Handle(LoginCommand request, CancellationToken cancellationToken)
         {
+            _logger.LogInformation("Handling login for identity provider {IdentityProvider}", request.IdentityProvider);
+
             var identityProvider = _options.GetExternalIdentityProvider(request.IdentityProvider);
             string state = CreateState(request.IdentityProvider, request.RedirectUri);
 
@@ -38,6 +44,8 @@ namespace TimeForCode.Authorization.Application.Handlers
             };
 
             uriBuilder.Port = identityProvider.LoginHostPort ?? uriBuilder.Port;
+
+            _logger.LogDebug("Login redirect URI built for identity provider {IdentityProvider}", request.IdentityProvider);
 
             return Task.FromResult(uriBuilder.Uri);
         }

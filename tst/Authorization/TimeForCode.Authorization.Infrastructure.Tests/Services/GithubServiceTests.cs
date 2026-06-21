@@ -33,7 +33,7 @@ namespace TimeForCode.Authorization.Infrastructure.Tests.Services
 
             var options = OptionsFactory.Create(new ExternalIdentityProviderOptions
             {
-                CallbackUri = "http://localhost:8080/api/authentication/callback",
+                CallbackUri = "http://localhost:8080/api/v1/authentication/callback",
                 Github = new ExternalIdentityProvider
                 {
                     LoginHost = "localhost",

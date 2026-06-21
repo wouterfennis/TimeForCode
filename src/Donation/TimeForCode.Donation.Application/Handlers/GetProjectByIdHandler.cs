@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.Extensions.Logging;
 using TimeForCode.Donation.Application.Interfaces;
 using TimeForCode.Donation.Commands;
 using TimeForCode.Donation.Values;
@@ -8,17 +9,22 @@ namespace TimeForCode.Donation.Application.Handlers
     internal class GetProjectByIdHandler : IRequestHandler<GetProjectByIdQuery, Result<GetProjectByIdResult>>
     {
         private readonly IProjectRepository _projectRepository;
+        private readonly ILogger<GetProjectByIdHandler> _logger;
 
-        public GetProjectByIdHandler(IProjectRepository projectRepository)
+        public GetProjectByIdHandler(IProjectRepository projectRepository, ILogger<GetProjectByIdHandler> logger)
         {
             _projectRepository = projectRepository;
+            _logger = logger;
         }
 
         public async Task<Result<GetProjectByIdResult>> Handle(GetProjectByIdQuery request, CancellationToken cancellationToken)
         {
+            _logger.LogInformation("Getting project by id {ProjectId}", request.ProjectId);
+
             var project = await _projectRepository.GetByIdAsync(request.ProjectId);
             if (project == null || project.Status != ProjectStatus.Published)
             {
+                _logger.LogWarning("Project {ProjectId} not found or not published", request.ProjectId);
                 return Result<GetProjectByIdResult>.Failure("Project not found.");
             }
 

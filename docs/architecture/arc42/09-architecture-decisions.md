@@ -20,6 +20,7 @@ ADR documents live in [docs/reference/adr/](../../reference/adr/README.md).
 | [ADR-006](../../reference/adr/0006-reqnroll-bdd.md) | Use Reqnroll + BDD for acceptance tests | Accepted | 2026-06-21 |
 | [ADR-007](../../reference/adr/0007-swagger-snapshot-gate.md) | Swagger snapshot gate for API contract review | Accepted | 2026-06-21 |
 | [ADR-008](../../reference/adr/0008-exclude-e2e-from-ci.md) | Exclude E2E tests from CI | Accepted | 2026-06-21 |
+| [ADR-009](../../reference/adr/0009-result-type-error-handling.md) | Use Result&lt;T&gt; for expected failures, exceptions for programming errors | Accepted | 2026 |
 
 ---
 
