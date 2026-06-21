@@ -2,9 +2,9 @@ using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using System.Diagnostics.CodeAnalysis;
-using TimeForCode.Shared.Behaviours;
 using TimeForCode.Donation.Application.Handlers;
 using TimeForCode.Donation.Application.Validators;
+using TimeForCode.Shared.Behaviours;
 
 namespace TimeForCode.Donation.Application.Extensions
 {

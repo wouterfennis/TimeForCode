@@ -5,11 +5,11 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using TimeForCode.Shared.Behaviours;
 using TimeForCode.Authorization.Application.Handlers;
 using TimeForCode.Authorization.Application.Options;
 using TimeForCode.Authorization.Application.Services;
 using TimeForCode.Authorization.Application.Validators;
+using TimeForCode.Shared.Behaviours;
 
 namespace TimeForCode.Authorization.Application.Extensions
 {
