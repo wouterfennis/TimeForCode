@@ -17,6 +17,7 @@
   <ItemGroup>
     <ProjectReference Include="..\TimeForCode.Donation.Commands\TimeForCode.Donation.Commands.csproj" />
     <ProjectReference Include="..\TimeForCode.Donation.Domain\TimeForCode.Donation.Domain.csproj" />
+    <ProjectReference Include="..\..\Shared\TimeForCode.Shared\TimeForCode.Shared.csproj" />
   </ItemGroup>
 
 </Project>

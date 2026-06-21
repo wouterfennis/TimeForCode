@@ -2,9 +2,9 @@ using FluentAssertions;
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.Logging.Abstractions;
-using TimeForCode.Donation.Application.Behaviours;
+using TimeForCode.Shared.Behaviours;
 
-namespace TimeForCode.Donation.Application.Tests.Behaviours
+namespace TimeForCode.Shared.Tests.Behaviours
 {
     [TestClass]
     public class ValidationBehaviourTests
