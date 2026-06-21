@@ -51,9 +51,9 @@ namespace TimeForCode.Shared.Api.Extensions
         {
             return options =>
             {
-                options.AddDocumentTransformer((document, context, cancellationToken) =>
+                options.AddDocumentTransformer((openApiDocument, transformerContext, cancellationToken) =>
                 {
-                    document.Info = new OpenApiInfo
+                    openApiDocument.Info = new OpenApiInfo
                     {
                         Title = title,
                         Version = "v1",

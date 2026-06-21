@@ -5,6 +5,7 @@ using TimeForCode.Donation.Api.Options;
 using TimeForCode.Donation.Application.Extensions;
 using TimeForCode.Donation.Infrastructure.Extensions;
 using TimeForCode.Shared.Api.Extensions;
+using SharedApiServiceCollectionExtensions = TimeForCode.Shared.Api.Extensions.ServiceCollectionExtensions;
 
 namespace TimeForCode.Donation.Api
 {
@@ -31,7 +32,7 @@ namespace TimeForCode.Donation.Api
         {
             services.AddOpenApi(
                 "v1",
-                TimeForCode.Shared.Api.Extensions.ServiceCollectionExtensions.CreateDefaultOpenApiOptions(
+                SharedApiServiceCollectionExtensions.CreateDefaultOpenApiOptions(
                     "Donation API",
                     "API to interact with the donation backend"));
             services.AddDefaultControllers();

@@ -5,6 +5,7 @@ using TimeForCode.Authorization.Application.Extensions;
 using TimeForCode.Authorization.Application.Options;
 using TimeForCode.Authorization.Infrastructure.Extensions;
 using TimeForCode.Shared.Api.Extensions;
+using SharedApiServiceCollectionExtensions = TimeForCode.Shared.Api.Extensions.ServiceCollectionExtensions;
 
 namespace TimeForCode.Authorization.Api
 {
@@ -31,7 +32,7 @@ namespace TimeForCode.Authorization.Api
         {
             services.AddOpenApi(
                 "v1",
-                TimeForCode.Shared.Api.Extensions.ServiceCollectionExtensions.CreateDefaultOpenApiOptions(
+                SharedApiServiceCollectionExtensions.CreateDefaultOpenApiOptions(
                     "Authorization API",
                     "API to interact with the authorization backend"));
             services.AddDefaultControllers();
