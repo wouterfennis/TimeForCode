@@ -54,7 +54,7 @@ Structural tests that enforce the layering and dependency rules of the Authoriza
 
 #### Enforcement scope
 
-All production assemblies in the Authorization bounded context are loaded at test start via `ArchitectureTestBase`. Each rule is asserted with an `Evaluate(rule)` call that fails the test if any violation is found.
+All production assemblies in the Authorization bounded context are loaded before each test (via `[TestInitialize]`) in `ArchitectureTestBase`. Each rule is asserted with an `Evaluate(rule)` call that fails the test if any violation is found.
 
 #### Example rules
 
