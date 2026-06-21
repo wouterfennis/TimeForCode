@@ -179,7 +179,8 @@ Step text follows a persona convention — subjects are "The user", "The externa
 ---
 
 ## ADR-007
-**Date**: 2026-06-21
+**Date**: 2026-06-21
+
 **Date**: 2026
 **Status**: Accepted
 
@@ -211,7 +212,7 @@ The updated `.verified.txt` must be committed alongside the code change in the s
 ---
 
 ## ADR-008
-
+**Date**: 2026-06-21
 **Date**: 2026
 **Status**: Accepted
 
