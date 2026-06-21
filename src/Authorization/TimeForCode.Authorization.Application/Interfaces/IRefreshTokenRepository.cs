@@ -7,5 +7,6 @@ namespace TimeForCode.Authorization.Application.Interfaces
         Task<RefreshToken?> GetByTokenAsync(string token);
         Task CreateAsync(RefreshToken entity);
         Task UpdateAsync(RefreshToken existingToken);
+        Task DeleteAsync(RefreshToken existingToken);
     }
 }

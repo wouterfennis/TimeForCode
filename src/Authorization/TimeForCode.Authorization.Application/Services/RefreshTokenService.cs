@@ -75,8 +75,7 @@ namespace TimeForCode.Authorization.Application.Services
 
         private async Task ExpireRefreshTokenAsync(Domain.Entities.RefreshToken refreshToken)
         {
-            refreshToken.SetExpiresAfter(_timeProvider.GetUtcNow());
-            await _refreshTokenRepository.UpdateAsync(refreshToken);
+            await _refreshTokenRepository.DeleteAsync(refreshToken);
         }
     }
 }

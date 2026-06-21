@@ -179,7 +179,7 @@ namespace TimeForCode.Authorization.Infrastructure.Services.Github
                 ValidateAudience = true,
                 ValidAudiences = [_identityProviderOptions.ClientId],
                 ValidateLifetime = true,
-                ValidateIssuerSigningKey = false
+                ValidateIssuerSigningKey = true
             };
 
             return Task.FromResult(tokenValidationParameters);

@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Options;
 using System.Net.Mime;
 using System.Text.Json;
@@ -22,16 +23,19 @@ namespace TimeForCode.Authorization.Api.Controllers
     {
         private readonly ISender _sender;
         private readonly IOptions<AuthenticationOptions> _authenticationOptions;
+        private readonly ILogger<AuthenticationController> _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AuthenticationController"/> class.
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="authenticationOptions">The authentication options.</param>
-        public AuthenticationController(ISender sender, IOptions<AuthenticationOptions> authenticationOptions)
+        /// <param name="logger">The logger.</param>
+        public AuthenticationController(ISender sender, IOptions<AuthenticationOptions> authenticationOptions, ILogger<AuthenticationController> logger)
         {
             _sender = sender;
             _authenticationOptions = authenticationOptions;
+            _logger = logger;
         }
 
         /// <summary>
@@ -43,6 +47,7 @@ namespace TimeForCode.Authorization.Api.Controllers
         /// </returns>
         [HttpGet]
         [Route("login")]
+        [EnableRateLimiting("auth")]
         [ProducesResponseType(StatusCodes.Status302Found)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -50,6 +55,7 @@ namespace TimeForCode.Authorization.Api.Controllers
         {
             if (IsInvalidRedirectUri(loginModel.RedirectUri))
             {
+                _logger.LogWarning("Redirect URI mismatch: '{RedirectUri}' is not in the allowed list.", loginModel.RedirectUri);
                 return BadRequest(ProblemDetailsMapper.BadRequest("The supplied redirect uri is invalid"));
             }
 
@@ -66,6 +72,7 @@ namespace TimeForCode.Authorization.Api.Controllers
         /// </returns>
         [HttpGet]
         [Route("callback")]
+        [EnableRateLimiting("auth")]
         [ProducesResponseType(typeof(CallbackResponseModel), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status302Found)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
@@ -76,7 +83,8 @@ namespace TimeForCode.Authorization.Api.Controllers
 
             if (tokenResult.IsFailure)
             {
-                return BadRequest(ProblemDetailsMapper.BadRequest(tokenResult.ErrorMessage));
+                _logger.LogWarning("Authentication callback failed: {ErrorMessage}", tokenResult.ErrorMessage);
+                return BadRequest(ProblemDetailsMapper.BadRequest("Authentication failed."));
             }
 
             var response = ProcessTokenResult(tokenResult);
@@ -114,7 +122,10 @@ namespace TimeForCode.Authorization.Api.Controllers
         private bool IsInvalidRedirectUri(Uri redirectUri)
         {
             return !_authenticationOptions.Value.ValidRedirectUris
-                .Any(validRedirectUri => redirectUri.AbsoluteUri.StartsWith(validRedirectUri + '/'));
+                .Any(validRedirectUri => string.Equals(
+                    redirectUri.AbsoluteUri.TrimEnd('/'),
+                    validRedirectUri.TrimEnd('/'),
+                    StringComparison.OrdinalIgnoreCase));
         }
 
         /// <summary>
@@ -123,6 +134,7 @@ namespace TimeForCode.Authorization.Api.Controllers
         /// <returns>New access token and refresh token</returns>
         [HttpGet]
         [Route("refresh")]
+        [EnableRateLimiting("auth")]
         [ProducesResponseType(typeof(CallbackResponseModel), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -144,7 +156,8 @@ namespace TimeForCode.Authorization.Api.Controllers
 
             if (tokenResult.IsFailure)
             {
-                return BadRequest(ProblemDetailsMapper.BadRequest(tokenResult.ErrorMessage));
+                _logger.LogWarning("Token refresh denied: {ErrorMessage}", tokenResult.ErrorMessage);
+                return BadRequest(ProblemDetailsMapper.BadRequest("Token refresh failed."));
             }
 
             var response = ProcessTokenResult(tokenResult);
@@ -193,7 +206,7 @@ namespace TimeForCode.Authorization.Api.Controllers
             {
                 var isNewUserCookieOptions = new CookieOptions
                 {
-                    HttpOnly = false,
+                    HttpOnly = true,
                     Secure = true,
                     SameSite = SameSiteMode.Strict,
                     MaxAge = TimeSpan.FromMinutes(5)

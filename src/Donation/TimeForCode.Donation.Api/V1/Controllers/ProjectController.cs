@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using System.Net;
 using System.Net.Mime;
 using System.Security.Claims;
@@ -15,6 +16,7 @@ namespace TimeForCode.Donation.Api.V1.Controllers
     [ApiController]
     [Produces(MediaTypeNames.Application.Json)]
     [Route("api/v1/[controller]")]
+    [EnableRateLimiting("api")]
     public class ProjectController : ControllerBase
     {
         private readonly IMediator _mediator;

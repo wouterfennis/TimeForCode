@@ -22,6 +22,22 @@ namespace TimeForCode.Donation.Application.Handlers
 
         public async Task<Result<RegisterProjectResult>> Handle(RegisterProjectCommand request, CancellationToken cancellationToken)
         {
+            if (!string.Equals(request.GithubRepositoryUrl.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
+            {
+                return Result<RegisterProjectResult>.Failure("Repository URL must use HTTPS.");
+            }
+
+            if (!string.Equals(request.GithubRepositoryUrl.Host, "github.com", StringComparison.OrdinalIgnoreCase))
+            {
+                return Result<RegisterProjectResult>.Failure("Repository URL must point to github.com.");
+            }
+
+            var segments = request.GithubRepositoryUrl.AbsolutePath.Split('/', StringSplitOptions.RemoveEmptyEntries);
+            if (segments.Length < 2)
+            {
+                return Result<RegisterProjectResult>.Failure("Invalid GitHub repository URL: must include owner and repository name.");
+            }
+
             var metadataResult = await _githubService.GetRepositoryMetadataAsync(request.GithubRepositoryUrl);
             if (metadataResult.IsFailure)
             {
@@ -33,12 +49,6 @@ namespace TimeForCode.Donation.Application.Handlers
             if (snapshot.IsPrivate || snapshot.IsArchived)
             {
                 return Result<RegisterProjectResult>.Failure("Repository must be public and not archived.");
-            }
-
-            var segments = request.GithubRepositoryUrl.AbsolutePath.Split('/', StringSplitOptions.RemoveEmptyEntries);
-            if (segments.Length < 2)
-            {
-                return Result<RegisterProjectResult>.Failure("Invalid GitHub repository URL.");
             }
 
             var normalizedUrl = new Uri($"{request.GithubRepositoryUrl.Scheme}://{request.GithubRepositoryUrl.Host}/{segments[0]}/{segments[1]}");

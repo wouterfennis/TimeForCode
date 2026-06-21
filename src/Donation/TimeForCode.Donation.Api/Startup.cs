@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using Scalar.AspNetCore;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
+using System.Threading.RateLimiting;
 using TimeForCode.Donation.Api.Options;
 using TimeForCode.Donation.Application.Extensions;
 using TimeForCode.Donation.Infrastructure.Extensions;
@@ -74,6 +76,19 @@ namespace TimeForCode.Donation.Api
 
             services.AddApplicationLayer();
             services.AddInfrastructureLayer(_configuration);
+
+            services.AddRateLimiter(options =>
+            {
+                options.AddSlidingWindowLimiter("api", opt =>
+                {
+                    opt.Window = TimeSpan.FromMinutes(1);
+                    opt.SegmentsPerWindow = 6;
+                    opt.PermitLimit = 60;
+                    opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+                    opt.QueueLimit = 0;
+                });
+                options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+            });
         }
 
         /// <summary>
@@ -85,6 +100,20 @@ namespace TimeForCode.Donation.Api
             {
                 app.UseDeveloperExceptionPage();
             }
+            else
+            {
+                app.UseHsts();
+            }
+
+            app.Use(async (context, next) =>
+            {
+                context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
+                context.Response.Headers.Append("X-Frame-Options", "DENY");
+                context.Response.Headers.Append("X-XSS-Protection", "1; mode=block");
+                await next();
+            });
+
+            app.UseRateLimiter();
 
             app.UseRouting();
 
