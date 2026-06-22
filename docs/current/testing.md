@@ -23,6 +23,8 @@ graph LR
     subgraph Donation Tests
         DonSpecTests["Donation Specifications\n(BDD / acceptance)"]
         DonApiTests["Donation Api.Tests\n(integration)"]
+        DonArchTests["Donation Architecture.Tests\n(structural)"]
+        DonInfraTests["Donation Infrastructure.Tests\n(unit)"]
     end
 
     subgraph Website Tests
@@ -109,6 +111,27 @@ BDD-style acceptance tests for the Donation API. Covers the full project lifecyc
 
 Integration tests for the Donation API. Currently contains the Swagger snapshot test.
 
+### Donation — Architecture.Tests
+
+**Path**: `tst/Donation/TimeForCode.Donation.Architecture.Tests`
+
+Structural tests that enforce the layering and dependency rules of the Donation bounded context, mirroring the Authorization Architecture.Tests. Uses [ArchUnitNET](https://archunitnet.readthedocs.io/) to verify that:
+
+- Domain does not reference Application, Infrastructure, or the API.
+- Application does not reference Infrastructure or the API.
+- Infrastructure does not reference the API.
+- All classes named `*Handler` reside in the Application layer.
+- All classes named `*Repository` reside in the Infrastructure layer.
+
+### Donation — Infrastructure.Tests
+
+**Path**: `tst/Donation/TimeForCode.Donation.Infrastructure.Tests`
+
+Unit tests for the Donation Infrastructure layer, covering:
+
+- `GithubRepositoryApiService` — URL parsing (invalid host, wrong segment count), successful metadata mapping, and API error responses (404, 5xx).
+- `ProjectRepository` — all CRUD operations including invalid `ObjectId` handling, empty-result paths, duplicate-key exception wrapping into `RepositoryConflictException`, and `GetByGithubUrlAsync`.
+
 ### Website — Specifications
 
 **Path**: `tst/Website/TimeForCode.Website.Specifications`
@@ -188,11 +211,21 @@ Commit the updated `.verified.txt` alongside the code change that caused it, so 
 ## Running Tests
 
 ```powershell
-# From the repository root
-dotnet test
+# From the repository root — excludes E2E tests that require the full Docker stack
+dotnet test --filter "TestCategory!=E2E"
 ```
 
-All tests pass as of the current implementation state. The CI pipeline runs the full test suite on every pull request via GitHub Actions.
+All non-E2E tests pass as of the current implementation state. The CI pipeline runs the full test suite on every pull request via GitHub Actions using the same filter.
+
+### CI test categorisation
+
+A single `dotnet test --filter "TestCategory!=E2E"` command is sufficient for the current test mix. Unit, integration, architecture, and BDD specification tests all complete in under 30 seconds total, so per-type filtering provides no practical triage benefit. The filter is retained only to skip Website Specifications that require a running Docker Compose stack.
+
+Should a need arise to isolate failures by type (e.g. slow infrastructure tests blocking fast unit feedback), apply `[TestCategory("Integration")]` / `[TestCategory("Architecture")]` attributes and extend the `--filter` expression. No changes to the CI workflow files are required to support this.
+
+### E2E tests
+
+Website Specifications (`TimeForCode.Website.Specifications`) are categorised as E2E tests because they require the full Docker Compose stack (`podman compose up --build`). They are excluded from the standard CI filter. The recommended approach is a dedicated scheduled pipeline or a separate Docker Compose job that boots the stack before running `dotnet test --filter "TestCategory=E2E"`. This is tracked as a future improvement.
 
 ---
 
@@ -200,8 +233,8 @@ All tests pass as of the current implementation state. The CI pipeline runs the 
 
 | Area | Gap |
 | --- | --- |
-| Donation context | No architecture tests |
 | Website | No component-level tests; browser-journey coverage provided by `Website.Specifications` |
 | Matchmaking | No test coverage (feature not implemented) |
 | Performance | No load or stress tests |
 | Security | No automated penetration tests or DAST coverage |
+| E2E in CI | Website Specifications require Docker Compose; no dedicated CI job yet (see CI test categorisation section above) |
