@@ -77,6 +77,14 @@ namespace TimeForCode.Donation.Specifications.Steps
                 .ReturnsAsync(Result<GithubSnapshot>.Success(archivedSnapshot));
         }
 
+        [Given("The external platform does not have the repository")]
+        public void GivenTheExternalPlatformDoesNotHaveTheRepository()
+        {
+            var mockGithubService = _provider.GetRequiredService<Mock<IGithubRepositoryApiService>>();
+            mockGithubService.Setup(x => x.GetRepositoryMetadataAsync(It.IsAny<Uri>()))
+                .ReturnsAsync(Result<GithubSnapshot>.Failure("Failed to retrieve repository information from GitHub."));
+        }
+
         [Given("The user has previously unpublished the repository on the time for code platform")]
         public void GivenTheUserHasPreviouslyUnpublishedTheRepositoryOnTheTimeForCodePlatform()
         {
