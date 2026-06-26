@@ -21,6 +21,7 @@ ADR documents live in [docs/reference/adr/](../../reference/adr/README.md).
 | [ADR-007](../../reference/adr/0007-swagger-snapshot-gate.md) | Swagger snapshot gate for API contract review | Accepted | 2026-06-21 |
 | [ADR-008](../../reference/adr/0008-exclude-e2e-from-ci.md) | Exclude E2E tests from CI | Accepted | 2026-06-21 |
 | [ADR-009](../../reference/adr/0009-result-type-error-handling.md) | Use Result&lt;T&gt; for expected failures, exceptions for programming errors | Accepted | 2026 |
+| [ADR-010](../../reference/adr/0010-bounded-context-entity-duplication.md) | Keep GithubEntity and DocumentEntity per bounded context | Accepted | 2026-06-26 |
 
 ---
 
