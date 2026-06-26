@@ -64,6 +64,6 @@ Scenario: Publishing a repository requires authentication
 
 Scenario: User attempts to publish a repository that does not exist on the external platform
 	Given The user has an access token
-	And The repository does not exist on the external platform
+	And The external platform does not have the repository
 	When The user publishes the repository on the time for code platform
 	Then The user is informed the repository cannot be published

@@ -38,13 +38,8 @@ namespace TimeForCode.Donation.Architecture.Tests
         public void Evaluate(IArchRule rule)
         {
             var result = rule.Evaluate(Architecture);
-
-            foreach (var violation in result.Where(x => !x.Passed))
-            {
-                Console.WriteLine(violation.Description);
-            }
-
-            Assert.IsTrue(rule.HasNoViolations(Architecture));
+            var violations = result.Where(x => !x.Passed).Select(x => x.Description).ToList();
+            Assert.IsTrue(rule.HasNoViolations(Architecture), string.Join(Environment.NewLine, violations));
         }
     }
 }

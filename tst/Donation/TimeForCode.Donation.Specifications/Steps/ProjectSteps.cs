@@ -77,8 +77,8 @@ namespace TimeForCode.Donation.Specifications.Steps
                 .ReturnsAsync(Result<GithubSnapshot>.Success(archivedSnapshot));
         }
 
-        [Given("The repository does not exist on the external platform")]
-        public void GivenTheRepositoryDoesNotExistOnTheExternalPlatform()
+        [Given("The external platform does not have the repository")]
+        public void GivenTheExternalPlatformDoesNotHaveTheRepository()
         {
             var mockGithubService = _provider.GetRequiredService<Mock<IGithubRepositoryApiService>>();
             mockGithubService.Setup(x => x.GetRepositoryMetadataAsync(It.IsAny<Uri>()))
