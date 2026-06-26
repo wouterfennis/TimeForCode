@@ -107,4 +107,4 @@ $RECYCLE.BIN/
 .env.real-github
 
 # Dev container
-#.devcontainer/
+.devcontainer/
