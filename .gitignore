@@ -105,3 +105,6 @@ $RECYCLE.BIN/
 *.trx
 # Local real-GitHub credentials (never commit)
 .env.real-github
+
+# Dev container
+.devcontainer/
