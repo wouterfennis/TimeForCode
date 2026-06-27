@@ -37,7 +37,7 @@ Domain  ←  Application  ←  Infrastructure  ←  API
 - **Infrastructure**: implements interfaces defined in Application; contains database repositories, external HTTP clients, and key loading.
 - **API**: ASP.NET Core controllers that dispatch MediatR commands; no business logic in controllers.
 
-Architecture tests in the Authorization context enforce these rules on every CI build. The Donation context does not yet have architecture tests — this is a known gap tracked in [DEBT in Section 11](11-risks-and-technical-debt.md).
+Architecture tests in both the Authorization and Donation contexts enforce these rules on every CI build. The Shared project coupling boundary (what it may and may not contain) is formally documented in [docs/reference/shared-project-coupling-boundary.md](../../reference/shared-project-coupling-boundary.md). The decision to keep `GithubEntity` and `DocumentEntity` per bounded context rather than moving them to Shared is recorded in [ADR-010](../../reference/adr/0010-bounded-context-entity-duplication.md).
 
 ---
 

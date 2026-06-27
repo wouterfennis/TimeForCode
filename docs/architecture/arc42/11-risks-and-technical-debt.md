@@ -31,5 +31,6 @@ This section tracks known risks and technical debt that could affect the platfor
 | DEBT-06 | No E2E tests for the Website | Website | Login and donation flows not verified at UI level | Add Playwright tests in a future phase |
 | DEBT-07 | No structured logging aggregation in production | Operations | Debugging production issues requires manual log inspection | Add Application Insights or Azure Monitor integration |
 | DEBT-08 | GitHub client secret visible in `docker-compose.yaml` and `application.bicep` | Security | Credentials in repository history | Rotate secret; move to Key Vault; scrub git history if needed |
+| DEBT-09 | No architecture tests enforce cross-context isolation (Authorization ↔ Donation) | Both bounded contexts | A future accidental import of an Authorization type in Donation (or vice versa) would not be caught by CI | Add a shared architecture test that loads both contexts and asserts zero cross-namespace dependencies |
 
 > **Note on DEBT-08**: The credential visible in `application.bicep` should be treated as compromised and rotated. A Key Vault reference must be used for production deployments.
