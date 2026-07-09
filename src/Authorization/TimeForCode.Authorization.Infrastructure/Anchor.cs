@@ -1,12 +1,9 @@
 ﻿namespace TimeForCode.Authorization.Infrastructure
 {
     /// <summary>
-    /// This class is used to group all classes in the same namespace
+    /// Marker interface used to group all classes in the same namespace and to load this assembly in tests.
     /// </summary>
-#pragma warning disable S2094 // Classes should not be empty
-    public class Anchor
-#pragma warning restore S2094 // Classes should not be empty
+    public interface Anchor
     {
-        // This class is used to group all classes in the same namespace
     }
 }

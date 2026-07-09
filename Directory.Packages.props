@@ -25,7 +25,8 @@
     <PackageVersion Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="8.19.1" />
     <PackageVersion Include="Microsoft.IdentityModel.Tokens" Version="8.19.1" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.7.0" />
-    <PackageVersion Include="Microsoft.OpenApi" Version="2.7.4" />
+    <!-- Transitive pin: fixes GHSA-v5pm-xwqc-g5wc (high severity) in Microsoft.OpenApi 2.7.4 pulled in by Microsoft.AspNetCore.OpenApi. -->
+    <PackageVersion Include="Microsoft.OpenApi" Version="2.10.0" />
     <PackageVersion Include="Microsoft.Playwright" Version="1.61.0" />
     <PackageVersion Include="MongoDB.Bson" Version="3.9.0" />
     <PackageVersion Include="MongoDB.Driver" Version="3.9.0" />

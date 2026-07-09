@@ -1,9 +1,9 @@
 namespace TimeForCode.Donation.Api
 {
     /// <summary>
-    /// Marker class used for ArchUnit tests to load this assembly.
+    /// Marker interface used for ArchUnit tests to load this assembly.
     /// </summary>
-    public sealed class Anchor
+    public interface Anchor
     {
     }
 }
