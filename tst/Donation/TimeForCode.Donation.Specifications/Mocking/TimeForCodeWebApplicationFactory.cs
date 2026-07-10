@@ -24,6 +24,7 @@ namespace TimeForCode.Donation.Specifications.Mocking
                 {
                     typeof(IMongoDbContext),
                     typeof(IProjectRepository),
+                    typeof(IDonorOrganizationRepository),
                     typeof(IGithubRepositoryApiService),
                     typeof(RestClient)
                 };
@@ -69,6 +70,10 @@ namespace TimeForCode.Donation.Specifications.Mocking
             var mockProjectRepository = new Mock<IProjectRepository>();
             services.TryAddSingleton(mockProjectRepository);
             services.TryAddScoped(_ => mockProjectRepository.Object);
+
+            var mockDonorOrganizationRepository = new Mock<IDonorOrganizationRepository>();
+            services.TryAddSingleton(mockDonorOrganizationRepository);
+            services.TryAddScoped(_ => mockDonorOrganizationRepository.Object);
 
             var mockGithubService = new Mock<IGithubRepositoryApiService>();
             services.TryAddSingleton(mockGithubService);

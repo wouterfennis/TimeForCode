@@ -1,0 +1,217 @@
+@page "/admin/donor-organizations"
+@using TimeForCode.Donation.Api.Client
+@inject IDonationClient DonationClient
+
+<PageTitle>Donor Organizations - TimeForCode</PageTitle>
+
+<h1>Donor Organizations</h1>
+
+@if (_error != null)
+{
+    <div class="alert alert-danger" role="alert">@_error</div>
+}
+
+@if (_showForm)
+{
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3>@(_editingId != null ? "Edit" : "Add") Donor Organization</h3>
+        </div>
+        <div class="card-body">
+            <EditForm Model="_formModel" OnValidSubmit="HandleSubmit" FormName="donorOrgForm">
+                <div class="mb-3">
+                    <label for="name" class="form-label">Name *</label>
+                    <InputText id="name" class="form-control" @bind-Value="_formModel.Name" />
+                </div>
+                <div class="mb-3">
+                    <label for="email" class="form-label">Contact Email</label>
+                    <InputText id="email" class="form-control" @bind-Value="_formModel.ContactEmail" />
+                </div>
+                <div class="mb-3">
+                    <label for="website" class="form-label">Website</label>
+                    <InputText id="website" class="form-control" @bind-Value="_formModel.Website" />
+                </div>
+                <button type="submit" class="btn btn-primary" disabled="@_isSubmitting">
+                    @(_isSubmitting ? "Saving..." : "Save")
+                </button>
+                <button type="button" class="btn btn-secondary ms-2" @onclick="CancelForm">Cancel</button>
+            </EditForm>
+        </div>
+    </div>
+}
+
+@if (_organizations == null && _error == null)
+{
+    <p>Loading donor organizations...</p>
+}
+else if (_organizations != null)
+{
+    <div class="mb-3">
+        <button class="btn btn-success" @onclick="ShowAddForm" disabled="@_showForm">
+            + Add Donor Organization
+        </button>
+    </div>
+
+    @if (!_organizations.Organizations.Any())
+    {
+        <p>No donor organizations yet.</p>
+    }
+    else
+    {
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Contact Email</th>
+                    <th>Website</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var org in _organizations.Organizations)
+                {
+                    <tr>
+                        <td>@org.Name</td>
+                        <td>@(org.ContactEmail ?? "—")</td>
+                        <td>
+                            @if (!string.IsNullOrEmpty(org.Website))
+                            {
+                                <a href="@org.Website" target="_blank" rel="noopener noreferrer">@org.Website</a>
+                            }
+                            else
+                            {
+                                <span>—</span>
+                            }
+                        </td>
+                        <td>@org.CreatedAt.ToString("yyyy-MM-dd")</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => ShowEditForm(org)">Edit</button>
+                            <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteOrganization(org.Id)">Delete</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <p>Showing @_organizations.Organizations.Count of @_organizations.TotalCount donor organizations.</p>
+    }
+}
+
+@code {
+    private GetDonorOrganizationsResponse? _organizations;
+    private string? _error;
+    private bool _showForm;
+    private bool _isSubmitting;
+    private string? _editingId;
+    private DonorOrganizationFormModel _formModel = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadOrganizations();
+    }
+
+    private async Task LoadOrganizations()
+    {
+        try
+        {
+            _error = null;
+            _organizations = await DonationClient.GetDonorOrganizationsAsync(null, null);
+        }
+        catch
+        {
+            _error = "Could not load donor organizations.";
+        }
+    }
+
+    private void ShowAddForm()
+    {
+        _editingId = null;
+        _formModel = new DonorOrganizationFormModel();
+        _showForm = true;
+    }
+
+    private void ShowEditForm(DonorOrganizationResponse org)
+    {
+        _editingId = org.Id;
+        _formModel = new DonorOrganizationFormModel
+        {
+            Name = org.Name,
+            ContactEmail = org.ContactEmail ?? "",
+            Website = org.Website ?? ""
+        };
+        _showForm = true;
+    }
+
+    private void CancelForm()
+    {
+        _showForm = false;
+        _editingId = null;
+        _formModel = new DonorOrganizationFormModel();
+    }
+
+    private async Task HandleSubmit()
+    {
+        _isSubmitting = true;
+        _error = null;
+
+        try
+        {
+            if (_editingId != null)
+            {
+                var request = new UpdateDonorOrganizationRequest
+                {
+                    Name = _formModel.Name,
+                    ContactEmail = string.IsNullOrWhiteSpace(_formModel.ContactEmail) ? null : _formModel.ContactEmail,
+                    Website = string.IsNullOrWhiteSpace(_formModel.Website) ? null : _formModel.Website
+                };
+                await DonationClient.UpdateDonorOrganizationAsync(_editingId, request);
+            }
+            else
+            {
+                var request = new CreateDonorOrganizationRequest
+                {
+                    Name = _formModel.Name,
+                    ContactEmail = string.IsNullOrWhiteSpace(_formModel.ContactEmail) ? null : _formModel.ContactEmail,
+                    Website = string.IsNullOrWhiteSpace(_formModel.Website) ? null : _formModel.Website
+                };
+                await DonationClient.CreateDonorOrganizationAsync(request);
+            }
+
+            _showForm = false;
+            _editingId = null;
+            _formModel = new DonorOrganizationFormModel();
+            await LoadOrganizations();
+        }
+        catch
+        {
+            _error = _editingId != null
+                ? "Could not update donor organization."
+                : "Could not create donor organization.";
+        }
+        finally
+        {
+            _isSubmitting = false;
+        }
+    }
+
+    private async Task DeleteOrganization(string id)
+    {
+        _error = null;
+        try
+        {
+            await DonationClient.DeleteDonorOrganizationAsync(id);
+            await LoadOrganizations();
+        }
+        catch
+        {
+            _error = "Could not delete donor organization.";
+        }
+    }
+
+    private class DonorOrganizationFormModel
+    {
+        public string Name { get; set; } = "";
+        public string ContactEmail { get; set; } = "";
+        public string Website { get; set; } = "";
+    }
+}

@@ -25,6 +25,7 @@ namespace TimeForCode.Donation.Infrastructure.Extensions
             services.AddSingleton<RestClient>();
             services.AddSingleton<IMongoDbContext, MongoDbContext>();
             services.AddScoped<IProjectRepository, ProjectRepository>();
+            services.AddScoped<IDonorOrganizationRepository, DonorOrganizationRepository>();
             services.AddScoped<IGithubRepositoryApiService, GithubRepositoryApiService>();
 
             return services;
