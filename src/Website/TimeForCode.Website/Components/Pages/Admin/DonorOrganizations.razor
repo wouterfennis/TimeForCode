@@ -18,24 +18,29 @@
             <h3>@(_editingId != null ? "Edit" : "Add") Donor Organization</h3>
         </div>
         <div class="card-body">
-            <EditForm Model="_formModel" OnValidSubmit="HandleSubmit" FormName="donorOrgForm">
+            <form method="post" @formname="save-donor-org">
+                <AntiforgeryToken />
+                <input type="hidden" name="OrgAction.Action" value="save" />
+                <input type="hidden" name="OrgAction.Id" value="@_editingId" />
                 <div class="mb-3">
                     <label for="name" class="form-label">Name *</label>
-                    <InputText id="name" class="form-control" @bind-Value="_formModel.Name" />
+                    <input id="name" name="OrgAction.Name" class="form-control" value="@_formName" />
                 </div>
                 <div class="mb-3">
                     <label for="email" class="form-label">Contact Email</label>
-                    <InputText id="email" class="form-control" @bind-Value="_formModel.ContactEmail" />
+                    <input id="email" name="OrgAction.ContactEmail" class="form-control" value="@_formContactEmail" />
                 </div>
                 <div class="mb-3">
                     <label for="website" class="form-label">Website</label>
-                    <InputText id="website" class="form-control" @bind-Value="_formModel.Website" />
+                    <input id="website" name="OrgAction.Website" class="form-control" value="@_formWebsite" />
                 </div>
-                <button type="submit" class="btn btn-primary" disabled="@_isSubmitting">
-                    @(_isSubmitting ? "Saving..." : "Save")
-                </button>
-                <button type="button" class="btn btn-secondary ms-2" @onclick="CancelForm">Cancel</button>
-            </EditForm>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </form>
+            <form method="post" @formname="cancel-donor-org" class="d-inline ms-2">
+                <AntiforgeryToken />
+                <input type="hidden" name="OrgAction.Action" value="cancel" />
+                <button type="submit" class="btn btn-secondary">Cancel</button>
+            </form>
         </div>
     </div>
 }
@@ -46,11 +51,16 @@
 }
 else if (_organizations != null)
 {
-    <div class="mb-3">
-        <button class="btn btn-success" @onclick="ShowAddForm" disabled="@_showForm">
-            + Add Donor Organization
-        </button>
-    </div>
+    @if (!_showForm)
+    {
+        <div class="mb-3">
+            <form method="post" @formname="show-add-donor-org">
+                <AntiforgeryToken />
+                <input type="hidden" name="OrgAction.Action" value="add-form" />
+                <button type="submit" class="btn btn-success">+ Add Donor Organization</button>
+            </form>
+        </div>
+    }
 
     @if (!_organizations.Organizations.Any())
     {
@@ -86,8 +96,21 @@ else if (_organizations != null)
                         </td>
                         <td>@org.CreatedAt.ToString("yyyy-MM-dd")</td>
                         <td>
-                            <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => ShowEditForm(org)">Edit</button>
-                            <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteOrganization(org.Id)">Delete</button>
+                            <form method="post" @formname="@($"edit-donor-org-{Uri.EscapeDataString(org.Id)}")" class="d-inline me-1">
+                                <AntiforgeryToken />
+                                <input type="hidden" name="OrgAction.Action" value="edit-form" />
+                                <input type="hidden" name="OrgAction.Id" value="@org.Id" />
+                                <input type="hidden" name="OrgAction.Name" value="@org.Name" />
+                                <input type="hidden" name="OrgAction.ContactEmail" value="@org.ContactEmail" />
+                                <input type="hidden" name="OrgAction.Website" value="@org.Website" />
+                                <button type="submit" class="btn btn-sm btn-outline-primary">Edit</button>
+                            </form>
+                            <form method="post" @formname="@($"delete-donor-org-{Uri.EscapeDataString(org.Id)}")" class="d-inline">
+                                <AntiforgeryToken />
+                                <input type="hidden" name="OrgAction.Action" value="delete" />
+                                <input type="hidden" name="OrgAction.Id" value="@org.Id" />
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                            </form>
                         </td>
                     </tr>
                 }
@@ -98,15 +121,57 @@ else if (_organizations != null)
 }
 
 @code {
+    [CascadingParameter]
+    public HttpContext? HttpContext { get; set; }
+
+    [SupplyParameterFromForm]
+    public DonorOrgActionModel? OrgAction { get; set; }
+
+    public class DonorOrgActionModel
+    {
+        public string? Action { get; set; }
+        public string? Id { get; set; }
+        public string? Name { get; set; }
+        public string? ContactEmail { get; set; }
+        public string? Website { get; set; }
+    }
+
     private GetDonorOrganizationsResponse? _organizations;
     private string? _error;
     private bool _showForm;
-    private bool _isSubmitting;
     private string? _editingId;
-    private DonorOrganizationFormModel _formModel = new();
+    private string _formName = "";
+    private string _formContactEmail = "";
+    private string _formWebsite = "";
 
     protected override async Task OnInitializedAsync()
     {
+        switch (OrgAction?.Action)
+        {
+            case "add-form":
+                _showForm = true;
+                break;
+            case "edit-form":
+                _showForm = true;
+                _editingId = OrgAction.Id;
+                _formName = OrgAction.Name ?? "";
+                _formContactEmail = OrgAction.ContactEmail ?? "";
+                _formWebsite = OrgAction.Website ?? "";
+                break;
+            case "cancel":
+                _showForm = false;
+                break;
+            case "save":
+                await HandleSave();
+                break;
+            case "delete":
+                if (OrgAction.Id != null)
+                {
+                    await HandleDelete(OrgAction.Id);
+                }
+                break;
+        }
+
         await LoadOrganizations();
     }
 
@@ -123,95 +188,53 @@ else if (_organizations != null)
         }
     }
 
-    private void ShowAddForm()
+    private async Task HandleSave()
     {
-        _editingId = null;
-        _formModel = new DonorOrganizationFormModel();
-        _showForm = true;
-    }
-
-    private void ShowEditForm(DonorOrganizationResponse org)
-    {
-        _editingId = org.Id;
-        _formModel = new DonorOrganizationFormModel
+        if (OrgAction == null)
         {
-            Name = org.Name,
-            ContactEmail = org.ContactEmail ?? "",
-            Website = org.Website ?? ""
-        };
-        _showForm = true;
-    }
-
-    private void CancelForm()
-    {
-        _showForm = false;
-        _editingId = null;
-        _formModel = new DonorOrganizationFormModel();
-    }
-
-    private async Task HandleSubmit()
-    {
-        _isSubmitting = true;
-        _error = null;
+            return;
+        }
 
         try
         {
-            if (_editingId != null)
+            if (OrgAction.Id != null)
             {
                 var request = new UpdateDonorOrganizationRequest
                 {
-                    Name = _formModel.Name,
-                    ContactEmail = string.IsNullOrWhiteSpace(_formModel.ContactEmail) ? null : _formModel.ContactEmail,
-                    Website = string.IsNullOrWhiteSpace(_formModel.Website) ? null : _formModel.Website
+                    Name = OrgAction.Name ?? "",
+                    ContactEmail = string.IsNullOrWhiteSpace(OrgAction.ContactEmail) ? null : OrgAction.ContactEmail,
+                    Website = string.IsNullOrWhiteSpace(OrgAction.Website) ? null : OrgAction.Website
                 };
-                await DonationClient.UpdateDonorOrganizationAsync(_editingId, request);
+                await DonationClient.UpdateDonorOrganizationAsync(OrgAction.Id, request);
             }
             else
             {
                 var request = new CreateDonorOrganizationRequest
                 {
-                    Name = _formModel.Name,
-                    ContactEmail = string.IsNullOrWhiteSpace(_formModel.ContactEmail) ? null : _formModel.ContactEmail,
-                    Website = string.IsNullOrWhiteSpace(_formModel.Website) ? null : _formModel.Website
+                    Name = OrgAction.Name ?? "",
+                    ContactEmail = string.IsNullOrWhiteSpace(OrgAction.ContactEmail) ? null : OrgAction.ContactEmail,
+                    Website = string.IsNullOrWhiteSpace(OrgAction.Website) ? null : OrgAction.Website
                 };
                 await DonationClient.CreateDonorOrganizationAsync(request);
             }
-
-            _showForm = false;
-            _editingId = null;
-            _formModel = new DonorOrganizationFormModel();
-            await LoadOrganizations();
         }
         catch
         {
-            _error = _editingId != null
+            _error = OrgAction.Id != null
                 ? "Could not update donor organization."
                 : "Could not create donor organization.";
         }
-        finally
-        {
-            _isSubmitting = false;
-        }
     }
 
-    private async Task DeleteOrganization(string id)
+    private async Task HandleDelete(string id)
     {
-        _error = null;
         try
         {
             await DonationClient.DeleteDonorOrganizationAsync(id);
-            await LoadOrganizations();
         }
         catch
         {
             _error = "Could not delete donor organization.";
         }
-    }
-
-    private class DonorOrganizationFormModel
-    {
-        public string Name { get; set; } = "";
-        public string ContactEmail { get; set; } = "";
-        public string Website { get; set; } = "";
     }
 }
