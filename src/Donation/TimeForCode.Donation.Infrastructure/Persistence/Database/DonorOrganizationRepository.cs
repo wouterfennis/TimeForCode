@@ -1,10 +1,12 @@
 using MongoDB.Bson;
 using MongoDB.Driver;
+using System.Diagnostics.CodeAnalysis;
 using TimeForCode.Donation.Application.Interfaces;
 using TimeForCode.Donation.Domain;
 
 namespace TimeForCode.Donation.Infrastructure.Persistence.Database
 {
+    [ExcludeFromCodeCoverage(Justification = "Repository implementation")]
     internal class DonorOrganizationRepository : IDonorOrganizationRepository
     {
         private static readonly object IndexCreationLock = new();

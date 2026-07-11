@@ -4,7 +4,7 @@
 
 <PageTitle>Donor Organizations - TimeForCode</PageTitle>
 
-<h1>Donor Organizations</h1>
+<h1 data-testid="donor-organizations-heading">Donor Organizations</h1>
 
 @if (_error != null)
 {
@@ -13,7 +13,7 @@
 
 @if (_showForm)
 {
-    <div class="card mb-4">
+    <div class="card mb-4" data-testid="donor-org-form">
         <div class="card-header">
             <h3>@(_editingId != null ? "Edit" : "Add") Donor Organization</h3>
         </div>
@@ -39,7 +39,7 @@
             <form method="post" @formname="cancel-donor-org" class="d-inline ms-2">
                 <AntiforgeryToken />
                 <input type="hidden" name="OrgAction.Action" value="cancel" />
-                <button type="submit" class="btn btn-secondary">Cancel</button>
+                <button type="submit" class="btn btn-secondary" data-testid="donor-org-cancel-button">Cancel</button>
             </form>
         </div>
     </div>
@@ -51,7 +51,7 @@
         <form method="post" @formname="show-add-donor-org">
             <AntiforgeryToken />
             <input type="hidden" name="OrgAction.Action" value="add-form" />
-            <button type="submit" class="btn btn-success">+ Add Donor Organization</button>
+                <button type="submit" class="btn btn-success" data-testid="add-donor-org-button">+ Add Donor Organization</button>
         </form>
     </div>
 }
