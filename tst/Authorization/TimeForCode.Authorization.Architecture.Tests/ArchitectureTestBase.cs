@@ -24,10 +24,10 @@ namespace TimeForCode.Authorization.Architecture.Tests
         public void Initialize()
         {
             Architecture = new ArchLoader().LoadAssemblies(
-                System.Reflection.Assembly.Load(typeof(Api.Anchor).Assembly.GetName().Name!),
-                System.Reflection.Assembly.Load(typeof(Application.Anchor).Assembly.GetName().Name!),
-                System.Reflection.Assembly.Load(typeof(Domain.Anchor).Assembly.GetName().Name!),
-                System.Reflection.Assembly.Load(typeof(Infrastructure.Anchor).Assembly.GetName().Name!)
+                System.Reflection.Assembly.Load(typeof(Api.IAnchor).Assembly.GetName().Name!),
+                System.Reflection.Assembly.Load(typeof(Application.IAnchor).Assembly.GetName().Name!),
+                System.Reflection.Assembly.Load(typeof(Domain.IAnchor).Assembly.GetName().Name!),
+                System.Reflection.Assembly.Load(typeof(Infrastructure.IAnchor).Assembly.GetName().Name!)
             ).Build();
 
             ApiLayer = Types().That().ResideInNamespaceMatching(ApiLayerNamespace).As("Api Layer");

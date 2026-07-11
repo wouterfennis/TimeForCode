@@ -22,7 +22,7 @@ namespace TimeForCode.Authorization.Application.Tests.Validators
                 }
             };
 
-            var result = await _sut.ValidateAsync(command);
+            var result = await _sut.ValidateAsync(command, CancellationToken.None);
 
             result.IsValid.Should().BeTrue();
         }
