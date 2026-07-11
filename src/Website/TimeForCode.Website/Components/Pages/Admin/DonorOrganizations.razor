@@ -1,4 +1,4 @@
-@page "/admin/donor-organizations"
+﻿@page "/admin/donor-organizations"
 @using TimeForCode.Donation.Api.Client
 @inject IDonationClient DonationClient
 
@@ -11,50 +11,11 @@
     <div class="alert alert-danger" role="alert">@_error</div>
 }
 
-@if (_showForm)
-{
-    <div class="card mb-4" data-testid="donor-org-form">
-        <div class="card-header">
-            <h3>@(_editingId != null ? "Edit" : "Add") Donor Organization</h3>
-        </div>
-        <div class="card-body">
-            <form method="post">
-                <AntiforgeryToken />
-                <input type="hidden" name="OrgAction.Action" value="save" />
-                <input type="hidden" name="OrgAction.Id" value="@_editingId" />
-                <div class="mb-3">
-                    <label for="name" class="form-label">Name *</label>
-                    <input id="name" name="OrgAction.Name" class="form-control" value="@_formName" />
-                </div>
-                <div class="mb-3">
-                    <label for="email" class="form-label">Contact Email</label>
-                    <input id="email" name="OrgAction.ContactEmail" class="form-control" value="@_formContactEmail" />
-                </div>
-                <div class="mb-3">
-                    <label for="website" class="form-label">Website</label>
-                    <input id="website" name="OrgAction.Website" class="form-control" value="@_formWebsite" />
-                </div>
-                <button type="submit" class="btn btn-primary">Save</button>
-            </form>
-            <form method="post" class="d-inline ms-2">
-                <AntiforgeryToken />
-                <input type="hidden" name="OrgAction.Action" value="cancel" />
-                <button type="submit" class="btn btn-secondary" data-testid="donor-org-cancel-button">Cancel</button>
-            </form>
-        </div>
-    </div>
-}
-
-@if (!_showForm)
-{
-    <div class="mb-3">
-        <form method="post">
-            <AntiforgeryToken />
-            <input type="hidden" name="OrgAction.Action" value="add-form" />
-                <button type="submit" class="btn btn-success" data-testid="add-donor-org-button">+ Add Donor Organization</button>
-        </form>
-    </div>
-}
+<div class="mb-3">
+    <a href="/admin/donor-organizations/new" class="btn btn-success" data-testid="add-donor-org-button">
+        + Add Donor Organization
+    </a>
+</div>
 
 @if (_organizations == null && _error == null)
 {
@@ -96,21 +57,8 @@ else if (_organizations != null)
                         </td>
                         <td>@org.CreatedAt.ToString("yyyy-MM-dd")</td>
                         <td>
-                            <form method="post" class="d-inline me-1">
-                                <AntiforgeryToken />
-                                <input type="hidden" name="OrgAction.Action" value="edit-form" />
-                                <input type="hidden" name="OrgAction.Id" value="@org.Id" />
-                                <input type="hidden" name="OrgAction.Name" value="@org.Name" />
-                                <input type="hidden" name="OrgAction.ContactEmail" value="@org.ContactEmail" />
-                                <input type="hidden" name="OrgAction.Website" value="@org.Website" />
-                                <button type="submit" class="btn btn-sm btn-outline-primary">Edit</button>
-                            </form>
-                            <form method="post" class="d-inline">
-                                <AntiforgeryToken />
-                                <input type="hidden" name="OrgAction.Action" value="delete" />
-                                <input type="hidden" name="OrgAction.Id" value="@org.Id" />
-                                <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
-                            </form>
+                            <a href="/admin/donor-organizations/@org.Id/edit" class="btn btn-sm btn-outline-primary me-1">Edit</a>
+                            <a href="/admin/donor-organizations/@org.Id/delete" class="btn btn-sm btn-outline-danger">Delete</a>
                         </td>
                     </tr>
                 }
@@ -121,120 +69,18 @@ else if (_organizations != null)
 }
 
 @code {
-    [CascadingParameter]
-    public HttpContext? HttpContext { get; set; }
-
-    [SupplyParameterFromForm]
-    public DonorOrgActionModel? OrgAction { get; set; }
-
-    public class DonorOrgActionModel
-    {
-        public string? Action { get; set; }
-        public string? Id { get; set; }
-        public string? Name { get; set; }
-        public string? ContactEmail { get; set; }
-        public string? Website { get; set; }
-    }
-
     private GetDonorOrganizationsResponse? _organizations;
     private string? _error;
-    private bool _showForm;
-    private string? _editingId;
-    private string _formName = "";
-    private string _formContactEmail = "";
-    private string _formWebsite = "";
 
     protected override async Task OnInitializedAsync()
     {
-        switch (OrgAction?.Action)
-        {
-            case "add-form":
-                _showForm = true;
-                break;
-            case "edit-form":
-                _showForm = true;
-                _editingId = OrgAction.Id;
-                _formName = OrgAction.Name ?? "";
-                _formContactEmail = OrgAction.ContactEmail ?? "";
-                _formWebsite = OrgAction.Website ?? "";
-                break;
-            case "cancel":
-                _showForm = false;
-                break;
-            case "save":
-                await HandleSave();
-                break;
-            case "delete":
-                if (OrgAction.Id != null)
-                {
-                    await HandleDelete(OrgAction.Id);
-                }
-                break;
-        }
-
-        await LoadOrganizations();
-    }
-
-    private async Task LoadOrganizations()
-    {
         try
         {
-            _error = null;
             _organizations = await DonationClient.GetDonorOrganizationsAsync(null, null);
         }
         catch
         {
             _error = "Could not load donor organizations.";
-        }
-    }
-
-    private async Task HandleSave()
-    {
-        if (OrgAction == null)
-        {
-            return;
-        }
-
-        try
-        {
-            if (OrgAction.Id != null)
-            {
-                var request = new UpdateDonorOrganizationRequest
-                {
-                    Name = OrgAction.Name ?? "",
-                    ContactEmail = string.IsNullOrWhiteSpace(OrgAction.ContactEmail) ? null : OrgAction.ContactEmail,
-                    Website = string.IsNullOrWhiteSpace(OrgAction.Website) ? null : OrgAction.Website
-                };
-                await DonationClient.UpdateDonorOrganizationAsync(OrgAction.Id, request);
-            }
-            else
-            {
-                var request = new CreateDonorOrganizationRequest
-                {
-                    Name = OrgAction.Name ?? "",
-                    ContactEmail = string.IsNullOrWhiteSpace(OrgAction.ContactEmail) ? null : OrgAction.ContactEmail,
-                    Website = string.IsNullOrWhiteSpace(OrgAction.Website) ? null : OrgAction.Website
-                };
-                await DonationClient.CreateDonorOrganizationAsync(request);
-            }
-        }
-        catch
-        {
-            _error = OrgAction.Id != null
-                ? "Could not update donor organization."
-                : "Could not create donor organization.";
-        }
-    }
-
-    private async Task HandleDelete(string id)
-    {
-        try
-        {
-            await DonationClient.DeleteDonorOrganizationAsync(id);
-        }
-        catch
-        {
-            _error = "Could not delete donor organization.";
         }
     }
 }
