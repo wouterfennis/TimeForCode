@@ -5,7 +5,7 @@ using TimeForCode.Donation.Commands;
 
 namespace TimeForCode.Donation.Application.Handlers
 {
-    internal class DeleteDonorOrganizationHandler : IRequestHandler<DeleteDonorOrganizationCommand, Result<DeleteDonorOrganizationResult>>
+    internal class DeleteDonorOrganizationHandler : IRequestHandler<DeleteDonorOrganizationCommand, Result<IDeleteDonorOrganizationResult>>
     {
         private readonly IDonorOrganizationRepository _repository;
         private readonly ILogger<DeleteDonorOrganizationHandler> _logger;
@@ -16,7 +16,7 @@ namespace TimeForCode.Donation.Application.Handlers
             _logger = logger;
         }
 
-        public async Task<Result<DeleteDonorOrganizationResult>> Handle(DeleteDonorOrganizationCommand request, CancellationToken cancellationToken)
+        public async Task<Result<IDeleteDonorOrganizationResult>> Handle(DeleteDonorOrganizationCommand request, CancellationToken cancellationToken)
         {
             _logger.LogInformation("Deleting donor organization {Id}", request.Id);
 
@@ -24,14 +24,14 @@ namespace TimeForCode.Donation.Application.Handlers
             if (organization == null)
             {
                 _logger.LogWarning("Donor organization with id {Id} not found", request.Id);
-                return Result<DeleteDonorOrganizationResult>.Failure($"Donor organization with id '{request.Id}' was not found.");
+                return Result<IDeleteDonorOrganizationResult>.Failure($"Donor organization with id '{request.Id}' was not found.");
             }
 
             await _repository.DeleteAsync(request.Id);
 
             _logger.LogInformation("Donor organization {Id} deleted successfully", request.Id);
 
-            return Result<DeleteDonorOrganizationResult>.Success(new DeleteDonorOrganizationResult());
+            return Result<IDeleteDonorOrganizationResult>.Success(new IDeleteDonorOrganizationResult());
         }
     }
 }
