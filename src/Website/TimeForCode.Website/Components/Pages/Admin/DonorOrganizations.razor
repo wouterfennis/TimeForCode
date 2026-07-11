@@ -45,23 +45,23 @@
     </div>
 }
 
+@if (!_showForm)
+{
+    <div class="mb-3">
+        <form method="post" @formname="show-add-donor-org">
+            <AntiforgeryToken />
+            <input type="hidden" name="OrgAction.Action" value="add-form" />
+            <button type="submit" class="btn btn-success">+ Add Donor Organization</button>
+        </form>
+    </div>
+}
+
 @if (_organizations == null && _error == null)
 {
     <p>Loading donor organizations...</p>
 }
 else if (_organizations != null)
 {
-    @if (!_showForm)
-    {
-        <div class="mb-3">
-            <form method="post" @formname="show-add-donor-org">
-                <AntiforgeryToken />
-                <input type="hidden" name="OrgAction.Action" value="add-form" />
-                <button type="submit" class="btn btn-success">+ Add Donor Organization</button>
-            </form>
-        </div>
-    }
-
     @if (!_organizations.Organizations.Any())
     {
         <p>No donor organizations yet.</p>
