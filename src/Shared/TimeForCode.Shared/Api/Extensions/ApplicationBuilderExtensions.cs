@@ -1,5 +1,8 @@
+using FluentValidation;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
 using Scalar.AspNetCore;
 
@@ -24,6 +27,25 @@ namespace TimeForCode.Shared.Api.Extensions
             {
                 app.UseHsts();
             }
+
+            app.Use(async (context, next) =>
+            {
+                try
+                {
+                    await next(context);
+                }
+                catch (ValidationException ex)
+                {
+                    context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                    context.Response.ContentType = "application/problem+json";
+                    await context.Response.WriteAsJsonAsync(new ProblemDetails
+                    {
+                        Title = "Validation failed",
+                        Detail = string.Join("; ", ex.Errors.Select(e => e.ErrorMessage)),
+                        Status = StatusCodes.Status400BadRequest
+                    });
+                }
+            });
 
             app.UseSecurityHeaders();
 
