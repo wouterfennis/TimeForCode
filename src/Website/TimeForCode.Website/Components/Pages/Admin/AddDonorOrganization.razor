@@ -72,11 +72,7 @@
         }
         catch (ApiException<ProblemDetails> ex)
         {
-            _error = ex.Result?.Detail ?? "Could not create donor organization.";
-        }
-        catch
-        {
-            _error = "Could not create donor organization.";
+            _error = ex.Result?.Detail ?? $"Could not create donor organization. {ex.Message}";
         }
     }
 }

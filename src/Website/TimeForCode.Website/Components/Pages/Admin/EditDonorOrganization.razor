@@ -79,11 +79,7 @@
             }
             catch (ApiException<ProblemDetails> ex)
             {
-                _error = ex.Result?.Detail ?? "Could not update donor organization.";
-            }
-            catch
-            {
-                _error = "Could not update donor organization.";
+                _error = ex.Result?.Detail ?? $"Could not update donor organization. {ex.Message}";
             }
         }
         else
