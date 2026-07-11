@@ -11,4 +11,8 @@
     <ProjectReference Include="..\..\Donation\TimeForCode.Donation.Api.Client\TimeForCode.Donation.Api.Client.csproj" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <ExcludeByFile>**/*.razor</ExcludeByFile>
+  </PropertyGroup>
+
 </Project>
