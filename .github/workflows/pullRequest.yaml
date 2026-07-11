@@ -59,7 +59,7 @@ jobs:
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       run: |
-          dotnet dotnet-sonarscanner begin /k:"wouterfennis_TimeForCode" /o:"wouterfennis" /d:sonar.token="$SONAR_TOKEN" /d:sonar.cs.vstest.reportsPaths=**/TestResults/**/*.trx /d:sonar.cs.vscoveragexml.reportsPaths=**/TestResults/**/*.xml /d:sonar.scanner.scanAll=true /d:sonar.coverage.exclusions=tst/**,src/Website/Components/Pages/**
+          dotnet dotnet-sonarscanner begin /k:"wouterfennis_TimeForCode" /o:"wouterfennis" /d:sonar.token="$SONAR_TOKEN" /d:sonar.cs.vstest.reportsPaths=**/TestResults/**/*.trx /d:sonar.cs.vscoveragexml.reportsPaths=**/TestResults/**/*.xml /d:sonar.scanner.scanAll=true /d:sonar.coverage.exclusions=tst/**,src/Website/TimeForCode.Website/Components/Pages/**
 
     - name: Build
       run: |
