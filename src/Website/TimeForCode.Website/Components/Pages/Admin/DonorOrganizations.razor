@@ -18,7 +18,7 @@
             <h3>@(_editingId != null ? "Edit" : "Add") Donor Organization</h3>
         </div>
         <div class="card-body">
-            <form method="post" @formname="save-donor-org">
+            <form method="post">
                 <AntiforgeryToken />
                 <input type="hidden" name="OrgAction.Action" value="save" />
                 <input type="hidden" name="OrgAction.Id" value="@_editingId" />
@@ -36,7 +36,7 @@
                 </div>
                 <button type="submit" class="btn btn-primary">Save</button>
             </form>
-            <form method="post" @formname="cancel-donor-org" class="d-inline ms-2">
+            <form method="post" class="d-inline ms-2">
                 <AntiforgeryToken />
                 <input type="hidden" name="OrgAction.Action" value="cancel" />
                 <button type="submit" class="btn btn-secondary" data-testid="donor-org-cancel-button">Cancel</button>
@@ -48,7 +48,7 @@
 @if (!_showForm)
 {
     <div class="mb-3">
-        <form method="post" @formname="show-add-donor-org">
+        <form method="post">
             <AntiforgeryToken />
             <input type="hidden" name="OrgAction.Action" value="add-form" />
                 <button type="submit" class="btn btn-success" data-testid="add-donor-org-button">+ Add Donor Organization</button>
@@ -96,7 +96,7 @@ else if (_organizations != null)
                         </td>
                         <td>@org.CreatedAt.ToString("yyyy-MM-dd")</td>
                         <td>
-                            <form method="post" @formname="@($"edit-donor-org-{Uri.EscapeDataString(org.Id)}")" class="d-inline me-1">
+                            <form method="post" class="d-inline me-1">
                                 <AntiforgeryToken />
                                 <input type="hidden" name="OrgAction.Action" value="edit-form" />
                                 <input type="hidden" name="OrgAction.Id" value="@org.Id" />
@@ -105,7 +105,7 @@ else if (_organizations != null)
                                 <input type="hidden" name="OrgAction.Website" value="@org.Website" />
                                 <button type="submit" class="btn btn-sm btn-outline-primary">Edit</button>
                             </form>
-                            <form method="post" @formname="@($"delete-donor-org-{Uri.EscapeDataString(org.Id)}")" class="d-inline">
+                            <form method="post" class="d-inline">
                                 <AntiforgeryToken />
                                 <input type="hidden" name="OrgAction.Action" value="delete" />
                                 <input type="hidden" name="OrgAction.Id" value="@org.Id" />
