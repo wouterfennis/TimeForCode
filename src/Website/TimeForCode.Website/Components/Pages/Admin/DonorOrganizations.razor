@@ -6,6 +6,10 @@
 
 <h1 data-testid="donor-organizations-heading">Donor Organizations</h1>
 
+<form id="delete-donor-org" method="post" @formname="delete-donor-org" class="d-none">
+    <AntiforgeryToken />
+</form>
+
 @if (_error != null)
 {
     <div class="alert alert-danger" role="alert">@_error</div>
@@ -58,7 +62,7 @@ else if (_organizations != null)
                         <td>@org.CreatedAt.ToString("yyyy-MM-dd")</td>
                         <td>
                             <a href="/admin/donor-organizations/@org.Id/edit" class="btn btn-sm btn-outline-primary me-1">Edit</a>
-                            <a href="/admin/donor-organizations/@org.Id/delete" class="btn btn-sm btn-outline-danger">Delete</a>
+                            <button type="submit" form="delete-donor-org" name="DeleteForm.Id" value="@org.Id" class="btn btn-sm btn-outline-danger">Delete</button>
                         </td>
                     </tr>
                 }
@@ -69,11 +73,31 @@ else if (_organizations != null)
 }
 
 @code {
+    [SupplyParameterFromForm(FormName = "delete-donor-org")]
+    public DeleteDonorOrganizationForm? DeleteForm { get; set; }
+
+    public class DeleteDonorOrganizationForm
+    {
+        public string? Id { get; set; }
+    }
+
     private GetDonorOrganizationsResponse? _organizations;
     private string? _error;
 
     protected override async Task OnInitializedAsync()
     {
+        if (!string.IsNullOrEmpty(DeleteForm?.Id))
+        {
+            try
+            {
+                await DonationClient.DeleteDonorOrganizationAsync(DeleteForm.Id);
+            }
+            catch
+            {
+                _error = "Could not delete donor organization.";
+            }
+        }
+
         try
         {
             _organizations = await DonationClient.GetDonorOrganizationsAsync(null, null);
