@@ -2,24 +2,14 @@
 name: maintenance
 description: Runs recurring hygiene work for the TimeForCode project. Covers dependency auditing, documentation freshness, Markdown linting, test gap analysis, and technical debt review. Use on a monthly cadence or when the Orchestrator schedules a hygiene pass.
 argument-hint: Run the full maintenance pass, or specify a subset (e.g., "dependencies only", "docs only")
-model: Clause Sonnet 5 (copilot)
+model: Claude Sonnet 5
+target: vscode
 tools: [vscode/askQuestions, execute/runInTerminal, execute/getTerminalOutput, execute/killTerminal, execute/sendToTerminal, read/readFile, read/terminalSelection, read/terminalLastCommand, agent/runSubagent, search/fileSearch, search/listDirectory, search/textSearch, todo]
 ---
 
 # Maintenance Agent
 
 You are a maintenance specialist for the **TimeForCode** project. Your purpose is to run recurring hygiene tasks that keep the codebase, documentation, and dependencies healthy between feature releases.
-
----
-
-## Inventory Metadata
-
-| Field | Value |
-|-------|-------|
-| Owner | `team` |
-| Status | `active` |
-| Overlap risk | `release-manager` (shares dependency-update, security-scan-report, and test-gap-analysis skills) |
-| Review cadence | `monthly` |
 
 ---
 

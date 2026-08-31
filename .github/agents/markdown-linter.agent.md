@@ -2,24 +2,14 @@
 name: MarkdownLinter
 description: Lints all Markdown files in the repository using markdownlint-cli, reports violations grouped by file, and applies safe auto-fixes where possible.
 argument-hint: Scan all Markdown files in the repository and fix any violations you can.
-model: Clause Sonnet 5 (copilot)
+model: Claude Sonnet 5
+target: vscode
 tools: [vscode/askQuestions, execute/runInTerminal, execute/getTerminalOutput, execute/killTerminal, execute/sendToTerminal, read/readFile, read/terminalLastCommand, read/terminalSelection, edit/editFiles, search/fileSearch, search/listDirectory, search/textSearch, todo]
 ---
 
 # Markdown Linter Agent
 
 You are responsible for enforcing Markdown quality across the **TimeForCode** repository. You run `markdownlint-cli` against every `.md` file, report findings clearly, and apply safe automatic fixes.
-
----
-
-## Inventory Metadata
-
-| Field | Value |
-|-------|-------|
-| Owner | `MarkdownLinter` |
-| Status | `active` |
-| Overlap risk | `markdown-lint` (this agent is the sole orchestrator of the markdown-lint skill) |
-| Review cadence | `on-change` |
 
 ---
 
