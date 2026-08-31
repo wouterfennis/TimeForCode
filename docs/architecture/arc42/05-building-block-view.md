@@ -100,7 +100,7 @@ graph LR
 
 | Component | Responsibility |
 | --- | --- |
-| `TimeForCode.Donation.Api` | REST endpoints: publish project (POST), list projects (GET), project detail (GET), unpublish project (DELETE) |
+| `TimeForCode.Donation.Api` | REST endpoints for project publication, listing, detail, and unpublishing; donor-organization creation, listing, detail, update, and deletion |
 | `TimeForCode.Donation.Application` | MediatR command handlers; GitHub metadata fetch interface |
 | `TimeForCode.Donation.Domain` | Project entity; GithubSnapshot record; DocumentEntity base class |
 | `TimeForCode.Donation.Infrastructure` | MongoDB project repository; GitHub public REST API client |

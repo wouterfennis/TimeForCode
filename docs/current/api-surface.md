@@ -65,9 +65,11 @@ The Donation API is responsible for projects, donations, organizations, and cont
 
 | Method | Path | Status | Description |
 | --- | --- | --- | --- |
-| `POST` | `/api/v1/organization` | ❌ | Register a donor organization |
-| `GET` | `/api/v1/organization/{id}` | ❌ | Get organization details |
-| `PUT` | `/api/v1/organization/{id}` | ❌ | Update organization details |
+| `POST` | `/api/v1/donororganization` | ✅ | Registers a donor organization; returns 400 for invalid input or 409 for a duplicate name |
+| `GET` | `/api/v1/donororganization` | ✅ | Returns a paginated list of donor organizations; returns 400 for invalid pagination parameters |
+| `GET` | `/api/v1/donororganization/{id}` | ✅ | Returns a donor organization's details; returns 404 when not found |
+| `PUT` | `/api/v1/donororganization/{id}` | ✅ | Updates a donor organization; returns 404 when not found or 409 for a duplicate name |
+| `DELETE` | `/api/v1/donororganization/{id}` | ✅ | Deletes a donor organization; returns 204 No Content on success or 404 when not found |
 
 ### Contributor Endpoints
 

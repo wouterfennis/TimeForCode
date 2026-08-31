@@ -1,0 +1,100 @@
+@page "/admin/donor-organizations/{Id}/edit"
+@using TimeForCode.Donation.Api.Client
+@inject IDonationClient DonationClient
+@inject NavigationManager NavigationManager
+
+<PageTitle>Edit Donor Organization - TimeForCode</PageTitle>
+
+<h1>Edit Donor Organization</h1>
+
+@if (_error != null)
+{
+    <div class="alert alert-danger" role="alert">@_error</div>
+}
+
+<div class="card mb-4">
+    <div class="card-header">
+        <h3>@_name</h3>
+    </div>
+    <div class="card-body">
+        <form method="post" @formname="edit-donor-org">
+            <AntiforgeryToken />
+            <div class="mb-3">
+                <label for="name" class="form-label">Name *</label>
+                <input id="name" name="Form.Name" class="form-control" value="@_name" required />
+            </div>
+            <div class="mb-3">
+                <label for="email" class="form-label">Contact Email</label>
+                <input id="email" name="Form.ContactEmail" class="form-control" value="@_contactEmail" />
+            </div>
+            <div class="mb-3">
+                <label for="website" class="form-label">Website</label>
+                <input id="website" name="Form.Website" class="form-control" value="@_website" />
+            </div>
+            <button type="submit" class="btn btn-primary">Save</button>
+        </form>
+        <a href="/admin/donor-organizations" class="btn btn-secondary ms-2 mt-2">Cancel</a>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string Id { get; set; } = string.Empty;
+
+    [CascadingParameter]
+    public HttpContext? HttpContext { get; set; }
+
+    [SupplyParameterFromForm]
+    public EditOrgForm? Form { get; set; }
+
+    public class EditOrgForm
+    {
+        public string? Name { get; set; }
+        public string? ContactEmail { get; set; }
+        public string? Website { get; set; }
+    }
+
+    private string? _error;
+    private string _name = "";
+    private string _contactEmail = "";
+    private string _website = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Form != null)
+        {
+            _name = Form.Name ?? "";
+            _contactEmail = Form.ContactEmail ?? "";
+            _website = Form.Website ?? "";
+
+            try
+            {
+                await DonationClient.UpdateDonorOrganizationAsync(Id, new UpdateDonorOrganizationRequest
+                {
+                    Name = Form.Name ?? "",
+                    ContactEmail = string.IsNullOrWhiteSpace(Form.ContactEmail) ? null : Form.ContactEmail,
+                    Website = string.IsNullOrWhiteSpace(Form.Website) ? null : Form.Website
+                });
+                NavigationManager.NavigateTo("/admin/donor-organizations");
+            }
+            catch (ApiException<ProblemDetails> ex)
+            {
+                _error = ex.Result?.Detail ?? $"Could not update donor organization. {ex.Message}";
+            }
+        }
+        else
+        {
+            try
+            {
+                var org = await DonationClient.GetDonorOrganizationByIdAsync(Id);
+                _name = org.Name;
+                _contactEmail = org.ContactEmail ?? "";
+                _website = org.Website ?? "";
+            }
+            catch
+            {
+                NavigationManager.NavigateTo("/admin/donor-organizations");
+            }
+        }
+    }
+}

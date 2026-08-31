@@ -1,0 +1,110 @@
+﻿@page "/admin/donor-organizations"
+@using TimeForCode.Donation.Api.Client
+@inject IDonationClient DonationClient
+
+<PageTitle>Donor Organizations - TimeForCode</PageTitle>
+
+<h1 data-testid="donor-organizations-heading">Donor Organizations</h1>
+
+<form id="delete-donor-org" method="post" @formname="delete-donor-org" class="d-none">
+    <AntiforgeryToken />
+</form>
+
+@if (_error != null)
+{
+    <div class="alert alert-danger" role="alert">@_error</div>
+}
+
+<div class="mb-3">
+    <a href="/admin/donor-organizations/new" class="btn btn-success" data-testid="add-donor-org-button">
+        + Add Donor Organization
+    </a>
+</div>
+
+@if (_organizations == null && _error == null)
+{
+    <p>Loading donor organizations...</p>
+}
+else if (_organizations != null)
+{
+    @if (!_organizations.Organizations.Any())
+    {
+        <p>No donor organizations yet.</p>
+    }
+    else
+    {
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Contact Email</th>
+                    <th>Website</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var org in _organizations.Organizations)
+                {
+                    <tr>
+                        <td>@org.Name</td>
+                        <td>@(org.ContactEmail ?? "—")</td>
+                        <td>
+                            @if (!string.IsNullOrEmpty(org.Website))
+                            {
+                                <a href="@org.Website" target="_blank" rel="noopener noreferrer">@org.Website</a>
+                            }
+                            else
+                            {
+                                <span>—</span>
+                            }
+                        </td>
+                        <td>@org.CreatedAt.ToString("yyyy-MM-dd")</td>
+                        <td>
+                            <a href="/admin/donor-organizations/@org.Id/edit" class="btn btn-sm btn-outline-primary me-1">Edit</a>
+                            <button type="submit" form="delete-donor-org" name="DeleteForm.Id" value="@org.Id" class="btn btn-sm btn-outline-danger">Delete</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <p>Showing @_organizations.Organizations.Count of @_organizations.TotalCount donor organizations.</p>
+    }
+}
+
+@code {
+    [SupplyParameterFromForm(FormName = "delete-donor-org")]
+    public DeleteDonorOrganizationForm? DeleteForm { get; set; }
+
+    public class DeleteDonorOrganizationForm
+    {
+        public string? Id { get; set; }
+    }
+
+    private GetDonorOrganizationsResponse? _organizations;
+    private string? _error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!string.IsNullOrEmpty(DeleteForm?.Id))
+        {
+            try
+            {
+                await DonationClient.DeleteDonorOrganizationAsync(DeleteForm.Id);
+            }
+            catch
+            {
+                _error = "Could not delete donor organization.";
+            }
+        }
+
+        try
+        {
+            _organizations = await DonationClient.GetDonorOrganizationsAsync(null, null);
+        }
+        catch
+        {
+            _error = "Could not load donor organizations.";
+        }
+    }
+}

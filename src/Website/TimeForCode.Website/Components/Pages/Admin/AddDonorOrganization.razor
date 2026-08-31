@@ -1,0 +1,78 @@
+@page "/admin/donor-organizations/new"
+@using TimeForCode.Donation.Api.Client
+@inject IDonationClient DonationClient
+@inject NavigationManager NavigationManager
+
+<PageTitle>Add Donor Organization - TimeForCode</PageTitle>
+
+<h1>Add Donor Organization</h1>
+
+@if (_error != null)
+{
+    <div class="alert alert-danger" role="alert">@_error</div>
+}
+
+<div class="card mb-4" data-testid="donor-org-form">
+    <div class="card-header">
+        <h3>New Donor Organization</h3>
+    </div>
+    <div class="card-body">
+        <form method="post" @formname="add-donor-org">
+            <AntiforgeryToken />
+            <div class="mb-3">
+                <label for="name" class="form-label">Name *</label>
+                <input id="name" name="Form.Name" class="form-control" value="@(Form?.Name ?? "")" required />
+            </div>
+            <div class="mb-3">
+                <label for="email" class="form-label">Contact Email</label>
+                <input id="email" name="Form.ContactEmail" class="form-control" value="@(Form?.ContactEmail ?? "")" />
+            </div>
+            <div class="mb-3">
+                <label for="website" class="form-label">Website</label>
+                <input id="website" name="Form.Website" class="form-control" value="@(Form?.Website ?? "")" />
+            </div>
+            <button type="submit" class="btn btn-primary">Save</button>
+        </form>
+        <a href="/admin/donor-organizations" class="btn btn-secondary ms-2 mt-2" data-testid="donor-org-cancel-button">Cancel</a>
+    </div>
+</div>
+
+@code {
+    [CascadingParameter]
+    public HttpContext? HttpContext { get; set; }
+
+    [SupplyParameterFromForm]
+    public AddOrgForm? Form { get; set; }
+
+    public class AddOrgForm
+    {
+        public string? Name { get; set; }
+        public string? ContactEmail { get; set; }
+        public string? Website { get; set; }
+    }
+
+    private string? _error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Form == null)
+        {
+            return;
+        }
+
+        try
+        {
+            await DonationClient.CreateDonorOrganizationAsync(new CreateDonorOrganizationRequest
+            {
+                Name = Form.Name ?? "",
+                ContactEmail = string.IsNullOrWhiteSpace(Form.ContactEmail) ? null : Form.ContactEmail,
+                Website = string.IsNullOrWhiteSpace(Form.Website) ? null : Form.Website
+            });
+            NavigationManager.NavigateTo("/admin/donor-organizations");
+        }
+        catch (ApiException<ProblemDetails> ex)
+        {
+            _error = ex.Result?.Detail ?? $"Could not create donor organization. {ex.Message}";
+        }
+    }
+}

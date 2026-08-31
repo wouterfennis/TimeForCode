@@ -2,6 +2,30 @@ using System.Net;
 
 namespace TimeForCode.Donation.Commands
 {
+    public class Result
+    {
+        private string? _errorMessage { get; init; }
+        public bool IsSuccess { get; init; }
+        public bool IsFailure => !IsSuccess;
+        public string ErrorMessage => _errorMessage!;
+        public HttpStatusCode? FailureStatusCode { get; init; }
+
+        public static Result Success()
+        {
+            return new Result { IsSuccess = true };
+        }
+
+        public static Result Failure(string? errorMessage)
+        {
+            if (string.IsNullOrEmpty(errorMessage))
+            {
+                throw new InvalidOperationException("The result does not contain any error message.");
+            }
+
+            return new Result { IsSuccess = false, _errorMessage = errorMessage };
+        }
+    }
+
     public class Result<T>
     {
         private T? _value { get; init; }

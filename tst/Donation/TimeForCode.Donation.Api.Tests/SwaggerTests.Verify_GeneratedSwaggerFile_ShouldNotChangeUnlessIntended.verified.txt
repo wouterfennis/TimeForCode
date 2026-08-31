@@ -1,4 +1,4 @@
-{
+﻿{
   "openapi": "3.1.1",
   "info": {
     "title": "Donation API",
@@ -6,6 +6,286 @@
     "version": "v1"
   },
   "paths": {
+    "/api/v1/DonorOrganization": {
+      "post": {
+        "tags": [
+          "DonorOrganization"
+        ],
+        "summary": "Creates a new donor organization.",
+        "operationId": "CreateDonorOrganization",
+        "requestBody": {
+          "description": "The creation request.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateDonorOrganizationRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateDonorOrganizationRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateDonorOrganizationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DonorOrganizationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "DonorOrganization"
+        ],
+        "summary": "Returns a paginated list of all donor organizations.",
+        "operationId": "GetDonorOrganizations",
+        "parameters": [
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "description": "The page number (1-based, default 1).",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32",
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "description": "The number of items per page (default 20).",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32",
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetDonorOrganizationsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/DonorOrganization/{id}": {
+      "get": {
+        "tags": [
+          "DonorOrganization"
+        ],
+        "summary": "Returns the full details of a donor organization.",
+        "operationId": "GetDonorOrganizationById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The donor organization identifier.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DonorOrganizationResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "DonorOrganization"
+        ],
+        "summary": "Updates an existing donor organization.",
+        "operationId": "UpdateDonorOrganization",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The donor organization identifier.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "The update request.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateDonorOrganizationRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateDonorOrganizationRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateDonorOrganizationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DonorOrganizationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "DonorOrganization"
+        ],
+        "summary": "Deletes a donor organization.",
+        "operationId": "DeleteDonorOrganization",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The donor organization identifier.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content",
+            "content": {
+              "application/json": { }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/Project": {
       "post": {
         "tags": [
@@ -268,6 +548,125 @@
   },
   "components": {
     "schemas": {
+      "CreateDonorOrganizationRequest": {
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The name of the donor organization."
+          },
+          "contactEmail": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "The contact email of the donor organization."
+          },
+          "website": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "The website URL of the donor organization."
+          }
+        },
+        "description": "Represents a request to create a donor organization."
+      },
+      "DonorOrganizationResponse": {
+        "required": [
+          "id",
+          "name",
+          "createdAt"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The unique identifier."
+          },
+          "name": {
+            "type": "string",
+            "description": "The name of the donor organization."
+          },
+          "contactEmail": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "The contact email of the donor organization."
+          },
+          "website": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "The website URL of the donor organization."
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "When the donor organization was created.",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "When the donor organization was last updated.",
+            "format": "date-time"
+          }
+        },
+        "description": "Represents a donor organization response."
+      },
+      "GetDonorOrganizationsResponse": {
+        "required": [
+          "organizations",
+          "totalCount",
+          "pageNumber",
+          "pageSize"
+        ],
+        "type": "object",
+        "properties": {
+          "organizations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DonorOrganizationResponse"
+            },
+            "description": "The list of donor organizations."
+          },
+          "totalCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The total count of donor organizations.",
+            "format": "int32"
+          },
+          "pageNumber": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The current page number.",
+            "format": "int32"
+          },
+          "pageSize": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The page size.",
+            "format": "int32"
+          }
+        },
+        "description": "Represents a paginated list of donor organizations."
+      },
       "GetProjectsResponse": {
         "required": [
           "projects",
@@ -590,10 +989,40 @@
             "type": "string"
           }
         }
+      },
+      "UpdateDonorOrganizationRequest": {
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The name of the donor organization."
+          },
+          "contactEmail": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "The contact email of the donor organization."
+          },
+          "website": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "The website URL of the donor organization."
+          }
+        },
+        "description": "Represents a request to update a donor organization."
       }
     }
   },
   "tags": [
+    {
+      "name": "DonorOrganization"
+    },
     {
       "name": "Project"
     }

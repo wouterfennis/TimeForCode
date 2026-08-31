@@ -15,14 +15,14 @@ namespace TimeForCode.Donation.Architecture.Tests
 
             // Load both Authorization and Donation contexts
             Architecture = loader.LoadAssemblies(
-                System.Reflection.Assembly.Load(typeof(Authorization.Api.Anchor).Assembly.GetName().Name!),
-                System.Reflection.Assembly.Load(typeof(Authorization.Application.Anchor).Assembly.GetName().Name!),
-                System.Reflection.Assembly.Load(typeof(Authorization.Domain.Anchor).Assembly.GetName().Name!),
-                System.Reflection.Assembly.Load(typeof(Authorization.Infrastructure.Anchor).Assembly.GetName().Name!),
-                System.Reflection.Assembly.Load(typeof(Api.Anchor).Assembly.GetName().Name!),
-                System.Reflection.Assembly.Load(typeof(Application.Anchor).Assembly.GetName().Name!),
-                System.Reflection.Assembly.Load(typeof(Domain.Anchor).Assembly.GetName().Name!),
-                System.Reflection.Assembly.Load(typeof(Infrastructure.Anchor).Assembly.GetName().Name!)
+                System.Reflection.Assembly.Load(typeof(Authorization.Api.IAnchor).Assembly.GetName().Name!),
+                System.Reflection.Assembly.Load(typeof(Authorization.Application.IAnchor).Assembly.GetName().Name!),
+                System.Reflection.Assembly.Load(typeof(Authorization.Domain.IAnchor).Assembly.GetName().Name!),
+                System.Reflection.Assembly.Load(typeof(Authorization.Infrastructure.IAnchor).Assembly.GetName().Name!),
+                System.Reflection.Assembly.Load(typeof(Api.IAnchor).Assembly.GetName().Name!),
+                System.Reflection.Assembly.Load(typeof(Application.IAnchor).Assembly.GetName().Name!),
+                System.Reflection.Assembly.Load(typeof(Domain.IAnchor).Assembly.GetName().Name!),
+                System.Reflection.Assembly.Load(typeof(Infrastructure.IAnchor).Assembly.GetName().Name!)
             ).Build();
         }
 
