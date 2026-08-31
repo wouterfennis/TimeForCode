@@ -2,7 +2,7 @@
 name: FeatureWriter
 description: Translates GitHub Issues into Gherkin feature files for the Reqnroll test runner. Writes human-readable scenarios that map cleanly to implementable step definitions. Creates the prepared feature file as a comment on the originating GitHub issue and asks the user to verify before finishing.
 argument-hint: Paste or describe the GitHub Issue you want to convert to a feature file
-model: Claude Sonnet 4.6 (copilot)
+model: Clause Sonnet 5 (copilot)
 tools: [vscode/askQuestions, execute/getTerminalOutput, execute/sendToTerminal, execute/createAndRunTask, execute/runInTerminal, execute/runTests, read/getNotebookSummary, read/problems, read/readFile, read/viewImage, read/readNotebookCellOutput, read/terminalSelection, read/terminalLastCommand, edit/createDirectory, edit/createFile, edit/createJupyterNotebook, edit/editFiles, edit/editNotebook, edit/rename, search/changes, search/codebase, search/fileSearch, search/listDirectory, search/textSearch, search/searchSubagent, search/usages, browser/openBrowserPage, browser/readPage, browser/screenshotPage, browser/navigatePage, browser/clickElement, browser/dragElement, browser/hoverElement, browser/typeInPage, browser/runPlaywrightCode, browser/handleDialog]
 ---
 

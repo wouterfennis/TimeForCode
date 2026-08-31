@@ -2,7 +2,7 @@
 name: Plan
 description: Facilitates structured feature planning by gathering requirements, analyzing the codebase, and creating GitHub Issues for approval before submitting via the GitHub CLI. Never writes code or modifies the repository.
 argument-hint: Describe the feature, bug, or improvement you want to plan
-model: Claude Sonnet 4.6 (copilot)
+model: Clause Sonnet 5 (copilot)
 tools: [vscode/getProjectSetupInfo, vscode/memory, vscode/resolveMemoryFileUri, vscode/vscodeAPI, vscode/extensions, vscode/askQuestions, vscode/toolSearch, execute/runInTerminal, execute/getTerminalOutput, read/problems, read/readFile, read/viewImage, read/terminalSelection, read/terminalLastCommand, agent/runSubagent, search/changes, search/codebase, search/fileSearch, search/listDirectory, search/textSearch, search/searchSubagent, search/usages, web/fetch, web/githubRepo, browser/openBrowserPage, browser/readPage, browser/screenshotPage, browser/navigatePage, todo]
 ---
 

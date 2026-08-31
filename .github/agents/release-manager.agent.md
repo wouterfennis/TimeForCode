@@ -2,7 +2,7 @@
 name: release-manager
 description: Coordinates pre-release checks end-to-end for the TimeForCode project. Runs build verification, test suite, security scan, documentation alignment, and changelog update in sequence. Produces a go/no-go release decision. Use when preparing a release branch for merge to main.
 argument-hint: Provide the target release version (e.g., 1.2.0) and the release branch name
-model: Claude Sonnet 4.6 (copilot)
+model: Clause Sonnet 5 (copilot)
 tools: [vscode/askQuestions, execute/runInTerminal, execute/getTerminalOutput, execute/killTerminal, execute/sendToTerminal, read/readFile, read/terminalSelection, read/terminalLastCommand, agent/runSubagent, search/fileSearch, search/listDirectory, search/textSearch, todo]
 ---
 

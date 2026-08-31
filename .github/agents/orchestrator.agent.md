@@ -15,27 +15,27 @@ handoffs:
     agent: Plan
     prompt: "Plan the feature described in our conversation above. Create a GitHub issue for it."
     send: false
-    model: Claude Sonnet 4.6 (copilot)
+    model: Clause Sonnet 5 (copilot)
   - label: "Phase 2 — Run FeatureWriter Agent"
     agent: FeatureWriter
     prompt: "Write a Gherkin feature file for the GitHub issue number identified in our conversation."
     send: false
-    model: Claude Sonnet 4.6 (copilot)
+    model: Clause Sonnet 5 (copilot)
   - label: "Phase 3 — Run Implementation Agent"
     agent: Implementation
     prompt: "Implement the GitHub issue number identified in our conversation."
     send: false
-    model: Claude Sonnet 4.6 (copilot)
+    model: Clause Sonnet 5 (copilot)
   - label: "Phase 4 — Run Review Agent"
     agent: Review
     prompt: "Review the implementation for the GitHub issue number identified in our conversation."
     send: false
-    model: Claude Sonnet 4.6 (copilot)
+    model: Clause Sonnet 5 (copilot)
   - label: "Phase 5 — Run Markdown Linter Agent"
     agent: MarkdownLinter
     prompt: "Lint all Markdown files in the repository and post the report to the GitHub issue number identified in our conversation."
     send: false
-    model: Claude Sonnet 4.6 (copilot)
+    model: Clause Sonnet 5 (copilot)
 ---
 
 # Orchestrator Agent

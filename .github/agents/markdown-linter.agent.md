@@ -2,7 +2,7 @@
 name: MarkdownLinter
 description: Lints all Markdown files in the repository using markdownlint-cli, reports violations grouped by file, and applies safe auto-fixes where possible.
 argument-hint: Scan all Markdown files in the repository and fix any violations you can.
-model: Claude Sonnet 4.6 (copilot)
+model: Clause Sonnet 5 (copilot)
 tools: [vscode/askQuestions, execute/runInTerminal, execute/getTerminalOutput, execute/killTerminal, execute/sendToTerminal, read/readFile, read/terminalLastCommand, read/terminalSelection, edit/editFiles, search/fileSearch, search/listDirectory, search/textSearch, todo]
 ---
 
