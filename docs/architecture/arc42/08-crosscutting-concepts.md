@@ -58,6 +58,8 @@ Business rule violations (e.g. pledging hours to a non-active project) return `4
 
 Domain exceptions should not propagate to the API layer as unhandled exceptions. Each handler is responsible for mapping domain errors to appropriate HTTP responses.
 
+MediatR handlers return a `Result<T>` when an operation has a response payload. Commands such as donor-organization deletion, which succeed without a payload, return the non-generic `Result`; the API maps a successful payload-free result to `204 No Content`.
+
 ---
 
 ## Configuration Management
