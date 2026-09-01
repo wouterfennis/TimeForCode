@@ -62,12 +62,10 @@ namespace TimeForCode.Website.Specifications.Steps
             (await adminLandingPage.IsVisibleAsync()).Should().BeTrue();
         }
 
-        [Then("The visitor sees an unauthorized message")]
-        public async Task ThenTheVisitorSeesAnUnauthorizedMessageAsync()
+        [Then("The visitor is redirected to the home page")]
+        public async Task ThenTheVisitorIsRedirectedToTheHomePageAsync()
         {
-            var unauthorizedMessage = _browser.Page.GetByTestId("unauthorized-message");
-            await unauthorizedMessage.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Visible });
-            (await unauthorizedMessage.IsVisibleAsync()).Should().BeTrue();
+            await _browser.Page.WaitForURLAsync(url => url.TrimEnd('/') == _browser.BaseUrl || url.StartsWith(_browser.BaseUrl + "/?"), new PageWaitForURLOptions { Timeout = 10_000 });
         }
     }
 }

@@ -6,7 +6,7 @@ Feature: Admin Access
 
 Scenario: An unauthenticated visitor navigates to the admin landing page
 	When The visitor navigates to the admin landing page
-	Then The visitor sees an unauthorized message
+	Then The visitor is redirected to the home page
 
 Scenario: An authenticated admin navigates to the admin landing page
 	Given The user is logged in as admin
@@ -17,4 +17,4 @@ Scenario: The admin logs out and loses access to the admin landing page
 	Given The user is logged in as admin
 	When The visitor triggers logout
 	And The visitor navigates to the admin landing page
-	Then The visitor sees an unauthorized message
+	Then The visitor is redirected to the home page
