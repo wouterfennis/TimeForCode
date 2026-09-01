@@ -6,6 +6,190 @@
     "version": "v1"
   },
   "paths": {
+    "/api/v1/admin-authentication/registration/options": {
+      "post": {
+        "tags": [
+          "AdminAuthentication"
+        ],
+        "summary": "Begins the one-time admin passkey registration ceremony. Only available while no admin\r\ncredential has been claimed yet.",
+        "operationId": "AdminRegistrationOptions",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminRegistrationOptionsRequestModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminRegistrationOptionsRequestModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminRegistrationOptionsRequestModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminPasskeyOptionsResponseModel"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin-authentication/registration": {
+      "post": {
+        "tags": [
+          "AdminAuthentication"
+        ],
+        "summary": "Completes the one-time admin passkey registration ceremony. Only the first successful\r\ncompletion permanently claims the admin role.",
+        "operationId": "AdminCompleteRegistration",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminCompleteRegistrationRequestModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminCompleteRegistrationRequestModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminCompleteRegistrationRequestModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CallbackResponseModel"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin-authentication/authentication/options": {
+      "get": {
+        "tags": [
+          "AdminAuthentication"
+        ],
+        "summary": "Begins the admin passkey authentication ceremony. Requires an admin credential to already exist.",
+        "operationId": "AdminAuthenticationOptions",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminPasskeyOptionsResponseModel"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin-authentication/authentication": {
+      "post": {
+        "tags": [
+          "AdminAuthentication"
+        ],
+        "summary": "Completes the admin passkey authentication ceremony.",
+        "operationId": "AdminCompleteAuthentication",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminCompleteAuthenticationRequestModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminCompleteAuthenticationRequestModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminCompleteAuthenticationRequestModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CallbackResponseModel"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/Authentication/login": {
       "get": {
         "tags": [
@@ -407,6 +591,63 @@
           }
         }
       },
+      "AdminCompleteAuthenticationRequestModel": {
+        "required": [
+          "credentialJson"
+        ],
+        "type": "object",
+        "properties": {
+          "credentialJson": {
+            "type": "string",
+            "description": "The JSON-serialised `PublicKeyCredential` returned by `navigator.credentials.get()`."
+          }
+        },
+        "description": "Completes the admin passkey authentication ceremony."
+      },
+      "AdminCompleteRegistrationRequestModel": {
+        "required": [
+          "bootstrapSecret",
+          "credentialJson"
+        ],
+        "type": "object",
+        "properties": {
+          "bootstrapSecret": {
+            "type": "string",
+            "description": "Shared secret guarding who may claim the admin role, re-validated on completion."
+          },
+          "credentialJson": {
+            "type": "string",
+            "description": "The JSON-serialised `PublicKeyCredential` returned by `navigator.credentials.create()`."
+          }
+        },
+        "description": "Completes the one-time admin passkey registration ceremony. The bootstrap secret is re-validated here."
+      },
+      "AdminPasskeyOptionsResponseModel": {
+        "required": [
+          "optionsJson"
+        ],
+        "type": "object",
+        "properties": {
+          "optionsJson": {
+            "type": "string",
+            "description": "The JSON-serialised WebAuthn options for the browser to pass to `navigator.credentials`."
+          }
+        },
+        "description": "WebAuthn creation/request options for the browser to pass to `navigator.credentials`."
+      },
+      "AdminRegistrationOptionsRequestModel": {
+        "required": [
+          "bootstrapSecret"
+        ],
+        "type": "object",
+        "properties": {
+          "bootstrapSecret": {
+            "type": "string",
+            "description": "Shared secret guarding who may claim the admin role."
+          }
+        },
+        "description": "Request to begin the one-time admin passkey registration ceremony."
+      },
       "CallbackResponseModel": {
         "required": [
           "accessToken",
@@ -639,6 +880,9 @@
     }
   },
   "tags": [
+    {
+      "name": "AdminAuthentication"
+    },
     {
       "name": "Authentication"
     },

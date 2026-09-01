@@ -1,12 +1,17 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Identity;
 using RestSharp;
 using System.Diagnostics.CodeAnalysis;
 using TimeForCode.Authorization.Application.Interfaces;
+using TimeForCode.Authorization.Application.Interfaces.Admin;
+using TimeForCode.Authorization.Application.Options;
 using TimeForCode.Authorization.Infrastructure.Options;
 using TimeForCode.Authorization.Infrastructure.Persistence.Database;
+using TimeForCode.Authorization.Infrastructure.Persistence.Database.Admin;
 using TimeForCode.Authorization.Infrastructure.Persistence.Memory;
 using TimeForCode.Authorization.Infrastructure.Services;
+using TimeForCode.Authorization.Infrastructure.Services.Admin;
 using TimeForCode.Authorization.Infrastructure.Services.Github;
 
 namespace TimeForCode.Authorization.Infrastructure.Extensions
@@ -43,7 +48,33 @@ namespace TimeForCode.Authorization.Infrastructure.Extensions
             services.AddDataProtection();
             services.AddScoped<IEncryptionService, DataProtectionEncryptionService>();
 
+            AddAdminPasskeySlice(services, configuration);
+
             return services;
+        }
+
+        /// <summary>
+        /// Wires up the admin WebAuthn passkey slice. Isolated in its own method so it can be removed
+        /// wholesale without touching the GitHub flow registrations above.
+        /// </summary>
+        private static void AddAdminPasskeySlice(IServiceCollection services, IConfiguration configuration)
+        {
+            services.AddScoped<IAdminCredentialRepository, AdminCredentialRepository>();
+
+            services.AddHttpContextAccessor();
+
+            services.AddIdentityCore<AdminPasskeyUser>()
+                .AddUserStore<AdminUserStore>();
+            services.AddScoped<IUserPasskeyStore<AdminPasskeyUser>, AdminUserStore>();
+            services.AddScoped(typeof(IPasskeyHandler<>), typeof(PasskeyHandler<>));
+
+            var adminPasskeyOptions = AdminPasskeyOptions.Bind(configuration);
+            services.Configure<IdentityPasskeyOptions>(options =>
+            {
+                options.ServerDomain = adminPasskeyOptions.ServerDomain;
+            });
+
+            services.AddScoped<IPasskeyCeremonyService, PasskeyCeremonyService>();
         }
     }
 }

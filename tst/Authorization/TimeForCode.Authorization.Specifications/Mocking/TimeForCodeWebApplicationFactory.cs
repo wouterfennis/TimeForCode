@@ -1,4 +1,3 @@
-
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,6 +8,7 @@ using RestSharp;
 using RichardSzalay.MockHttp;
 using TimeForCode.Authorization.Api;
 using TimeForCode.Authorization.Application.Interfaces;
+using TimeForCode.Authorization.Application.Interfaces.Admin;
 using TimeForCode.Authorization.Domain.Entities;
 using TimeForCode.Authorization.Infrastructure.Persistence.Database;
 using TimeForCode.Authorization.Specifications.TestBuilder;
@@ -28,6 +28,8 @@ namespace TimeForCode.Authorization.Specifications.Mocking
                     typeof(IAccountInformationRepository),
                     typeof(IRefreshTokenRepository),
                     typeof(IEncryptionService),
+                    typeof(IAdminCredentialRepository),
+                    typeof(IPasskeyCeremonyService),
                     typeof(RestClient)
                 };
 
@@ -42,6 +44,7 @@ namespace TimeForCode.Authorization.Specifications.Mocking
 
                 var mockRandomGenerator = new Mock<IRandomGenerator>();
                 MockDataAccess(services);
+                MockAdminPasskey(services);
 
                 mockRandomGenerator.Setup(x => x.GenerateRandomString())
                     .Returns(Constants.StateKey);
@@ -79,6 +82,30 @@ namespace TimeForCode.Authorization.Specifications.Mocking
             services.TryAddSingleton(mockAccountInformationRepository.Object);
             services.TryAddSingleton(mockRefreshTokenRepository.Object);
             services.TryAddSingleton(mockEncryptionService.Object);
+        }
+
+        private static void MockAdminPasskey(IServiceCollection services)
+        {
+            var mockAdminCredentialRepository = new Mock<IAdminCredentialRepository>();
+            mockAdminCredentialRepository.Setup(x => x.GetAsync()).ReturnsAsync((AdminCredential?)null);
+            mockAdminCredentialRepository.Setup(x => x.TryClaimAsync(It.IsAny<AdminCredential>())).ReturnsAsync(true);
+            mockAdminCredentialRepository.Setup(x => x.UpdateSignCountAsync(It.IsAny<long>())).Returns(Task.CompletedTask);
+
+            var mockPasskeyCeremonyService = new Mock<IPasskeyCeremonyService>();
+            mockPasskeyCeremonyService.Setup(x => x.CreateRegistrationOptionsAsync())
+                .ReturnsAsync(PasskeyCeremonyOptionsResultBuilder.Build());
+            mockPasskeyCeremonyService.Setup(x => x.CompleteRegistrationAsync(It.IsAny<string>(), It.IsAny<string>()))
+                .ReturnsAsync(AdminAttestationOutcomeBuilder.BuildSucceeded());
+            mockPasskeyCeremonyService.Setup(x => x.CreateAuthenticationOptionsAsync())
+                .ReturnsAsync(PasskeyCeremonyOptionsResultBuilder.Build());
+            mockPasskeyCeremonyService.Setup(x => x.CompleteAuthenticationAsync(It.IsAny<string>(), It.IsAny<string>()))
+                .ReturnsAsync(AdminAssertionOutcomeBuilder.BuildSucceeded());
+
+            services.TryAddSingleton(mockAdminCredentialRepository);
+            services.TryAddSingleton(mockPasskeyCeremonyService);
+
+            services.TryAddSingleton(mockAdminCredentialRepository.Object);
+            services.TryAddSingleton(mockPasskeyCeremonyService.Object);
         }
     }
 

@@ -61,7 +61,11 @@ namespace TimeForCode.Authorization.Api
             services.AddAuthorizationBuilder()
                     .AddPolicy("ApiUser", policy => policy.RequireClaim("scope", "user"));
 
-            services.AddRateLimiter(options => options.AddDefaultSlidingWindowPolicy("auth", 20));
+            services.AddRateLimiter(options =>
+            {
+                options.AddDefaultSlidingWindowPolicy("auth", 20);
+                options.AddDefaultSlidingWindowPolicy("admin-auth", 20);
+            });
         }
 
         /// <summary>

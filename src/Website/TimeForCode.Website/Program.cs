@@ -1,8 +1,10 @@
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using System.Diagnostics.CodeAnalysis;
 using TimeForCode.Authorization.Api.Client.Extensions;
 using TimeForCode.Donation.Api.Client.Extensions;
 using TimeForCode.Website.Components;
+using TimeForCode.Website.Components.Authentication;
 using TimeForCode.Website.Options;
 
 namespace TimeForCode.Website
@@ -17,7 +19,8 @@ namespace TimeForCode.Website
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            builder.Services.AddRazorComponents();
+            builder.Services.AddRazorComponents()
+                .AddInteractiveServerComponents();
 
             var storageOptions = StorageOptions.Bind(builder.Configuration);
             builder.Services.AddDataProtection()
@@ -25,6 +28,10 @@ namespace TimeForCode.Website
                 .SetApplicationName("TimeForCode.Website");
 
             builder.Services.AddHttpContextAccessor();
+
+            builder.Services.AddAuthorizationCore();
+            builder.Services.AddCascadingAuthenticationState();
+            builder.Services.AddScoped<AuthenticationStateProvider, JwtCookieAuthenticationStateProvider>();
 
             builder.Services
                 .Configure<AuthorizationServiceOptions>(options => builder.Configuration.GetSection(AuthorizationServiceOptions.SectionName)
@@ -52,7 +59,8 @@ namespace TimeForCode.Website
             app.UseStaticFiles();
             app.UseAntiforgery();
 
-            app.MapRazorComponents<App>();
+            app.MapRazorComponents<App>()
+                .AddInteractiveServerRenderMode();
 
             app.Run();
         }
