@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using System.Net.Mime;
@@ -19,6 +20,7 @@ namespace TimeForCode.Authorization.Api.Controllers
     /// </summary>
     [Route("api/v1/admin-authentication")]
     [Produces(MediaTypeNames.Application.Json)]
+    [EnableCors("AdminCorsPolicy")]
     [ApiController]
     public class AdminAuthenticationController : ControllerBase
     {

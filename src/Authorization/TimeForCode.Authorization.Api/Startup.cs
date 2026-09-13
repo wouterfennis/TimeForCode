@@ -30,6 +30,19 @@ namespace TimeForCode.Authorization.Api
         /// </summary>
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddCors(options =>
+            {
+                options.AddPolicy("AdminCorsPolicy", policy =>
+                {
+                    // TODO: Retrieve from configuration or environment variable for allowed origins
+                    policy.WithOrigins("http://localhost:8083")
+                          .AllowAnyMethod()
+                          .AllowAnyHeader();
+                          // TODO: Credentials Required?
+                          // .AllowCredentials(); // only if you're sending cookies/auth headers with credentials mode
+                });
+            });
+
             services.AddOpenApi(
                 "v1",
                 SharedApiServiceCollectionExtensions.CreateDefaultOpenApiOptions(
