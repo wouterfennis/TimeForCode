@@ -1,13 +1,20 @@
 name: Planned Work
-description: A structured issue created through the Plan Agent workflow. Use this template for features, improvements, bug fixes, technical debt, and documentation work.
+description: A feature, bug fix, improvement, technical debt item, or documentation change tracked through the Plan → FeatureWriter → Implementation → Review → Markdown Lint agent workflow.
 title: "[Type]: "
-labels: ["planned"]
+labels: []
 body:
+  - type: markdown
+    attributes:
+      value: |
+        This template backs the agent-driven planning workflow. It is normally filled in by the **Plan** agent after a planning conversation, but can be used directly for manually created issues too.
+
+        If this issue is part of a larger feature that has been split into a parent issue with independently shippable children, fill in **Parent Issue**. If this issue *is* the parent, leave **Parent Issue** blank and fill in **Child Issues** instead as children are created.
+
   - type: dropdown
-    id: type
+    id: issue-type
     attributes:
       label: Issue Type
-      description: Select the type of work this issue represents.
+      description: What kind of work is this? Also reflected in the issue title prefix.
       options:
         - Feature
         - Bug Fix
@@ -18,73 +25,102 @@ body:
       required: true
 
   - type: dropdown
-    id: area
+    id: issue-shape
     attributes:
-      label: Affected Area
-      description: Which primary area of the system does this issue concern?
-      multiple: true
+      label: Issue Shape
+      description: Is this a standalone issue, a parent (epic) that will be broken into children, or a child of an existing parent?
       options:
-        - Authorization
-        - Donation
-        - Website
-        - Infrastructure
-        - Shared
-        - Documentation
+        - Standalone — this issue is small enough to ship on its own
+        - Parent (epic) — this issue tracks an overall outcome delivered by child issues
+        - Child — this issue is one independently shippable slice of a parent
+      default: 0
     validations:
       required: true
+
+  - type: input
+    id: parent-issue
+    attributes:
+      label: Parent Issue
+      description: "Only for a Child issue: the parent (epic) issue number this is part of, e.g. #123. Leave blank for Standalone or Parent issues."
+      placeholder: "#123"
+    validations:
+      required: false
 
   - type: textarea
     id: motivation
     attributes:
       label: Motivation / Context
       description: >
-        Why is this work needed? What problem does it solve or what value does it add?
-        Explain this clearly enough that a developer with no prior context can understand it.
+        Why is this work needed, or what value does it add? For a Parent issue, describe the overall
+        outcome — what "done" means once every child issue is complete. For a Child issue, describe
+        this slice and how it relates to the parent.
       placeholder: |
-        Currently, the system does not support [X], which means [Y].
-        This leads to [Z] for users / maintainers / operators.
+        Explain the problem this solves or the value it adds, without assuming background knowledge.
     validations:
       required: true
 
   - type: textarea
-    id: solution
+    id: proposed-solution
     attributes:
       label: Proposed Solution
       description: >
-        High-level description of the intended approach. Do not include implementation
-        code — describe what should happen, not how to write it.
+        A high-level description of the intended approach. No code, pseudocode, or method signatures —
+        describe *what* and *why*, not *how*.
       placeholder: |
-        The solution is to introduce [X] that [Y].
-        This will integrate with [Z] to provide [outcome].
+        Describe the intended approach at a high level.
     validations:
       required: true
 
   - type: textarea
     id: affected-areas
     attributes:
-      label: Affected Components
+      label: Affected Areas
       description: >
-        List the specific components, APIs, or files that are likely involved.
-        Reference concrete paths from the repository.
+        List the verified components and files this issue touches (for a Parent issue, list every
+        component touched by any child). Only reference things confirmed to exist in the codebase.
       placeholder: |
-        - `src/Authorization/TimeForCode.Authorization.Api/` — needs new endpoint
-        - `src/Donation/TimeForCode.Donation.Domain/` — domain model changes
-        - `docs/current/api-surface.md` — documentation update required
+        - `src/Authorization/...` — reason
+        - `src/Donation/...` — reason
     validations:
       required: true
+
+  - type: textarea
+    id: child-issues
+    attributes:
+      label: Child Issues
+      description: >
+        Only for a Parent (epic) issue. List each child as a checkbox referencing its issue number.
+        Filled in progressively as children are created — leave blank until at least one exists.
+      placeholder: |
+        - [ ] #124 — Short title of child 1
+        - [ ] #125 — Short title of child 2
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: agent-phases
+    attributes:
+      label: Agent Phases Required
+      description: >
+        Only meaningful for a Standalone or Child issue — leave both unchecked to use the default
+        workflow (FeatureWriter → Implementation → Review → Markdown Lint all apply).
+      options:
+        - label: "Implementation-only — no user-observable behavior to spec, skip the FeatureWriter phase (applies label `agent-phase:implementation-only`)"
+          required: false
+        - label: "Skip Markdown Lint — this issue touches no documentation or Markdown files (applies label `agent-phase:skip-markdown-lint`)"
+          required: false
 
   - type: textarea
     id: acceptance-criteria
     attributes:
       label: Acceptance Criteria
       description: >
-        Specific, independently testable conditions that must all be true for this issue
-        to be considered complete. Use checkboxes.
-      placeholder: |
-        - [ ] The new endpoint returns HTTP 200 with the expected response shape
-        - [ ] Existing tests continue to pass without modification
-        - [ ] Integration test covers the happy path and the primary error case
-        - [ ] API surface documentation is updated
+        Specific, measurable, independently testable conditions. For a Parent issue, this should read
+        "All child issues are complete" plus any criterion that only makes sense at the overall level
+        (e.g. an end-to-end scenario spanning multiple children).
+      value: |
+        - [ ] 
+        - [ ] 
     validations:
       required: true
 
@@ -93,10 +129,9 @@ body:
     attributes:
       label: Additional Context
       description: >
-        Any other relevant information: links to architecture docs, related issues,
-        sequence diagrams, prior discussion, or known constraints.
+        Links to relevant docs, related issues, architecture diagrams, sibling child issues this
+        depends on or blocks, or any discrepancy found between documentation and code during planning.
       placeholder: |
-        Related to #123
-        Architecture decision: docs/architecture/arc42/09-architecture-decisions.md
+        Optional — add anything that helps a developer with no prior context get started.
     validations:
       required: false
