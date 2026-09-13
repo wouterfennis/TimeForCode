@@ -40,7 +40,7 @@ If an issue number is provided, fetch it:
 gh issue view <number> --json title,body,labels
 ```
 
-If the content is ambiguous or incomplete, use #tool:vscode_askQuestions to ask the user to clarify the intent before proceeding.
+If the content is ambiguous or incomplete, use #tool:vscode/askQuestions to ask the user to clarify the intent before proceeding.
 
 ---
 
@@ -166,7 +166,7 @@ Also show:
 - A list of **new step definitions** that a developer will need to implement (step text only, no code)
 - A list of **reused steps** that already have implementations
 
-Then use #tool:vscode_askQuestions to ask:
+Then use #tool:vscode/askQuestions to ask:
 
 - "Does this feature file accurately capture the scenarios from the issue?"
 - "Should I post this as a comment on issue #`<number>`?"
