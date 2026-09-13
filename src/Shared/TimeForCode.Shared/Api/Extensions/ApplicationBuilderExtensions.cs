@@ -51,6 +51,10 @@ namespace TimeForCode.Shared.Api.Extensions
 
             app.UseRouting();
 
+            //TODO: Use the named CORS policy or the default policy?
+            app.UseCors();
+            //app.UseCors("AdminCorsPolicy");
+
             app.UseRateLimiter();
 
             app.UseAuthentication();
