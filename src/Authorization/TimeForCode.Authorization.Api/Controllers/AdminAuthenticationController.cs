@@ -192,6 +192,9 @@ namespace TimeForCode.Authorization.Api.Controllers
 
             var refreshTokenCookieOptions = new CookieOptions(accessTokenCookieOptions)
             {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
                 Expires = result.RefreshToken.ExpiresAfter
             };
 
