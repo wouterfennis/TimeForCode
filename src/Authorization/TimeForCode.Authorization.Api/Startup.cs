@@ -30,16 +30,18 @@ namespace TimeForCode.Authorization.Api
         /// </summary>
         public void ConfigureServices(IServiceCollection services)
         {
+            var authenticationOptions = AuthenticationOptions.Bind(_configuration);
+
             services.AddCors(options =>
             {
                 options.AddPolicy("AdminCorsPolicy", policy =>
                 {
-                    // TODO: Retrieve from configuration or environment variable for allowed origins
-                    policy.WithOrigins("http://localhost:8083")
+                    // The admin flow's fetch calls use credentials: "include" (HttpOnly cookie round-trip),
+                    // so the allowed origins must be explicit (no AllowAnyOrigin) and AllowCredentials is required.
+                    policy.WithOrigins(authenticationOptions.ValidRedirectUris.ToArray())
                           .AllowAnyMethod()
-                          .AllowAnyHeader();
-                          // TODO: Credentials Required?
-                          // .AllowCredentials(); // only if you're sending cookies/auth headers with credentials mode
+                          .AllowAnyHeader()
+                          .AllowCredentials();
                 });
             });
 
@@ -53,7 +55,6 @@ namespace TimeForCode.Authorization.Api
             services.AddApplicationLayer(_configuration);
             services.AddInfrastructureLayer(_configuration);
 
-            var authenticationOptions = AuthenticationOptions.Bind(_configuration);
             var rsa = Application.Extensions.ServiceCollectionExtensions.LoadCertificate(_configuration);
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

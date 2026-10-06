@@ -51,9 +51,9 @@ namespace TimeForCode.Shared.Api.Extensions
 
             app.UseRouting();
 
-            //TODO: Use the named CORS policy or the default policy?
+            // No default policy is registered; only endpoints carrying an [EnableCors("PolicyName")]
+            // attribute (e.g. AdminAuthenticationController) get CORS headers applied.
             app.UseCors();
-            //app.UseCors("AdminCorsPolicy");
 
             app.UseRateLimiter();
 
