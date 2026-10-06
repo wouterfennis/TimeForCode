@@ -50,7 +50,9 @@ function encodeAttestationCredential(credential) {
         response: {
             clientDataJSON: bufferToBase64Url(credential.response.clientDataJSON),
             attestationObject: bufferToBase64Url(credential.response.attestationObject)
-        }
+        },
+        // Required by Microsoft.AspNetCore.Identity.PublicKeyCredential's JSON contract, even when empty.
+        clientExtensionResults: credential.getClientExtensionResults()
     });
 }
 
@@ -64,7 +66,9 @@ function encodeAssertionCredential(credential) {
             authenticatorData: bufferToBase64Url(credential.response.authenticatorData),
             signature: bufferToBase64Url(credential.response.signature),
             userHandle: credential.response.userHandle ? bufferToBase64Url(credential.response.userHandle) : null
-        }
+        },
+        // Required by Microsoft.AspNetCore.Identity.PublicKeyCredential's JSON contract, even when empty.
+        clientExtensionResults: credential.getClientExtensionResults()
     });
 }
 

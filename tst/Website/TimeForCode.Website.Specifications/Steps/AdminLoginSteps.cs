@@ -39,17 +39,26 @@ namespace TimeForCode.Website.Specifications.Steps
             // No admin credential exists yet in a fresh environment, so registering once here via the
             // real bootstrap flow is what makes "this device" the registered device for the scenario.
             await _browser.Page.GotoAsync(_browser.BaseUrl + "/");
-
             _browser.Page.Dialog += async (_, dialog) => await dialog.AcceptAsync(BootstrapSecret);
 
             var adminLoginLink = _browser.Page.GetByTestId("admin-login-link");
             await adminLoginLink.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Visible });
-            await adminLoginLink.ClickAsync();
+            await AdminLoginClickHelper.ClickUntilCeremonyStartsAsync(_browser.Page, adminLoginLink);
 
             await _browser.Page.WaitForURLAsync(url => url.TrimEnd('/').EndsWith("/admin", StringComparison.OrdinalIgnoreCase), new PageWaitForURLOptions { Timeout = 15_000 });
 
             // Return to the home page so the scenario's own "When" steps start from a known location.
             await _browser.Page.GotoAsync(_browser.BaseUrl + "/");
+        }
+
+        [When("The visitor clicks the admin login link")]
+        public async Task WhenTheVisitorClicksTheAdminLoginLinkAsync()
+        {
+            await EnableVirtualAuthenticatorAsync();
+
+            var adminLoginLink = _browser.Page.GetByTestId("admin-login-link");
+            await adminLoginLink.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Visible });
+            await AdminLoginClickHelper.ClickUntilCeremonyStartsAsync(_browser.Page, adminLoginLink);
         }
 
         [When("The user authenticates with the registered admin passkey")]

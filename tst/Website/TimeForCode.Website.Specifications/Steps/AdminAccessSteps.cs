@@ -43,7 +43,7 @@ namespace TimeForCode.Website.Specifications.Steps
 
             var adminLoginLink = _browser.Page.GetByTestId("admin-login-link");
             await adminLoginLink.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Visible });
-            await adminLoginLink.ClickAsync();
+            await AdminLoginClickHelper.ClickUntilCeremonyStartsAsync(_browser.Page, adminLoginLink);
 
             await _browser.Page.WaitForURLAsync(url => url.TrimEnd('/').EndsWith("/admin", StringComparison.OrdinalIgnoreCase), new PageWaitForURLOptions { Timeout = 15_000 });
         }
