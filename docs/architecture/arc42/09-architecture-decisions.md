@@ -22,6 +22,8 @@ ADR documents live in [docs/reference/adr/](../../reference/adr/README.md).
 | [ADR-008](../../reference/adr/0008-exclude-e2e-from-ci.md) | Exclude E2E tests from CI | Accepted | 2026-06-21 |
 | [ADR-009](../../reference/adr/0009-result-type-error-handling.md) | Use Result&lt;T&gt; for expected failures, exceptions for programming errors | Accepted | 2026 |
 | [ADR-010](../../reference/adr/0010-bounded-context-entity-duplication.md) | Keep GithubEntity and DocumentEntity per bounded context | Accepted | 2026-06-26 |
+| [ADR-011](../../reference/adr/0011-webauthn-admin-authentication.md) | WebAuthn passkey authentication for the admin role | Accepted | 2026-09-01 |
+| [ADR-012](../../reference/adr/0012-react-spa-frontend.md) | React SPA behind a same-origin BFF for the new front-end | Proposed | 2026-10-06 |
 
 ---
 

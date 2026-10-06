@@ -70,6 +70,21 @@ Architecture is documented using the [Arc42](https://arc42.org) template. All ar
 
 ---
 
+## Front-end Redesign
+
+Planning documents for the new front-end. See the [front-end README](frontend/README.md).
+
+| Document | Purpose |
+| --- | --- |
+| [Vision and Principles](frontend/vision-and-principles.md) | Why and guiding principles |
+| [Information Architecture](frontend/information-architecture.md) | Sitemap, routes, access |
+| [Page Specifications](frontend/page-specs.md) | Per-page purpose, states, wireframes |
+| [Design System](frontend/design-system.md) | Tokens, components, accessibility |
+| [Technical Architecture](frontend/architecture.md) | Stack, BFF, API clients, testing |
+| [Migration Plan](frontend/migration-plan.md) | Phased rollout and parity checklist |
+
+---
+
 ## Workflow Documentation
 
 | Document | Purpose |
