@@ -53,8 +53,7 @@ namespace TimeForCode.Authorization.Api.Controllers
         }
 
         /// <summary>
-        /// Begins the one-time admin passkey registration ceremony. Only available while no admin
-        /// credential has been claimed yet.
+        /// Begins the one-time admin passkey registration ceremony. Only available while no admin credential has been claimed yet.
         /// </summary>
         [HttpPost]
         [Route("registration/options", Name = "AdminRegistrationOptions")]
@@ -77,8 +76,7 @@ namespace TimeForCode.Authorization.Api.Controllers
         }
 
         /// <summary>
-        /// Completes the one-time admin passkey registration ceremony. Only the first successful
-        /// completion permanently claims the admin role.
+        /// Completes the one-time admin passkey registration ceremony. Only the first successful completion permanently claims the admin role.
         /// </summary>
         [HttpPost]
         [Route("registration", Name = "AdminCompleteRegistration")]

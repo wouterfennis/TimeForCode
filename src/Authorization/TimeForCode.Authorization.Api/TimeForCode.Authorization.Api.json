@@ -11,7 +11,7 @@
         "tags": [
           "AdminAuthentication"
         ],
-        "summary": "Begins the one-time admin passkey registration ceremony. Only available while no admin\r\ncredential has been claimed yet.",
+        "summary": "Begins the one-time admin passkey registration ceremony. Only available while no admin credential has been claimed yet.",
         "operationId": "AdminRegistrationOptions",
         "requestBody": {
           "content": {
@@ -62,7 +62,7 @@
         "tags": [
           "AdminAuthentication"
         ],
-        "summary": "Completes the one-time admin passkey registration ceremony. Only the first successful\r\ncompletion permanently claims the admin role.",
+        "summary": "Completes the one-time admin passkey registration ceremony. Only the first successful completion permanently claims the admin role.",
         "operationId": "AdminCompleteRegistration",
         "requestBody": {
           "content": {
