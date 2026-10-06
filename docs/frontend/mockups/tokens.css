@@ -1,0 +1,11 @@
+/* Design tokens from ../design-system.md. Keep token names in sync with that document. */
+:root {
+  --color-bg: #ffffff; --color-surface: #f6f8fa; --color-border: #d0d7de;
+  --color-text: #1f2328; --color-text-muted: #59636e;
+  --color-primary: #1b6ec2; --color-primary-contrast: #ffffff;
+  --color-success: #1a7f37; --color-warning: #9a6700; --color-danger: #cf222e;
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px;
+  --space-5: 24px; --space-6: 32px; --space-7: 48px; --space-8: 64px;
+  --radius-control: 4px; --radius-card: 8px; --radius-pill: 999px;
+  --shadow-menu: 0 8px 24px rgba(31, 35, 40, .15);
+}

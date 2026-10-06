@@ -10,26 +10,26 @@ A small, token-driven design system. The values below are a **starting proposal*
 
 - Calm and trustworthy. Plenty of whitespace, one accent colour, no decoration for its own sake.
 - Content first. Project names and descriptions are the hero.
-- Light and dark themes from day one, driven by tokens.
+- A single light theme, driven by tokens. Dark mode is out of scope for now; because components use tokens only, it can be added later.
 
 ## Design tokens
 
-Tokens are CSS custom properties defined once on `:root`, with dark values under `prefers-color-scheme: dark` and a manual `data-theme` override. Components must never use raw colour values.
+Tokens are CSS custom properties defined once on `:root`. Components must never use raw colour values.
 
-| Token | Light | Dark | Use |
-| --- | --- | --- | --- |
-| `--color-bg` | `#ffffff` | `#0f1419` | Page background |
-| `--color-surface` | `#f6f8fa` | `#171d24` | Cards, panels |
-| `--color-border` | `#d0d7de` | `#2d363f` | Dividers, outlines |
-| `--color-text` | `#1f2328` | `#e6edf3` | Body text |
-| `--color-text-muted` | `#59636e` | `#9198a1` | Secondary text |
-| `--color-primary` | `#1b6ec2` | `#4493f8` | Buttons, links, focus |
-| `--color-primary-contrast` | `#ffffff` | `#0f1419` | Text on primary |
-| `--color-success` | `#1a7f37` | `#3fb950` | Positive status |
-| `--color-warning` | `#9a6700` | `#d29922` | Caution |
-| `--color-danger` | `#cf222e` | `#f85149` | Errors, destructive actions |
+| Token | Value | Use |
+| --- | --- | --- |
+| `--color-bg` | `#ffffff` | Page background |
+| `--color-surface` | `#f6f8fa` | Cards, panels |
+| `--color-border` | `#d0d7de` | Dividers, outlines |
+| `--color-text` | `#1f2328` | Body text |
+| `--color-text-muted` | `#59636e` | Secondary text |
+| `--color-primary` | `#1b6ec2` | Buttons, links, focus |
+| `--color-primary-contrast` | `#ffffff` | Text on primary |
+| `--color-success` | `#1a7f37` | Positive status |
+| `--color-warning` | `#9a6700` | Caution |
+| `--color-danger` | `#cf222e` | Errors, destructive actions |
 
-Check every text/background pair for at least 4.5:1 contrast (3:1 for large text and UI boundaries) in both themes. Adjust values rather than skipping the check.
+Check every text/background pair for at least 4.5:1 contrast (3:1 for large text and UI boundaries). Adjust values rather than skipping the check.
 
 | Scale | Values |
 | --- | --- |

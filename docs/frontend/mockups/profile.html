@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Profile - TimeForCode</title>
+  <link rel="stylesheet" href="mockup.css">
+</head>
+<body data-nav="profile" data-user="user">
+  <div id="app-header"></div>
+  <main id="main"><div class="container">
+    <div class="alert" style="border-color:var(--color-success);color:var(--color-success)" role="status" data-testid="new-user-welcome">Welcome to TimeForCode! Take a moment to check your profile details.</div>
+    <section class="profile panel">
+      <div class="avatar" aria-hidden="true">AL</div>
+      <div>
+        <h1>Ada Lovelace</h1>
+        <p class="muted" data-testid="login-handle">@ada</p>
+        <p>Analytical engine enthusiast. London, UK.</p>
+      </div>
+    </section>
+    <section aria-labelledby="mine" style="margin-top:var(--space-6)">
+      <div class="row-head"><h2 id="mine">My projects</h2><a class="btn primary" href="#">Publish a project</a></div>
+      <div class="grid">
+        <article class="card"><h3><a href="project-detail.html">ada/difference-engine</a></h3><p class="muted">Numerical tables, computed mechanically.</p><div class="meta"><span class="badge">Rust</span><span>&#9733; 57</span></div></article>
+      </div>
+    </section>
+    <section class="panel" aria-labelledby="donations">
+      <h2 id="donations">My donations <span class="badge">Planned</span></h2>
+      <p class="muted">Pledged and logged hours will appear here.</p>
+    </section>
+  </div></main>
+  <div id="app-footer"></div>
+  <script src="shell.js"></script>
+</body>
+</html>

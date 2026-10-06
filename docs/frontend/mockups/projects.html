@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Projects - TimeForCode</title>
+  <link rel="stylesheet" href="mockup.css">
+</head>
+<body data-nav="projects" data-user="visitor">
+  <div id="app-header"></div>
+  <main id="main"><div class="container">
+    <div class="toolbar">
+      <h1>Projects</h1>
+      <!-- Search and language filter need backend support; shown here as the target design (see page-specs.md). -->
+      <div style="display:flex;gap:var(--space-3);flex-wrap:wrap">
+        <div class="field"><label for="q">Search</label><input id="q" type="search" placeholder="Name or description"></div>
+        <div class="field"><label for="lang">Language</label><select id="lang"><option>All languages</option></select></div>
+      </div>
+    </div>
+    <div class="grid" data-testid="project-list">
+      <article class="card" data-testid="project-tile"><h3><a href="project-detail.html" data-testid="project-link">dotnet/aspire</a></h3><p class="muted">Tools, templates and packages for building observable, production-ready cloud apps.</p><div class="meta"><span class="badge">C#</span><span>&#9733; 4.1k</span><a href="#">GitHub</a></div></article>
+      <article class="card" data-testid="project-tile"><h3><a href="project-detail.html" data-testid="project-link">octo/tidy-docs</a></h3><p class="muted">A small tool that keeps documentation links healthy.</p><div class="meta"><span class="badge">Go</span><span>&#9733; 312</span><a href="#">GitHub</a></div></article>
+      <article class="card" data-testid="project-tile"><h3><a href="project-detail.html" data-testid="project-link">acme/open-forms</a></h3><p class="muted">Accessible, self-hostable forms for public organizations.</p><div class="meta"><span class="badge">TypeScript</span><span>&#9733; 1.2k</span><a href="#">GitHub</a></div></article>
+      <article class="card" data-testid="project-tile"><h3><a href="project-detail.html" data-testid="project-link">lena/pixel-kit</a></h3><p class="muted">Lightweight image processing for the browser.</p><div class="meta"><span class="badge">Rust</span><span>&#9733; 890</span><a href="#">GitHub</a></div></article>
+      <article class="card" data-testid="project-tile"><h3><a href="project-detail.html" data-testid="project-link">ops-collective/runbooks</a></h3><p class="muted">Shared incident runbooks for small teams.</p><div class="meta"><span class="badge">Python</span><span>&#9733; 245</span><a href="#">GitHub</a></div></article>
+      <article class="card" data-testid="project-tile"><h3><a href="project-detail.html" data-testid="project-link">civic/transit-feed</a></h3><p class="muted">Open transit data tooling for local governments.</p><div class="meta"><span class="badge">Java</span><span>&#9733; 678</span><a href="#">GitHub</a></div></article>
+    </div>
+    <nav class="pager" aria-label="Pagination">
+      <span class="muted">Showing 6 of 48</span>
+      <div class="pages"><a class="btn" href="#">&laquo; Prev</a><a class="btn primary" href="#" aria-current="page">1</a><a class="btn" href="#">2</a><a class="btn" href="#">3</a><a class="btn" href="#">Next &raquo;</a></div>
+    </nav>
+  </div></main>
+  <div id="app-footer"></div>
+  <script src="shell.js"></script>
+</body>
+</html>

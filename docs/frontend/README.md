@@ -16,6 +16,7 @@ This folder is the starting point for building the new TimeForCode front-end. It
 | [Information Architecture](information-architecture.md) | Sitemap, routes, and who may see what |
 | [Page Specifications](page-specs.md) | Per-page purpose, data, states, and wireframes |
 | [Design System](design-system.md) | Design tokens, components, accessibility rules |
+| [Design Mockups](mockups/README.md) | Rendered HTML mockups and screenshots of the main pages, with tooling to regenerate and check them |
 | [Technical Architecture](architecture.md) | Stack, folder layout, API access, authentication, testing |
 | [Migration Plan](migration-plan.md) | Strangler-style rollout, parity checklist, what to keep |
 

@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Donor organizations - TimeForCode</title>
+  <link rel="stylesheet" href="mockup.css">
+</head>
+<body data-nav="" data-user="admin">
+  <div id="app-header"></div>
+  <main id="main"><div class="container">
+    <div class="toolbar">
+      <h1>Donor organizations</h1>
+      <a class="btn primary" href="#">+ Add organization</a>
+    </div>
+    <div style="overflow-x:auto">
+      <table>
+        <caption class="muted" style="text-align:left;padding-bottom:var(--space-2)">Organizations that donate developer time</caption>
+        <thead><tr><th scope="col">Name</th><th scope="col">Industry</th><th scope="col" class="num">Hours</th><th scope="col"><span class="muted">Actions</span></th></tr></thead>
+        <tbody>
+          <tr><td>Acme BV</td><td>Software</td><td class="num">120</td><td><div class="row-actions"><a class="btn" href="#">Edit</a><button class="btn danger" type="button">Delete</button></div></td></tr>
+          <tr><td>Northwind Traders</td><td>Logistics</td><td class="num">64</td><td><div class="row-actions"><a class="btn" href="#">Edit</a><button class="btn danger" type="button">Delete</button></div></td></tr>
+          <tr><td>Globex</td><td>Energy</td><td class="num">200</td><td><div class="row-actions"><a class="btn" href="#">Edit</a><button class="btn danger" type="button">Delete</button></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <nav class="pager" aria-label="Pagination">
+      <span class="muted">Showing 3 of 3</span>
+      <div class="pages"><a class="btn primary" href="#" aria-current="page">1</a></div>
+    </nav>
+    <section class="panel" aria-labelledby="form">
+      <h2 id="form">Add organization</h2>
+      <form style="display:grid;gap:var(--space-4);max-width:420px" novalidate>
+        <div class="alert" role="alert">Fix 1 error: an organization with this name already exists.</div>
+        <div class="field"><label for="name">Name</label><input id="name" value="Acme BV" aria-invalid="true" aria-describedby="name-err" style="border-color:var(--color-danger)"><span id="name-err" style="color:var(--color-danger);font-size:14px">An organization named "Acme BV" already exists. Choose a different name.</span></div>
+        <div class="field"><label for="ind">Industry</label><input id="ind" value="Software"></div>
+        <div><button class="btn primary" type="submit">Save organization</button></div>
+      </form>
+    </section>
+  </div></main>
+  <div id="app-footer"></div>
+  <script src="shell.js"></script>
+</body>
+</html>
