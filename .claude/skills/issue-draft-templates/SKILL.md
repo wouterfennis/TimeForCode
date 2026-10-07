@@ -124,7 +124,7 @@ Reference the parent issue and any sibling children this slice depends on or blo
 
 ### Step 7 — Submit via GitHub CLI
 
-Once the user approves, use the `gh-issue-create` skill to submit via the GitHub CLI.
+Once the user approves, use skill `gh-issue` (mode `create`) to submit via the GitHub CLI.
 
 **Check authentication:**
 

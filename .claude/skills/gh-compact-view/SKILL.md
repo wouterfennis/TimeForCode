@@ -36,4 +36,4 @@ gh issue view <n> --json comments --jq '[.comments[] | {a: .author.login, h: (.b
 
 - Start with 1; fetch full comments only when needed. Never re-fetch an issue already in context.
 - Add `--jq` to every `gh issue list` / `gh pr view` too (e.g. `--jq '.[] | "\(.number) \(.title)"'`).
-- Posting comments is unchanged: use `gh-issue-comment` / `gh-implementation-log`.
+- Posting comments is unchanged: use skill `gh-issue`.

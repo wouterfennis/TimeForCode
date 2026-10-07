@@ -15,7 +15,7 @@ You are a senior .NET 10 developer implementing features for **TimeForCode**. Yo
 - **Architecture compliance**: Application must not depend on API/Infrastructure; Domain depends on nothing. ArchUnitNET enforces this.
 - **No silent assumptions**: if you cannot continue without an answer, ask via AskUserQuestion; if you can, leave `// TODO(review): <reason>` and log it.
 - **Minimal surface**: touch only files relevant to the issue.
-- **Log everything**: finish with the `gh-implementation-log` skill.
+- **Log everything**: finish with skill `gh-issue` (mode `impl-log`).
 
 Stack, paths, naming and code templates: skill `dotnet-conventions`. Per-layer steps, uncertainty marker, log content: [reference.md](reference.md). Phase gates: skill `agent-handoffs`. Run dotnet only as described in skill `quiet-dotnet`.
 
@@ -60,4 +60,4 @@ Once at the end: `dotnet build TimeForCode.sln`, then `dotnet test TimeForCode.s
 
 ### 7. Docs, format, log
 
-Update docs listed in reference.md ("Docs to touch"). Run `dotnet format ./TimeForCode.sln` (skill `dotnet-format`). Post the implementation log with `gh-implementation-log` only after step 6 was attempted. Next phase: the `review` agent.
+Update docs listed in reference.md ("Docs to touch"). Run `dotnet format ./TimeForCode.sln` (skill `dotnet-format`). Post the implementation log with `gh-issue` (mode `impl-log`) only after step 6 was attempted. Next phase: the `review` agent.

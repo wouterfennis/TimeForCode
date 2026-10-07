@@ -15,4 +15,4 @@ Use for a defect that does not need a new feature file. If the fix changes behav
 4. **Refactor** only with the suite green; rerun the project's tests.
 5. **Verify**: one full `dotnet build TimeForCode.sln` and `dotnet test TimeForCode.sln --no-build`. A `SwaggerTests` diff follows `swagger-snapshot-review`.
 6. **Docs**: update `docs/current/` or arc42 chapter 11 if the bug exposed a known limitation.
-7. **Log**: post an `## Implementation Run Log` (`gh-implementation-log`) listing the regression test, the cause, the fix and loose ends. Then run the `review` agent and `/ship-pr`.
+7. **Log**: post an `## Implementation Run Log` (`gh-issue` mode `impl-log`) listing the regression test, the cause, the fix and loose ends. Then run the `review` agent and `/ship-pr`.

@@ -1,8 +1,8 @@
 # PreToolUse hook (Claude Code). Reads the event JSON from stdin.
 #  1. Denies reads/searches of paths that only burn tokens (node_modules, obj, .git internals, lockfiles, binaries).
 #  2. Rewrites plain `dotnet build|test` terminal commands so only a trimmed result enters the context.
-# Fails open by design: any error allows the tool call (a broken hook must not block work).
-# permissions.deny in settings.json is the hard backstop for the Read tool.
+# Fails closed: any internal error blocks the tool call (exit 2 + message), so a broken guard is noticed instead of silently disabled.
+# permissions.deny in settings.json is a second layer for the Read tool.
 $ErrorActionPreference = 'Stop'
 
 function Send-Decision([string]$decision, [string]$reason, $updatedInput = $null) {
@@ -71,5 +71,6 @@ try {
     exit 0
 }
 catch {
-    exit 0
+    [Console]::Error.WriteLine("pre-tool-use hook failed closed: $($_.Exception.Message). Fix .claude/hooks/pre-tool-use.ps1.")
+    exit 2
 }

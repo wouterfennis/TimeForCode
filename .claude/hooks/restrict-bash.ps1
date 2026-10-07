@@ -21,5 +21,8 @@ try {
         }
     }
 }
-catch { }
+catch {
+    [Console]::Error.WriteLine("restrict-bash hook failed closed: $($_.Exception.Message). Fix .claude/hooks/restrict-bash.ps1.")
+    exit 2
+}
 exit 0
