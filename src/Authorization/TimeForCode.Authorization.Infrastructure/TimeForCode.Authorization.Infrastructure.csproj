@@ -12,6 +12,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Needed for IPasskeyHandler<TUser> / UserManager<TUser>, the sole place ASP.NET Core Identity's
+         passkey primitives are referenced. This project uses plain Microsoft.NET.Sdk, so it does not get
+         the shared framework for free like an Sdk.Web project would. -->
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\TimeForCode.Authorization.Application\TimeForCode.Authorization.Application.csproj" />
     <ProjectReference Include="..\TimeForCode.Authorization.Domain\TimeForCode.Authorization.Domain.csproj" />
   </ItemGroup>

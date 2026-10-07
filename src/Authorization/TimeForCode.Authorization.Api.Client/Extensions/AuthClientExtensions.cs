@@ -87,5 +87,81 @@ namespace TimeForCode.Authorization.Api.Client.Extensions
 
             return TryResponse<ICollection<RepositoryResponse>?, ApiException?>.Create(response, default);
         }
+
+        public static async Task<TryResponse<AdminPasskeyOptionsResponseModel?, ApiException?>> TryAdminRegistrationOptionsAsync(this IAuthClient client, string bootstrapSecret)
+        {
+            AdminPasskeyOptionsResponseModel? response = default;
+            try
+            {
+                response = await client.AdminRegistrationOptionsAsync(new AdminRegistrationOptionsRequestModel { BootstrapSecret = bootstrapSecret });
+            }
+            catch (ApiException<ProblemDetails> exception)
+            {
+                return TryResponse<AdminPasskeyOptionsResponseModel?, ApiException?>.Create(response, exception);
+            }
+            catch (ApiException exception)
+            {
+                return TryResponse<AdminPasskeyOptionsResponseModel?, ApiException?>.Create(response, exception);
+            }
+
+            return TryResponse<AdminPasskeyOptionsResponseModel?, ApiException?>.Create(response, default);
+        }
+
+        public static async Task<TryResponse<CallbackResponseModel?, ApiException?>> TryAdminCompleteRegistrationAsync(this IAuthClient client, string bootstrapSecret, string credentialJson)
+        {
+            CallbackResponseModel? response = default;
+            try
+            {
+                response = await client.AdminCompleteRegistrationAsync(new AdminCompleteRegistrationRequestModel { BootstrapSecret = bootstrapSecret, CredentialJson = credentialJson });
+            }
+            catch (ApiException<ProblemDetails> exception)
+            {
+                return TryResponse<CallbackResponseModel?, ApiException?>.Create(response, exception);
+            }
+            catch (ApiException exception)
+            {
+                return TryResponse<CallbackResponseModel?, ApiException?>.Create(response, exception);
+            }
+
+            return TryResponse<CallbackResponseModel?, ApiException?>.Create(response, default);
+        }
+
+        public static async Task<TryResponse<AdminPasskeyOptionsResponseModel?, ApiException?>> TryAdminAuthenticationOptionsAsync(this IAuthClient client)
+        {
+            AdminPasskeyOptionsResponseModel? response = default;
+            try
+            {
+                response = await client.AdminAuthenticationOptionsAsync();
+            }
+            catch (ApiException<ProblemDetails> exception)
+            {
+                return TryResponse<AdminPasskeyOptionsResponseModel?, ApiException?>.Create(response, exception);
+            }
+            catch (ApiException exception)
+            {
+                return TryResponse<AdminPasskeyOptionsResponseModel?, ApiException?>.Create(response, exception);
+            }
+
+            return TryResponse<AdminPasskeyOptionsResponseModel?, ApiException?>.Create(response, default);
+        }
+
+        public static async Task<TryResponse<CallbackResponseModel?, ApiException?>> TryAdminCompleteAuthenticationAsync(this IAuthClient client, string credentialJson)
+        {
+            CallbackResponseModel? response = default;
+            try
+            {
+                response = await client.AdminCompleteAuthenticationAsync(new AdminCompleteAuthenticationRequestModel { CredentialJson = credentialJson });
+            }
+            catch (ApiException<ProblemDetails> exception)
+            {
+                return TryResponse<CallbackResponseModel?, ApiException?>.Create(response, exception);
+            }
+            catch (ApiException exception)
+            {
+                return TryResponse<CallbackResponseModel?, ApiException?>.Create(response, exception);
+            }
+
+            return TryResponse<CallbackResponseModel?, ApiException?>.Create(response, default);
+        }
     }
 }

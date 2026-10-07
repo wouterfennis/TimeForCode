@@ -1,0 +1,49 @@
+@rendermode InteractiveServer
+@using Microsoft.Extensions.Options
+@using TimeForCode.Website.Options
+@inject IJSRuntime JsRuntime
+@inject NavigationManager NavigationManager
+@inject IOptions<AuthorizationServiceOptions> AuthorizationServiceOptions
+
+<button type="button" class="btn btn-link p-0" data-testid="admin-login-link" @onclick="LoginAsync" disabled="@_isBusy">
+    Login as admin
+</button>
+
+@if (_error)
+{
+    <p class="text-danger" data-testid="admin-login-error">Admin login failed.</p>
+}
+
+@code {
+    private bool _isBusy;
+    private bool _error;
+
+    private async Task LoginAsync()
+    {
+        _isBusy = true;
+        _error = false;
+
+        try
+        {
+            var module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "/js/webauthn-admin-interop.js");
+            var baseUri = AuthorizationServiceOptions.Value.EffectivePublicBaseUri;
+            var succeeded = await module.InvokeAsync<bool>("loginOrRegisterAsAdminAsync", baseUri);
+
+            if (succeeded)
+            {
+                NavigationManager.NavigateTo("/admin", forceLoad: true);
+                return;
+            }
+
+            _error = true;
+        }
+        catch (JSException)
+        {
+            _error = true;
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+}

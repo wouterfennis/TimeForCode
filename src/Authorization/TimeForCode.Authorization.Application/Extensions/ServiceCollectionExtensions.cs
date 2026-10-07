@@ -44,6 +44,10 @@ namespace TimeForCode.Authorization.Application.Extensions
                 .Configure<ExternalIdentityProviderOptions>(options => configuration.GetSection(ExternalIdentityProviderOptions.SectionName)
                 .Bind(options));
 
+            services
+                .Configure<AdminPasskeyOptions>(options => configuration.GetSection(AdminPasskeyOptions.SectionName)
+                .Bind(options));
+
             ConfigureSigningCertificate(services, configuration);
 
             services.AddScoped<IAccountService, AccountService>();

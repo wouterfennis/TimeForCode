@@ -8,6 +8,7 @@ This glossary covers general project and domain terms used in the TimeForCode do
 
 | Term | Definition |
 | --- | --- |
+| BFF (Backend for Frontend) | A small server that exists only to serve one front-end. In the new front-end it serves the SPA files and forwards browser API calls to the Authorization and Donation APIs, converting the HttpOnly login cookie into the bearer token those APIs expect. This keeps tokens out of JavaScript. See [front-end architecture](../frontend/architecture.md#authentication-and-the-bff). |
 | Campaign | An admin-curated group of projects with a shared theme (e.g. security, accessibility, documentation). Used to help donors discover relevant projects. |
 | Commitment | The total number of developer hours pledged in a single donation. |
 | Completion Rate | The ratio of hours logged to hours committed across all donations for an organisation or project. A measure of follow-through. |
@@ -22,6 +23,7 @@ This glossary covers general project and domain terms used in the TimeForCode do
 | Platform Administrator | A trusted operator of the TimeForCode platform. Responsible for approving projects, moderating content, and managing user issues. |
 | Project Listing | The public page on the TimeForCode website showing a project's description, needed skills, current donations, and progress. |
 | Recognition | A visible acknowledgement of a donor's contributions. Currently planned as badges and tiers. |
+| SPA (Single-Page Application) | A website that loads once in the browser and then updates the page with JavaScript, fetching data from APIs instead of requesting a new HTML page for each navigation. The new front-end is a React SPA. |
 | Spotlight | A promoted position on the website homepage or in a campaign, highlighting a specific project. |
 | Tech Stack | The set of programming languages, frameworks, and infrastructure used to build a project. Used for matching donors to projects. |
 | Time Donation | Informal synonym for an hour-based donation pledge. |

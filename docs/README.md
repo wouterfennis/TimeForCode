@@ -38,6 +38,7 @@ docs/
 ├── reference/
 │   ├── glossary.md                   # Shared terminology
 │   └── adr/                          # Architecture Decision Records
+├── frontend/                         # New front-end design and migration plan
 ├── authentication/                   # Authentication flow documentation
 └── donation/                         # Donation workflow documentation
 ```

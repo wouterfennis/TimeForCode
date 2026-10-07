@@ -67,6 +67,16 @@ namespace TimeForCode.Authorization.Application.Services
 
         public AccessToken GenerateInternalToken(string userId)
         {
+            return BuildInternalToken(userId, role: null, scope: "user");
+        }
+
+        public AccessToken GenerateInternalToken(string userId, string role, string scope)
+        {
+            return BuildInternalToken(userId, role, scope);
+        }
+
+        private AccessToken BuildInternalToken(string userId, string? role, string scope)
+        {
             _logger.LogDebug("Generating internal token for user {UserId}", userId);
 
             var expiresAfter = _timeProvider.GetUtcNow()
@@ -77,9 +87,14 @@ namespace TimeForCode.Authorization.Application.Services
             var claims = new Dictionary<string, object>
             {
                 { "sub", userId },
-                { "scope", "user" },
+                { "scope", scope },
                 { "aud", _tokenCreationOptions.Audiences }
             };
+
+            if (role != null)
+            {
+                claims["role"] = role;
+            }
 
             var tokenDescriptor = new SecurityTokenDescriptor
             {

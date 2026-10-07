@@ -30,6 +30,21 @@ namespace TimeForCode.Authorization.Api
         /// </summary>
         public void ConfigureServices(IServiceCollection services)
         {
+            var authenticationOptions = AuthenticationOptions.Bind(_configuration);
+
+            services.AddCors(options =>
+            {
+                options.AddPolicy("AdminCorsPolicy", policy =>
+                {
+                    // The admin flow's fetch calls use credentials: "include" (HttpOnly cookie round-trip),
+                    // so the allowed origins must be explicit (no AllowAnyOrigin) and AllowCredentials is required.
+                    policy.WithOrigins(authenticationOptions.ValidRedirectUris.ToArray())
+                          .AllowAnyMethod()
+                          .AllowAnyHeader()
+                          .AllowCredentials();
+                });
+            });
+
             services.AddOpenApi(
                 "v1",
                 SharedApiServiceCollectionExtensions.CreateDefaultOpenApiOptions(
@@ -40,7 +55,6 @@ namespace TimeForCode.Authorization.Api
             services.AddApplicationLayer(_configuration);
             services.AddInfrastructureLayer(_configuration);
 
-            var authenticationOptions = AuthenticationOptions.Bind(_configuration);
             var rsa = Application.Extensions.ServiceCollectionExtensions.LoadCertificate(_configuration);
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -61,7 +75,11 @@ namespace TimeForCode.Authorization.Api
             services.AddAuthorizationBuilder()
                     .AddPolicy("ApiUser", policy => policy.RequireClaim("scope", "user"));
 
-            services.AddRateLimiter(options => options.AddDefaultSlidingWindowPolicy("auth", 20));
+            services.AddRateLimiter(options =>
+            {
+                options.AddDefaultSlidingWindowPolicy("auth", 20);
+                options.AddDefaultSlidingWindowPolicy("admin-auth", 20);
+            });
         }
 
         /// <summary>

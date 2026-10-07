@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>States - TimeForCode</title>
+  <link rel="stylesheet" href="mockup.css">
+</head>
+<body data-nav="projects" data-user="visitor">
+  <div id="app-header"></div>
+  <main id="main"><div class="container">
+    <h1>Page states</h1>
+    <p class="muted">Every page implements loading, empty, error and unauthorized states.</p>
+
+    <h2>Loading</h2>
+    <div class="grid" aria-busy="true">
+      <div class="card"><div class="skeleton" style="width:60%"></div><div class="skeleton"></div><div class="skeleton" style="width:80%"></div></div>
+      <div class="card"><div class="skeleton" style="width:50%"></div><div class="skeleton"></div><div class="skeleton" style="width:70%"></div></div>
+      <div class="card"><div class="skeleton" style="width:65%"></div><div class="skeleton"></div><div class="skeleton" style="width:75%"></div></div>
+    </div>
+
+    <h2 style="margin-top:var(--space-6)">Empty</h2>
+    <div class="state"><div class="icon" aria-hidden="true">&#128269;</div><h3>No projects yet</h3><p class="muted">Be the first to list an open source project.</p><a class="btn primary" href="#">Publish a project</a></div>
+
+    <h2 style="margin-top:var(--space-6)">Error with retry</h2>
+    <div class="state" role="alert"><div class="icon" aria-hidden="true">&#9888;</div><h3>We could not load projects</h3><p class="muted">Check your connection and try again.</p><button class="btn" type="button">Try again</button></div>
+
+    <h2 style="margin-top:var(--space-6)">Unauthorized</h2>
+    <div class="state" data-testid="not-logged-in-message"><div class="icon" aria-hidden="true">&#128274;</div><h3>Sign in to see your profile</h3><p class="muted">You need to be signed in to view this page.</p><a class="btn primary" href="#">Sign in with GitHub</a></div>
+  </div></main>
+  <div id="app-footer"></div>
+  <script src="shell.js"></script>
+</body>
+</html>
