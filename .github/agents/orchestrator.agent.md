@@ -2,8 +2,8 @@
 name: Orchestrator
 description: Guides a feature from idea to implementation by coordinating the Plan, FeatureWriter, Implementation, and Review agents in sequence. Tracks either a single issue or a parent issue with independently shippable child issues, derives which phases apply to each child from its labels, and enforces a human review gate on GitHub before every handoff.
 argument-hint: Describe the feature you want to build
-model: GPT-5 mini (copilot)
-tools: [vscode/askQuestions, read/getNotebookSummary, read/problems, read/readFile, read/viewImage, read/readNotebookCellOutput, read/terminalSelection, read/terminalLastCommand, agent/runSubagent, search/changes, search/codebase, search/fileSearch, search/listDirectory, search/textSearch, search/searchSubagent, search/usages, browser/openBrowserPage, browser/readPage, browser/screenshotPage, browser/navigatePage, browser/clickElement, browser/dragElement, browser/hoverElement, browser/typeInPage, browser/runPlaywrightCode, browser/handleDialog, todo, agent]
+model: Claude Haiku 4.5 (copilot)
+tools: [vscode/askQuestions, read/problems, read/readFile, read/viewImage, read/terminalSelection, read/terminalLastCommand, agent/runSubagent, search/changes, search/codebase, search/fileSearch, search/listDirectory, search/textSearch, search/searchSubagent, search/usages, todo, agent]
 agents:
   - Plan
   - FeatureWriter
@@ -35,7 +35,7 @@ handoffs:
     agent: MarkdownLinter
     prompt: "Lint all Markdown files in the repository and post the report to the GitHub issue number identified in our conversation."
     send: false
-    model: Claude Sonnet 4.6 (copilot)
+    model: Claude Haiku 4.5 (copilot)
 ---
 
 # Orchestrator Agent
@@ -93,7 +93,7 @@ The user returns here after the Plan agent has finished. Ask for the issue numbe
 **Step A — Detect the shape:**
 
 ```powershell
-gh issue view <number> --json number,title,labels,body,comments --jq '{number: .number, title: .title, labels: [.labels[].name], body: .body, comments: [.comments[] | {author: .author.login, body: .body}]}'
+gh issue view <number> --json number,title,labels,body,comments --jq '{number, title, labels: [.labels[].name], body, comments: [.comments[] | {a: .author.login, h: (.body | split("\n")[0] | rtrimstr("\r")), ok: (.body | test("approved|lgtm|looks good|✅|:white_check_mark:"; "i"))}]}'
 ```
 
 - If the labels include `epic`, this is a **parent** issue. Parse its body for a `## Child Issues` section and extract every child issue number from lines matching `- [ ] #<N>`.
@@ -124,142 +124,29 @@ Do not present or endorse any Phase 2 or Phase 3 handoff until this gate is open
 
 ---
 
-### Phase 2 Gate — FeatureWriter (per child that requires it)
+### Per-child gates (Phases 2–5)
 
-For every child recorded with `needsFeatureWriter: true`, independently check:
-
-```powershell
-gh issue view <child-number> --json comments --jq '{comments: [.comments[] | {author: .author.login, body: .body}]}'
-```
-
-**Gate condition — two things must both be true for that child:**
-
-1. At least one comment contains a fenced `gherkin` code block (the feature file comment posted by the FeatureWriter agent)
-2. After that comment, there is at least one comment from a human (not a bot) containing any of: `approved`, `lgtm`, `looks good`, `✅`, or `:white_check_mark:`
-
-- **Gate OPEN for that child**: it is ready for Phase 3.
-  > "Child #`<N>`: feature file approved. Select **Phase 3 — Run Implementation Agent**, issue `#<N>`."
-
-- **Gate CLOSED — feature file missing**:
-  > "Child #`<N>`: no feature file comment found yet. Make sure the FeatureWriter agent has finished for this issue, then come back here."
-
-- **Gate CLOSED — approval missing**:
-  > "Child #`<N>`: the feature file comment exists but has not been approved yet. Open the issue on GitHub, review the Gherkin scenarios, and leave a comment with 'approved' or '✅'."
-
-Children flagged `agent-phase:implementation-only` skip this gate entirely — they become eligible for Phase 3 as soon as the Phase 1 approval gate is open.
-
-Do not present or endorse the Phase 3 handoff for a given child until its applicable gate (this one, or the implementation-only bypass) is satisfied.
-
----
-
-### Phase 3 Gate — Implementation (per child)
-
-After the user reports Implementation has run for a specific child, check that child:
+Check each child with one compact call (no bodies, comments reduced to flags):
 
 ```powershell
-gh issue view <child-number> --json comments --jq '{comments: [.comments[] | {author: .author.login, body: .body}]}'
+gh issue view <child-number> --json comments --jq '[.comments[] | {a: .author.login, h: (.body | split("\n")[0] | rtrimstr("\r")), gherkin: (.body | contains("```gherkin")), ok: (.body | test("approved|lgtm|looks good|✅|:white_check_mark:"; "i"))}]'
 ```
 
-**Gate condition:** At least one comment on that child contains the heading `## Implementation Run Log`.
+"Human" means an author login that does not end in `[bot]`. Evaluate the flags in comment order.
 
-- **Gate OPEN for that child**:
-  > "Child #`<N>`: implementation log present. Select **Phase 4 — Run Review Agent**, issue `#<N>`."
+| Phase | Gate OPEN when | Gate CLOSED → tell the user | When OPEN, next step |
+|-------|----------------|-----------------------------|----------------------|
+| 2 FeatureWriter (children without `agent-phase:implementation-only`) | a comment has `gherkin: true`, **and** a later human comment has `ok: true` | no gherkin comment: finish FeatureWriter for `#N`; gherkin but no approval: review the scenarios on GitHub and comment `approved` / `✅` | run **Phase 3 — Implementation** for `#N` |
+| 3 Implementation | a comment heading (`h`) is `## Implementation Run Log` | the Implementation agent may not have posted its log; check GitHub or re-run for `#N` | run **Phase 4 — Review** for `#N` |
+| 4 Review | a comment heading is `## Code Review Report` | the Review agent may not have posted its report; check GitHub or re-run for `#N` | mark child done |
+| 5 Markdown Lint (once, on the parent or single issue) | every child cleared Phase 4, and a comment heading is `## Markdown Lint Report` | not eligible yet: list children still in Review; eligible: run **Phase 5 — Markdown Linter** for `#parent` | workflow done |
 
-- **Gate CLOSED**:
-  > "Child #`<N>`: the Implementation agent may not have posted its log yet. Check the issue on GitHub or re-run Implementation for `#<N>`."
-
-Do not present or endorse the Phase 4 handoff for a child until its log comment exists.
-
----
-
-### Phase 4 Gate — Review (per child)
-
-After the user reports Review has run for a specific child, check that child for a comment containing the heading `## Code Review Report`.
-
-- **Gate OPEN for that child**: mark it complete in your session state.
-  > "Child #`<N>`: review report present. This child is done."
-
-- **Gate CLOSED**:
-  > "Child #`<N>`: the Review agent may not have posted its report yet. Check the issue on GitHub or re-run Review for `#<N>`."
-
-Once **every** child (or the single issue, if unsplit) has cleared this gate, move to Phase 5.
-
----
-
-### Phase 5 — Markdown Lint (parent-level or single-issue-level, run once)
-
-Markdown Lint sweeps the whole repository, so it is not meaningful to run per child — it runs **once**, against the parent issue number (or the single issue, if unsplit), after every child that requires review has cleared Phase 4.
-
-**Skip condition:** Skip this phase entirely if `agent-phase:skip-markdown-lint` is present on the parent issue itself (or on the single issue, if unsplit). A skip label on an individual child does not by itself skip this phase, since the sweep covers the whole repository regardless of which child triggered it — only a parent-level (or single-issue) skip label means the feature as a whole needs no lint pass.
-
-- **Not yet eligible** (some child hasn't cleared Phase 4):
-  > "Markdown Lint is not eligible yet — child(ren) #`<N>` still need to clear Review."
-
-- **Eligible and not skipped**:
-  > "All children have cleared Review. Select **Phase 5 — Run Markdown Linter Agent**, issue `#<parent-or-single-number>`."
-
-Then check for a comment containing `## Markdown Lint Report` on that issue:
-
-- **Gate OPEN**:
-  > "Markdown Lint Report present. The workflow is done for this feature."
-
-- **Gate CLOSED**:
-  > "The Markdown Linter agent may not have posted its report yet. Check the issue on GitHub or re-run it against `#<parent-or-single-number>`."
-
-**Eligible but skipped:**
-> "Markdown Lint is skipped for this feature (`agent-phase:skip-markdown-lint`). All children have cleared Review — the workflow is done."
-
----
+`implementation-only` children skip the Phase 2 gate and are eligible for Phase 3 as soon as the Phase 1 approval gate is open. Phase 5 is skipped entirely when the **parent** (or single issue) carries `agent-phase:skip-markdown-lint`; a skip label on a child does not skip it. Never endorse a handoff before its gate is open.
 
 ### Feature Complete
 
-A single issue is complete once it has cleared Phase 4 and Phase 5 (or Phase 5 was skipped). A parent/child feature is complete once every child has cleared Phase 4 and the parent-level Phase 5 is either reported or skipped.
-
-When complete, print the final Status Summary and tell the user:
-> "All phases are complete. Check the reports on each issue for any findings that must be addressed before merging."
+A single issue is complete after Phase 4 and Phase 5 (or the Phase 5 skip). A parent/child feature is complete when every child cleared Phase 4 and Phase 5 is reported or skipped. Print the final status table and say: "All phases are complete. Check the reports on each issue for findings that must be addressed before merging."
 
 ---
 
-## Running Independent Children in Parallel
-
-If two or more children are simultaneously eligible for the same phase (for example, both cleared Phase 2 approval and are ready for Phase 3), you may use `agent/runSubagent` to dispatch that phase against each of them in the same turn instead of asking the user to run them one at a time. Only do this when:
-
-- Every child being dispatched together has independently satisfied its own gate condition for that phase
-- None of the children being dispatched together are noted as depending on one another (check each child's Additional Context section for a stated dependency before batching)
-
-Report the outcome of each dispatched run separately in your next Status Summary — do not merge their results into one line.
-
----
-
-## State Summary Format
-
-After every check, output a compact status table so the user always knows where they stand. Adapt it to the current shape:
-
-**Single-issue mode:**
-
-```
-Issue #N — <title>
-
-| Phase           | Status |
-|-----------------|--------|
-| Plan (creation) | ✅ Complete |
-| FeatureWriter   | ⏳ Awaiting approval on GitHub |
-| Implementation  | ⬜ Not started |
-| Review          | ⬜ Not started |
-| Markdown Lint   | ⬜ Not started |
-```
-
-**Parent/child mode:**
-
-```
-Parent #N — <title> (epic)
-
-| Child | Title | FeatureWriter | Implementation | Review |
-|-------|-------|----------------|-----------------|--------|
-| #101  | <child 1 title> | ✅ Approved | ⏳ Awaiting log | ⬜ Not started |
-| #102  | <child 2 title> | ➖ N/A (implementation-only) | ⬜ Not started | ⬜ Not started |
-
-Markdown Lint (repo-wide, on parent #N): ⬜ Not started — blocked until all children clear Review
-```
-
-Use ✅ for complete, ⏳ for in progress or awaiting action, ⬜ for not yet started, ➖ for a phase that does not apply to that child.
+Parallel dispatch rules and the status table formats (single issue / parent-child) are in skill `orchestrator-reference`. Always print a compact status table after every check.

@@ -1,0 +1,25 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "type": "command",
+        "command": "pwsh -NoProfile -File .github/hooks/scripts/session-start.ps1",
+        "timeout": 15
+      }
+    ],
+    "PreToolUse": [
+      {
+        "type": "command",
+        "command": "pwsh -NoProfile -File .github/hooks/scripts/pre-tool-use.ps1",
+        "timeout": 10
+      }
+    ],
+    "PreCompact": [
+      {
+        "type": "command",
+        "command": "pwsh -NoProfile -File .github/hooks/scripts/pre-compact.ps1",
+        "timeout": 15
+      }
+    ]
+  }
+}

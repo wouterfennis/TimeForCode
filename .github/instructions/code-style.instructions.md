@@ -1,5 +1,5 @@
 ---
-applyTo: "**"
+applyTo: "**/*.cs"
 ---
 
 # Code Style Instructions

@@ -1,6 +1,6 @@
 ---
 name: doc-align
-description: Reviews all documentation in the TimeForCode repository and aligns it with the current state of the code. Checks sequence diagrams, capability tables, test descriptions, deployment topology, and risk/debt entries against what is actually implemented. Excludes future-plan documents. Use this skill when documentation alignment is requested, after a significant implementation phase, or as part of a release review.
+description: "Aligns TimeForCode documentation (diagrams, capability tables, deployment topology, risks) with the implemented code; excludes future-plan docs. Use when: docs alignment is requested, after a major implementation phase, or in a release review."
 ---
 
 # Documentation Alignment Skill

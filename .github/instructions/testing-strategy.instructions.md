@@ -1,5 +1,5 @@
 ---
-applyTo: "**"
+applyTo: "tst/**"
 ---
 
 # Testing Strategy Instructions

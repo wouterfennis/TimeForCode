@@ -31,8 +31,11 @@ You are a senior reviewer for the **TimeForCode** project. Your job is to take a
 Fetch the issue and all comments:
 
 ```powershell
-gh issue view <number> --json number,title,body,comments --jq '{number:.number, title:.title, body:.body, comments:[.comments[]|{author:.author.login,body:.body}]}'
+gh issue view <number> --json number,title,body,comments --jq '{number, title, body, comments: [.comments | to_entries[] | {i: .key, a: .value.author.login, h: (.value.body | split("\n")[0] | rtrimstr("\r"))}]}'
+gh issue view <number> --json comments --jq '[.comments[] | select(.body | startswith("## Implementation Run Log"))] | last | .body'
 ```
+
+(See skill `gh-compact-view`; phase gates are in `.github/instructions/agent-handoffs.instructions.md`, test rules in `.github/instructions/testing-strategy.instructions.md`.)
 
 From the response extract:
 
@@ -57,7 +60,7 @@ Record all warnings and errors. A clean build is a prerequisite — note any fai
 ### Step 3 — Run the Tests
 
 ```powershell
-dotnet test TimeForCode.sln --no-build --logger "console;verbosity=normal" 2>&1
+dotnet test TimeForCode.sln --no-build 2>&1
 ```
 
 Record:

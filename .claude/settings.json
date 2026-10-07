@@ -1,0 +1,27 @@
+{
+  "env": {
+    "DOTNET_NOLOGO": "1",
+    "DOTNET_CLI_TELEMETRY_OPTOUT": "1",
+    "MSBUILDTERMINALLOGGER": "off",
+    "BASH_MAX_OUTPUT_LENGTH": "20000"
+  },
+  "permissions": {
+    "deny": [
+      "Read(./node_modules/**)",
+      "Read(./**/obj/**)",
+      "Read(./package-lock.json)",
+      "Read(./docs/images/**)"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      { "hooks": [ { "type": "command", "command": "pwsh -NoProfile -File \"$CLAUDE_PROJECT_DIR/.github/hooks/scripts/session-start.ps1\"", "timeout": 15 } ] }
+    ],
+    "PreToolUse": [
+      { "matcher": "Bash|Read|Grep|Glob", "hooks": [ { "type": "command", "command": "pwsh -NoProfile -File \"$CLAUDE_PROJECT_DIR/.github/hooks/scripts/pre-tool-use.ps1\"", "timeout": 10 } ] }
+    ],
+    "PreCompact": [
+      { "hooks": [ { "type": "command", "command": "pwsh -NoProfile -File \"$CLAUDE_PROJECT_DIR/.github/hooks/scripts/pre-compact.ps1\"", "timeout": 15 } ] }
+    ]
+  }
+}

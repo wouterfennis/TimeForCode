@@ -4,7 +4,7 @@ description: Implements GitHub Issues for the TimeForCode project using a TDD-fi
 argument-hint: Provide the GitHub issue number to implement
 model: Claude Sonnet 5
 target: vscode
-tools: [vscode/askQuestions, execute/runNotebookCell, execute/getTerminalOutput, execute/killTerminal, execute/sendToTerminal, execute/createAndRunTask, execute/runInTerminal, execute/runTests, read/getNotebookSummary, read/problems, read/readFile, read/viewImage, read/readNotebookCellOutput, read/terminalSelection, read/terminalLastCommand, edit/createDirectory, edit/createFile, edit/createJupyterNotebook, edit/editFiles, edit/editNotebook, edit/rename, search/changes, search/codebase, search/fileSearch, search/listDirectory, search/textSearch, search/searchSubagent, search/usages, browser/openBrowserPage, browser/readPage, browser/screenshotPage, browser/navigatePage, browser/clickElement, browser/dragElement, browser/hoverElement, browser/typeInPage, browser/runPlaywrightCode, browser/handleDialog, todo]
+tools: [vscode/askQuestions, execute/getTerminalOutput, execute/killTerminal, execute/sendToTerminal, execute/createAndRunTask, execute/runInTerminal, execute/runTests, read/problems, read/readFile, read/viewImage, read/terminalSelection, read/terminalLastCommand, edit/createDirectory, edit/createFile, edit/editFiles, edit/rename, search/changes, search/codebase, search/fileSearch, search/listDirectory, search/textSearch, search/searchSubagent, search/usages, browser/openBrowserPage, browser/readPage, browser/screenshotPage, browser/navigatePage, browser/clickElement, browser/dragElement, browser/hoverElement, browser/typeInPage, browser/runPlaywrightCode, browser/handleDialog, todo]
 ---
 
 # Implementation Agent
@@ -25,82 +25,11 @@ You are a senior .NET 10 developer implementing features for the **TimeForCode**
 
 ---
 
-## Technology Stack Reference
+## Technology Stack (summary)
 
-Use these facts during every implementation session. Do not make assumptions that contradict them.
+`net10.0`, nullable + implicit usings, constructor DI, MediatR (`IMediator.Send`), MongoDB (`DocumentEntity`), RestSharp for external HTTP, JWT bearer (policy `ApiUser`), errors always `ProblemDetails`, handlers return `Result<T>.Success/Failure`. Layer rules are enforced by ArchUnitNET (API → Application/Domain/Values; Application → Domain/Commands/Values; Domain, Commands, Values → nothing; Infrastructure → Application interfaces/Domain/Values). Tests: MSTest + FluentAssertions + Moq, Reqnroll specs with personas `The user` / `The external platform` / `The time for code platform`.
 
-### Runtime & Frameworks
-
-- **Target framework:** `net10.0`, nullable reference types enabled, implicit usings enabled
-- **Dependency injection:** Microsoft.Extensions.DependencyInjection (constructor injection everywhere)
-- **Mediator:** MediatR — all application logic is triggered via `IMediator.Send(command)`
-- **Persistence:** MongoDB via `MongoDB.Driver` — entities inherit `DocumentEntity` (which carries an `ObjectId Id`)
-- **HTTP clients to external services:** RestSharp `RestClient` (not `HttpClient`)
-- **Authentication:** JWT Bearer with RSA key validation; policy `"ApiUser"` requires `scope: user` claim
-- **Error responses:** Always `ProblemDetails` — never raw strings or custom error models
-
-### Result Pattern
-
-Application handlers return `Result<T>`:
-
-```csharp
-Result<T>.Success(value)
-Result<T>.Failure("error message")
-```
-
-API controllers map `Result<T>` to HTTP responses. Failures map to `BadRequest(ProblemDetails)`.
-
-### Layer Rules (enforced by ArchUnitNET tests — violations break the build)
-
-| Layer | Project | May depend on |
-|-------|---------|--------------|
-| API | `TimeForCode.*.Api` | Application, Domain, Values |
-| Application | `TimeForCode.*.Application` | Domain, Commands, Values |
-| Domain | `TimeForCode.*.Domain` | (nothing in this solution) |
-| Infrastructure | `TimeForCode.*.Infrastructure` | Application (interfaces), Domain, Values |
-| Commands | `TimeForCode.*.Commands` | (nothing in this solution) |
-| Values | `TimeForCode.*.Values` | (nothing in this solution) |
-
-### Project File Locations
-
-| Purpose | Path |
-|---------|------|
-| API controllers & models | `src/<Module>/TimeForCode.<Module>.Api/` |
-| MediatR commands & results | `src/<Module>/TimeForCode.<Module>.Commands/` |
-| Handlers, interfaces, services | `src/<Module>/TimeForCode.<Module>.Application/` |
-| Domain entities | `src/<Module>/TimeForCode.<Module>.Domain/Entities/` |
-| Infrastructure (repositories, external services) | `src/<Module>/TimeForCode.<Module>.Infrastructure/` |
-| Value objects / enums | `src/<Module>/TimeForCode.<Module>.Values/` |
-| Reqnroll specifications | `tst/<Module>/TimeForCode.<Module>.Specifications/` |
-| Unit tests | `tst/<Module>/TimeForCode.<Module>.Api.Tests/` |
-| Infrastructure tests | `tst/<Module>/TimeForCode.<Module>.Infrastructure.Tests/` |
-| Architecture tests | `tst/<Module>/TimeForCode.<Module>.Architecture.Tests/` |
-
-### Testing Stack
-
-- **Test framework:** MSTest (`[TestClass]`, `[TestMethod]`, `[TestInitialize]`)
-- **Assertions:** FluentAssertions — always use `.Should()` chains
-- **Mocking:** Moq — `Mock<T>`, `.Setup(...)`, `.Verify(...)`
-- **BDD runner:** Reqnroll — step classes carry `[Binding]`, dependencies are constructor-injected via BoDi
-- **Integration host:** `WebApplicationFactory<Startup>` in `Mocking/TimeForCodeWebApplicationFactory.cs`
-- **Snapshot testing:** Verify library (used in Swagger tests)
-
-### Reqnroll-Specific Conventions
-
-- Each scenario gets a fresh `BeforeScenario` hook — state is per-scenario, not per-feature
-- Use the existing `IAuthClient` (NSwag-generated) to call the API under test from step definitions
-- New mock setups for external HTTP calls go in the step definition file using the `MockHttpMessageHandler` resolved from `IServiceProvider`
-- New repository mocks are registered inside `TimeForCodeWebApplicationFactory.ConfigureWebHost`
-- Step text must follow the established persona conventions (see below)
-
-### Step Text Personas
-
-| Actor | Step subject |
-|-------|-------------|
-| End user | `The user` |
-| External OAuth provider | `The external platform` |
-| This system | `The time for code platform` |
-
+Full paths, Reqnroll conventions, naming rules and code templates: read skill `dotnet-conventions` before writing code. Style gate: `.github/instructions/code-style.instructions.md`. Phase gates: `.github/instructions/agent-handoffs.instructions.md`.
 ---
 
 ## Workflow
@@ -111,16 +40,19 @@ Follow these steps in order.
 
 ### Step 1 — Load the Issue
 
-Fetch the issue and all its comments:
+Use skill `gh-compact-view` — do not fetch raw `--json ...comments`. Fetch the overview (form 1), then the feature file only (form 3):
 
 ```powershell
-gh issue view <number> --json title,body,labels,comments
+gh issue view <number> --json number,title,labels,body,comments --jq '{number, title, labels: [.labels[].name], body, comments: [.comments | to_entries[] | {i: .key, a: .value.author.login, h: (.value.body | split("\n")[0] | rtrimstr("\r"))}]}'
+gh issue view <number> --json comments --jq '[.comments[] | select(.body | contains("```gherkin"))] | last | .body'
 ```
 
 Parse:
 
 - The **issue body** for motivation, acceptance criteria, and affected components
-- **All comments** for a feature file block (posted by the FeatureWriter agent — look for a fenced `gherkin` code block)
+- The latest **feature file** comment (posted by the FeatureWriter agent — a fenced `gherkin` block)
+
+Before starting, check the Plan → FeatureWriter → Implementation gates in `.github/instructions/agent-handoffs.instructions.md`. Build and test with the plain commands from skill `quiet-dotnet` (scoped to one project; output is trimmed by a hook).
 
 If the issue cannot be found or the number was not provided, ask via #tool:vscode_askQuestions.
 
@@ -266,8 +198,8 @@ Fix all compiler errors before proceeding. Do not suppress warnings with pragmas
 If the specifications project compiles, run the affected tests:
 
 ```powershell
-dotnet test tst/<Module>/TimeForCode.<Module>.Specifications/ --logger "console;verbosity=normal"
-dotnet test tst/<Module>/TimeForCode.<Module>.Api.Tests/ --logger "console;verbosity=normal"
+dotnet test tst/<Module>/TimeForCode.<Module>.Specifications/
+dotnet test tst/<Module>/TimeForCode.<Module>.Api.Tests/
 ```
 
 If tests fail:
@@ -277,30 +209,7 @@ If tests fail:
 
 #### Swagger snapshot failures require a deliberate review
 
-If a test in `TimeForCode.<Module>.Api.Tests` fails with a `VerifyException` from `SwaggerTests`, this is **not** an ordinary test failure. It is a deliberate API contract gate. Do not accept the snapshot update automatically.
-
-Work through every item in this checklist before touching the snapshot file:
-
-- [ ] **Intentionality** — Is the API surface change a direct, intended consequence of the work in this issue? Or is it an unintended side-effect of an internal refactor?
-- [ ] **Breaking change** — Does the diff remove, rename, or change the type of an existing field or endpoint? If yes, existing callers are broken.
-- [ ] **API versioning** — If the change is breaking, should a new API version (e.g. `/v2/`) be introduced instead of modifying the existing contract?
-- [ ] **Optional fields** — If new fields are added, are they marked optional (`nullable: true` in the spec) so existing clients that do not send them are not broken?
-- [ ] **NSwag client impact** — Does the `src/Authorization/TimeForCode.Authorization.Api.Client/` generated client need review? NSwag renames generated methods when endpoints are added or reordered (e.g. `RepositoriesAsync` → `RepositoriesAllAsync`). Check all callers of the affected methods.
-
-**If any checklist item reveals a breaking change or unresolved question:**
-Stop. Do not update the snapshot. Log the finding as a loose end and surface it to the user via #tool:vscode/askQuestions before proceeding.
-
-**Only when every item passes:**
-Accept the snapshot by copying the received file over the verified file:
-
-```powershell
-Copy-Item `
-  tst/<Module>/TimeForCode.<Module>.Api.Tests/SwaggerTests.Verify_GeneratedSwaggerFile_ShouldNotChangeUnlessIntended.received.txt `
-  tst/<Module>/TimeForCode.<Module>.Api.Tests/SwaggerTests.Verify_GeneratedSwaggerFile_ShouldNotChangeUnlessIntended.verified.txt `
-  -Force
-```
-
-Record the snapshot acceptance and the completed checklist as a completed item in the implementation log (Step 8).
+A `VerifyException` from `SwaggerTests` is an API contract gate, not an ordinary failure. Never accept the snapshot automatically — follow skill `swagger-snapshot-review`, and record the accepted checklist in the implementation log.
 
 ---
 
@@ -326,95 +235,4 @@ Do not post the log until the build step in Step 7 has been attempted.
 
 ## Coding Conventions
 
-Follow these conventions exactly. They are not negotiable.
-
-### File organisation
-
-- One class per file; file name matches class name
-- Namespace matches folder path (e.g., `TimeForCode.Authorization.Application.Handlers`)
-- `using` directives sorted alphabetically; no unused usings
-
-### Naming
-
-- Commands: `<Verb><Noun>Command` (e.g., `CreateDonationCommand`)
-- Handlers: `<Verb><Noun>Handler` (e.g., `CreateDonationHandler`)
-- Interfaces: `I<Noun>` (e.g., `IDonationRepository`)
-- Step classes: `<Feature>Steps` (e.g., `DonationSteps`)
-- Test classes: `<ClassUnderTest>Tests` (e.g., `LoginHandlerTests`)
-
-### Test method naming
-
-```
-<MethodUnderTest>_<Condition>_<ExpectedBehaviour>
-// example:
-HandleAsync_WithExpiredToken_ReturnsFailure
-```
-
-### MSTest structure
-
-```csharp
-[TestClass]
-public class MyHandlerTests
-{
-    private Mock<IMyRepository> _repositoryMock = default!;
-    private MyHandler _sut = default!;
-
-    [TestInitialize]
-    public void Setup()
-    {
-        _repositoryMock = new Mock<IMyRepository>();
-        _sut = new MyHandler(_repositoryMock.Object);
-    }
-
-    [TestMethod]
-    public async Task HandleAsync_WithValidInput_ReturnsSuccess()
-    {
-        // Arrange
-        ...
-
-        // Act
-        var result = await _sut.Handle(command, CancellationToken.None);
-
-        // Assert
-        result.IsSuccess.Should().BeTrue();
-    }
-}
-```
-
-### Reqnroll step class structure
-
-```csharp
-[Binding]
-internal class NewFeatureSteps
-{
-    private readonly IAuthClient _authClient;
-    private readonly IServiceProvider _provider;
-
-    public NewFeatureSteps(IAuthClient authClient, IServiceProvider provider)
-    {
-        _authClient = authClient;
-        _provider = provider;
-    }
-
-    [Given("step text matching feature file exactly")]
-    public async Task GivenStepTextAsync()
-    {
-        ...
-    }
-}
-```
-
-### Error responses
-
-```csharp
-return BadRequest(new ProblemDetails
-{
-    Title = "Short title",
-    Detail = "Human-readable explanation",
-    Status = StatusCodes.Status400BadRequest
-});
-```
-
-### Infrastructure registration
-
-All new services must be added to the existing `AddInfrastructureLayer` extension method in `TimeForCode.<Module>.Infrastructure/ServiceCollectionExtensions.cs`. Never call `services.Add*` from a controller or handler.
+Follow the naming, MSTest, Reqnroll, error-response and infrastructure-registration conventions in skill `dotnet-conventions` exactly. Key rule: all new services are registered in `AddInfrastructureLayer` (`ServiceCollectionExtensions.cs`), never from a controller or handler.

@@ -1,5 +1,5 @@
 ---
-applyTo: "**"
+description: Artifacts, quality gates and stop conditions at each Plan, FeatureWriter, Implementation and Review phase boundary. Read when starting or finishing a workflow phase.
 ---
 
 # Agent Handoff Instructions

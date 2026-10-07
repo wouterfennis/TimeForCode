@@ -37,8 +37,10 @@ The user will either paste the issue text directly or provide an issue number.
 If an issue number is provided, fetch it:
 
 ```powershell
-gh issue view <number> --json title,body,labels
+gh issue view <number> --json title,body,labels --jq '{title, labels: [.labels[].name], body}'
 ```
+
+Phase gates for this agent: `.github/instructions/agent-handoffs.instructions.md`.
 
 If the content is ambiguous or incomplete, use #tool:vscode/askQuestions to ask the user to clarify the intent before proceeding.
 

@@ -1,6 +1,6 @@
 ---
 name: dll-api-explorer
-description: 'Inspects the public API surface of an external .NET library directly from its compiled assembly (.dll) when source code, IntelliSense, or documentation is unavailable or incomplete. Uses reflection-only metadata loading, XML doc comments, and static decompilation to enumerate namespaces, types, members, and signatures. Use when: understanding a third-party or reference assembly API, checking what overloads/members exist on a type, inspecting a NuGet package before adding it, finding types in a .dll, "what''s in this dll", "how do I call X from this library", no source available for a dependency.'
+description: "Inspects the public API of a compiled .NET assembly (.dll) via reflection-only metadata when source or docs are unavailable. Use when: checking types, overloads or signatures of a dependency or NuGet package before using it."
 argument-hint: 'Path to the .dll (or NuGet package id/version) and, optionally, the specific namespace or type to inspect'
 ---
 

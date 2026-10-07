@@ -61,7 +61,7 @@ dotnet build TimeForCode.sln --no-incremental 2>&1
 ## Step 2 — Run the Full Test Suite
 
 ```powershell
-dotnet test TimeForCode.sln --no-build --logger "console;verbosity=normal" 2>&1
+dotnet test TimeForCode.sln --no-build 2>&1
 ```
 
 **Pass condition:** Exit code 0, 0 failures, 0 errors.
