@@ -1,6 +1,7 @@
 ---
 name: markdown-lint
 description: "Runs markdownlint-cli against all Markdown files in the repository, analyses violations, and applies safe automatic and manual fixes. Use this skill when the MarkdownLinter agent needs to perform a full lint-fix-report cycle."
+allowed-tools: Read, Grep, Glob, Edit, Bash(markdownlint:*)
 ---
 
 # Markdown Lint Skill
@@ -8,7 +9,6 @@ description: "Runs markdownlint-cli against all Markdown files in the repository
 This skill runs a full lint-fix-scan cycle for all Markdown files in the **TimeForCode** repository. Follow every step in order.
 
 ---
-
 
 ## Trigger Conditions
 
@@ -23,7 +23,7 @@ Invoke this skill when:
 ## Required Inputs
 
 | Input | Source |
-|-------|--------|
+| --- | --- |
 | `markdownlint-cli` version `0.48.0` installed | Verified in Step 1 |
 | Repository root path | Working directory |
 | `.markdownlint.json` config at repository root | Must exist before running |
@@ -68,7 +68,7 @@ Capture the full output and the exit code. If the exit code is `0`, record that 
 
 Each output line follows this format:
 
-```
+```text
 <file>:<line> <rule-id>/<rule-alias> <description>
 ```
 
@@ -80,7 +80,7 @@ Group violations by file. For each file compute:
 Produce a summary table:
 
 | File | Violations | Rules triggered |
-|------|-----------|-----------------|
+| --- | --- | --- |
 | `docs/architecture/arc42/01-introduction-and-goals.md` | 3 | MD013, MD041 |
 | … | … | … |
 
@@ -137,7 +137,7 @@ Record:
 Present a summary to the user:
 
 | Metric | Value |
-|--------|-------|
+| --- | --- |
 | Files scanned | N |
 | Files with violations | N |
 | Total violations (before fix) | N |
@@ -155,5 +155,5 @@ If the scan was completely clean from the start, report:
 ## Error Handling
 
 | Symptom | Action |
-|---------|--------|
+| --- | --- |
 | `markdownlint: command not found` | Instruct user to install with `npm install -g markdownlint-cli` |

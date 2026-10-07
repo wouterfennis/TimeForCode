@@ -1,6 +1,7 @@
 ---
 name: changelog-update
 description: "Reads merged pull requests since the last release tag, generates a changelog entry for the target version, and prepends it to CHANGELOG.md. Use before tagging a release or when the release-readiness skill requests changelog verification."
+allowed-tools: Read, Edit, Bash(git log:*), Bash(git tag:*), Bash(gh pr list:*), Bash(gh pr view:*)
 ---
 
 # Changelog Update Skill
@@ -8,7 +9,6 @@ description: "Reads merged pull requests since the last release tag, generates a
 This skill generates and prepends a changelog entry for a new release version. Follow every step in order.
 
 ---
-
 
 ## Trigger Conditions
 
@@ -23,7 +23,7 @@ Invoke this skill when:
 ## Required Inputs
 
 | Input | Source |
-|-------|--------|
+| --- | --- |
 | Target version string (e.g., `1.2.0`) | Provided by the calling agent or user |
 | Previous release tag (e.g., `v1.1.0`) | Provided by the calling agent, or derived in Step 1 |
 | Authenticated `gh` CLI | Verified before running any command |
@@ -88,7 +88,7 @@ gh pr list --state merged --base main --json number,title,labels,mergedAt --limi
 For each PR, determine its changelog category based on labels:
 
 | Label | Changelog section |
-|-------|------------------|
+| --- | --- |
 | `enhancement` | Added |
 | `bug` | Fixed |
 | `technical-debt` | Changed |
@@ -170,7 +170,7 @@ If approved, the calling agent is responsible for staging and committing the cha
 ## Error Handling
 
 | Symptom | Action |
-|---------|--------|
+| --- | --- |
 | `gh` not authenticated | Stop and instruct user to run `gh auth login` |
 | No merged PRs found | Create an entry with a single line: `- No notable changes` |
 | `CHANGELOG.md` is not writable | Stop and report permission error |

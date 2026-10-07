@@ -1,6 +1,7 @@
 ---
 name: gh-implementation-log
 description: "Posts an implementation run log as a comment on an existing GitHub issue using the GitHub CLI. Use this skill when the Implementation agent has finished a work session and needs to record what was done and what loose ends remain."
+allowed-tools: Bash(gh issue comment:*), Bash(gh issue view:*)
 ---
 
 # GitHub CLI Implementation Log
@@ -8,7 +9,6 @@ description: "Posts an implementation run log as a comment on an existing GitHub
 This skill posts the end-of-session implementation log as a comment on a GitHub issue via the `gh` CLI. Follow every step in order.
 
 ---
-
 
 ## Trigger Conditions
 
@@ -22,7 +22,7 @@ Invoke this skill when:
 ## Required Inputs
 
 | Input | Source |
-|-------|--------|
+| --- | --- |
 | Completed items list | Provided by the Implementation agent |
 | Loose ends list | Provided by the Implementation agent |
 | Open questions list | Provided by the Implementation agent |
@@ -104,7 +104,7 @@ Replace `<issue-number>` with the actual issue number and fill in all three sect
 ## Error Handling
 
 | Symptom | Action |
-|---------|--------|
+| --- | --- |
 | `gh: command not found` | Instruct user to install the GitHub CLI and authenticate |
 | `Could not resolve to an issue` | Confirm the issue number with the user and retry |
 | Authentication error | Instruct user to run `gh auth login` |

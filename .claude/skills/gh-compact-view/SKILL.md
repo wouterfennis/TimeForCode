@@ -1,6 +1,7 @@
 ---
 name: gh-compact-view
 description: "Fetch GitHub issue data with small jq projections instead of raw JSON with all comments. Use when: reading an issue, its acceptance criteria, a feature-file comment, or checking phase gates."
+allowed-tools: Bash(gh issue view:*)
 ---
 
 # gh-compact-view

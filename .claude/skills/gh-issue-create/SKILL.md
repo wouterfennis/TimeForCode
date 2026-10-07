@@ -1,6 +1,7 @@
 ---
 name: gh-issue-create
 description: "Creates a GitHub issue using the GitHub CLI (gh) after user approval. Use this skill when the plan agent has a fully approved issue draft ready to submit to GitHub. Handles authentication verification, label validation, and issue submission."
+allowed-tools: Bash(gh issue create:*), Bash(gh label list:*), Bash(gh auth status), Bash(gh issue view:*)
 ---
 
 # GitHub CLI Issue Creation
@@ -8,7 +9,6 @@ description: "Creates a GitHub issue using the GitHub CLI (gh) after user approv
 This skill guides you through submitting an approved issue draft to GitHub via the `gh` CLI. Follow every step in order. Do not skip steps.
 
 ---
-
 
 ## Trigger Conditions
 
@@ -22,7 +22,7 @@ Invoke this skill when:
 ## Required Inputs
 
 | Input | Source |
-|-------|--------|
+| --- | --- |
 | Approved issue title and body | Provided by the Plan agent |
 | Label names to apply | Derived from `gh label list` during Step 3 |
 | Authenticated `gh` CLI | Verified in Step 1 |
@@ -75,7 +75,7 @@ gh label list
 Use the output to select the most appropriate labels for the issue. Do not invent label names. Common mappings:
 
 | Issue Type | Suggested Label |
-|-----------|----------------|
+| --- | --- |
 | Feature | `enhancement` |
 | Bug Fix | `bug` |
 | Improvement | `enhancement` |
@@ -90,7 +90,7 @@ If a suggested label does not exist, use the closest available label or omit it.
 
 Write the issue body to a temporary file, then pass it to `gh issue create` with `--body-file`. This avoids PowerShell here-string issues with multiline content containing backticks or special characters.
 
-1. Use `create_file` to write the issue body to `issue_body.md` at the repository root. The file must follow this structure:
+1. Use the Write tool to write the issue body to `$env:TEMP/issue_body.md` (outside the repository). The file must follow this structure:
 
 ```markdown
 ## Motivation / Context
@@ -119,7 +119,7 @@ Write the issue body to a temporary file, then pass it to `gh issue create` with
 ```powershell
 gh issue create `
   --title "[Replace with the exact approved title, including the [Type]: prefix]" `
-  --body-file issue_body.md `
+  --body-file $env:TEMP/issue_body.md `
   --label "[label1]" `
   --label "[label2]"
 ```
@@ -129,7 +129,7 @@ gh issue create `
 1. Delete the temporary file immediately after:
 
 ```powershell
-Remove-Item issue_body.md
+Remove-Item $env:TEMP/issue_body.md
 ```
 
 ---
@@ -138,7 +138,7 @@ Remove-Item issue_body.md
 
 The `gh issue create` command outputs the URL of the newly created issue upon success. Report this URL to the user in the format:
 
-```
+```text
 Issue created successfully: https://github.com/wouterfennis/TimeForCode/issues/[number]
 ```
 
@@ -153,6 +153,6 @@ If the command fails, read the error message carefully:
 
 ## Safety Reminders
 
-- This skill is the **only** permitted use of `run_in_terminal` in the Plan Agent.
+- This skill is the **only** permitted use of `gh issue create` in the Plan phase.
 - Never run any command that modifies files, stages changes, creates branches, or alters repository state.
 - If in doubt about a command's effect, do not run it and ask the user instead.

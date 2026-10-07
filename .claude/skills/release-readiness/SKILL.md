@@ -1,6 +1,7 @@
 ---
 name: release-readiness
 description: "Runs a pre-release checklist for the TimeForCode project. Verifies that the build is clean, all tests pass, open critical issues are resolved, documentation is current, and the changelog is up to date. Use before tagging a release or merging a release branch."
+allowed-tools: Read, Grep, Glob, Bash(dotnet build:*), Bash(dotnet test:*), Bash(gh issue list:*), Bash(git log:*)
 ---
 
 # Release Readiness Skill
@@ -8,7 +9,6 @@ description: "Runs a pre-release checklist for the TimeForCode project. Verifies
 This skill validates that the repository is in a releasable state. Follow every step in order. Do not proceed to the next step if a blocking check fails.
 
 ---
-
 
 ## Trigger Conditions
 
@@ -23,7 +23,7 @@ Invoke this skill when:
 ## Required Inputs
 
 | Input | Source |
-|-------|--------|
+| --- | --- |
 | Target version string (e.g., `1.2.0`) | Provided by the calling agent or user |
 | Target branch name | Provided by the calling agent or user |
 
@@ -123,7 +123,7 @@ Run the `changelog-update` skill in verification mode (no writes) to confirm tha
 ### Checklist
 
 | Check | Status | Notes |
-|-------|--------|-------|
+| --- | --- | --- |
 | Build | ✅ / ❌ | |
 | All tests pass | ✅ / ❌ | N passed, N failed |
 | No open critical issues | ✅ / ❌ | |
@@ -143,7 +143,7 @@ Run the `changelog-update` skill in verification mode (no writes) to confirm tha
 ## Error Handling
 
 | Symptom | Action |
-|---------|--------|
+| --- | --- |
 | `dotnet` not found | Stop and report .NET SDK is not installed |
 | `gh` not authenticated | Stop and instruct user to run `gh auth login` |
 | `grep` not available | Use `Select-String` on PowerShell as fallback |

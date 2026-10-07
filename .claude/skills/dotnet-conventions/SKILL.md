@@ -35,7 +35,7 @@ API controllers map `Result<T>` to HTTP responses. Failures map to `BadRequest(P
 ### Layer Rules (enforced by ArchUnitNET tests — violations break the build)
 
 | Layer | Project | May depend on |
-|-------|---------|--------------|
+| --- | --- | --- |
 | API | `TimeForCode.*.Api` | Application, Domain, Values |
 | Application | `TimeForCode.*.Application` | Domain, Commands, Values |
 | Domain | `TimeForCode.*.Domain` | (nothing in this solution) |
@@ -46,7 +46,7 @@ API controllers map `Result<T>` to HTTP responses. Failures map to `BadRequest(P
 ### Project File Locations
 
 | Purpose | Path |
-|---------|------|
+| --- | --- |
 | API controllers & models | `src/<Module>/TimeForCode.<Module>.Api/` |
 | MediatR commands & results | `src/<Module>/TimeForCode.<Module>.Commands/` |
 | Handlers, interfaces, services | `src/<Module>/TimeForCode.<Module>.Application/` |
@@ -78,11 +78,10 @@ API controllers map `Result<T>` to HTTP responses. Failures map to `BadRequest(P
 ### Step Text Personas
 
 | Actor | Step subject |
-|-------|-------------|
+| --- | --- |
 | End user | `The user` |
 | External OAuth provider | `The external platform` |
 | This system | `The time for code platform` |
-
 
 ## Coding Conventions
 
@@ -104,7 +103,7 @@ Follow these conventions exactly. They are not negotiable.
 
 ### Test method naming
 
-```
+```text
 <MethodUnderTest>_<Condition>_<ExpectedBehaviour>
 // example:
 HandleAsync_WithExpiredToken_ReturnsFailure

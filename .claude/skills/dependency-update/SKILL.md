@@ -1,6 +1,7 @@
 ---
 name: dependency-update
 description: "Audits NuGet and npm dependencies in the TimeForCode solution for available updates and known vulnerabilities. Produces an update report and applies safe patch-level updates. Use during maintenance passes or before a release to reduce dependency risk."
+allowed-tools: Read, Grep, Glob, Bash(dotnet list:*), Bash(npm outdated:*), Bash(npm audit:*)
 ---
 
 # Dependency Update Skill
@@ -8,7 +9,6 @@ description: "Audits NuGet and npm dependencies in the TimeForCode solution for 
 This skill audits dependencies, reports available updates, and applies safe patch-level updates. Follow every step in order.
 
 ---
-
 
 ## Trigger Conditions
 
@@ -23,7 +23,7 @@ Invoke this skill when:
 ## Required Inputs
 
 | Input | Source |
-|-------|--------|
+| --- | --- |
 | Authenticated `dotnet` SDK | Verified before running any command |
 | Repository root path | Working directory |
 
@@ -69,7 +69,7 @@ For each outdated package, record:
 Classify each outdated package by risk level:
 
 | Update type | Risk | Action |
-|-------------|------|--------|
+| --- | --- | --- |
 | Patch (x.y.**Z**) | Low | Apply automatically after human approval |
 | Minor (x.**Y**.z) | Medium | Propose update; require human approval before applying |
 | Major (**X**.y.z) | High | Propose update; require explicit human instruction |
@@ -108,20 +108,20 @@ Before applying any changes, present the full proposal to the calling agent or u
 ### NuGet — Vulnerable Packages
 
 | Package | Current | Severity | Advisory |
-|---------|---------|----------|----------|
+| --- | --- | --- | --- |
 | Foo.Bar | 1.2.3 | high | CVE-XXXX-YYYY |
 
 ### NuGet — Available Updates
 
 | Package | Current | Latest | Update type |
-|---------|---------|--------|-------------|
+| --- | --- | --- | --- |
 | Baz.Qux | 2.0.1 | 2.0.4 | patch |
 | …       | …       | …      | minor       |
 
 ### npm — Vulnerabilities
 
 | Package | Severity | Advisory |
-|---------|----------|----------|
+| --- | --- | --- |
 | …       | …        | … |
 
 **Proposed automatic changes (patch-level only):**
@@ -162,7 +162,7 @@ If the build or tests fail after an update, revert that package update and recor
 **Decision:** CLEAN / ACTION_REQUIRED
 
 | Category | Count |
-|----------|-------|
+| --- | --- |
 | Critical/High vulnerabilities | N |
 | Patch updates applied | N |
 | Minor updates proposed (pending human action) | N |
@@ -177,7 +177,7 @@ Return `ACTION_REQUIRED` if any `high` or `critical` vulnerabilities remain unre
 ## Error Handling
 
 | Symptom | Action |
-|---------|--------|
+| --- | --- |
 | `dotnet` not found | Stop and report .NET SDK is not installed |
 | `npm` not found | Skip Step 4 and note npm is not installed |
 | Build fails after update | Revert the specific package and mark `UPDATE_BLOCKED` |

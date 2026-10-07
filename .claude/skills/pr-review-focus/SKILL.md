@@ -1,4 +1,6 @@
 ---
+name: pr-review-focus
+disable-model-invocation: true
 description: "Focuses a pull request review on the areas of highest risk and significance. Produces a prioritised review checklist tailored to the type of change in the PR."
 ---
 
@@ -25,7 +27,7 @@ Analyse the PR description and changed files, then produce a **prioritised revie
 First, classify the PR by its primary change type:
 
 | Change type | Indicators |
-|-------------|-----------|
+| --- | --- |
 | New feature | New controller actions, new handlers, new domain types |
 | Bug fix | Changes to existing handler or validator logic |
 | Refactor | No new behaviour, structural changes only |

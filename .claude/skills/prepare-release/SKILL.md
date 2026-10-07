@@ -161,7 +161,7 @@ After presenting the report, do not perform any further actions. The team is res
 ## Reference: Skills Used
 
 | Skill | Purpose |
-|-------|---------|
+| --- | --- |
 | `release-readiness` | Build, tests, issues, docs, changelog |
 | `security-scan-report` | Vulnerability and secret scan |
 | `test-gap-analysis` | Coverage gap detection |

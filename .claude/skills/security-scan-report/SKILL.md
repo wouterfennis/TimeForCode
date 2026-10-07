@@ -1,6 +1,7 @@
 ---
 name: security-scan-report
 description: "Runs a security scan of the TimeForCode codebase using dotnet vulnerability auditing and static analysis. Produces a structured security report grouped by severity. Use as part of release readiness checks or the maintenance agent's security pass."
+allowed-tools: Read, Grep, Glob, Bash(dotnet list:*), Bash(dotnet build:*)
 ---
 
 # Security Scan Report Skill
@@ -8,7 +9,6 @@ description: "Runs a security scan of the TimeForCode codebase using dotnet vuln
 This skill produces a security scan report for the **TimeForCode** repository. It does not modify any source files. Follow every step in order.
 
 ---
-
 
 ## Trigger Conditions
 
@@ -23,7 +23,7 @@ Invoke this skill when:
 ## Required Inputs
 
 | Input | Source |
-|-------|--------|
+| --- | --- |
 | Authenticated `dotnet` SDK | Verified before running any command |
 | Repository root path | Working directory |
 
@@ -123,7 +123,7 @@ Record any endpoint that has neither `[Authorize]` nor `[AllowAnonymous]` as `MI
 ### 🔴 Critical / High Findings
 
 | Type | Location | Detail |
-|------|----------|--------|
+| --- | --- | --- |
 | VULNERABLE_PACKAGE | Foo.Bar 1.2.3 | CVE-XXXX-YYYY (high) |
 | HARDCODED_SECRET | src/…/appsettings.json:L12 | Matched pattern `****** |
 
@@ -132,7 +132,7 @@ Record any endpoint that has neither `[Authorize]` nor `[AllowAnonymous]` as `MI
 ### 🟡 Medium Findings
 
 | Type | Location | Detail |
-|------|----------|--------|
+| --- | --- | --- |
 | INSECURE_HTTP | src/…/Client.cs:L34 | Non-localhost http:// reference |
 
 ---
@@ -140,7 +140,7 @@ Record any endpoint that has neither `[Authorize]` nor `[AllowAnonymous]` as `MI
 ### 🔵 Low / Informational Findings
 
 | Type | Location | Detail |
-|------|----------|--------|
+| --- | --- | --- |
 | POTENTIAL_SQL_INJECTION | src/…/Repository.cs:L78 | Raw SQL string — verify parameterisation |
 
 ---
@@ -148,7 +148,7 @@ Record any endpoint that has neither `[Authorize]` nor `[AllowAnonymous]` as `MI
 ### Summary
 
 | Severity | Count |
-|----------|-------|
+| --- | --- |
 | Critical | N |
 | High | N |
 | Medium | N |
@@ -162,7 +162,7 @@ Record any endpoint that has neither `[Authorize]` nor `[AllowAnonymous]` as `MI
 ## Error Handling
 
 | Symptom | Action |
-|---------|--------|
+| --- | --- |
 | `dotnet` not found | Stop and report .NET SDK is not installed |
 | `Get-ChildItem` not available | Use `find` and `grep` as fallback |
 | Pattern match produces false positive | Note it as "Requires manual review" in the report |

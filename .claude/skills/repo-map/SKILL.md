@@ -1,6 +1,7 @@
 ---
 name: repo-map
 description: "Compact project/layer listing of the TimeForCode solution so agents skip directory exploration. Use when: locating a project, finding where a layer or test project lives, or when the map in CLAUDE.md looks stale."
+allowed-tools: Read, Glob
 ---
 
 # repo-map

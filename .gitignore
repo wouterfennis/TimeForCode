@@ -108,3 +108,6 @@ $RECYCLE.BIN/
 
 # Dev container
 .devcontainer/
+# Claude Code local state
+.agent-state/
+.claude/settings.local.json

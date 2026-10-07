@@ -25,6 +25,16 @@ else {
 }
 if (-not $keep) { $keep = $lines | Select-Object -Last 20 }
 
+# Stamp a successful run so the Stop hook knows C# changes were verified.
+if ($exit -eq 0) {
+    $root = (git rev-parse --show-toplevel 2>$null)
+    if ($root) {
+        $dir = Join-Path $root '.agent-state'
+        New-Item -ItemType Directory -Force -Path $dir | Out-Null
+        Set-Content -LiteralPath (Join-Path $dir 'last-dotnet-run') -Value (Get-Date -Format 's') -Encoding utf8
+    }
+}
+
 $keep | Select-Object -First $maxLines
 if (@($keep).Count -gt $maxLines) { "... (+$(@($keep).Count - $maxLines) more lines)" }
 if ($exit -ne 0) { "[exit code $exit] full output: $log" }

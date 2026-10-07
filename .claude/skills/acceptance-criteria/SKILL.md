@@ -1,4 +1,6 @@
 ---
+name: acceptance-criteria
+disable-model-invocation: true
 description: "Helps a contributor write high-quality, independently testable acceptance criteria for a GitHub issue or feature request. Produces criteria that map cleanly to Gherkin scenarios."
 ---
 
@@ -58,7 +60,7 @@ Or for simpler criteria:
 Before finalising, verify each criterion against this checklist:
 
 | Check | Pass condition |
-|-------|---------------|
+| --- | --- |
 | No implementation detail | Criterion does not name a class, method, HTTP verb, or status code |
 | Independently testable | Criterion can be verified without relying on another criterion being true first |
 | Unambiguous | Two developers reading the criterion would reach the same conclusion about whether it is met |

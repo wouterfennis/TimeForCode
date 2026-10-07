@@ -17,12 +17,12 @@ This file defines the mandatory code-style gate for every agent or contributor t
 dotnet format ./TimeForCode.sln
 ```
 
-This is enforced by the `dotnet-format` skill. Invoke it after writing or editing any `.cs` file and before calling `git commit`.
+A `PostToolUse` hook already formats every `.cs` file you edit or write (`dotnet format whitespace --folder --include <file>`, whitespace and editorconfig only). The solution-wide run above (skill `dotnet-format`) is still required before `git commit`.
 
 ### When to run
 
 | Situation | Action |
-|-----------|--------|
+| --- | --- |
 | After writing new C# files | Run `dotnet format` |
 | After editing existing C# files | Run `dotnet format` |
 | After resolving merge conflicts in C# files | Run `dotnet format` |
@@ -30,20 +30,14 @@ This is enforced by the `dotnet-format` skill. Invoke it after writing or editin
 
 ### Verify the build after formatting
 
-After running `dotnet format`, always confirm the build is still clean:
-
-```bash
-dotnet build ./TimeForCode.sln --no-incremental
-```
-
-If the build breaks after formatting, investigate the changed files and fix the regression before committing.
+After a solution-wide `dotnet format`, run one plain `dotnet build TimeForCode.sln` (skill `quiet-dotnet`; no `--no-incremental` unless a stale build is suspected). If the build breaks, fix the regression before committing.
 
 ---
 
 ## Project Style Conventions (driven by `.editorconfig`)
 
 | Rule | Value |
-|------|-------|
+| --- | --- |
 | Indent style | spaces, size 4 |
 | End of line | `lf` |
 | Final newline | `false` (no trailing newline at end of file) |

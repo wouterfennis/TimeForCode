@@ -1,7 +1,8 @@
 # PreToolUse hook (Claude Code). Reads the event JSON from stdin.
 #  1. Denies reads/searches of paths that only burn tokens (node_modules, obj, .git internals, lockfiles, binaries).
 #  2. Rewrites plain `dotnet build|test` terminal commands so only a trimmed result enters the context.
-# Fails open: any error allows the tool call.
+# Fails open by design: any error allows the tool call (a broken hook must not block work).
+# permissions.deny in settings.json is the hard backstop for the Read tool.
 $ErrorActionPreference = 'Stop'
 
 function Send-Decision([string]$decision, [string]$reason, $updatedInput = $null) {
@@ -61,6 +62,7 @@ try {
         if ($prop.Name -notmatch '(?i)path|file|dir|folder|glob|include' -and -not $isGlobPattern) { continue }
         foreach ($value in @($prop.Value)) {
             if ($value -isnot [string]) { continue }
+            if ($value.StartsWith('!')) { continue }   # exclusion glob, e.g. '!**/node_modules/**'
             if ($value -match $blockedDirs -or $value -match $blockedFiles) {
                 Send-Decision 'deny' "Blocked by token-saving hook: '$value' is generated, binary or a lockfile. Read source files under src/, tst/ or docs/ instead."
             }

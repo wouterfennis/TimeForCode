@@ -6,7 +6,10 @@ if (-not $root) { exit 0 }
 Set-Location $root
 
 $branch = git branch --show-current
-$status = @(git status --short | Select-Object -First 15)
+$all = @(git status --short)
+$deleted = @($all | Where-Object { $_ -match '^\s*D' })
+$status = @($all | Where-Object { $_ -notmatch '^\s*D' } | Select-Object -First 15)
+if ($deleted.Count) { $status += "($($deleted.Count) deleted files not listed)" }
 $commits = @(git log --oneline -3)
 $issue = if ($branch -match '(\d+)') { "#$($Matches[1])" } else { 'unknown' }
 

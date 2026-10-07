@@ -1,6 +1,7 @@
 ---
 name: doc-align
 description: "Aligns TimeForCode documentation (diagrams, capability tables, deployment topology, risks) with the implemented code; excludes future-plan docs. Use when: docs alignment is requested, after a major implementation phase, or in a release review."
+allowed-tools: Read, Grep, Glob, Edit
 ---
 
 # Documentation Alignment Skill
@@ -8,7 +9,6 @@ description: "Aligns TimeForCode documentation (diagrams, capability tables, dep
 This skill walks every documentation file that describes the **current** state of the system and verifies it matches the code. Follow every step in order.
 
 ---
-
 
 ## Trigger Conditions
 
@@ -23,7 +23,7 @@ Invoke this skill when:
 ## Required Inputs
 
 | Input | Source |
-|-------|--------|
+| --- | --- |
 | Repository root path | Working directory |
 | Authenticated `dotnet` SDK (for build verification where needed) | Verified before running any command |
 

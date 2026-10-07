@@ -3,147 +3,61 @@ paths:
   - "tst/**"
 ---
 
-# Testing Strategy Instructions
+# Testing Strategy (TDD)
 
-This file defines the testing approach, conventions, and quality gates for the **TimeForCode** project. All agents and contributors must follow these rules when writing, modifying, or reviewing tests.
+All production code in **TimeForCode** is written test-first. No production line exists without a failing test that demanded it.
 
----
+## The TDD loop (mandatory)
 
-## Test Project Layout
+1. **Red** — write the smallest test (unit, or step definitions for a Reqnroll scenario) that describes the next behaviour. Run it and confirm it fails **for the expected reason** (assertion or missing member, not a typo or setup error). A test that has never been seen failing proves nothing.
+2. **Green** — write the minimum production code that makes it pass. No speculative code, no extra branches.
+3. **Refactor** — clean up production and test code with the suite green. Run the project's tests after every refactor step.
+4. Repeat. One behaviour per cycle; commit-sized steps.
 
-| Layer | Test project | Location |
-|-------|-------------|----------|
-| Authorization API | `TimeForCode.Authorization.Api.Tests` | `tst/Authorization/TimeForCode.Authorization.Api.Tests/` |
-| Authorization Infrastructure | `TimeForCode.Authorization.Infrastructure.Tests` | `tst/Authorization/TimeForCode.Authorization.Infrastructure.Tests/` |
-| Authorization Architecture | `TimeForCode.Authorization.Architecture.Tests` | `tst/Authorization/TimeForCode.Authorization.Architecture.Tests/` |
-| Donation API | `TimeForCode.Donation.Api.Tests` | `tst/Donation/TimeForCode.Donation.Api.Tests/` |
-| Donation Architecture | `TimeForCode.Donation.Architecture.Tests` | `tst/Donation/TimeForCode.Donation.Architecture.Tests/` |
-| Shared | `TimeForCode.Shared.Tests` | `tst/Shared/TimeForCode.Shared.Tests/` |
+Rules:
 
----
+- Never write production code without a red test first. Exceptions (pure wiring such as DI registration, DTO mapping boilerplate, Bicep/Docker) must be exercised by an existing higher-level test (Specification or Infrastructure test) that is red first.
+- Never edit a test to make it green. Change a test only when the requirement changed, and say so in the implementation log.
+- Never commit a red test. A deliberately failing test is only allowed locally mid-cycle.
+- Bug fixes start with a failing regression test that reproduces the bug (skill `fix-bug`).
+- Outside-in order for a feature with a Gherkin file: Specification steps (red) → Application handler unit tests (red→green) → Domain/Infrastructure → API; the Specification goes green last.
 
-## Test Types and Scope
+## Test projects
 
-### Unit Tests
+Per module under `tst/<Module>/TimeForCode.<Module>.<Kind>/`:
 
-- **Location:** `*.Api.Tests` and `*.Application.Tests` projects
-- **Scope:** Single class in isolation; all dependencies are mocked or stubbed
-- **No I/O:** No file system access, no HTTP calls, no database access
-- **Framework:** xUnit + Moq
+| Kind | Purpose | Notes |
+| --- | --- | --- |
+| `Api.Tests`, `Application.Tests` | Unit tests of one class, all dependencies mocked | No I/O. `Api.Tests` also holds the Swagger Verify snapshot (`SwaggerTests`) |
+| `Infrastructure.Tests` | Repository / external-service behaviour | Never use production credentials |
+| `Specifications` | Reqnroll scenarios from the issue's Gherkin comment, run against `TimeForCodeWebApplicationFactory` | Outside-in acceptance tests |
+| `Architecture.Tests` | ArchUnitNET layer and naming rules | Violations break the build |
 
-### Integration Tests
+Frameworks: **MSTest**, FluentAssertions, Moq, Verify.MSTest, Reqnroll, ArchUnitNET. Do not introduce xUnit/NUnit/NetArchTest.
+Not every module has every kind (for example `Shared.Tests`, Website); check `repo-map` instead of assuming.
 
-- **Location:** `*.Infrastructure.Tests` projects
-- **Scope:** A component and its real dependencies (database, external HTTP)
-- **Must use:** Test containers or in-memory fakes; never production credentials
-- **Framework:** xUnit + test containers
+## Conventions
 
-### Architecture Tests
+- Test class: `<ClassUnderTest>Tests`. Test method: `<MethodUnderTest>_<Condition>_<ExpectedBehaviour>`, e.g. `Handle_ValidCommand_ReturnsSuccess`.
+- Arrange / Act / Assert, one logical assertion per test, no logic (loops, conditionals) in tests.
+- Reqnroll step text uses the personas "The user", "The external platform", "The time for code platform"; no HTTP verbs, status codes, class names or signatures. Step classes are `<Feature>Steps`. Reuse existing `[Binding]` steps before writing new ones (grep first).
+- Every new handler and validator gets a positive and a negative-path unit test; every Gherkin scenario gets bound steps.
+- Test data inline or in `TestData/`; deterministic (fixed GUIDs); no shared mutable state between tests.
+- `[Ignore]` is allowed only with `// TODO(review): flaky - <reason>` and an entry under Loose Ends.
 
-- **Location:** `*.Architecture.Tests` projects
-- **Scope:** Enforce layer boundaries and naming conventions using NetArchTest
-- **Rule set must cover:**
-  - Domain layer has no outward dependencies
-  - Application layer does not import Infrastructure or API
-  - All handlers follow `<Verb><Noun>Handler` naming
+## Running tests
 
-### Acceptance Tests (Reqnroll)
+Follow skill `quiet-dotnet`: scope to one project while iterating (`dotnet test tst/<Module>/<Project> --filter "FullyQualifiedName~<Name>"`), full solution once at the end. The trimming hook prints only failures. Delegate big runs to the `test-runner` subagent.
 
-- **Location:** `*.AcceptanceTests` projects (to be created per bounded context as scenarios are added)
-- **Scope:** Full feature scenarios from the Gherkin feature files
-- **Step definition conventions:**
-  - Subject personas: "The user", "The external platform", "The time for code platform"
-  - No HTTP verbs, status codes, class names, or method signatures in step text
-  - Step class naming: `<Feature>Steps`
+Swagger snapshot diffs are never accepted automatically: skill `swagger-snapshot-review`.
 
----
+## Quality gates
 
-## Naming Conventions
+| Gate | Command | Pass |
+| --- | --- | --- |
+| Red seen | Run the new test before the production change | Fails for the expected reason |
+| Green | `dotnet test tst/<Module>/<Project>` | 0 failures |
+| Final | `dotnet build TimeForCode.sln` then `dotnet test TimeForCode.sln --no-build` | Exit 0 (once, at the end or in review) |
+| No silent skips | Grep `\[Ignore\]` in `tst/` | None without `TODO(review)` |
 
-### Test method names
-
-All test method names **must** follow the pattern:
-
-```text
-<MethodUnderTest>_<Condition>_<ExpectedBehaviour>
-```
-
-Examples:
-
-- `Handle_ValidCommand_ReturnsSuccess`
-- `Validate_EmptyTitle_ReturnsFailure`
-- `RegisterProject_DuplicateId_ThrowsConflict`
-
-### Test class names
-
-```text
-<ClassUnderTest>Tests
-```
-
----
-
-## Coverage Requirements
-
-### Minimum gate (enforced in CI)
-
-| Test type | Minimum pass rate |
-|-----------|------------------|
-| Unit tests | 100 % of committed tests pass |
-| Integration tests | 100 % of committed tests pass |
-| Architecture tests | 100 % of committed tests pass |
-
-There is no numeric line-coverage requirement today, but every new public method introduced in a feature branch must have at least one positive-path unit test and one negative-path unit test.
-
-### New feature requirement
-
-When implementing a GitHub Issue, the implementation **must** include:
-
-- At least one unit test per new handler
-- At least one unit test per new validator (if applicable)
-- At least one Reqnroll step definition per Gherkin scenario
-
----
-
-## Failure Handling
-
-### Build failure
-
-If `dotnet build TimeForCode.sln --no-incremental` exits non-zero:
-
-1. Read all compiler errors from the output
-2. Fix every error before running tests
-3. Do not post an implementation log until the build is clean
-
-### Test failure
-
-If `dotnet test TimeForCode.sln --no-build` exits non-zero:
-
-1. Identify all failing test names and failure messages
-2. Fix each failure before proceeding
-3. If a test failure is pre-existing (not caused by the current branch), document it in the implementation log's Loose Ends section with a link to the failing test
-
-### Flaky tests
-
-If a test fails intermittently:
-
-1. Do not commit a `[Ignore]` or `[Skip]` attribute without a tracking comment `// TODO(review): flaky – <reason>`
-2. Add the skipped test to the Loose Ends section of the implementation log
-
----
-
-## Test Data
-
-- All test data must be defined inline or in a `TestData/` folder within the test project
-- No shared mutable test state between tests
-- Database seeds for integration tests must be deterministic (fixed GUIDs or known values)
-
----
-
-## Quality Gates Summary
-
-| Gate | Command | Pass condition |
-|------|---------|----------------|
-| Build | `dotnet build TimeForCode.sln --no-incremental` | Exit code 0 |
-| Unit + Integration tests | `dotnet test TimeForCode.sln --no-build` | Exit code 0, 0 failures |
-| Architecture tests | Included in above | All rule assertions pass |
-| No skipped tests without comment | `grep -r "\[Skip\]\|\[Ignore\]" tst/` | Zero results, or all have `TODO(review):` comment |
+A failing test that pre-dates the branch is listed under Loose Ends with a link; it is not "fixed" by weakening the test.

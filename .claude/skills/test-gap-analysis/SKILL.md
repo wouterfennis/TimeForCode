@@ -1,6 +1,7 @@
 ---
 name: test-gap-analysis
 description: "Analyses the TimeForCode test suite to identify untested public methods, missing negative-path tests, and bounded contexts lacking architecture tests. Produces a prioritised gap report. Use after implementing a feature, as part of release readiness, or when the maintenance agent runs its hygiene pass."
+allowed-tools: Read, Grep, Glob
 ---
 
 # Test Gap Analysis Skill
@@ -8,7 +9,6 @@ description: "Analyses the TimeForCode test suite to identify untested public me
 This skill produces a structured report of test coverage gaps in the **TimeForCode** repository. It does not write or modify any files. Follow every step in order.
 
 ---
-
 
 ## Trigger Conditions
 
@@ -24,7 +24,7 @@ Invoke this skill when:
 ## Required Inputs
 
 | Input | Source |
-|-------|--------|
+| --- | --- |
 | Authenticated `dotnet` SDK | Verified before running any command |
 | Repository root path | Working directory |
 
@@ -137,7 +137,7 @@ Record any scenario with no matching step definition as `MISSING_STEP_DEFINITION
 These gaps mean a production code path has zero test coverage.
 
 | Bounded Context | Class | Method | Gap type |
-|----------------|-------|--------|----------|
+| --- | --- | --- | --- |
 | Authorization | RegisterUserHandler | Handle | MISSING_TEST |
 | … | … | … | … |
 
@@ -148,7 +148,7 @@ These gaps mean a production code path has zero test coverage.
 These gaps indicate missing negative-path or edge-case coverage.
 
 | Bounded Context | Class | Gap type |
-|----------------|-------|----------|
+| --- | --- | --- |
 | Donation | RegisterProjectHandler | MISSING_NEGATIVE_PATH |
 | … | … | … |
 
@@ -159,7 +159,7 @@ These gaps indicate missing negative-path or edge-case coverage.
 These gaps are low-risk but should be addressed in a maintenance pass.
 
 | Bounded Context | Gap type | Detail |
-|----------------|----------|--------|
+| --- | --- | --- |
 | Website | MISSING_ARCH_TESTS | No architecture test project found |
 | … | … | … |
 
@@ -179,7 +179,7 @@ These gaps are low-risk but should be addressed in a maintenance pass.
 ## Error Handling
 
 | Symptom | Action |
-|---------|--------|
+| --- | --- |
 | `dotnet` not found | Stop and report .NET SDK is not installed |
 | No `.feature` files found | Skip Step 5 and record as info: "No Gherkin scenarios defined yet" |
 | `Get-ChildItem` not available | Use `find` as fallback for file listing |

@@ -1,6 +1,7 @@
 ---
 name: dotnet-format
 description: "Runs dotnet format on the TimeForCode solution to fix whitespace, import ordering, and final newline issues. Use when: fixing code style errors, fixing WHITESPACE errors, fixing IMPORTS ordering, fixing FINALNEWLINE errors, running dotnet format, formatting the solution, fixing formatter CI failures."
+allowed-tools: Bash(dotnet format:*), Bash(dotnet build:*)
 argument-hint: "Optionally specify a severity level (info, warn, error) or a specific project path"
 ---
 
@@ -9,7 +10,6 @@ argument-hint: "Optionally specify a severity level (info, warn, error) or a spe
 This skill runs `dotnet format` against the **TimeForCode** solution to fix code style violations. Follow every step in order.
 
 ---
-
 
 ## Trigger Conditions
 
@@ -24,7 +24,7 @@ Invoke this skill when:
 ## Required Inputs
 
 | Input | Source |
-|-------|--------|
+| --- | --- |
 | Authenticated `dotnet` SDK | Verified before running any command |
 | `TimeForCode.sln` at repository root | Must exist |
 
@@ -82,7 +82,7 @@ Present the list of changed files to the calling agent or user.
 ## Error Handling
 
 | Symptom | Action |
-|---------|--------|
+| --- | --- |
 | `dotnet` not found | Stop and report .NET SDK is not installed |
 | Build fails after formatting | Revert formatting changes and report which file caused the regression |
 | No files changed | Report that all files already comply with the style rules |

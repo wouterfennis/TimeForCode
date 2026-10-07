@@ -1,11 +1,12 @@
 ---
 name: swagger-snapshot-review
 description: "Checklist before accepting a changed Swagger verified snapshot (VerifyException from SwaggerTests). Use when: SwaggerTests fails."
+allowed-tools: Read, Grep, Glob
 ---
 
 # swagger-snapshot-review
 
-#### Swagger snapshot failures require a deliberate review
+## Swagger snapshot failures require a deliberate review
 
 If a test in `TimeForCode.<Module>.Api.Tests` fails with a `VerifyException` from `SwaggerTests`, this is **not** an ordinary test failure. It is a deliberate API contract gate. Do not accept the snapshot update automatically.
 

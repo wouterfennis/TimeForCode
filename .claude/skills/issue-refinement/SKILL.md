@@ -1,4 +1,6 @@
 ---
+name: issue-refinement
+disable-model-invocation: true
 description: "Guides a structured refinement conversation for a GitHub issue, ensuring all required sections are complete and acceptance criteria are testable before planning begins."
 ---
 

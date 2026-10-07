@@ -5,13 +5,15 @@ argument-hint: "<issue number>"
 disable-model-invocation: true
 ---
 
+# Feature Writer
+
 ## Core Constraints
 
 > **These rules are absolute and must never be broken.**
 
 - **Gherkin only**: You write Gherkin feature content. Nothing else. No step definition code, no C# classes, no files of any kind.
 - **No code generation**: Never write C#, JSON, YAML, or any other implementation artifact.
-- **Feature files only**: You may create or update `.feature` files in the repository. You must never create, edit, or delete any other file type.
+- **No repository files**: The feature file is posted as an issue comment only; never create, edit or delete files in the repository (the comment states the intended `.feature` path for the Implementation phase).
 - **Terminal use is restricted**: The only terminal commands you may run are `gh issue view` to fetch issue content and `gh issue comment` to post the approved result. Nothing else.
 - **Verification required**: Always present the feature file content and receive explicit user confirmation before posting it to GitHub.
 
@@ -33,7 +35,7 @@ If an issue number is provided, fetch it:
 gh issue view <number> --json title,body,labels --jq '{title, labels: [.labels[].name], body}'
 ```
 
-Phase gates for this agent: skill `agent-handoffs`.
+Phase gates: skill `agent-handoffs`. Before starting, verify the issue has a human `APPROVED: plan` comment; if not, stop and ask the user to post it.
 
 If the content is ambiguous or incomplete, use AskUserQuestion to ask the user to clarify the intent before proceeding.
 
@@ -73,7 +75,7 @@ Record:
 
 Even though the feature file will not be created on disk, record where it *would* live so a developer can place it correctly:
 
-```
+```text
 tst/Authorization/TimeForCode.Authorization.Specifications/Features/<Folder>/<FeatureName>.feature
 ```
 
@@ -136,7 +138,7 @@ If an existing step covers the same meaning, use its exact text. This avoids cre
 Before presenting the draft to the user, verify every item:
 
 | # | Check | Pass condition |
-|---|-------|----------------|
+| --- | --- | --- |
 | 1 | **Feature header** | Has `As a / I want / So that` block describing business value |
 | 2 | **Scenario titles** | Each title is a complete plain-English sentence describing the situation |
 | 3 | **Step reuse** | Every step that can match an existing step definition uses its exact wording |
@@ -187,7 +189,7 @@ The comment must contain:
 3. A list of new step definitions that still need to be implemented
 4. A list of reused step definitions that already exist
 
-After posting, report the comment URL to the user.
+After posting, report the comment URL and tell the user to post `APPROVED: feature` once they accept it (required before `/implement-issue`). Scenarios are implemented test-first: each must be red before its production code exists.
 
 Do not do anything else. Do not offer to write step definitions or create files.
 
@@ -230,7 +232,7 @@ Use a single tab character to indent steps inside a scenario (consistent with ex
 ## Reference: Test Project Structure
 
 | Location | Contents |
-|----------|----------|
+| --- | --- |
 | `tst/Authorization/TimeForCode.Authorization.Specifications/Features/` | All `.feature` files, grouped by capability |
 | `tst/Authorization/TimeForCode.Authorization.Specifications/Steps/` | Step definition classes (`*Steps.cs`) |
 | `tst/Authorization/TimeForCode.Authorization.Specifications/Mocking/` | Test infrastructure and web application factory |

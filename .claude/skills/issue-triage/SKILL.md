@@ -1,6 +1,8 @@
 ---
 name: issue-triage
 description: "Reviews newly opened GitHub issues, validates completeness against the issue template, assigns labels, and posts a structured triage comment. Use when an issue lacks labels, has an incomplete body, or needs an initial quality assessment before planning work."
+allowed-tools: Bash(gh issue view:*), Bash(gh issue edit:*), Bash(gh issue comment:*), Bash(gh label list:*)
+disable-model-invocation: true
 ---
 
 # Issue Triage Skill
@@ -9,21 +11,20 @@ This skill validates a GitHub issue against the project's quality standards and 
 
 ---
 
-
 ## Trigger Conditions
 
 Invoke this skill when:
 
 - A new issue is opened and has no labels
 - An issue body is suspected to be incomplete
-- The Orchestrator or Plan agent requests an initial quality assessment
+- The Plan phase requests an initial quality assessment
 
 ---
 
 ## Required Inputs
 
 | Input | Source |
-|-------|--------|
+| --- | --- |
 | Issue number | Provided by the calling agent |
 | Authenticated `gh` CLI | Verified before running any command |
 
@@ -64,7 +65,7 @@ If the title is invalid, set flag `TITLE_INVALID=true`.
 Check that the issue body contains each of the following required sections:
 
 | Required section | Pass condition |
-|-----------------|----------------|
+| --- | --- |
 | `## Motivation / Context` | Section is present and non-empty |
 | `## Proposed Solution` | Section is present and non-empty |
 | `## Affected Areas` | Section is present and lists at least one item |
@@ -85,7 +86,7 @@ gh label list
 Apply label mapping:
 
 | Issue type in title | Label |
-|--------------------|-------|
+| --- | --- |
 | `Feature` | `enhancement` |
 | `Bug` | `bug` |
 | `Improvement` | `enhancement` |
@@ -115,7 +116,7 @@ $comment = @"
 ### Checklist
 
 | Check | Status |
-|-------|--------|
+| --- | --- |
 | Title format (`[Type]: description`) | [✅ Pass | ❌ Fail] |
 | Motivation / Context section | [✅ Pass | ❌ Missing or empty] |
 | Proposed Solution section | [✅ Pass | ❌ Missing or empty] |
@@ -151,7 +152,7 @@ Return one of the following to the calling agent:
 ## Error Handling
 
 | Symptom | Action |
-|---------|--------|
+| --- | --- |
 | `gh: command not found` | Stop and instruct user to install `gh` CLI |
 | Issue not found (404) | Stop and report the issue number may be wrong |
 | Label does not exist | Skip that label; do not fail |

@@ -11,15 +11,53 @@
       "Bash(dotnet format:*)",
       "Bash(dotnet list:*)",
       "Bash(dotnet build:*)",
+      "Bash(dotnet test:*)",
+      "Bash(dotnet restore:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git show:*)",
+      "Bash(git branch:*)",
       "Bash(gh issue view:*)",
+      "Bash(gh issue list:*)",
+      "Bash(gh pr view:*)",
+      "Bash(gh pr list:*)",
+      "Bash(gh pr diff:*)",
       "Bash(gh auth status)",
-      "Bash(podman:*)"
+      "Bash(podman ps:*)",
+      "Bash(podman logs:*)",
+      "Bash(podman compose up:*)",
+      "Bash(podman compose down:*)",
+      "Bash(podman build:*)"
+    ],
+    "ask": [
+      "Bash(git push:*)",
+      "Bash(git reset --hard:*)",
+      "Bash(git clean:*)",
+      "Bash(gh pr merge:*)",
+      "Bash(gh issue close:*)",
+      "Bash(podman rm:*)",
+      "Bash(podman system prune:*)",
+      "Bash(podman volume rm:*)"
     ],
     "deny": [
       "Read(./node_modules/**)",
+      "Read(./**/node_modules/**)",
       "Read(./**/obj/**)",
+      "Read(./**/bin/**)",
+      "Read(./**/TestResults/**)",
+      "Read(./.git/**)",
       "Read(./package-lock.json)",
-      "Read(./docs/images/**)"
+      "Read(./docs/images/**)",
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(./**/.env)",
+      "Read(./**/.env.*)",
+      "Read(./**/appsettings.*.local.json)",
+      "Read(./**/secrets.json)",
+      "Read(./**/*.pfx)",
+      "Read(./**/*.key)",
+      "Read(./**/*.pem)"
     ]
   },
   "hooks": {
@@ -27,10 +65,16 @@
       { "hooks": [ { "type": "command", "command": "pwsh -NoProfile -File \"$CLAUDE_PROJECT_DIR/.claude/hooks/session-start.ps1\"", "timeout": 15 } ] }
     ],
     "PreToolUse": [
-      { "matcher": "Bash|Read|Grep|Glob", "hooks": [ { "type": "command", "command": "pwsh -NoProfile -File \"$CLAUDE_PROJECT_DIR/.claude/hooks/pre-tool-use.ps1\"", "timeout": 10 } ] }
+      { "matcher": "Bash|PowerShell|Read|Grep|Glob", "hooks": [ { "type": "command", "command": "pwsh -NoProfile -File \"$CLAUDE_PROJECT_DIR/.claude/hooks/pre-tool-use.ps1\"", "timeout": 10 } ] }
+    ],
+    "PostToolUse": [
+      { "matcher": "Edit|Write|MultiEdit", "hooks": [ { "type": "command", "command": "pwsh -NoProfile -File \"$CLAUDE_PROJECT_DIR/.claude/hooks/format-cs.ps1\"", "timeout": 60 } ] }
     ],
     "PreCompact": [
       { "hooks": [ { "type": "command", "command": "pwsh -NoProfile -File \"$CLAUDE_PROJECT_DIR/.claude/hooks/pre-compact.ps1\"", "timeout": 15 } ] }
+    ],
+    "Stop": [
+      { "hooks": [ { "type": "command", "command": "pwsh -NoProfile -File \"$CLAUDE_PROJECT_DIR/.claude/hooks/stop-check.ps1\"", "timeout": 10 } ] }
     ]
   }
 }

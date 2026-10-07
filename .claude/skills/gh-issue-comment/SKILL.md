@@ -1,6 +1,7 @@
 ---
 name: gh-issue-comment
 description: "Posts a prepared feature file as a comment on an existing GitHub issue using the GitHub CLI. Use this skill when the FeatureWriter agent has a fully approved Gherkin feature file ready to attach to an issue."
+allowed-tools: Bash(gh issue comment:*), Bash(gh issue view:*)
 ---
 
 # GitHub CLI Issue Comment
@@ -8,7 +9,6 @@ description: "Posts a prepared feature file as a comment on an existing GitHub i
 This skill posts an approved Gherkin feature file as a comment on a GitHub issue via the `gh` CLI. Follow every step in order.
 
 ---
-
 
 ## Trigger Conditions
 
@@ -22,7 +22,7 @@ Invoke this skill when:
 ## Required Inputs
 
 | Input | Source |
-|-------|--------|
+| --- | --- |
 | Approved Gherkin feature file content | Provided by the FeatureWriter agent |
 | Issue number | Provided by the calling agent |
 | Authenticated `gh` CLI | Verified in Step 1 |
@@ -64,9 +64,9 @@ If the output is different or an error occurs, instruct the user to navigate to 
 
 Write the comment body to a temporary file, then pass it to `gh` with `--body-file`. This avoids PowerShell here-string issues with multiline content containing backticks or special characters.
 
-1. Use `create_file` to write the comment body to `comment_body.md` at the repository root. The file must follow this structure:
+1. Use the Write tool to write the comment body to `$env:TEMP/comment_body.md` (outside the repository). The file must follow this structure:
 
-```markdown
+````markdown
 ## Prepared Feature File
 
 ```gherkin
@@ -80,18 +80,18 @@ Write the comment body to a temporary file, then pass it to `gh` with `--body-fi
 ### Reused step definitions
 
 <bulleted list of steps that already have implementations>
-```
+````
 
 1. Post the comment:
 
 ```powershell
-gh issue comment <issue-number> --body-file comment_body.md
+gh issue comment <issue-number> --body-file $env:TEMP/comment_body.md
 ```
 
 1. Delete the temporary file immediately after:
 
 ```powershell
-Remove-Item comment_body.md
+Remove-Item $env:TEMP/comment_body.md
 ```
 
 Replace `<issue-number>` with the actual issue number, and fill in the three sections from the approved draft.
@@ -103,7 +103,7 @@ Replace `<issue-number>` with the actual issue number, and fill in the three sec
 ## Error Handling
 
 | Symptom | Action |
-|---------|--------|
+| --- | --- |
 | `gh: command not found` | Instruct user to install the GitHub CLI and authenticate |
 | `Could not resolve to an issue` | Confirm the issue number with the user and retry |
 | Authentication error | Instruct user to run `gh auth login` |

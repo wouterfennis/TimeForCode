@@ -24,7 +24,7 @@ Invoke this skill when:
 ## Required Inputs
 
 | Input | Source |
-|-------|--------|
+| --- | --- |
 | Assembly path (`.dll`) | Located in Step 1 |
 | Trust level of the assembly | Known first-party/BCL/NuGet package vs. unknown/untrusted binary — determines which approach in Step 3 to use |
 | (Optional) Specific type or namespace of interest | Narrows the output in Steps 4–6 |
@@ -45,7 +45,7 @@ Invoke this skill when:
 Find the `.dll` before doing anything else. Common locations in this repo's environment:
 
 | Source | Typical path |
-|--------|-------------|
+| --- | --- |
 | NuGet package cache | `$env:USERPROFILE\.nuget\packages\<package-id-lowercase>\<version>\lib\<tfm>\*.dll` |
 | .NET reference assemblies (BCL surface for a target framework) | `C:\Program Files\dotnet\packs\<PackName>\<version>\ref\<tfm>\*.dll` |
 | .NET shared runtime (implementation assemblies) | `C:\Program Files\dotnet\shared\<PackName>\<version>\*.dll` |
@@ -66,7 +66,7 @@ Prefer the reference-assembly (`ref\`) copy when you only need the public API sh
 Pick the lightest approach that answers the question. Do not decompile an entire assembly just to check whether one method exists.
 
 | Need | Approach | Go to |
-|------|----------|-------|
+| --- | --- | --- |
 | Just the human-readable description of a type/member | XML doc companion file | Step 5 |
 | Names, signatures, overloads, generic constraints — nothing more | Reflection (trusted assembly) or `MetadataLoadContext` (untrusted assembly) | Step 3–4 |
 | Actual implementation / behaviour of a method | Decompilation | Step 6 |
@@ -172,7 +172,7 @@ Delete `.tmp-decompiled` (and any scratch console project from Step 3b) once you
 ## Error Handling
 
 | Symptom | Action |
-|---------|--------|
+| --- | --- |
 | `Add-Type`/`LoadFrom` throws `FileNotFoundException` for a dependency | The assembly has unresolved references; either add the missing dependency `.dll` to the same folder or switch to `MetadataLoadContext` with a `PathAssemblyResolver` that includes the runtime + NuGet package directories |
 | `Assembly.LoadFrom` throws `BadImageFormatException` | Architecture/target-framework mismatch (e.g. inspecting a .NET Framework assembly from a .NET SDK PowerShell host) — use `ilspycmd` instead, it does not need to load the assembly into the running process |
 | No companion `.xml` doc file exists | Skip Step 5; rely on signatures from Step 3–4 and, if needed, decompiled bodies from Step 6 |

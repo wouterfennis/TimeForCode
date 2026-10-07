@@ -1,4 +1,6 @@
 ---
+name: root-cause-analysis
+disable-model-invocation: true
 description: "Guides a structured root cause analysis for a bug, test failure, or production incident in the TimeForCode project. Produces a five-why chain, a timeline, and a remediation plan."
 ---
 
@@ -46,7 +48,7 @@ Ask the contributor to reconstruct the sequence of events:
 Produce a timeline table:
 
 | Time | Event |
-|------|-------|
+| --- | --- |
 | … | … |
 
 ---
@@ -82,7 +84,7 @@ Stop when you reach a cause that:
 Classify the root cause into one of these categories:
 
 | Category | Description |
-|----------|-------------|
+| --- | --- |
 | Missing test | A test would have caught this before it reached production |
 | Incomplete error handling | An error path was not handled or was silently swallowed |
 | Documentation gap | A developer misunderstood intended behaviour due to missing or wrong docs |
@@ -137,7 +139,7 @@ When [action], [component] [actual outcome] instead of [expected outcome].
 ### Timeline
 
 | Time | Event |
-|------|-------|
+| --- | --- |
 | … | … |
 
 ---
@@ -145,7 +147,7 @@ When [action], [component] [actual outcome] instead of [expected outcome].
 ### Five-Why Chain
 
 | Why | Cause |
-|-----|-------|
+| --- | --- |
 | 1 | … |
 | 2 | … |
 | 3 | … |

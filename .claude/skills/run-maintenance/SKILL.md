@@ -25,7 +25,7 @@ You are a maintenance specialist for the **TimeForCode** project. Your purpose i
 The full maintenance pass covers these tasks in order. If a subset was requested, run only the named tasks.
 
 | # | Task | Skill |
-|---|------|-------|
+| --- | --- | --- |
 | 1 | Markdown lint | `markdown-lint` (via MarkdownLinter agent) |
 | 2 | Documentation alignment | `doc-align` |
 | 3 | Dependency audit and update | `dependency-update` |
@@ -202,7 +202,7 @@ This preserves the MarkdownLinter agent's exclusive ownership of Markdown qualit
 ## Reference: Skills Used
 
 | Skill | Purpose |
-|-------|---------|
+| --- | --- |
 | `markdown-lint` | Invoked by the MarkdownLinter agent — not directly |
 | `doc-align` | Documentation currency verification |
 | `dependency-update` | NuGet and npm dependency health |

@@ -7,7 +7,7 @@ description: "Single, parent and child GitHub issue body templates plus gh submi
 
 Draft structures and `gh` submission snippets for Plan agent issues (single, parent, child).
 
-### Step 4 — Draft the GitHub Issue(s)
+## Step 4 — Draft the GitHub Issue(s)
 
 Compose the draft(s) using the structure below. Every issue body must follow the same structure as the `.github/ISSUE_TEMPLATE/planned-work.yml` template.
 
@@ -21,7 +21,7 @@ Compose the draft(s) using the structure below. Every issue body must follow the
 
 **Single-issue draft structure (used when Step 3 did not split the work):**
 
-```
+```text
 **Title:** [Type]: Short description
 
 **Labels:** label1, label2
@@ -55,7 +55,7 @@ Links to relevant docs, related issues, architecture diagrams, or other context.
 
 **Parent issue draft structure (used when Step 3 split the work):**
 
-```
+```text
 **Title:** [Type]: Short description of the overall outcome
 
 **Labels:** label1, label2, epic
@@ -93,7 +93,7 @@ Links to relevant docs, related issues, architecture diagrams, or other context.
 
 **Child issue draft structure:**
 
-```
+```text
 **Title:** [Type]: Short description of this slice
 
 **Labels:** label1, label2, agent-phase:feature-writer OR agent-phase:implementation-only, (agent-phase:skip-markdown-lint if applicable)
@@ -240,4 +240,3 @@ If this repository's plan tier supports GitHub's native sub-issue relationship, 
 
 **Confirm success:**
 Report every created issue's URL to the user — the parent's first, then each child in the order they were drafted.
-
