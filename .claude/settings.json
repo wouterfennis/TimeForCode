@@ -6,6 +6,15 @@
     "BASH_MAX_OUTPUT_LENGTH": "20000"
   },
   "permissions": {
+    "allow": [
+      "Bash(markdownlint:*)",
+      "Bash(dotnet format:*)",
+      "Bash(dotnet list:*)",
+      "Bash(dotnet build:*)",
+      "Bash(gh issue view:*)",
+      "Bash(gh auth status)",
+      "Bash(podman:*)"
+    ],
     "deny": [
       "Read(./node_modules/**)",
       "Read(./**/obj/**)",
@@ -15,13 +24,13 @@
   },
   "hooks": {
     "SessionStart": [
-      { "hooks": [ { "type": "command", "command": "pwsh -NoProfile -File \"$CLAUDE_PROJECT_DIR/.github/hooks/scripts/session-start.ps1\"", "timeout": 15 } ] }
+      { "hooks": [ { "type": "command", "command": "pwsh -NoProfile -File \"$CLAUDE_PROJECT_DIR/.claude/hooks/session-start.ps1\"", "timeout": 15 } ] }
     ],
     "PreToolUse": [
-      { "matcher": "Bash|Read|Grep|Glob", "hooks": [ { "type": "command", "command": "pwsh -NoProfile -File \"$CLAUDE_PROJECT_DIR/.github/hooks/scripts/pre-tool-use.ps1\"", "timeout": 10 } ] }
+      { "matcher": "Bash|Read|Grep|Glob", "hooks": [ { "type": "command", "command": "pwsh -NoProfile -File \"$CLAUDE_PROJECT_DIR/.claude/hooks/pre-tool-use.ps1\"", "timeout": 10 } ] }
     ],
     "PreCompact": [
-      { "hooks": [ { "type": "command", "command": "pwsh -NoProfile -File \"$CLAUDE_PROJECT_DIR/.github/hooks/scripts/pre-compact.ps1\"", "timeout": 15 } ] }
+      { "hooks": [ { "type": "command", "command": "pwsh -NoProfile -File \"$CLAUDE_PROJECT_DIR/.claude/hooks/pre-compact.ps1\"", "timeout": 15 } ] }
     ]
   }
 }

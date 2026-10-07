@@ -124,7 +124,7 @@ Opening the repository in VS Code (or GitHub Codespaces) and accepting the "Reop
 1. Provision a Debian Bookworm container with the .NET 10 SDK.
 2. Install Docker-outside-of-Docker so `docker compose up` works against the host daemon.
 3. Install the GitHub CLI so `gh` commands and agent skills work out of the box.
-4. Install all recommended VS Code extensions (C# Dev Kit, Docker, MongoDB, markdownlint, GitHub Copilot, GitHub Copilot Chat).
+4. Install all recommended VS Code extensions (C# Dev Kit, Docker, MongoDB, markdownlint).
 5. Run `dotnet tool restore` to install local tools (`reportgenerator`, `dotnet-sonarscanner`).
 
 Secrets and environment-specific values are **not** baked into the container. Copy `.env.real-github.example` to `.env.real-github` and fill in your credentials before running the full stack.
