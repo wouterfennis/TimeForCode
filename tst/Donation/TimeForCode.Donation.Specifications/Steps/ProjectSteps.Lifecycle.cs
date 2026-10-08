@@ -15,6 +15,7 @@ namespace TimeForCode.Donation.Specifications.Steps
     internal partial class ProjectSteps
     {
         private ProjectLifecycleResponse? _lifecycleResult;
+        private GetMaintainedProjectResult? _maintainedProject;
         private Project? _lifecycleProject;
         private ProjectTransitionResult? _donationCheck;
 
@@ -85,6 +86,45 @@ namespace TimeForCode.Donation.Specifications.Steps
         public Task WhenTheUserReactivatesTheProjectAsync()
         {
             return RunLifecycleActionAsync(id => _donationClient.ReactivateProjectAsync(id));
+        }
+
+        [Given("The user has a project in draft with the reviewer reason {string}")]
+        public void GivenTheUserHasAProjectInDraftWithTheReviewerReason(string reason)
+        {
+            SetupLifecycleProject(ProjectStatus.PendingApproval);
+            _lifecycleProject!.RequestChanges(reason);
+        }
+
+        [When("The user views their project")]
+        public async Task WhenTheUserViewsTheirProjectAsync()
+        {
+            try
+            {
+                _maintainedProject = await _donationClient.GetMaintainedProjectAsync(_lifecycleProject!.Id.ToString());
+            }
+            catch (ApiException<ProblemDetails> exception)
+            {
+                _exception = exception;
+            }
+            catch (ApiException exception)
+            {
+                _exception = exception;
+            }
+        }
+
+        [Then("The user sees the project in draft")]
+        public void ThenTheUserSeesTheProjectInDraft()
+        {
+            _exception.Should().BeNull();
+            _maintainedProject.Should().NotBeNull();
+            _maintainedProject!.Project.Status.ToString().Should().Be(ProjectStatus.Draft.ToString());
+        }
+
+        [Then("The user sees the reviewer reason {string}")]
+        public void ThenTheUserSeesTheReviewerReason(string reason)
+        {
+            _maintainedProject.Should().NotBeNull();
+            _maintainedProject!.ReviewerReason.Should().Be(reason);
         }
 
         [When("A donor donates to the project")]

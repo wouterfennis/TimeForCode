@@ -30,7 +30,7 @@ This document provides an explicit, feature-level view of what is implemented, p
 | Register a project (API endpoint) | ✅ | POST /api/v1/project fully implemented; fetches full GitHub metadata on publish |
 | Fetch project metadata from GitHub | ✅ | GithubRepositoryApiService calls the GitHub REST API on publish; locally routed to the Identity Provider Mock |
 | List projects | ✅ | GET /api/v1/project with pagination; lists `Active` projects only; no authentication required |
-| Project lifecycle (submit, approve, request changes, archive, re-activate) | ✅ | Back-end only; states Draft, PendingApproval, Active, Archived; approve and request-changes are admin-only, the rest maintainer-only; the `Active`-only donation rule is enforced in the domain but no donation endpoint exists yet |
+| Project lifecycle (submit, approve, request changes, archive, re-activate) | ✅ | Back-end only; maintainers read their own non-Active project and the reviewer reason via `GET /api/v1/project/{id}/manage`; states Draft, PendingApproval, Active, Archived; approve and request-changes are admin-only, the rest maintainer-only; the `Active`-only donation rule is enforced in the domain but no donation endpoint exists yet |
 | Search and filter projects | ❌ | No endpoint |
 | Update project details | ❌ | No endpoint |
 | Project milestone tracking | ❌ | Domain model exists; no API |

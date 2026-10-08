@@ -479,6 +479,88 @@
         }
       }
     },
+    "/api/v1/Project/{id}/manage": {
+      "get": {
+        "tags": [
+          "Project"
+        ],
+        "summary": "Returns the maintainer's own project in any lifecycle state, including the reviewer reason. Maintainer only.",
+        "operationId": "GetMaintainedProject",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The project identifier.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetMaintainedProjectResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/Project/{id}/submit": {
       "post": {
         "tags": [
@@ -1072,6 +1154,23 @@
         },
         "description": "Represents a paginated list of donor organizations."
       },
+      "GetMaintainedProjectResult": {
+        "required": [
+          "project"
+        ],
+        "type": "object",
+        "properties": {
+          "project": {
+            "$ref": "#/components/schemas/ProjectDto"
+          },
+          "reviewerReason": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
       "GetProjectsResponse": {
         "required": [
           "projects",
@@ -1153,6 +1252,115 @@
               "null",
               "string"
             ]
+          }
+        }
+      },
+      "ProjectDto": {
+        "required": [
+          "id",
+          "name",
+          "fullName",
+          "githubUrl",
+          "topics",
+          "defaultBranch",
+          "ownerLogin",
+          "ownerAvatarUrl",
+          "createdAt",
+          "updatedAt",
+          "pushedAt",
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "fullName": {
+            "type": "string"
+          },
+          "description": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "githubUrl": {
+            "type": "string"
+          },
+          "language": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "topics": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "stargazersCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "forksCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "openIssuesCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "homepage": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "defaultBranch": {
+            "type": "string"
+          },
+          "license": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "ownerLogin": {
+            "type": "string"
+          },
+          "ownerAvatarUrl": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "pushedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ProjectStatus"
           }
         }
       },

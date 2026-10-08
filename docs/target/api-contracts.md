@@ -108,7 +108,7 @@ Get a single project's full details.
 
 #### Project lifecycle ✅
 
-Implemented as `POST /api/v1/project/{id}/submit`, `/approve`, `/request-changes`, `/archive` and `/reactivate`; replaces the former single `PATCH .../status` design. See [docs/current/api-surface.md](../current/api-surface.md) for roles, payloads and status codes.
+Implemented as `POST /api/v1/project/{id}/submit`, `/approve`, `/request-changes`, `/archive` and `/reactivate`; replaces the former single `PATCH .../status` design. Maintainers read their own project in any state, including the reviewer reason, via `GET /api/v1/project/{id}/manage`. See [docs/current/api-surface.md](../current/api-surface.md) for roles, payloads and status codes.
 
 ---
 

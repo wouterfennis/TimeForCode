@@ -50,6 +50,7 @@ The Donation API is responsible for projects, donations, organizations, and cont
 | `POST` | `/api/v1/project` | ✅ | Registers a public GitHub repository as a project in state `Draft` (user JWT required); fetches full metadata from GitHub; returns 400 for private/archived repos, 409 if the repository is already registered in any state |
 | `GET` | `/api/v1/project` | ✅ | Returns a paginated list of `Active` projects; no authentication required |
 | `GET` | `/api/v1/project/{id}` | ✅ | Returns full project details of an `Active` project (404 otherwise); no authentication required |
+| `GET` | `/api/v1/project/{id}/manage` | ✅ | Maintainer reads their own project in any state (user JWT, owner only); returns `{ "project": { ..., "status" }, "reviewerReason" }`; `403` for another user's project, `404` unknown project |
 | `POST` | `/api/v1/project/{id}/submit` | ✅ | Maintainer submits a `Draft` project for review → `PendingApproval` (user JWT, owner only) |
 | `POST` | `/api/v1/project/{id}/approve` | ✅ | Administrator approves a `PendingApproval` project → `Active` (admin JWT, scope `admin`) |
 | `POST` | `/api/v1/project/{id}/request-changes` | ✅ | Administrator returns a `PendingApproval` project to `Draft`; body `{ "reason": "..." }` (max 1000 chars) is stored and returned as `reviewerReason` (admin JWT) |

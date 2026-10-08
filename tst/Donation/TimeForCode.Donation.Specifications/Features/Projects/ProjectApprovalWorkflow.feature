@@ -22,6 +22,13 @@ Scenario: Administrator requests changes on a pending project
 	Then The project is back in draft
 	And The project shows the reviewer reason "Please add a description"
 
+Scenario: Maintainer sees the reviewer reason on their draft project
+	Given The user has an access token
+	And The user has a project in draft with the reviewer reason "Please add a description"
+	When The user views their project
+	Then The user sees the project in draft
+	And The user sees the reviewer reason "Please add a description"
+
 Scenario: Maintainer archives an active project
 	Given The user has an access token
 	And The user has an active project

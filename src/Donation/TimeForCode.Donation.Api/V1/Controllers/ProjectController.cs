@@ -205,6 +205,56 @@ namespace TimeForCode.Donation.Api.V1.Controllers
             return Ok(response);
         }
 
+        /// <summary>
+        /// Returns the maintainer's own project in any lifecycle state, including the reviewer reason. Maintainer only.
+        /// </summary>
+        /// <param name="id">The project identifier.</param>
+        /// <returns>The project details, its lifecycle state and the reviewer reason when changes were requested.</returns>
+        [HttpGet("{id}/manage", Name = nameof(GetMaintainedProject))]
+        [ProducesResponseType(typeof(GetMaintainedProjectResult), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+        [Authorize(Policy = "ApiUser")]
+        public async Task<IActionResult> GetMaintainedProject(string id)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return BadRequest(new ProblemDetails
+                {
+                    Title = "User identity could not be determined",
+                    Detail = "The token does not contain a valid user identifier.",
+                    Status = StatusCodes.Status400BadRequest
+                });
+            }
+
+            var result = await _mediator.Send(new GetMaintainedProjectQuery { ProjectId = id, UserId = userId });
+
+            if (result.IsSuccess)
+            {
+                return Ok(result.Value);
+            }
+
+            if (result.FailureStatusCode == HttpStatusCode.Forbidden)
+            {
+                return StatusCode(StatusCodes.Status403Forbidden, new ProblemDetails
+                {
+                    Title = "Not authorized",
+                    Detail = result.ErrorMessage,
+                    Status = StatusCodes.Status403Forbidden
+                });
+            }
+
+            return NotFound(new ProblemDetails
+            {
+                Title = "Project not found",
+                Detail = result.ErrorMessage,
+                Status = StatusCodes.Status404NotFound
+            });
+        }
 
         /// <summary>
         /// Submits a draft project for review by an administrator. Maintainer only.
