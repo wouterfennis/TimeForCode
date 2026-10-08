@@ -100,9 +100,9 @@ graph LR
 
 | Component | Responsibility |
 | --- | --- |
-| `TimeForCode.Donation.Api` | REST endpoints for project publication, listing, detail, and unpublishing; donor-organization creation, listing, detail, update, and deletion |
+| `TimeForCode.Donation.Api` | REST endpoints for project registration, listing, detail, and the review lifecycle (submit, approve, request changes, archive, re-activate; policies `ApiUser` and `ApiAdmin`); donor-organization creation, listing, detail, update, and deletion |
 | `TimeForCode.Donation.Application` | MediatR command handlers; GitHub metadata fetch interface |
-| `TimeForCode.Donation.Domain` | Project entity; GithubSnapshot record; DocumentEntity base class |
+| `TimeForCode.Donation.Domain` | Project entity with lifecycle state machine (Draft, PendingApproval, Active, Archived); GithubSnapshot record; DocumentEntity base class |
 | `TimeForCode.Donation.Infrastructure` | MongoDB project repository; GitHub public REST API client |
 | `TimeForCode.Donation.Commands` | MediatR command, query, and result types |
 | `TimeForCode.Donation.Values` | Shared value objects (ProjectStatus enum) |

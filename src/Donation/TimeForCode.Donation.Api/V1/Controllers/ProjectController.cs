@@ -205,19 +205,105 @@ namespace TimeForCode.Donation.Api.V1.Controllers
             return Ok(response);
         }
 
+
         /// <summary>
-        /// Unpublishes (archives) a previously published project.
+        /// Submits a draft project for review by an administrator. Maintainer only.
         /// </summary>
         /// <param name="id">The project identifier.</param>
-        /// <returns>No content on success.</returns>
-        [HttpDelete("{id}", Name = nameof(UnpublishProject))]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        /// <returns>The new lifecycle state of the project.</returns>
+        [HttpPost("{id}/submit", Name = nameof(SubmitProjectForReview))]
+        [ProducesResponseType(typeof(ProjectLifecycleResult), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         [Authorize(Policy = "ApiUser")]
-        public async Task<IActionResult> UnpublishProject(string id)
+        public Task<IActionResult> SubmitProjectForReview(string id)
+        {
+            return SendAsMaintainerAsync(userId => new SubmitProjectForReviewCommand { ProjectId = id, UserId = userId });
+        }
+
+        /// <summary>
+        /// Approves a project that is pending approval, making it active. Administrator only.
+        /// </summary>
+        /// <param name="id">The project identifier.</param>
+        /// <returns>The new lifecycle state of the project.</returns>
+        [HttpPost("{id}/approve", Name = nameof(ApproveProject))]
+        [ProducesResponseType(typeof(ProjectLifecycleResult), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+        [Authorize(Policy = "ApiAdmin")]
+        public async Task<IActionResult> ApproveProject(string id)
+        {
+            var result = await _mediator.Send(new ApproveProjectCommand { ProjectId = id });
+            return ToActionResult(result);
+        }
+
+        /// <summary>
+        /// Sends a project that is pending approval back to draft with the reviewer reason. Administrator only.
+        /// </summary>
+        /// <param name="id">The project identifier.</param>
+        /// <param name="request">The reason the changes are requested.</param>
+        /// <returns>The new lifecycle state of the project including the reviewer reason.</returns>
+        [HttpPost("{id}/request-changes", Name = nameof(RequestProjectChanges))]
+        [ProducesResponseType(typeof(ProjectLifecycleResult), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+        [Authorize(Policy = "ApiAdmin")]
+        public async Task<IActionResult> RequestProjectChanges(string id, RequestProjectChangesRequest request)
+        {
+            var result = await _mediator.Send(new RequestProjectChangesCommand { ProjectId = id, Reason = request.Reason });
+            return ToActionResult(result);
+        }
+
+        /// <summary>
+        /// Archives an active project. Maintainer only.
+        /// </summary>
+        /// <param name="id">The project identifier.</param>
+        /// <returns>The new lifecycle state of the project.</returns>
+        [HttpPost("{id}/archive", Name = nameof(ArchiveProject))]
+        [ProducesResponseType(typeof(ProjectLifecycleResult), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+        [Authorize(Policy = "ApiUser")]
+        public Task<IActionResult> ArchiveProject(string id)
+        {
+            return SendAsMaintainerAsync(userId => new ArchiveProjectCommand { ProjectId = id, UserId = userId });
+        }
+
+        /// <summary>
+        /// Re-activates an archived project. Maintainer only.
+        /// </summary>
+        /// <param name="id">The project identifier.</param>
+        /// <returns>The new lifecycle state of the project.</returns>
+        [HttpPost("{id}/reactivate", Name = nameof(ReactivateProject))]
+        [ProducesResponseType(typeof(ProjectLifecycleResult), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+        [Authorize(Policy = "ApiUser")]
+        public Task<IActionResult> ReactivateProject(string id)
+        {
+            return SendAsMaintainerAsync(userId => new ReactivateProjectCommand { ProjectId = id, UserId = userId });
+        }
+
+        private async Task<IActionResult> SendAsMaintainerAsync(Func<string, IRequest<Result<ProjectLifecycleResult>>> createCommand)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
@@ -230,30 +316,38 @@ namespace TimeForCode.Donation.Api.V1.Controllers
                 });
             }
 
-            var command = new UnpublishProjectCommand { ProjectId = id, UserId = userId };
-            var result = await _mediator.Send(command);
+            var result = await _mediator.Send(createCommand(userId));
+            return ToActionResult(result);
+        }
 
-            if (result.IsFailure)
+        private IActionResult ToActionResult(Result<ProjectLifecycleResult> result)
+        {
+            if (result.IsSuccess)
             {
-                if (result.FailureStatusCode == HttpStatusCode.Forbidden)
-                {
-                    return StatusCode(StatusCodes.Status403Forbidden, new ProblemDetails
-                    {
-                        Title = "Not authorized",
-                        Detail = result.ErrorMessage,
-                        Status = StatusCodes.Status403Forbidden
-                    });
-                }
+                return Ok(result.Value);
+            }
 
-                return NotFound(new ProblemDetails
+            return result.FailureStatusCode switch
+            {
+                HttpStatusCode.Forbidden => StatusCode(StatusCodes.Status403Forbidden, new ProblemDetails
+                {
+                    Title = "Not authorized",
+                    Detail = result.ErrorMessage,
+                    Status = StatusCodes.Status403Forbidden
+                }),
+                HttpStatusCode.Conflict => Conflict(new ProblemDetails
+                {
+                    Title = "Transition not allowed",
+                    Detail = result.ErrorMessage,
+                    Status = StatusCodes.Status409Conflict
+                }),
+                _ => NotFound(new ProblemDetails
                 {
                     Title = "Project not found",
                     Detail = result.ErrorMessage,
                     Status = StatusCodes.Status404NotFound
-                });
-            }
-
-            return NoContent();
+                })
+            };
         }
     }
 }

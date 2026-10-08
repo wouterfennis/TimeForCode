@@ -14,7 +14,7 @@ using TimeForCode.Donation.Values;
 namespace TimeForCode.Donation.Specifications.Steps
 {
     [Binding]
-    internal class ProjectSteps
+    internal partial class ProjectSteps
     {
         private readonly IDonationClient _donationClient;
         private readonly IServiceProvider _provider;
@@ -39,7 +39,7 @@ namespace TimeForCode.Donation.Specifications.Steps
                 Id = new ObjectId(Constants.TestProjectId),
                 Snapshot = ProjectBuilder.BuildSnapshot(),
                 GithubRepositoryUrl = new Uri(Constants.TestGithubRepositoryUrl),
-                Status = TimeForCode.Donation.Values.ProjectStatus.Published,
+                Status = TimeForCode.Donation.Values.ProjectStatus.Active,
                 PublishedByUserId = "another-user-id",
                 PublishedAt = new DateTimeOffset(2024, 1, 1, 0, 0, 0, TimeSpan.Zero)
             };
@@ -85,30 +85,10 @@ namespace TimeForCode.Donation.Specifications.Steps
                 .ReturnsAsync(Result<GithubSnapshot>.Failure("Failed to retrieve repository information from GitHub."));
         }
 
-        [Given("The user has previously unpublished the repository on the time for code platform")]
-        public void GivenTheUserHasPreviouslyUnpublishedTheRepositoryOnTheTimeForCodePlatform()
-        {
-            var archivedProject = new Project
-            {
-                Id = new ObjectId(Constants.TestProjectId),
-                Snapshot = ProjectBuilder.BuildSnapshot(),
-                GithubRepositoryUrl = new Uri(Constants.TestGithubRepositoryUrl),
-                Status = TimeForCode.Donation.Values.ProjectStatus.Archived,
-                PublishedByUserId = Constants.TestUserId,
-                PublishedAt = new DateTimeOffset(2024, 1, 1, 0, 0, 0, TimeSpan.Zero)
-            };
-
-            var mockProjectRepository = _provider.GetRequiredService<Mock<IProjectRepository>>();
-            mockProjectRepository.Setup(x => x.GetByGithubUrlAsync(It.IsAny<Uri>()))
-                .ReturnsAsync(archivedProject);
-            mockProjectRepository.Setup(x => x.UpdateAsync(It.IsAny<Project>()))
-                .Returns(Task.CompletedTask);
-        }
-
         [Given("The user has already published the repository on the time for code platform")]
         public void GivenTheUserHasAlreadyPublishedTheRepositoryOnTheTimeForCodePlatform()
         {
-            var existingProject = ProjectBuilder.BuildPublished();
+            var existingProject = ProjectBuilder.BuildActive();
 
             var mockProjectRepository = _provider.GetRequiredService<Mock<IProjectRepository>>();
             mockProjectRepository.Setup(x => x.GetByGithubUrlAsync(It.IsAny<Uri>()))
@@ -126,20 +106,20 @@ namespace TimeForCode.Donation.Specifications.Steps
         [Given("There are published projects on the time for code platform")]
         public void GivenThereArePublishedProjectsOnTheTimeForCodePlatform()
         {
-            var project = ProjectBuilder.BuildPublished();
+            var project = ProjectBuilder.BuildActive();
             var mockProjectRepository = _provider.GetRequiredService<Mock<IProjectRepository>>();
-            mockProjectRepository.Setup(x => x.GetAllPublishedAsync(It.IsAny<int>(), It.IsAny<int>()))
+            mockProjectRepository.Setup(x => x.GetAllActiveAsync(It.IsAny<int>(), It.IsAny<int>()))
                 .ReturnsAsync(((IReadOnlyList<Project>)new List<Project> { project }, 1));
         }
 
         [Given("There is a published project on the time for code platform")]
         public void GivenThereIsAPublishedProjectOnTheTimeForCodePlatform()
         {
-            var project = ProjectBuilder.BuildPublished();
+            var project = ProjectBuilder.BuildActive();
             var mockProjectRepository = _provider.GetRequiredService<Mock<IProjectRepository>>();
             mockProjectRepository.Setup(x => x.GetByIdAsync(project.Id.ToString()))
                 .ReturnsAsync(project);
-            mockProjectRepository.Setup(x => x.GetAllPublishedAsync(It.IsAny<int>(), It.IsAny<int>()))
+            mockProjectRepository.Setup(x => x.GetAllActiveAsync(It.IsAny<int>(), It.IsAny<int>()))
                 .ReturnsAsync(((IReadOnlyList<Project>)new List<Project> { project }, 1));
 
             _registeredProjectId = project.Id.ToString();
@@ -151,7 +131,7 @@ namespace TimeForCode.Donation.Specifications.Steps
             // The published listing already excludes archived projects via the repository mock
             // Override to return empty list (simulating the archived project is filtered out)
             var mockProjectRepository = _provider.GetRequiredService<Mock<IProjectRepository>>();
-            mockProjectRepository.Setup(x => x.GetAllPublishedAsync(It.IsAny<int>(), It.IsAny<int>()))
+            mockProjectRepository.Setup(x => x.GetAllActiveAsync(It.IsAny<int>(), It.IsAny<int>()))
                 .ReturnsAsync(((IReadOnlyList<Project>)new List<Project>(), 0));
         }
 
@@ -169,34 +149,6 @@ namespace TimeForCode.Donation.Specifications.Steps
                 {
                     GithubRepositoryUrl = new Uri(Constants.TestGithubRepositoryUrl)
                 });
-            }
-            catch (ApiException<ProblemDetails> exception)
-            {
-                _exception = exception;
-            }
-            catch (ApiException exception)
-            {
-                _exception = exception;
-            }
-        }
-
-        [When("The user unpublishes the project on the time for code platform")]
-        public async Task WhenTheUserUnpublishesTheProjectOnTheTimeForCodePlatformAsync()
-        {
-            var projectId = _registeredProjectId ?? Constants.TestProjectId;
-
-            var mockProjectRepository = _provider.GetRequiredService<Mock<IProjectRepository>>();
-            mockProjectRepository.Setup(x => x.UpdateAsync(It.IsAny<Project>()))
-                .Callback<Project>(_ =>
-                {
-                    mockProjectRepository.Setup(x => x.GetAllPublishedAsync(It.IsAny<int>(), It.IsAny<int>()))
-                        .ReturnsAsync(((IReadOnlyList<Project>)new List<Project>(), 0));
-                })
-                .Returns(Task.CompletedTask);
-
-            try
-            {
-                await _donationClient.UnpublishProjectAsync(projectId);
             }
             catch (ApiException<ProblemDetails> exception)
             {
@@ -317,26 +269,6 @@ namespace TimeForCode.Donation.Specifications.Steps
         {
             _exception.Should().NotBeNull();
             _exception!.StatusCode.Should().Be(StatusCodes.Status401Unauthorized);
-        }
-
-        [Then("The project is archived on the time for code platform")]
-        public void ThenTheProjectIsArchivedOnTheTimeForCodePlatform()
-        {
-            _exception.Should().BeNull();
-
-            var mockProjectRepository = _provider.GetRequiredService<Mock<IProjectRepository>>();
-            mockProjectRepository.Verify(x => x.UpdateAsync(It.Is<Project>(p =>
-                p.Status == TimeForCode.Donation.Values.ProjectStatus.Archived
-            )), Times.Once);
-        }
-
-        [Then("The project no longer appears in the public project listing")]
-        public async Task ThenTheProjectNoLongerAppearsInThePublicProjectListingAsync()
-        {
-            var projectId = _registeredProjectId ?? Constants.TestProjectId;
-
-            var result = await _donationClient.GetProjectsAsync(null, null);
-            result.Projects.Should().NotContain(p => p.Id == projectId);
         }
 
         [Then("A paginated list of projects is returned")]

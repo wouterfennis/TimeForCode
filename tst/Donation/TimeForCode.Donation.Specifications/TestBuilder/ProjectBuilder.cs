@@ -6,7 +6,12 @@ namespace TimeForCode.Donation.Specifications.TestBuilder
 {
     internal static class ProjectBuilder
     {
-        internal static Project BuildPublished(string? id = null)
+        internal static Project BuildActive(string? id = null)
+        {
+            return Build(ProjectStatus.Active, Constants.TestUserId, id);
+        }
+
+        internal static Project Build(ProjectStatus status, string ownerId, string? id = null)
         {
             var objectId = id != null ? new ObjectId(id) : new ObjectId(Constants.TestProjectId);
             return new Project
@@ -14,8 +19,8 @@ namespace TimeForCode.Donation.Specifications.TestBuilder
                 Id = objectId,
                 Snapshot = BuildSnapshot(),
                 GithubRepositoryUrl = new Uri(Constants.TestGithubRepositoryUrl),
-                Status = ProjectStatus.Published,
-                PublishedByUserId = Constants.TestUserId,
+                Status = status,
+                PublishedByUserId = ownerId,
                 PublishedAt = new DateTimeOffset(2024, 1, 1, 0, 0, 0, TimeSpan.Zero)
             };
         }

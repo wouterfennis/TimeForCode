@@ -72,11 +72,15 @@ sequenceDiagram
     GitHub-->>DonationAPI: Repository metadata (name, description, language, topics, ...)
     DonationAPI->>DonationAPI: Validate repository is public and not archived
     DonationAPI->>DonationAPI: Construct Project domain entity
-    DonationAPI->>MongoDB: Insert Project { status: Published }
+    DonationAPI->>MongoDB: Insert Project { status: Draft }
     DonationAPI-->>Website: 201 Created { projectId }
 ```
 
 ---
+
+## Scenario 3b — Review a Project
+
+A maintainer submits a `Draft` project for review (`POST /api/v1/project/{id}/submit`, user JWT, owner only). An administrator, authenticated with an admin JWT (scope `admin`), then approves it (`POST .../approve`, project becomes `Active` and appears in the public list) or sends it back (`POST .../request-changes` with a reason, project returns to `Draft` and the reason is stored). Maintainers can archive an `Active` project (`.../archive`) and re-activate an `Archived` one (`.../reactivate`). The `Project` aggregate rejects every other transition; the API answers `409 Conflict`. A non-admin calling an admin endpoint gets `403`, an anonymous caller `401`.
 
 ## Scenario 4 — Log Hours Against a Donation (Target)
 

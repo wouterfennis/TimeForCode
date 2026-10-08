@@ -12,25 +12,25 @@ namespace TimeForCode.Donation.Infrastructure.Persistence.Database
     internal class ProjectRepository : IProjectRepository
     {
         private static readonly object IndexCreationLock = new();
-        private static bool _publishedGithubUrlIndexCreated;
+        private static bool _githubUrlIndexCreated;
         private readonly IMongoCollection<Project> _collection;
 
         public ProjectRepository(IMongoDbContext context)
         {
             _collection = context.GetCollection<Project>();
-            EnsurePublishedGithubUrlIndex(_collection);
+            EnsureGithubUrlIndex(_collection);
         }
 
-        private static void EnsurePublishedGithubUrlIndex(IMongoCollection<Project> collection)
+        private static void EnsureGithubUrlIndex(IMongoCollection<Project> collection)
         {
-            if (_publishedGithubUrlIndexCreated)
+            if (_githubUrlIndexCreated)
             {
                 return;
             }
 
             lock (IndexCreationLock)
             {
-                if (_publishedGithubUrlIndexCreated)
+                if (_githubUrlIndexCreated)
                 {
                     return;
                 }
@@ -39,13 +39,12 @@ namespace TimeForCode.Donation.Infrastructure.Persistence.Database
                     Builders<Project>.IndexKeys.Ascending(p => p.GithubRepositoryUrl),
                     new CreateIndexOptions<Project>
                     {
-                        Name = "ux_published_projects_github_repository_url",
-                        Unique = true,
-                        PartialFilterExpression = Builders<Project>.Filter.Eq(p => p.Status, ProjectStatus.Published)
+                        Name = "ux_projects_github_repository_url",
+                        Unique = true
                     });
 
                 collection.Indexes.CreateOne(indexModel);
-                _publishedGithubUrlIndexCreated = true;
+                _githubUrlIndexCreated = true;
             }
         }
 
@@ -61,9 +60,9 @@ namespace TimeForCode.Donation.Infrastructure.Persistence.Database
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<(IReadOnlyList<Project> Projects, int TotalCount)> GetAllPublishedAsync(int pageNumber, int pageSize)
+        public async Task<(IReadOnlyList<Project> Projects, int TotalCount)> GetAllActiveAsync(int pageNumber, int pageSize)
         {
-            var filter = Builders<Project>.Filter.Eq(p => p.Status, ProjectStatus.Published);
+            var filter = Builders<Project>.Filter.Eq(p => p.Status, ProjectStatus.Active);
             var totalCount = (int)await _collection.CountDocumentsAsync(filter);
             var projects = await _collection
                 .Find(filter)
@@ -94,7 +93,8 @@ namespace TimeForCode.Donation.Infrastructure.Persistence.Database
             var update = Builders<Project>.Update
                 .Set(p => p.Status, project.Status)
                 .Set(p => p.Snapshot, project.Snapshot)
-                .Set(p => p.PublishedAt, project.PublishedAt);
+                .Set(p => p.PublishedAt, project.PublishedAt)
+                .Set(p => p.ChangeRequestReason, project.ChangeRequestReason);
             await _collection.UpdateOneAsync(filter, update);
         }
 

@@ -78,7 +78,7 @@ Register a new project.
   "name": "repo",
   "description": "string",
   "language": "C#",
-  "status": "PendingApproval",
+  "status": "Draft",
   "githubUrl": "https://github.com/owner/repo"
 }
 
@@ -106,16 +106,9 @@ List active projects with optional filters.
 
 Get a single project's full details.
 
-#### PATCH /api/v1/project/{id}/status ❌
+#### Project lifecycle ✅
 
-Admin only. Approve or reject a project.
-
-**Request**:
-
-```json
-{ "status": "Active" }
-
-```
+Implemented as `POST /api/v1/project/{id}/submit`, `/approve`, `/request-changes`, `/archive` and `/reactivate`; replaces the former single `PATCH .../status` design. See [docs/current/api-surface.md](../current/api-surface.md) for roles, payloads and status codes.
 
 ---
 

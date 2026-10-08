@@ -215,7 +215,7 @@ else
         _repoActionErrors[repoUrl] = null;
         try
         {
-            await DonationClient.UnpublishProjectAsync(projectId);
+            await DonationClient.ArchiveProjectAsync(projectId);
             _publishedRepos.Remove(repoUrl);
         }
         catch (TimeForCode.Donation.Api.Client.ApiException<TimeForCode.Donation.Api.Client.ProblemDetails> ex)

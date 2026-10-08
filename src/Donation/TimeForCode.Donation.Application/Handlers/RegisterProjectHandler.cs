@@ -72,24 +72,10 @@ namespace TimeForCode.Donation.Application.Handlers
             var normalizedUrl = new Uri($"{request.GithubRepositoryUrl.Scheme}://{request.GithubRepositoryUrl.Host}/{segments[0]}/{segments[1]}");
 
             var existing = await _projectRepository.GetByGithubUrlAsync(normalizedUrl);
-            if (existing != null && existing.Status == ProjectStatus.Published)
+            if (existing != null)
             {
-                _logger.LogWarning("Repository {NormalizedUrl} is already published", normalizedUrl);
-                return Result<RegisterProjectResult>.Conflict("Repository is already published.");
-            }
-
-            if (existing != null && existing.Status == ProjectStatus.Archived)
-            {
-                _logger.LogInformation("Re-publishing archived project {ProjectId} for URL {NormalizedUrl}", existing.Id, normalizedUrl);
-                existing.Status = ProjectStatus.Published;
-                existing.Snapshot = snapshot;
-                existing.PublishedAt = DateTimeOffset.UtcNow;
-                await _projectRepository.UpdateAsync(existing);
-
-                return Result<RegisterProjectResult>.Success(new RegisterProjectResult
-                {
-                    ProjectId = existing.Id.ToString()
-                });
+                _logger.LogWarning("Repository {NormalizedUrl} is already registered with status {Status}", normalizedUrl, existing.Status);
+                return Result<RegisterProjectResult>.Conflict("Repository is already registered.");
             }
 
             var project = Project.Create(
@@ -105,7 +91,7 @@ namespace TimeForCode.Donation.Application.Handlers
             catch (RepositoryConflictException exception)
             {
                 _logger.LogWarning(exception, "Conflict while creating project for URL {NormalizedUrl}", normalizedUrl);
-                return Result<RegisterProjectResult>.Conflict("Repository is already published.");
+                return Result<RegisterProjectResult>.Conflict("Repository is already registered.");
             }
 
             _logger.LogInformation("Project {ProjectId} registered successfully for URL {NormalizedUrl}", project.Id, normalizedUrl);

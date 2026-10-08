@@ -20,7 +20,7 @@ namespace TimeForCode.Donation.Application.Handlers
         {
             _logger.LogInformation("Getting projects page {PageNumber} with page size {PageSize}", request.PageNumber, request.PageSize);
 
-            var (projects, totalCount) = await _projectRepository.GetAllPublishedAsync(request.PageNumber, request.PageSize);
+            var (projects, totalCount) = await _projectRepository.GetAllActiveAsync(request.PageNumber, request.PageSize);
 
             _logger.LogDebug("Retrieved {Count} projects out of {TotalCount} total", projects.Count, totalCount);
 

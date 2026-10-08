@@ -147,7 +147,7 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
         public async Task Handle_AlreadyPublishedRepository_ReturnsConflict()
         {
             SetupGithubServiceSuccess(isPrivate: false, isArchived: false);
-            var existingProject = BuildProject(ProjectStatus.Published);
+            var existingProject = BuildProject(ProjectStatus.Active);
             _mockRepository.Setup(r => r.GetByGithubUrlAsync(It.IsAny<Uri>()))
                 .ReturnsAsync(existingProject);
 
@@ -164,13 +164,14 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
         }
 
         [TestMethod]
-        public async Task Handle_PreviouslyArchivedRepository_ReturnsSuccess()
+        [DataRow(ProjectStatus.Draft)]
+        [DataRow(ProjectStatus.PendingApproval)]
+        [DataRow(ProjectStatus.Archived)]
+        public async Task Handle_RepositoryAlreadyRegisteredInAnyState_ReturnsConflict(ProjectStatus status)
         {
             SetupGithubServiceSuccess(isPrivate: false, isArchived: false);
-            var archivedProject = BuildProject(ProjectStatus.Archived);
             _mockRepository.Setup(r => r.GetByGithubUrlAsync(It.IsAny<Uri>()))
-                .ReturnsAsync(archivedProject);
-            _mockRepository.Setup(r => r.UpdateAsync(It.IsAny<Project>())).Returns(Task.CompletedTask);
+                .ReturnsAsync(BuildProject(status));
 
             var command = new RegisterProjectCommand
             {
@@ -180,8 +181,24 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
 
             var result = await _sut.Handle(command, CancellationToken.None);
 
-            result.IsSuccess.Should().BeTrue();
-            _mockRepository.Verify(r => r.UpdateAsync(It.IsAny<Project>()), Times.Once);
+            result.FailureStatusCode.Should().Be(System.Net.HttpStatusCode.Conflict);
+            _mockRepository.Verify(r => r.UpdateAsync(It.IsAny<Project>()), Times.Never);
+        }
+
+        [TestMethod]
+        public async Task Handle_NewRepository_CreatesDraftProject()
+        {
+            SetupGithubServiceSuccess(isPrivate: false, isArchived: false);
+            _mockRepository.Setup(r => r.GetByGithubUrlAsync(It.IsAny<Uri>())).ReturnsAsync((Project?)null);
+            _mockRepository.Setup(r => r.CreateAsync(It.IsAny<Project>())).Returns(Task.CompletedTask);
+
+            await _sut.Handle(new RegisterProjectCommand
+            {
+                GithubRepositoryUrl = new Uri("https://github.com/owner/repo"),
+                UserId = "user-123"
+            }, CancellationToken.None);
+
+            _mockRepository.Verify(r => r.CreateAsync(It.Is<Project>(p => p.Status == ProjectStatus.Draft)), Times.Once);
         }
 
         [TestMethod]
