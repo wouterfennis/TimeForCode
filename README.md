@@ -100,13 +100,13 @@ See [docs/current/capability-status.md](docs/current/capability-status.md) for t
 
 ### Verify the stack
 
-A smoke-test script checks every service and walks through the full authentication flow:
+A smoke-test script checks every service, walks through the full authentication flow and exercises the project lifecycle (register, submit, role and state checks):
 
 ```powershell
 .\scripts\smoke-test.ps1
 ```
 
-All 17 checks should report `[PASS]`. The script exits with code `0` on success.
+All 28 checks should report `[PASS]`. Each run registers one new `Draft`/`PendingApproval` project in the local database. The administrator approve and request-changes happy paths need a WebAuthn passkey and are not part of the script. The script exits with code `0` on success.
 
 See [docs/current/deployment-status.md](docs/current/deployment-status.md) for environment details and configuration.
 

@@ -89,7 +89,7 @@ Install the following tools before starting:
 .\scripts\smoke-test.ps1
 ```
 
-Expected output: `Result: PASSED (17/17)`
+Expected output: `Result: PASSED (28/28)`
 
 ### 5. Development Guidelines
 
