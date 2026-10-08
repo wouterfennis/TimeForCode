@@ -2,30 +2,35 @@ using MediatR;
 using Microsoft.Extensions.Logging;
 using TimeForCode.Donation.Application.Interfaces;
 using TimeForCode.Donation.Commands;
-using TimeForCode.Donation.Values;
 
 namespace TimeForCode.Donation.Application.Handlers
 {
-    internal class GetProjectByIdHandler : IRequestHandler<GetProjectByIdQuery, Result<GetProjectByIdResult>>
+    internal class GetMaintainedProjectHandler : IRequestHandler<GetMaintainedProjectQuery, Result<GetMaintainedProjectResult>>
     {
         private readonly IProjectRepository _projectRepository;
-        private readonly ILogger<GetProjectByIdHandler> _logger;
+        private readonly ILogger<GetMaintainedProjectHandler> _logger;
 
-        public GetProjectByIdHandler(IProjectRepository projectRepository, ILogger<GetProjectByIdHandler> logger)
+        public GetMaintainedProjectHandler(IProjectRepository projectRepository, ILogger<GetMaintainedProjectHandler> logger)
         {
             _projectRepository = projectRepository;
             _logger = logger;
         }
 
-        public async Task<Result<GetProjectByIdResult>> Handle(GetProjectByIdQuery request, CancellationToken cancellationToken)
+        public async Task<Result<GetMaintainedProjectResult>> Handle(GetMaintainedProjectQuery request, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Getting project by id {ProjectId}", request.ProjectId);
+            _logger.LogInformation("Project {ProjectId}: maintainer read requested by user {UserId}", request.ProjectId, request.UserId);
 
             var project = await _projectRepository.GetByIdAsync(request.ProjectId);
-            if (project == null || project.Status != ProjectStatus.Active)
+            if (project == null)
             {
-                _logger.LogWarning("Project {ProjectId} not found or not published", request.ProjectId);
-                return Result<GetProjectByIdResult>.Failure("Project not found.");
+                _logger.LogWarning("Project {ProjectId} not found", request.ProjectId);
+                return Result<GetMaintainedProjectResult>.Failure("Project not found.");
+            }
+
+            if (project.PublishedByUserId != request.UserId)
+            {
+                _logger.LogWarning("User {UserId} is not the maintainer of project {ProjectId}", request.UserId, request.ProjectId);
+                return Result<GetMaintainedProjectResult>.Forbidden("Only the maintainer of the project can do this.");
             }
 
             var dto = new ProjectDto
@@ -51,7 +56,11 @@ namespace TimeForCode.Donation.Application.Handlers
                 Status = project.Status
             };
 
-            return Result<GetProjectByIdResult>.Success(new GetProjectByIdResult { Project = dto });
+            return Result<GetMaintainedProjectResult>.Success(new GetMaintainedProjectResult
+            {
+                Project = dto,
+                ReviewerReason = project.ChangeRequestReason
+            });
         }
     }
 }

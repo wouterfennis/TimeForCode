@@ -26,7 +26,7 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
         public async Task Handle_PublishedProjectsExist_ReturnsSuccess()
         {
             var project = BuildPublishedProject();
-            _mockRepository.Setup(r => r.GetAllPublishedAsync(1, 20))
+            _mockRepository.Setup(r => r.GetAllActiveAsync(1, 20))
                 .ReturnsAsync(((IReadOnlyList<Project>)[project], 1));
 
             var query = new GetProjectsQuery { PageNumber = 1, PageSize = 20 };
@@ -42,7 +42,7 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
         [TestMethod]
         public async Task Handle_NoPublishedProjects_ReturnsSuccessWithEmptyList()
         {
-            _mockRepository.Setup(r => r.GetAllPublishedAsync(It.IsAny<int>(), It.IsAny<int>()))
+            _mockRepository.Setup(r => r.GetAllActiveAsync(It.IsAny<int>(), It.IsAny<int>()))
                 .ReturnsAsync(((IReadOnlyList<Project>)[], 0));
 
             var query = new GetProjectsQuery { PageNumber = 1, PageSize = 20 };
@@ -57,7 +57,7 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
         public async Task Handle_PublishedProject_MapsAllFieldsCorrectly()
         {
             var project = BuildPublishedProject();
-            _mockRepository.Setup(r => r.GetAllPublishedAsync(It.IsAny<int>(), It.IsAny<int>()))
+            _mockRepository.Setup(r => r.GetAllActiveAsync(It.IsAny<int>(), It.IsAny<int>()))
                 .ReturnsAsync(((IReadOnlyList<Project>)[project], 1));
 
             var query = new GetProjectsQuery { PageNumber = 1, PageSize = 20 };
@@ -80,7 +80,7 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
         [TestMethod]
         public async Task Handle_PaginationParameters_ArePassedToRepository()
         {
-            _mockRepository.Setup(r => r.GetAllPublishedAsync(2, 10))
+            _mockRepository.Setup(r => r.GetAllActiveAsync(2, 10))
                 .ReturnsAsync(((IReadOnlyList<Project>)[], 0));
 
             var query = new GetProjectsQuery { PageNumber = 2, PageSize = 10 };
@@ -89,7 +89,7 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
             result.IsSuccess.Should().BeTrue();
             result.Value.PageNumber.Should().Be(2);
             result.Value.PageSize.Should().Be(10);
-            _mockRepository.Verify(r => r.GetAllPublishedAsync(2, 10), Times.Once);
+            _mockRepository.Verify(r => r.GetAllActiveAsync(2, 10), Times.Once);
         }
 
         private static Project BuildPublishedProject()
@@ -115,7 +115,7 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
                     PushedAt = DateTimeOffset.UtcNow
                 },
                 GithubRepositoryUrl = new Uri("https://github.com/owner/test-repo"),
-                Status = ProjectStatus.Published,
+                Status = ProjectStatus.Active,
                 PublishedByUserId = "user-123",
                 PublishedAt = DateTimeOffset.UtcNow
             };

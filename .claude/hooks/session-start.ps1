@@ -22,4 +22,12 @@ if (Test-Path $handoff) {
     $text += "`n`nHandoff note from previous session (.agent-state/handoff.md):`n$note"
 }
 
+$lessons = Join-Path $root '.claude/lessons-learned.md'
+if (Test-Path $lessons) {
+    $titles = @(Get-Content -LiteralPath $lessons | Where-Object { $_ -match '^(## |### )' } | ForEach-Object { ($_ -replace '^### ', '  - ') -replace '^## ', '' })
+    if ($titles.Count) {
+        $text += "`n`nLessons learned (.claude/lessons-learned.md; grep it for details before implement/fix work, add entries via skill lessons-learned):`n" + ($titles -join "`n")
+    }
+}
+
 @{ hookSpecificOutput = @{ hookEventName = 'SessionStart'; additionalContext = $text } } | ConvertTo-Json -Depth 5 -Compress

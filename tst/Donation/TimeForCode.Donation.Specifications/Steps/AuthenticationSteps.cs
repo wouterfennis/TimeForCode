@@ -23,13 +23,19 @@ namespace TimeForCode.Donation.Specifications.Steps
             _bearerTokenHandler.Token = GenerateTestToken(Constants.TestUserId);
         }
 
+        [Given("The user has an administrator access token")]
+        public void GivenTheUserHasAnAdministratorAccessToken()
+        {
+            _bearerTokenHandler.Token = GenerateTestToken("admin", "admin");
+        }
+
         [Given("The user does not have an access token")]
         public void GivenTheUserDoesNotHaveAnAccessToken()
         {
             _bearerTokenHandler.Token = null;
         }
 
-        private static string GenerateTestToken(string userId)
+        private static string GenerateTestToken(string userId, string scope = "user")
         {
             var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Constants.TestJwtSigningKey));
             var credentials = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256);
@@ -37,7 +43,7 @@ namespace TimeForCode.Donation.Specifications.Steps
             var claims = new[]
             {
                 new Claim(ClaimTypes.NameIdentifier, userId),
-                new Claim("scope", "user")
+                new Claim("scope", scope)
             };
 
             var token = new JwtSecurityToken(

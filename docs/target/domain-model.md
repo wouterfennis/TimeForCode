@@ -203,12 +203,22 @@ stateDiagram-v2
 ```mermaid
 stateDiagram-v2
     [*] --> Draft : maintainer submits URL
-    Draft --> PendingApproval : maintainer submits for review
-    PendingApproval --> Active : admin approves
-    PendingApproval --> Draft : admin requests changes
-    Active --> Archived : maintainer or admin archives
-    Archived --> Active : maintainer re-activates
+    Draft --> PendingApproval : maintainer submits for review (maintainer only)
+    PendingApproval --> Active : admin approves (admin only)
+    PendingApproval --> Draft : admin requests changes with a reason (admin only)
+    Active --> Archived : maintainer archives (maintainer only)
+    Archived --> Active : maintainer re-activates (maintainer only)
 ```
+
+| Transition | Allowed from | Triggered by | Endpoint |
+| --- | --- | --- | --- |
+| Submit for review | Draft | Maintainer (owner) | `POST /api/v1/project/{id}/submit` |
+| Approve | PendingApproval | Administrator | `POST /api/v1/project/{id}/approve` |
+| Request changes | PendingApproval | Administrator | `POST /api/v1/project/{id}/request-changes` |
+| Archive | Active | Maintainer (owner) | `POST /api/v1/project/{id}/archive` |
+| Re-activate | Archived | Maintainer (owner) | `POST /api/v1/project/{id}/reactivate` |
+
+Any other transition is rejected with `409 Conflict`. Request-changes stores the reviewer's reason on the project (`reviewerReason`); submitting again clears it.
 
 ---
 

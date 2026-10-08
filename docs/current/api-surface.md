@@ -47,10 +47,33 @@ The Donation API is responsible for projects, donations, organizations, and cont
 
 | Method | Path | Status | Description |
 | --- | --- | --- | --- |
-| `POST` | `/api/v1/project` | ✅ | Publishes a public GitHub repository as a project (JWT required); fetches full metadata from GitHub; returns 400 for private/archived repos, 409 for duplicate |
-| `GET` | `/api/v1/project` | ✅ | Returns a paginated list of published (non-archived) projects; no authentication required |
-| `GET` | `/api/v1/project/{id}` | ✅ | Returns full project details; no authentication required |
-| `DELETE` | `/api/v1/project/{id}` | ✅ | Archives (unpublishes) a project (JWT required; owner only); returns 403 if caller is not the owner, 404 if not found |
+| `POST` | `/api/v1/project` | ✅ | Registers a public GitHub repository as a project in state `Draft` (user JWT required); fetches full metadata from GitHub; returns 400 for private/archived repos, 409 if the repository is already registered in any state |
+| `GET` | `/api/v1/project` | ✅ | Returns a paginated list of `Active` projects; no authentication required |
+| `GET` | `/api/v1/project/{id}` | ✅ | Returns full project details of an `Active` project (404 otherwise); no authentication required |
+| `GET` | `/api/v1/project/{id}/manage` | ✅ | Maintainer reads their own project in any state (user JWT, owner only); returns `{ "project": { ..., "status" }, "reviewerReason" }`; `403` for another user's project, `404` unknown project |
+| `POST` | `/api/v1/project/{id}/submit` | ✅ | Maintainer submits a `Draft` project for review → `PendingApproval` (user JWT, owner only) |
+| `POST` | `/api/v1/project/{id}/approve` | ✅ | Administrator approves a `PendingApproval` project → `Active` (admin JWT, scope `admin`) |
+| `POST` | `/api/v1/project/{id}/request-changes` | ✅ | Administrator returns a `PendingApproval` project to `Draft`; body `{ "reason": "..." }` (max 1000 chars) is stored and returned as `reviewerReason` (admin JWT) |
+| `POST` | `/api/v1/project/{id}/archive` | ✅ | Maintainer archives an `Active` project → `Archived` (user JWT, owner only); replaces the former `DELETE /api/v1/project/{id}` |
+| `POST` | `/api/v1/project/{id}/reactivate` | ✅ | Maintainer re-activates an `Archived` project → `Active` (user JWT, owner only) |
+
+The lifecycle endpoints return `200 OK` with `{ "projectId", "status", "reviewerReason" }`. Error cases: `401` no/invalid token, `403` wrong role or not the project's maintainer, `404` unknown project, `409` transition not allowed from the current state (the problem details name the required state), `400` invalid request body.
+
+Example request-changes call and response:
+
+```http
+POST /api/v1/project/5f43a0e74b12c84f1b000001/request-changes
+Authorization: Bearer <admin token>
+Content-Type: application/json
+
+{ "reason": "Please add a description" }
+```
+
+```json
+{ "projectId": "5f43a0e74b12c84f1b000001", "status": "Draft", "reviewerReason": "Please add a description" }
+```
+
+Example `409` problem details: `{ "title": "Transition not allowed", "status": 409, "detail": "A project can only be approved from state PendingApproval, but it is Draft." }`.
 
 ### Donation Endpoints
 

@@ -31,6 +31,8 @@ podman compose up --build
 .\scripts\smoke-test.ps1
 ```
 
+The script covers service availability, OIDC discovery, the login flow and the project lifecycle endpoints (maintainer path plus 401/403/409 checks; 28 checks). The administrator approve and request-changes happy paths need a WebAuthn passkey and are covered only by the Donation specifications. Each run leaves one new project in the local database.
+
 ### Services and Ports
 
 ```mermaid

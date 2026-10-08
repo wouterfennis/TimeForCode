@@ -283,6 +283,49 @@ try {
                 Write-Fail "Step 3.5: User profile body unexpected" "$userBody"
             }
 
+            # -- Section 4: Project lifecycle (maintainer path, role checks) ---
+            # The admin happy path (approve, request-changes) needs a WebAuthn passkey
+            # and cannot be scripted; it is covered by the Donation specifications.
+            Write-Section "4. Project lifecycle"
+
+            $projectUrl = "$DonationApiBaseUrl/api/v1/project"
+            $authHeader = "Authorization: Bearer $bearer"
+            $repoName   = "smoke-" + [guid]::NewGuid().ToString("N").Substring(0, 12)
+            $registerBody = @{ githubRepositoryUrl = "https://github.com/smoke-owner/$repoName" } | ConvertTo-Json -Compress
+
+            $r6 = curl -si -H $authHeader -H "Content-Type: application/json" --data-raw $registerBody $projectUrl 2>&1
+            $s6 = Get-StatusCode $r6
+            $registered = $null
+            $json6 = $r6 | Select-String '^\{' | Select-Object -First 1
+            if ($json6) { $registered = $json6.ToString() | ConvertFrom-Json }
+
+            if ($s6 -eq 201 -and $registered.projectId) {
+                $projectId = $registered.projectId
+                Write-Pass "Step 4.1: POST /project registers a project -> 201 ($projectId)"
+
+                $lifecycleChecks = @(
+                    @{ Label = "Step 4.2: GET /project/{id} of a Draft project -> 404"; Method = "GET";  Path = "";                 Auth = $false; Expected = 404 }
+                    @{ Label = "Step 4.3: submit without token -> 401";                 Method = "POST"; Path = "/submit";          Auth = $false; Expected = 401 }
+                    @{ Label = "Step 4.4: approve without token -> 401";                Method = "POST"; Path = "/approve";         Auth = $false; Expected = 401 }
+                    @{ Label = "Step 4.5: approve with user token -> 403";              Method = "POST"; Path = "/approve";         Auth = $true;  Expected = 403 }
+                    @{ Label = "Step 4.6: request-changes with user token -> 403";      Method = "POST"; Path = "/request-changes"; Auth = $true;  Expected = 403 }
+                    @{ Label = "Step 4.7: archive a Draft project -> 409";              Method = "POST"; Path = "/archive";         Auth = $true;  Expected = 409 }
+                    @{ Label = "Step 4.8: submit as owner -> 200";                      Method = "POST"; Path = "/submit";          Auth = $true;  Expected = 200 }
+                    @{ Label = "Step 4.9: submit again (PendingApproval) -> 409";       Method = "POST"; Path = "/submit";          Auth = $true;  Expected = 409 }
+                    @{ Label = "Step 4.10: GET /project/{id} of a PendingApproval project -> 404"; Method = "GET"; Path = ""; Auth = $false; Expected = 404 }
+                )
+
+                foreach ($check in $lifecycleChecks) {
+                    $curlCall = @("-s", "-o", "/dev/null", "-w", "%{http_code}", "-X", $check.Method)
+                    if ($check.Auth) { $curlCall += @("-H", $authHeader) }
+                    $code = [int](curl @curlCall "$projectUrl/$projectId$($check.Path)" 2>&1 | Select-Object -Last 1)
+                    if ($code -eq $check.Expected) { Write-Pass $check.Label }
+                    else                           { Write-Fail $check.Label "Status=$code" }
+                }
+            } else {
+                Write-Fail "Step 4.1: POST /project" "Status=$s6"
+            }
+
         } catch {
             Write-Fail "Step 3.4: JWT decode/validation failed: $_"
         }

@@ -56,7 +56,8 @@ namespace TimeForCode.Donation.Api
                 });
 
             services.AddAuthorizationBuilder()
-                    .AddPolicy("ApiUser", policy => policy.RequireClaim("scope", "user"));
+                    .AddPolicy("ApiUser", policy => policy.RequireClaim("scope", "user"))
+                    .AddPolicy("ApiAdmin", policy => policy.RequireClaim("scope", "admin"));
 
             services.AddApplicationLayer();
             services.AddInfrastructureLayer(_configuration);

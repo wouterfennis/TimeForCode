@@ -41,7 +41,7 @@ Small defects: `/fix-bug <n>` (failing regression test first, then fix).
 
 - Other commands: `/run-maintenance`, `/prepare-release <version> <branch>`, `/acceptance-criteria`, `/issue-refinement`, `/pr-review-focus`, `/root-cause-analysis`.
 - Subagents (`.claude/agents/`): `review`, `markdown-linter`, `repo-scout`, `test-runner`, `security-reviewer`. Bash for the restricted ones is allowlisted by `hooks/restrict-bash.ps1`.
-- Skills (`.claude/skills/`): reference and helpers such as `dotnet-conventions`, `agent-handoffs`, `repo-map`, `quiet-dotnet`, `dotnet-format`, `mongo-review`, `markdown-lint`. Rules in `.claude/rules/` load by path (`code-style` for `*.cs`, `testing-strategy` for `tst/**`, `domain-layer`, `docs`, `deploy`).
+- Skills (`.claude/skills/`): reference and helpers such as `lessons-learned` (read `.claude/lessons-learned.md` before implement/fix work, update it after a correction or surprise), `dotnet-conventions`, `agent-handoffs`, `repo-map`, `quiet-dotnet`, `dotnet-format`, `mongo-review`, `markdown-lint`. Rules in `.claude/rules/` load by path (`code-style` for `*.cs`, `testing-strategy` for `tst/**`, `domain-layer`, `docs`, `deploy`).
 - Hooks (`.claude/settings.json`, scripts in `.claude/hooks/`): read guard, dotnet output trimming, C# auto-format after edits, session-start context, pre-compact snapshot, stop-time warning for unverified C# changes.
 - `.github/` holds only CI workflows and the issue template.
 - Review of this setup and open ideas: `docs/ai-setup-review.md`.
