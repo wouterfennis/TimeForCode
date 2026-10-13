@@ -12,25 +12,25 @@ namespace TimeForCode.Donation.Infrastructure.Persistence.Database
     internal class ProjectRepository : IProjectRepository
     {
         private static readonly object IndexCreationLock = new();
-        private static bool _githubUrlIndexCreated;
+        private static bool _indexesCreated;
         private readonly IMongoCollection<Project> _collection;
 
         public ProjectRepository(IMongoDbContext context)
         {
             _collection = context.GetCollection<Project>();
-            EnsureGithubUrlIndex(_collection);
+            EnsureIndexes(_collection);
         }
 
-        private static void EnsureGithubUrlIndex(IMongoCollection<Project> collection)
+        private static void EnsureIndexes(IMongoCollection<Project> collection)
         {
-            if (_githubUrlIndexCreated)
+            if (_indexesCreated)
             {
                 return;
             }
 
             lock (IndexCreationLock)
             {
-                if (_githubUrlIndexCreated)
+                if (_indexesCreated)
                 {
                     return;
                 }
@@ -44,7 +44,8 @@ namespace TimeForCode.Donation.Infrastructure.Persistence.Database
                     });
 
                 collection.Indexes.CreateOne(indexModel);
-                _githubUrlIndexCreated = true;
+                collection.Indexes.CreateMany(ProjectSearchDefinitions.IndexModels);
+                _indexesCreated = true;
             }
         }
 
@@ -60,16 +61,16 @@ namespace TimeForCode.Donation.Infrastructure.Persistence.Database
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<(IReadOnlyList<Project> Projects, int TotalCount)> GetAllActiveAsync(int pageNumber, int pageSize)
+        public async Task<(IReadOnlyList<Project> Projects, int TotalCount)> SearchActiveAsync(ProjectSearchCriteria criteria)
         {
-            var filter = Builders<Project>.Filter.Eq(p => p.Status, ProjectStatus.Active);
+            var filter = ProjectSearchDefinitions.BuildFilter(criteria);
             var totalCount = (int)await _collection.CountDocumentsAsync(filter);
             var projects = await _collection
                 .Find(filter)
                 .SortByDescending(p => p.PublishedAt)
                 .ThenByDescending(p => p.Id)
-                .Skip((pageNumber - 1) * pageSize)
-                .Limit(pageSize)
+                .Skip((criteria.PageNumber - 1) * criteria.PageSize)
+                .Limit(criteria.PageSize)
                 .ToListAsync();
 
             return (projects, totalCount);

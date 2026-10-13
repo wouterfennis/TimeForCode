@@ -361,7 +361,8 @@
         "tags": [
           "Project"
         ],
-        "summary": "Returns a paginated list of all published projects.",
+        "summary": "Searches the active projects (anonymous); other states are never returned.",
+        "description": "Results are sorted by publication date, newest first, with the project id (descending) as tie-breaker.",
         "operationId": "GetProjects",
         "parameters": [
           {
@@ -381,7 +382,7 @@
           {
             "name": "pageSize",
             "in": "query",
-            "description": "The number of items per page (default 20).",
+            "description": "The number of items per page (1 to 100, default 20).",
             "schema": {
               "pattern": "^-?(?:0|[1-9]\\d*)$",
               "type": [
@@ -390,6 +391,30 @@
               ],
               "format": "int32",
               "default": 20
+            }
+          },
+          {
+            "name": "searchText",
+            "in": "query",
+            "description": "Optional text; matches the project name, full name or description (case-insensitive, literal substring).",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "language",
+            "in": "query",
+            "description": "Optional exact programming language, for example `C#`.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tag",
+            "in": "query",
+            "description": "Optional topic (case-insensitive); only projects with this topic are returned.",
+            "schema": {
+              "type": "string"
             }
           }
         ],

@@ -106,10 +106,7 @@ namespace TimeForCode.Donation.Specifications.Steps
         [Given("There are published projects on the time for code platform")]
         public void GivenThereArePublishedProjectsOnTheTimeForCodePlatform()
         {
-            var project = ProjectBuilder.BuildActive();
-            var mockProjectRepository = _provider.GetRequiredService<Mock<IProjectRepository>>();
-            mockProjectRepository.Setup(x => x.GetAllActiveAsync(It.IsAny<int>(), It.IsAny<int>()))
-                .ReturnsAsync(((IReadOnlyList<Project>)new List<Project> { project }, 1));
+            _catalog.Add(ProjectBuilder.BuildActive(ProjectBuilder.IdFor(100)));
         }
 
         [Given("There is a published project on the time for code platform")]
@@ -119,8 +116,7 @@ namespace TimeForCode.Donation.Specifications.Steps
             var mockProjectRepository = _provider.GetRequiredService<Mock<IProjectRepository>>();
             mockProjectRepository.Setup(x => x.GetByIdAsync(project.Id.ToString()))
                 .ReturnsAsync(project);
-            mockProjectRepository.Setup(x => x.GetAllActiveAsync(It.IsAny<int>(), It.IsAny<int>()))
-                .ReturnsAsync(((IReadOnlyList<Project>)new List<Project> { project }, 1));
+            _catalog.Add(project);
 
             _registeredProjectId = project.Id.ToString();
         }
@@ -128,11 +124,7 @@ namespace TimeForCode.Donation.Specifications.Steps
         [Given("One of the projects has been unpublished")]
         public void GivenOneOfTheProjectsHasBeenUnpublished()
         {
-            // The published listing already excludes archived projects via the repository mock
-            // Override to return empty list (simulating the archived project is filtered out)
-            var mockProjectRepository = _provider.GetRequiredService<Mock<IProjectRepository>>();
-            mockProjectRepository.Setup(x => x.GetAllActiveAsync(It.IsAny<int>(), It.IsAny<int>()))
-                .ReturnsAsync(((IReadOnlyList<Project>)new List<Project>(), 0));
+            _catalog.ForEach(p => p.Status = TimeForCode.Donation.Values.ProjectStatus.Archived);
         }
 
         [When("The user publishes the repository on the time for code platform")]
@@ -162,20 +154,9 @@ namespace TimeForCode.Donation.Specifications.Steps
 
         [When("The user requests the list of published projects")]
         [When("The user requests the list of published projects without an account")]
-        public async Task WhenTheUserRequestsTheListOfPublishedProjectsAsync()
+        public Task WhenTheUserRequestsTheListOfPublishedProjectsAsync()
         {
-            try
-            {
-                _getProjectsResult = await _donationClient.GetProjectsAsync(null, null);
-            }
-            catch (ApiException<ProblemDetails> exception)
-            {
-                _exception = exception;
-            }
-            catch (ApiException exception)
-            {
-                _exception = exception;
-            }
+            return SearchAsync(null, null, null, null, null);
         }
 
         [When("The user requests the project details")]

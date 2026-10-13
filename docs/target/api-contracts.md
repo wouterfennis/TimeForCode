@@ -84,23 +84,9 @@ Register a new project.
 
 ```
 
-#### GET /api/v1/project ❌
+#### GET /api/v1/project ✅
 
-List active projects with optional filters.
-
-**Query params**: `?language=C%23&tag=testing&page=1&pageSize=20`
-
-**Response** (200 OK):
-
-```json
-{
-  "items": [ { "id": "uuid", "name": "string", "description": "string", "language": "string", "tags": [] } ],
-  "totalCount": 42,
-  "page": 1,
-  "pageSize": 20
-}
-
-```
+Implemented: searches active projects by text, language and tag with paging. Query parameters are `searchText`, `language`, `tag`, `pageNumber` and `pageSize`; the response uses `projects`, `totalCount`, `pageNumber` and `pageSize`. See [project search](../current/api-surface.md#project-search) for the contract.
 
 #### GET /api/v1/project/{id} ❌
 

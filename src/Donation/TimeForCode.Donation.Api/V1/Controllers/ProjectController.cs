@@ -86,16 +86,25 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         }
 
         /// <summary>
-        /// Returns a paginated list of all published projects.
+        /// Searches the active projects (anonymous); other states are never returned.
         /// </summary>
+        /// <remarks>Results are sorted by publication date, newest first, with the project id (descending) as tie-breaker.</remarks>
         /// <param name="pageNumber">The page number (1-based, default 1).</param>
-        /// <param name="pageSize">The number of items per page (default 20).</param>
-        /// <returns>A paginated list of published projects.</returns>
+        /// <param name="pageSize">The number of items per page (1 to 100, default 20).</param>
+        /// <param name="searchText">Optional text; matches the project name, full name or description (case-insensitive, literal substring).</param>
+        /// <param name="language">Optional exact programming language, for example <c>C#</c>.</param>
+        /// <param name="tag">Optional topic (case-insensitive); only projects with this topic are returned.</param>
+        /// <returns>A paginated list of active projects matching all supplied criteria, with the total match count.</returns>
         [HttpGet(Name = nameof(GetProjects))]
         [ProducesResponseType(typeof(GetProjectsResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetProjects([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 20)
+        public async Task<IActionResult> GetProjects(
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 20,
+            [FromQuery] string? searchText = null,
+            [FromQuery] string? language = null,
+            [FromQuery] string? tag = null)
         {
             if (pageNumber < 1)
             {
@@ -117,7 +126,14 @@ namespace TimeForCode.Donation.Api.V1.Controllers
                 });
             }
 
-            var query = new GetProjectsQuery { PageNumber = pageNumber, PageSize = pageSize };
+            var query = new GetProjectsQuery
+            {
+                SearchText = searchText,
+                Language = language,
+                Tag = tag,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
             var result = await _mediator.Send(query);
 
             if (result.IsFailure)
