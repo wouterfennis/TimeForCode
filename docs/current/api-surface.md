@@ -81,10 +81,10 @@ Example `409` problem details: `{ "title": "Transition not allowed", "status": 4
 
 | Query parameter | Default | Description |
 | --- | --- | --- |
-| `searchText` | none | Case-insensitive literal substring match on the project name, full name or description (regex characters are escaped) |
-| `language` | none | Exact, case-sensitive match on the GitHub language, for example `C#` |
-| `tag` | none | Case-insensitive match on one GitHub topic (topics are stored lowercase) |
-| `pageNumber` | `1` | 1-based page number; must be at least 1 |
+| `searchText` | none | Case-insensitive literal substring match on the project name, full name or description (regex characters are escaped); at most 100 characters |
+| `language` | none | Exact, case-sensitive match on the GitHub language, for example `C#`; at most 100 characters |
+| `tag` | none | Case-insensitive match on one GitHub topic (topics are stored lowercase); at most 100 characters |
+| `pageNumber` | `1` | 1-based page number, 1 to 10000 |
 | `pageSize` | `20` | Items per page, 1 to 100 |
 
 Supplied criteria are combined with AND; leading and trailing whitespace is trimmed and blank values count as absent. Sort order is fixed: publication date (`publishedAt`) newest first, then project id descending, so pages are stable.
@@ -116,7 +116,7 @@ GET /api/v1/project?searchText=rocket&language=C%23&tag=gaming&pageNumber=1&page
 }
 ```
 
-`totalCount` is the number of projects matching all criteria, not the page length; no matches returns `200` with an empty `projects` array and `totalCount` `0`. Error cases: `400` problem details (`Invalid page number`, `Invalid page size`) for `pageNumber` below 1 or `pageSize` outside 1 to 100; `500` unexpected error.
+`totalCount` is the number of projects matching all criteria, not the page length; no matches returns `200` with an empty `projects` array and `totalCount` `0`. Error cases: `400` problem details (`Invalid page number`, `Invalid page size`, `Invalid search criteria`) for `pageNumber` outside 1 to 10000, `pageSize` outside 1 to 100, or a `searchText`, `language` or `tag` longer than 100 characters; `500` unexpected error.
 
 ### Donation Endpoints
 

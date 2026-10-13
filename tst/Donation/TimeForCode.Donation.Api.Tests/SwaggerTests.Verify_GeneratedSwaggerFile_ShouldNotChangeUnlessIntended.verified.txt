@@ -368,7 +368,7 @@
           {
             "name": "pageNumber",
             "in": "query",
-            "description": "The page number (1-based, default 1).",
+            "description": "The page number (1 to 10000, default 1).",
             "schema": {
               "pattern": "^-?(?:0|[1-9]\\d*)$",
               "type": [
@@ -396,7 +396,7 @@
           {
             "name": "searchText",
             "in": "query",
-            "description": "Optional text; matches the project name, full name or description (case-insensitive, literal substring).",
+            "description": "Optional text (at most 100 characters); matches the project name, full name or description (case-insensitive, literal substring).",
             "schema": {
               "type": "string"
             }

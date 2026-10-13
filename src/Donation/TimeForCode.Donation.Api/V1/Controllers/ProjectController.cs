@@ -19,6 +19,9 @@ namespace TimeForCode.Donation.Api.V1.Controllers
     [EnableRateLimiting("api")]
     public class ProjectController : ControllerBase
     {
+        private const int MaxPageNumber = 10_000;
+        private const int MaxSearchCriterionLength = 100;
+
         private readonly IMediator _mediator;
 
         /// <summary>
@@ -89,9 +92,9 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         /// Searches the active projects (anonymous); other states are never returned.
         /// </summary>
         /// <remarks>Results are sorted by publication date, newest first, with the project id (descending) as tie-breaker.</remarks>
-        /// <param name="pageNumber">The page number (1-based, default 1).</param>
+        /// <param name="pageNumber">The page number (1 to 10000, default 1).</param>
         /// <param name="pageSize">The number of items per page (1 to 100, default 20).</param>
-        /// <param name="searchText">Optional text; matches the project name, full name or description (case-insensitive, literal substring).</param>
+        /// <param name="searchText">Optional text (at most 100 characters); matches the project name, full name or description (case-insensitive, literal substring).</param>
         /// <param name="language">Optional exact programming language, for example <c>C#</c>.</param>
         /// <param name="tag">Optional topic (case-insensitive); only projects with this topic are returned.</param>
         /// <returns>A paginated list of active projects matching all supplied criteria, with the total match count.</returns>
@@ -106,12 +109,12 @@ namespace TimeForCode.Donation.Api.V1.Controllers
             [FromQuery] string? language = null,
             [FromQuery] string? tag = null)
         {
-            if (pageNumber < 1)
+            if (pageNumber < 1 || pageNumber > MaxPageNumber)
             {
                 return BadRequest(new ProblemDetails
                 {
                     Title = "Invalid page number",
-                    Detail = "Page number must be greater than or equal to 1.",
+                    Detail = $"Page number must be between 1 and {MaxPageNumber}.",
                     Status = StatusCodes.Status400BadRequest
                 });
             }
@@ -122,6 +125,16 @@ namespace TimeForCode.Donation.Api.V1.Controllers
                 {
                     Title = "Invalid page size",
                     Detail = "Page size must be between 1 and 100.",
+                    Status = StatusCodes.Status400BadRequest
+                });
+            }
+
+            if (new[] { searchText, language, tag }.Any(value => value?.Length > MaxSearchCriterionLength))
+            {
+                return BadRequest(new ProblemDetails
+                {
+                    Title = "Invalid search criteria",
+                    Detail = $"Search text, language and tag must be at most {MaxSearchCriterionLength} characters.",
                     Status = StatusCodes.Status400BadRequest
                 });
             }

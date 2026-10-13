@@ -73,9 +73,21 @@ Scenario Outline: User searches with invalid paging
 	Then The user is informed the paging request is invalid
 
 	Examples:
-		| page | size |
-		| 0    | 10   |
-		| -1   | 10   |
-		| 1    | 0    |
-		| 1    | -5   |
-		| 1    | 1000 |
+		| page       | size |
+		| 0          | 10   |
+		| -1         | 10   |
+		| 1          | 0    |
+		| 1          | -5   |
+		| 1          | 1000 |
+		| 10001      | 10   |
+		| 2147483647 | 100  |
+
+Scenario Outline: User searches with criteria that are too long
+	When The user searches the projects with a <criterion> of 101 characters
+	Then The user is informed the search criteria are invalid
+
+	Examples:
+		| criterion |
+		| text      |
+		| language  |
+		| tag       |

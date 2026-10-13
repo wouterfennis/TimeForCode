@@ -121,6 +121,25 @@ namespace TimeForCode.Donation.Specifications.Steps
             _secondSearchOrder = ResultIds();
         }
 
+        [When("^The user searches the projects with a (text|language|tag) of 101 characters$")]
+        public Task WhenTheUserSearchesTheProjectsWithACriterionThatIsTooLongAsync(string criterion)
+        {
+            var tooLong = new string('a', 101);
+            return SearchAsync(
+                criterion == "text" ? tooLong : null,
+                criterion == "language" ? tooLong : null,
+                criterion == "tag" ? tooLong : null,
+                null,
+                null);
+        }
+
+        [Then("The user is informed the search criteria are invalid")]
+        public void ThenTheUserIsInformedTheSearchCriteriaAreInvalid()
+        {
+            _exception.Should().NotBeNull();
+            _exception!.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
+        }
+
         [Then("The total number of matching projects is included")]
         public void ThenTheTotalNumberOfMatchingProjectsIsIncluded()
         {
@@ -222,7 +241,7 @@ namespace TimeForCode.Donation.Specifications.Steps
             _exception!.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
         }
 
-        private IReadOnlyList<string> ResultIds()
+        private List<string> ResultIds()
         {
             return _getProjectsResult!.Projects.Select(p => p.Id).ToList();
         }
