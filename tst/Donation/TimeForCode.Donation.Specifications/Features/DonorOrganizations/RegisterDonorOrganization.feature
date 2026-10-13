@@ -15,3 +15,25 @@ Scenario: Registering a donor organization with a duplicate name is rejected
 Scenario: Registering a donor organization without a name is rejected
 	When The user registers a donor organization without a name
 	Then The user is informed the donor organization cannot be created
+
+
+Scenario: Registering a donor organization with a blank name is rejected
+	When The user registers a donor organization with the name "   "
+	Then The user is informed the donor organization cannot be created
+
+Scenario: User registers a donor organization with contact details
+	When The user registers a donor organization with the contact email "open-source@acme.example" and the website "https://acme.example"
+	Then The donor organization is registered on the time for code platform
+
+Scenario Outline: Registering a donor organization with invalid contact details is rejected
+	When The user registers a donor organization with the contact email "<email>" and the website "<website>"
+	Then The user is informed the donor organization cannot be created
+
+	Examples:
+		| email                    | website                  |
+		| not-an-email             | https://acme.example     |
+		|                          | https://acme.example     |
+		| open-source@acme.example | mailto:info@acme.example |
+		| open-source@acme.example | javascript:alert(1)      |
+		| open-source@acme.example | not a url                |
+		| open-source@acme.example |                          |

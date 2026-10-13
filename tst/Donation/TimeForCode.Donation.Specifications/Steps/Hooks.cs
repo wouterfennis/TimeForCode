@@ -24,6 +24,8 @@ namespace TimeForCode.Donation.Specifications.Steps
             var httpClient = _objectContainer.Resolve<TimeForCodeWebApplicationFactory>()
                 .CreateDefaultClient(bearerTokenHandler);
 
+            _objectContainer.RegisterInstanceAs(httpClient);
+
             var donationClient = new DonationClient(httpClient);
             _objectContainer.RegisterInstanceAs<IDonationClient>(donationClient);
 

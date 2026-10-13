@@ -2,6 +2,8 @@ using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Reqnroll;
+using System.Net.Http.Json;
+using System.Text.Json;
 using TimeForCode.Donation.Api.Client;
 using TimeForCode.Donation.Application.Interfaces;
 using TimeForCode.Donation.Domain;
@@ -14,6 +16,7 @@ namespace TimeForCode.Donation.Specifications.Steps
     {
         private readonly IDonationClient _donationClient;
         private readonly IServiceProvider _provider;
+        private readonly HttpClient _httpClient;
 
         private GetDonorOrganizationsResponse? _getOrganizationsResult;
         private DonorOrganizationResponse? _getOrganizationByIdResult;
@@ -22,10 +25,11 @@ namespace TimeForCode.Donation.Specifications.Steps
         private ApiException? _exception;
         private string? _registeredOrganizationId;
 
-        public DonorOrganizationSteps(IDonationClient donationClient, IServiceProvider provider)
+        public DonorOrganizationSteps(IDonationClient donationClient, IServiceProvider provider, HttpClient httpClient)
         {
             _donationClient = donationClient;
             _provider = provider;
+            _httpClient = httpClient;
         }
 
         [Given("There are donor organizations on the time for code platform")]
@@ -158,6 +162,59 @@ namespace TimeForCode.Donation.Specifications.Steps
                 {
                     Name = "Acme Corp"
                 });
+            }
+            catch (ApiException<ProblemDetails> ex)
+            {
+                _exception = ex;
+            }
+            catch (ApiException ex)
+            {
+                _exception = ex;
+            }
+        }
+
+        [When("The user registers a donor organization with the name {string}")]
+        public Task WhenTheUserRegistersADonorOrganizationWithTheNameAsync(string name)
+        {
+            return RegisterAsync(new CreateDonorOrganizationRequest { Name = name });
+        }
+
+        [When("The user registers a donor organization with the contact email {string} and the website {string}")]
+        public async Task WhenTheUserRegistersADonorOrganizationWithContactDetailsAsync(string email, string website)
+        {
+            // Sent as raw JSON: the generated client types the website as a Uri and cannot send invalid values.
+            var mockRepo = _provider.GetRequiredService<Mock<IDonorOrganizationRepository>>();
+            mockRepo.Setup(x => x.CreateAsync(It.IsAny<DonorOrganization>()))
+                .Returns(Task.CompletedTask);
+
+            var response = await _httpClient.PostAsJsonAsync(
+                "api/v1/donororganization",
+                new { name = "Acme Corp", contactEmail = email, website });
+            var body = await response.Content.ReadAsStringAsync();
+
+            if (response.IsSuccessStatusCode)
+            {
+                _createResult = JsonSerializer.Deserialize<DonorOrganizationResponse>(body, JsonSerializerOptions.Web);
+                return;
+            }
+
+            _exception = new ApiException(
+                "The donor organization request was rejected.",
+                (int)response.StatusCode,
+                body,
+                new Dictionary<string, IEnumerable<string>>(),
+                null);
+        }
+
+        private async Task RegisterAsync(CreateDonorOrganizationRequest request)
+        {
+            var mockRepo = _provider.GetRequiredService<Mock<IDonorOrganizationRepository>>();
+            mockRepo.Setup(x => x.CreateAsync(It.IsAny<DonorOrganization>()))
+                .Returns(Task.CompletedTask);
+
+            try
+            {
+                _createResult = await _donationClient.CreateDonorOrganizationAsync(request);
             }
             catch (ApiException<ProblemDetails> ex)
             {

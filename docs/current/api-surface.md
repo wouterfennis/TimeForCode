@@ -166,10 +166,10 @@ All implemented endpoints follow these conventions:
 | --- | --- |
 | Donation: `{id}` of project and donor organization | Exactly 24 hexadecimal characters (`^[0-9a-fA-F]{24}$`); anything else is `400`, not `404` |
 | Donation: `pageNumber` / `pageSize` on both list endpoints | 1 to 10000 / 1 to 100 |
-| Donation: donor organization `name` | 1 to 200 characters |
+| Donation: donor organization `name` | 1 to 200 characters, with at least one non-whitespace character |
 | Donation: donor organization `contactEmail` | Email address (`format: email`), at most 254 characters; omit it instead of sending an empty string |
-| Donation: donor organization `website` | Absolute URL (`format: uri`), at most 2048 characters |
-| Donation: request-changes `reason` | 1 to 1000 characters |
+| Donation: donor organization `website` | Absolute http, https or ftp URL (`format: uri`), at most 2048 characters; omit it instead of sending an empty string |
+| Donation: request-changes `reason` | 1 to 1000 characters, with at least one non-whitespace character |
 | Authorization: `owner` of `GET /api/v1/user/repositories/{owner}/{repo}` | At most 39 characters; letters and digits with single inner hyphens |
 | Authorization: `repo` of the same route | At most 100 characters; letters, digits, `.`, `_` and `-`, never just `.` or `..` |
 | Authorization: callback `code` and `state` | At most 2048 characters |

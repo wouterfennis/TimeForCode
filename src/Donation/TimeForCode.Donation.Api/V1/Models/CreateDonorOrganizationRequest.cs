@@ -12,6 +12,7 @@ namespace TimeForCode.Donation.Api.V1.Models
         /// </summary>
         /// <example>Acme Software</example>
         [StringLength(ApiConstraints.MaxOrganizationNameLength, MinimumLength = 1)]
+        [RegularExpression(ApiConstraints.NotBlankPattern)]
         public required string Name { get; init; }
 
         /// <summary>

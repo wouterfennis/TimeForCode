@@ -169,8 +169,6 @@
             "description": "The donor organization identifier.",
             "required": true,
             "schema": {
-              "maxLength": 24,
-              "minLength": 24,
               "pattern": "^[0-9a-fA-F]{24}$",
               "type": "string"
             }
@@ -224,8 +222,6 @@
             "description": "The donor organization identifier.",
             "required": true,
             "schema": {
-              "maxLength": 24,
-              "minLength": 24,
               "pattern": "^[0-9a-fA-F]{24}$",
               "type": "string"
             }
@@ -320,8 +316,6 @@
             "description": "The donor organization identifier.",
             "required": true,
             "schema": {
-              "maxLength": 24,
-              "minLength": 24,
               "pattern": "^[0-9a-fA-F]{24}$",
               "type": "string"
             }
@@ -570,8 +564,6 @@
             "description": "The project identifier.",
             "required": true,
             "schema": {
-              "maxLength": 24,
-              "minLength": 24,
               "pattern": "^[0-9a-fA-F]{24}$",
               "type": "string"
             }
@@ -637,8 +629,6 @@
             "description": "The project identifier.",
             "required": true,
             "schema": {
-              "maxLength": 24,
-              "minLength": 24,
               "pattern": "^[0-9a-fA-F]{24}$",
               "type": "string"
             }
@@ -734,8 +724,6 @@
             "description": "The project identifier.",
             "required": true,
             "schema": {
-              "maxLength": 24,
-              "minLength": 24,
               "pattern": "^[0-9a-fA-F]{24}$",
               "type": "string"
             }
@@ -841,8 +829,6 @@
             "description": "The project identifier.",
             "required": true,
             "schema": {
-              "maxLength": 24,
-              "minLength": 24,
               "pattern": "^[0-9a-fA-F]{24}$",
               "type": "string"
             }
@@ -938,8 +924,6 @@
             "description": "The project identifier.",
             "required": true,
             "schema": {
-              "maxLength": 24,
-              "minLength": 24,
               "pattern": "^[0-9a-fA-F]{24}$",
               "type": "string"
             }
@@ -1066,8 +1050,6 @@
             "description": "The project identifier.",
             "required": true,
             "schema": {
-              "maxLength": 24,
-              "minLength": 24,
               "pattern": "^[0-9a-fA-F]{24}$",
               "type": "string"
             }
@@ -1173,8 +1155,6 @@
             "description": "The project identifier.",
             "required": true,
             "schema": {
-              "maxLength": 24,
-              "minLength": 24,
               "pattern": "^[0-9a-fA-F]{24}$",
               "type": "string"
             }
@@ -1278,6 +1258,7 @@
           "name": {
             "maxLength": 200,
             "minLength": 1,
+            "pattern": "[\\s\\S]*\\S[\\s\\S]*",
             "type": "string",
             "description": "The name of the donor organization.",
             "example": "Acme Software"
@@ -1880,6 +1861,7 @@
           "reason": {
             "maxLength": 1000,
             "minLength": 1,
+            "pattern": "[\\s\\S]*\\S[\\s\\S]*",
             "type": "string",
             "description": "The reason the changes are requested. Shown to the maintainer.",
             "example": "Please add a description of the project."
@@ -1896,6 +1878,7 @@
           "name": {
             "maxLength": 200,
             "minLength": 1,
+            "pattern": "[\\s\\S]*\\S[\\s\\S]*",
             "type": "string",
             "description": "The name of the donor organization.",
             "example": "Acme Software"
