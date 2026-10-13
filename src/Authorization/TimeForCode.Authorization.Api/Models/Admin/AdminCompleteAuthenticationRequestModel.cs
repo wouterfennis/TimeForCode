@@ -11,6 +11,7 @@ namespace TimeForCode.Authorization.Api.Models.Admin
         /// The JSON-serialised <c>PublicKeyCredential</c> returned by <c>navigator.credentials.get()</c>.
         /// </summary>
         [Required]
+        [MaxLength(ApiConstraints.MaxCredentialJsonLength)]
         public required string CredentialJson { get; init; }
     }
 }

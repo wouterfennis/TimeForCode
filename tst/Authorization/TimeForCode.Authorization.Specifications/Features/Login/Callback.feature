@@ -57,3 +57,13 @@ Scenario: Returning user's profile is updated on login
 	Then An access token is returned
 	And The user information is saved in the time for code platform
 	And The time for code platform does not notify the user of a new profile
+
+Scenario Outline: Callback with an oversized parameter is rejected
+	When The external platform calls the time for code platform with a <parameter> of 2049 characters
+	Then An access token is not returned
+	And The callback is rejected as invalid
+
+	Examples:
+		| parameter |
+		| code      |
+		| state     |

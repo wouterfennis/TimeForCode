@@ -20,9 +20,6 @@ namespace TimeForCode.Donation.Api.V1.Controllers
     [EnableRateLimiting("api")]
     public class ProjectController : ControllerBase
     {
-        private const int MaxPageNumber = 10_000;
-        private const int MaxPageSize = 100;
-        private const int MaxSearchCriterionLength = 100;
 
         private readonly IMediator _mediator;
 
@@ -105,11 +102,11 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetProjects(
-            [FromQuery, Range(1, MaxPageNumber)] int pageNumber = 1,
-            [FromQuery, Range(1, MaxPageSize)] int pageSize = 20,
-            [FromQuery, MaxLength(MaxSearchCriterionLength)] string? searchText = null,
-            [FromQuery, MaxLength(MaxSearchCriterionLength)] string? language = null,
-            [FromQuery, MaxLength(MaxSearchCriterionLength)] string? tag = null)
+            [FromQuery, Range(1, ApiConstraints.MaxPageNumber)] int pageNumber = 1,
+            [FromQuery, Range(1, ApiConstraints.MaxPageSize)] int pageSize = 20,
+            [FromQuery, MaxLength(ApiConstraints.MaxSearchCriterionLength)] string? searchText = null,
+            [FromQuery, MaxLength(ApiConstraints.MaxSearchCriterionLength)] string? language = null,
+            [FromQuery, MaxLength(ApiConstraints.MaxSearchCriterionLength)] string? tag = null)
         {
             var query = new GetProjectsQuery
             {
@@ -164,7 +161,7 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         [ProducesResponseType(typeof(ProjectResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetProjectById(string id)
+        public async Task<IActionResult> GetProjectById([StringLength(ApiConstraints.ObjectIdLength, MinimumLength = ApiConstraints.ObjectIdLength), RegularExpression(ApiConstraints.ObjectIdPattern)] string id)
         {
             var query = new GetProjectByIdQuery { ProjectId = id };
             var result = await _mediator.Send(query);
@@ -219,7 +216,7 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         [Authorize(Policy = "ApiUser")]
-        public async Task<IActionResult> GetMaintainedProject(string id)
+        public async Task<IActionResult> GetMaintainedProject([StringLength(ApiConstraints.ObjectIdLength, MinimumLength = ApiConstraints.ObjectIdLength), RegularExpression(ApiConstraints.ObjectIdPattern)] string id)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
@@ -271,7 +268,7 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         [Authorize(Policy = "ApiUser")]
-        public Task<IActionResult> SubmitProjectForReview(string id)
+        public Task<IActionResult> SubmitProjectForReview([StringLength(ApiConstraints.ObjectIdLength, MinimumLength = ApiConstraints.ObjectIdLength), RegularExpression(ApiConstraints.ObjectIdPattern)] string id)
         {
             return SendAsMaintainerAsync(userId => new SubmitProjectForReviewCommand { ProjectId = id, UserId = userId });
         }
@@ -289,7 +286,7 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         [Authorize(Policy = "ApiAdmin")]
-        public async Task<IActionResult> ApproveProject(string id)
+        public async Task<IActionResult> ApproveProject([StringLength(ApiConstraints.ObjectIdLength, MinimumLength = ApiConstraints.ObjectIdLength), RegularExpression(ApiConstraints.ObjectIdPattern)] string id)
         {
             var result = await _mediator.Send(new ApproveProjectCommand { ProjectId = id });
             return ToActionResult(result);
@@ -310,7 +307,7 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         [Authorize(Policy = "ApiAdmin")]
-        public async Task<IActionResult> RequestProjectChanges(string id, RequestProjectChangesRequest request)
+        public async Task<IActionResult> RequestProjectChanges([StringLength(ApiConstraints.ObjectIdLength, MinimumLength = ApiConstraints.ObjectIdLength), RegularExpression(ApiConstraints.ObjectIdPattern)] string id, RequestProjectChangesRequest request)
         {
             var result = await _mediator.Send(new RequestProjectChangesCommand { ProjectId = id, Reason = request.Reason });
             return ToActionResult(result);
@@ -330,7 +327,7 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         [Authorize(Policy = "ApiUser")]
-        public Task<IActionResult> ArchiveProject(string id)
+        public Task<IActionResult> ArchiveProject([StringLength(ApiConstraints.ObjectIdLength, MinimumLength = ApiConstraints.ObjectIdLength), RegularExpression(ApiConstraints.ObjectIdPattern)] string id)
         {
             return SendAsMaintainerAsync(userId => new ArchiveProjectCommand { ProjectId = id, UserId = userId });
         }
@@ -349,7 +346,7 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         [Authorize(Policy = "ApiUser")]
-        public Task<IActionResult> ReactivateProject(string id)
+        public Task<IActionResult> ReactivateProject([StringLength(ApiConstraints.ObjectIdLength, MinimumLength = ApiConstraints.ObjectIdLength), RegularExpression(ApiConstraints.ObjectIdPattern)] string id)
         {
             return SendAsMaintainerAsync(userId => new ReactivateProjectCommand { ProjectId = id, UserId = userId });
         }

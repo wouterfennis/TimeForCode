@@ -53,6 +53,18 @@
                 }
               }
             }
+          },
+          "429": {
+            "description": "Too many requests. Retry after the number of seconds given in the Retry-After header.",
+            "headers": {
+              "Retry-After": {
+                "description": "Number of seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
           }
         }
       }
@@ -104,6 +116,18 @@
                 }
               }
             }
+          },
+          "429": {
+            "description": "Too many requests. Retry after the number of seconds given in the Retry-After header.",
+            "headers": {
+              "Retry-After": {
+                "description": "Number of seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
           }
         }
       }
@@ -132,6 +156,18 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. Retry after the number of seconds given in the Retry-After header.",
+            "headers": {
+              "Retry-After": {
+                "description": "Number of seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
                 }
               }
             }
@@ -186,6 +222,18 @@
                 }
               }
             }
+          },
+          "429": {
+            "description": "Too many requests. Retry after the number of seconds given in the Retry-After header.",
+            "headers": {
+              "Retry-After": {
+                "description": "Number of seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
           }
         }
       }
@@ -237,6 +285,18 @@
             "content": {
               "application/json": { }
             }
+          },
+          "429": {
+            "description": "Too many requests. Retry after the number of seconds given in the Retry-After header.",
+            "headers": {
+              "Retry-After": {
+                "description": "Number of seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
           }
         }
       }
@@ -253,6 +313,7 @@
             "in": "query",
             "description": "Gets or sets the authorization code.",
             "schema": {
+              "maxLength": 2048,
               "type": "string"
             }
           },
@@ -261,6 +322,7 @@
             "in": "query",
             "description": "Gets or sets the state parameter.",
             "schema": {
+              "maxLength": 2048,
               "type": "string"
             }
           }
@@ -296,6 +358,18 @@
             "description": "Internal Server Error",
             "content": {
               "application/json": { }
+            }
+          },
+          "429": {
+            "description": "Too many requests. Retry after the number of seconds given in the Retry-After header.",
+            "headers": {
+              "Retry-After": {
+                "description": "Number of seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
             }
           }
         }
@@ -354,6 +428,18 @@
             "description": "Internal Server Error",
             "content": {
               "application/json": { }
+            }
+          },
+          "429": {
+            "description": "Too many requests. Retry after the number of seconds given in the Retry-After header.",
+            "headers": {
+              "Retry-After": {
+                "description": "Number of seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
             }
           }
         }
@@ -506,23 +592,39 @@
           {
             "name": "owner",
             "in": "path",
-            "description": "The GitHub username or organisation that owns the repository.",
+            "description": "The GitHub username or organisation that owns the repository (at most 39 characters; letters, digits and single hyphens).",
             "required": true,
             "schema": {
+              "maxLength": 39,
+              "minLength": 1,
+              "pattern": "^[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*$",
               "type": "string"
             }
           },
           {
             "name": "repo",
             "in": "path",
-            "description": "The repository name.",
+            "description": "The repository name (at most 100 characters; letters, digits, dots, underscores and hyphens).",
             "required": true,
             "schema": {
+              "maxLength": 100,
+              "minLength": 1,
+              "pattern": "^(?!\\.{1,2}$)[A-Za-z0-9._-]+$",
               "type": "string"
             }
           }
         ],
         "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
           "200": {
             "description": "OK",
             "content": {
@@ -598,6 +700,7 @@
         "type": "object",
         "properties": {
           "credentialJson": {
+            "maxLength": 16384,
             "type": "string",
             "description": "The JSON-serialised `PublicKeyCredential` returned by `navigator.credentials.get()`."
           }
@@ -612,10 +715,12 @@
         "type": "object",
         "properties": {
           "bootstrapSecret": {
+            "maxLength": 256,
             "type": "string",
             "description": "Shared secret guarding who may claim the admin role, re-validated on completion."
           },
           "credentialJson": {
+            "maxLength": 16384,
             "type": "string",
             "description": "The JSON-serialised `PublicKeyCredential` returned by `navigator.credentials.create()`."
           }
@@ -642,6 +747,7 @@
         "type": "object",
         "properties": {
           "bootstrapSecret": {
+            "maxLength": 256,
             "type": "string",
             "description": "Shared secret guarding who may claim the admin role."
           }

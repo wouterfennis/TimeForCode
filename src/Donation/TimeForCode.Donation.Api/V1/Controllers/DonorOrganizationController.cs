@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Net.Mime;
 using TimeForCode.Donation.Api.V1.Models;
@@ -77,34 +78,16 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         /// <summary>
         /// Returns a paginated list of all donor organizations.
         /// </summary>
-        /// <param name="pageNumber">The page number (1-based, default 1).</param>
-        /// <param name="pageSize">The number of items per page (default 20).</param>
+        /// <param name="pageNumber">The page number (1 to 10000, default 1).</param>
+        /// <param name="pageSize">The number of items per page (1 to 100, default 20).</param>
         /// <returns>A paginated list of donor organizations.</returns>
         [HttpGet(Name = nameof(GetDonorOrganizations))]
         [ProducesResponseType(typeof(GetDonorOrganizationsResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> GetDonorOrganizations([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 20)
+        public async Task<IActionResult> GetDonorOrganizations(
+            [FromQuery, Range(1, ApiConstraints.MaxPageNumber)] int pageNumber = 1,
+            [FromQuery, Range(1, ApiConstraints.MaxPageSize)] int pageSize = 20)
         {
-            if (pageNumber < 1)
-            {
-                return BadRequest(new ProblemDetails
-                {
-                    Title = "Invalid page number",
-                    Detail = "Page number must be greater than or equal to 1.",
-                    Status = StatusCodes.Status400BadRequest
-                });
-            }
-
-            if (pageSize < 1 || pageSize > 100)
-            {
-                return BadRequest(new ProblemDetails
-                {
-                    Title = "Invalid page size",
-                    Detail = "Page size must be between 1 and 100.",
-                    Status = StatusCodes.Status400BadRequest
-                });
-            }
-
             var query = new GetDonorOrganizationsQuery { PageNumber = pageNumber, PageSize = pageSize };
             var result = await _mediator.Send(query);
 
@@ -137,7 +120,7 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         [HttpGet("{id}", Name = nameof(GetDonorOrganizationById))]
         [ProducesResponseType(typeof(DonorOrganizationResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetDonorOrganizationById(string id)
+        public async Task<IActionResult> GetDonorOrganizationById([StringLength(ApiConstraints.ObjectIdLength, MinimumLength = ApiConstraints.ObjectIdLength), RegularExpression(ApiConstraints.ObjectIdPattern)] string id)
         {
             var query = new GetDonorOrganizationByIdQuery { Id = id };
             var result = await _mediator.Send(query);
@@ -166,7 +149,7 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
-        public async Task<IActionResult> UpdateDonorOrganization(string id, UpdateDonorOrganizationRequest request)
+        public async Task<IActionResult> UpdateDonorOrganization([StringLength(ApiConstraints.ObjectIdLength, MinimumLength = ApiConstraints.ObjectIdLength), RegularExpression(ApiConstraints.ObjectIdPattern)] string id, UpdateDonorOrganizationRequest request)
         {
             var command = new UpdateDonorOrganizationCommand
             {
@@ -209,7 +192,7 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         [HttpDelete("{id}", Name = nameof(DeleteDonorOrganization))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> DeleteDonorOrganization(string id)
+        public async Task<IActionResult> DeleteDonorOrganization([StringLength(ApiConstraints.ObjectIdLength, MinimumLength = ApiConstraints.ObjectIdLength), RegularExpression(ApiConstraints.ObjectIdPattern)] string id)
         {
             var command = new DeleteDonorOrganizationCommand { Id = id };
             var result = await _mediator.Send(command);

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
 using System.Net.Mime;
 using System.Security.Claims;
 using TimeForCode.Authorization.Api.Models;
@@ -140,16 +141,19 @@ namespace TimeForCode.Authorization.Api.Controllers
         /// <summary>
         /// Get a single public repository from GitHub by owner and repository name.
         /// </summary>
-        /// <param name="owner">The GitHub username or organisation that owns the repository.</param>
-        /// <param name="repo">The repository name.</param>
+        /// <param name="owner">The GitHub username or organisation that owns the repository (at most 39 characters; letters, digits and single hyphens).</param>
+        /// <param name="repo">The repository name (at most 100 characters; letters, digits, dots, underscores and hyphens).</param>
         /// <returns></returns>
         [HttpGet("repositories/{owner}/{repo}")]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(RepositoryResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status502BadGateway)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetRepositoryAsync(string owner, string repo)
+        public async Task<IActionResult> GetRepositoryAsync(
+            [StringLength(ApiConstraints.MaxGithubOwnerLength, MinimumLength = 1), RegularExpression(ApiConstraints.GithubOwnerPattern)] string owner,
+            [StringLength(ApiConstraints.MaxGithubRepositoryNameLength, MinimumLength = 1), RegularExpression(ApiConstraints.GithubRepositoryNamePattern)] string repo)
         {
             var userId = User.Claims.Single(x => x.Type == ClaimTypes.NameIdentifier)?.Value!;
             var userEntity = await _accountInformationRepository.GetByInternalIdAsync(userId);

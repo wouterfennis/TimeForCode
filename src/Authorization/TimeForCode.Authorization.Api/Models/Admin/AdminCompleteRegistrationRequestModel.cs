@@ -11,12 +11,14 @@ namespace TimeForCode.Authorization.Api.Models.Admin
         /// Shared secret guarding who may claim the admin role, re-validated on completion.
         /// </summary>
         [Required]
+        [MaxLength(ApiConstraints.MaxSecretLength)]
         public required string BootstrapSecret { get; init; }
 
         /// <summary>
         /// The JSON-serialised <c>PublicKeyCredential</c> returned by <c>navigator.credentials.create()</c>.
         /// </summary>
         [Required]
+        [MaxLength(ApiConstraints.MaxCredentialJsonLength)]
         public required string CredentialJson { get; init; }
     }
 }

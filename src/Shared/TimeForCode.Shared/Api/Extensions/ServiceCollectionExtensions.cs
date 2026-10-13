@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.DependencyInjection;
+using System.Globalization;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 using OpenApiInfo = Microsoft.OpenApi.OpenApiInfo;
@@ -40,6 +41,16 @@ namespace TimeForCode.Shared.Api.Extensions
             });
 
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+            options.OnRejected = (context, _) =>
+            {
+                if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
+                {
+                    var seconds = (int)Math.Ceiling(retryAfter.TotalSeconds);
+                    context.HttpContext.Response.Headers.RetryAfter = seconds.ToString(CultureInfo.InvariantCulture);
+                }
+
+                return ValueTask.CompletedTask;
+            };
 
             return options;
         }
@@ -62,6 +73,9 @@ namespace TimeForCode.Shared.Api.Extensions
 
                     return Task.CompletedTask;
                 });
+
+                options.AddOperationTransformer(OpenApiTransformers.AddRateLimitResponse);
+                options.AddSchemaTransformer(OpenApiTransformers.AddEmailFormat);
             };
         }
     }

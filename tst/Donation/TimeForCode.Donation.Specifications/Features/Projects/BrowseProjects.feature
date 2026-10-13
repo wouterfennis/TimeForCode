@@ -36,3 +36,7 @@ Scenario: Project listing includes contribution metrics
 	When The user requests the list of published projects
 	Then A paginated list of projects is returned
 	And Each project summary includes stars, forks, and open issues counts
+
+Scenario: Requesting a project with a malformed identifier is rejected
+	When The user requests the project with the identifier "not-an-identifier"
+	Then The user is informed the project identifier is invalid
