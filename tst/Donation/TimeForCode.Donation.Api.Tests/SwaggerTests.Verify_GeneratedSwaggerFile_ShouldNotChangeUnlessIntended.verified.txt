@@ -370,6 +370,8 @@
             "in": "query",
             "description": "The page number (1 to 10000, default 1).",
             "schema": {
+              "maximum": 10000,
+              "minimum": 1,
               "pattern": "^-?(?:0|[1-9]\\d*)$",
               "type": [
                 "integer",
@@ -384,6 +386,8 @@
             "in": "query",
             "description": "The number of items per page (1 to 100, default 20).",
             "schema": {
+              "maximum": 100,
+              "minimum": 1,
               "pattern": "^-?(?:0|[1-9]\\d*)$",
               "type": [
                 "integer",
@@ -398,6 +402,7 @@
             "in": "query",
             "description": "Optional text (at most 100 characters); matches the project name, full name or description (case-insensitive, literal substring).",
             "schema": {
+              "maxLength": 100,
               "type": "string"
             }
           },
@@ -406,6 +411,7 @@
             "in": "query",
             "description": "Optional exact programming language, for example `C#`.",
             "schema": {
+              "maxLength": 100,
               "type": "string"
             }
           },
@@ -414,6 +420,7 @@
             "in": "query",
             "description": "Optional topic (case-insensitive); only projects with this topic are returned.",
             "schema": {
+              "maxLength": 100,
               "type": "string"
             }
           }

@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Net.Mime;
 using System.Security.Claims;
@@ -20,6 +21,7 @@ namespace TimeForCode.Donation.Api.V1.Controllers
     public class ProjectController : ControllerBase
     {
         private const int MaxPageNumber = 10_000;
+        private const int MaxPageSize = 100;
         private const int MaxSearchCriterionLength = 100;
 
         private readonly IMediator _mediator;
@@ -103,42 +105,12 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetProjects(
-            [FromQuery] int pageNumber = 1,
-            [FromQuery] int pageSize = 20,
-            [FromQuery] string? searchText = null,
-            [FromQuery] string? language = null,
-            [FromQuery] string? tag = null)
+            [FromQuery, Range(1, MaxPageNumber)] int pageNumber = 1,
+            [FromQuery, Range(1, MaxPageSize)] int pageSize = 20,
+            [FromQuery, MaxLength(MaxSearchCriterionLength)] string? searchText = null,
+            [FromQuery, MaxLength(MaxSearchCriterionLength)] string? language = null,
+            [FromQuery, MaxLength(MaxSearchCriterionLength)] string? tag = null)
         {
-            if (pageNumber < 1 || pageNumber > MaxPageNumber)
-            {
-                return BadRequest(new ProblemDetails
-                {
-                    Title = "Invalid page number",
-                    Detail = $"Page number must be between 1 and {MaxPageNumber}.",
-                    Status = StatusCodes.Status400BadRequest
-                });
-            }
-
-            if (pageSize < 1 || pageSize > 100)
-            {
-                return BadRequest(new ProblemDetails
-                {
-                    Title = "Invalid page size",
-                    Detail = "Page size must be between 1 and 100.",
-                    Status = StatusCodes.Status400BadRequest
-                });
-            }
-
-            if (new[] { searchText, language, tag }.Any(value => value?.Length > MaxSearchCriterionLength))
-            {
-                return BadRequest(new ProblemDetails
-                {
-                    Title = "Invalid search criteria",
-                    Detail = $"Search text, language and tag must be at most {MaxSearchCriterionLength} characters.",
-                    Status = StatusCodes.Status400BadRequest
-                });
-            }
-
             var query = new GetProjectsQuery
             {
                 SearchText = searchText,

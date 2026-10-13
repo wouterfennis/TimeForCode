@@ -116,7 +116,7 @@ GET /api/v1/project?searchText=rocket&language=C%23&tag=gaming&pageNumber=1&page
 }
 ```
 
-`totalCount` is the number of projects matching all criteria, not the page length; no matches returns `200` with an empty `projects` array and `totalCount` `0`. Error cases: `400` problem details (`Invalid page number`, `Invalid page size`, `Invalid search criteria`) for `pageNumber` outside 1 to 10000, `pageSize` outside 1 to 100, or a `searchText`, `language` or `tag` longer than 100 characters; `500` unexpected error, including a search that exceeds the 5 second server-side time limit.
+`totalCount` is the number of projects matching all criteria, not the page length; no matches returns `200` with an empty `projects` array and `totalCount` `0`. The limits are also declared in the OpenAPI document (`minimum`, `maximum`, `maxLength`) so generated clients can see them. Error cases: `400` validation problem details (`errors` lists the offending parameter) for `pageNumber` outside 1 to 10000, `pageSize` outside 1 to 100, or a `searchText`, `language` or `tag` longer than 100 characters; `500` unexpected error, including a search that exceeds the 5 second server-side time limit.
 
 ### Donation Endpoints
 
