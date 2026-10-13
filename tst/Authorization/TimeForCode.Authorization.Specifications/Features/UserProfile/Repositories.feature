@@ -39,4 +39,6 @@ Scenario Outline: Requesting a repository with an invalid owner or name is rejec
 		| johndoe-/my-repo                                                                                       |
 		| aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/my-repo                                                       |
 		| johndoe/bad$name                                                                                       |
+		| johndoe%0A/my-repo                                                                                  |
+		| johndoe/my-repo%0A                                                                                  |
 		| johndoe/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa |

@@ -62,6 +62,17 @@ MediatR handlers return a `Result<T>` when an operation has a response payload. 
 
 ---
 
+## Input Limits and the OpenAPI Contract
+
+Limits on request input (paging bounds, string lengths, identifier and name patterns, e-mail and URL formats) are declared as validation attributes (`Range`, `StringLength`, `MaxLength`, `RegularExpression`, `EmailAddress`, `Url`) on controller parameters and request models, not as hand-written checks in the action. `[ApiController]` enforces them and answers `400` with validation problem details, and the OpenAPI generator turns them into `minimum`, `maximum`, `minLength`, `maxLength`, `pattern` and `format`, so generated clients see the same contract.
+
+- Shared limit values and patterns live in the `ApiConstraints` class of each API project; the Donation API wraps the object-id pattern in an `[ObjectId]` attribute.
+- `RegularExpressionAttribute` accepts a value only when the match spans the whole string, so a trailing newline cannot slip past a `$` anchor.
+- `TimeForCode.Shared` adds what the generator omits (`OpenApiTransformers`): `format: email` for `[EmailAddress]` and a `429 Too Many Requests` response with a `Retry-After` header on every rate-limited operation. The limiter sets that header on rejection.
+- A change to a limit changes the Swagger verified snapshot, which is reviewed before it is accepted (skill `swagger-snapshot-review`).
+
+---
+
 ## Configuration Management
 
 Configuration follows the ASP.NET Core options pattern:

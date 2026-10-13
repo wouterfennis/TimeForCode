@@ -12,6 +12,7 @@ namespace TimeForCode.Donation.Api.V1.Models
         /// </summary>
         /// <example>Please add a description of the project.</example>
         [StringLength(ApiConstraints.MaxReasonLength, MinimumLength = 1)]
+        [RegularExpression(ApiConstraints.NotBlankPattern)]
         public required string Reason { get; init; }
     }
 }

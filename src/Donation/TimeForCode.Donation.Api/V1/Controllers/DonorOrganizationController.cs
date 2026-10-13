@@ -120,7 +120,7 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         [HttpGet("{id}", Name = nameof(GetDonorOrganizationById))]
         [ProducesResponseType(typeof(DonorOrganizationResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetDonorOrganizationById([StringLength(ApiConstraints.ObjectIdLength, MinimumLength = ApiConstraints.ObjectIdLength), RegularExpression(ApiConstraints.ObjectIdPattern)] string id)
+        public async Task<IActionResult> GetDonorOrganizationById([ObjectId] string id)
         {
             var query = new GetDonorOrganizationByIdQuery { Id = id };
             var result = await _mediator.Send(query);
@@ -149,7 +149,7 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
-        public async Task<IActionResult> UpdateDonorOrganization([StringLength(ApiConstraints.ObjectIdLength, MinimumLength = ApiConstraints.ObjectIdLength), RegularExpression(ApiConstraints.ObjectIdPattern)] string id, UpdateDonorOrganizationRequest request)
+        public async Task<IActionResult> UpdateDonorOrganization([ObjectId] string id, UpdateDonorOrganizationRequest request)
         {
             var command = new UpdateDonorOrganizationCommand
             {
@@ -192,7 +192,7 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         [HttpDelete("{id}", Name = nameof(DeleteDonorOrganization))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> DeleteDonorOrganization([StringLength(ApiConstraints.ObjectIdLength, MinimumLength = ApiConstraints.ObjectIdLength), RegularExpression(ApiConstraints.ObjectIdPattern)] string id)
+        public async Task<IActionResult> DeleteDonorOrganization([ObjectId] string id)
         {
             var command = new DeleteDonorOrganizationCommand { Id = id };
             var result = await _mediator.Send(command);
