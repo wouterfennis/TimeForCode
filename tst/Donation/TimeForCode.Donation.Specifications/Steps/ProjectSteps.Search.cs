@@ -250,8 +250,8 @@ namespace TimeForCode.Donation.Specifications.Steps
         {
             var catalog = _lifecycleProject == null ? _catalog : [.. _catalog, _lifecycleProject];
             var mockProjectRepository = _provider.GetRequiredService<Mock<IProjectRepository>>();
-            mockProjectRepository.Setup(x => x.SearchActiveAsync(It.IsAny<ProjectSearchCriteria>()))
-                .ReturnsAsync((ProjectSearchCriteria criteria) => InMemoryProjectSearch.Execute(catalog, criteria));
+            mockProjectRepository.Setup(x => x.SearchActiveAsync(It.IsAny<ProjectSearchCriteria>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((ProjectSearchCriteria criteria, CancellationToken _) => InMemoryProjectSearch.Execute(catalog, criteria));
 
             try
             {

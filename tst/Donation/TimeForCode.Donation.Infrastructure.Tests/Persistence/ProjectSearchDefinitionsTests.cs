@@ -95,6 +95,13 @@ namespace TimeForCode.Donation.Infrastructure.Tests.Persistence
             });
         }
 
+        [TestMethod]
+        public void QueryOptions_LimitServerExecutionTime()
+        {
+            ProjectSearchDefinitions.CountOptions().MaxTime.Should().Be(TimeSpan.FromSeconds(5));
+            ProjectSearchDefinitions.FindOptions().MaxTime.Should().Be(TimeSpan.FromSeconds(5));
+        }
+
         private static ProjectSearchCriteria Criteria(string? searchText = null, string? language = null, string? tag = null)
         {
             return new ProjectSearchCriteria(searchText, language, tag, 1, 20);

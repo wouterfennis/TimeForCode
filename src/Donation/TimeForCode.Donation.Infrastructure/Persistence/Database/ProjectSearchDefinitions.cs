@@ -19,6 +19,18 @@ namespace TimeForCode.Donation.Infrastructure.Persistence.Database
             Index("ix_projects_status_topics_published_at", "Snapshot.Topics")
         ];
 
+        private static readonly TimeSpan QueryTimeout = TimeSpan.FromSeconds(5);
+
+        internal static CountOptions CountOptions()
+        {
+            return new CountOptions { MaxTime = QueryTimeout };
+        }
+
+        internal static FindOptions FindOptions()
+        {
+            return new FindOptions { MaxTime = QueryTimeout };
+        }
+
         internal static FilterDefinition<Project> BuildFilter(ProjectSearchCriteria criteria)
         {
             var builder = Builders<Project>.Filter;

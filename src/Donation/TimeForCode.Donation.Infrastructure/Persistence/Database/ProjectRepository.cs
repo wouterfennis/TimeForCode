@@ -61,17 +61,17 @@ namespace TimeForCode.Donation.Infrastructure.Persistence.Database
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<(IReadOnlyList<Project> Projects, int TotalCount)> SearchActiveAsync(ProjectSearchCriteria criteria)
+        public async Task<(IReadOnlyList<Project> Projects, int TotalCount)> SearchActiveAsync(ProjectSearchCriteria criteria, CancellationToken cancellationToken)
         {
             var filter = ProjectSearchDefinitions.BuildFilter(criteria);
-            var totalCount = (int)await _collection.CountDocumentsAsync(filter);
+            var totalCount = (int)await _collection.CountDocumentsAsync(filter, ProjectSearchDefinitions.CountOptions(), cancellationToken);
             var projects = await _collection
-                .Find(filter)
+                .Find(filter, ProjectSearchDefinitions.FindOptions())
                 .SortByDescending(p => p.PublishedAt)
                 .ThenByDescending(p => p.Id)
                 .Skip((criteria.PageNumber - 1) * criteria.PageSize)
                 .Limit(criteria.PageSize)
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
 
             return (projects, totalCount);
         }

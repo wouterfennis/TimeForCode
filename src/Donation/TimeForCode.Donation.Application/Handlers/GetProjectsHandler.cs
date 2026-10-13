@@ -27,7 +27,7 @@ namespace TimeForCode.Donation.Application.Handlers
                 request.PageNumber,
                 request.PageSize);
 
-            var (projects, totalCount) = await _projectRepository.SearchActiveAsync(criteria);
+            var (projects, totalCount) = await _projectRepository.SearchActiveAsync(criteria, cancellationToken);
 
             _logger.LogDebug("Retrieved {Count} projects out of {TotalCount} total", projects.Count, totalCount);
 
