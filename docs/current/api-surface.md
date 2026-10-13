@@ -27,6 +27,8 @@ The Authorization API exposes OAuth 2.0 endpoints and an OpenID Connect discover
 | Method | Path | Status | Description |
 | --- | --- | --- | --- |
 | `GET` | `/api/v1/user` | ✅ | Returns the currently authenticated user's profile |
+| `GET` | `/api/v1/user/repositories` | ✅ | Returns the caller's public GitHub repositories |
+| `GET` | `/api/v1/user/repositories/{owner}/{repo}` | ✅ | Returns one public GitHub repository; `400` when `owner` or `repo` is not a valid GitHub name (see [declared input limits](#declared-input-limits)) |
 
 ### OpenID Connect / JWKS
 
@@ -153,7 +155,24 @@ All implemented endpoints follow these conventions:
 - Authentication: Bearer token (internal JWT from Authorization API) passed via cookie or `Authorization` header.
 - Content type: `application/json`.
 - API versioning: URL path prefix (`/api/v1/`).
-- Error format: standard ASP.NET Core `ProblemDetails`.
+- Error format: standard ASP.NET Core `ProblemDetails`. Input that violates a declared limit returns `400` with validation problem details (title `One or more validation errors occurred.`, an `errors` entry per parameter).
+- Input limits are declared in the OpenAPI document (`minimum`, `maximum`, `minLength`, `maxLength`, `pattern`, `format`) and enforced; generated clients can read them. Property examples come from the XML documentation.
+- Rate limiting: rate-limited operations document a `429 Too Many Requests` response. The response carries a `Retry-After` header with the number of seconds to wait.
 - API documentation: Swagger UI available at `/swagger` in Development mode.
+
+### Declared input limits
+
+| Where | Limit |
+| --- | --- |
+| Donation: `{id}` of project and donor organization | Exactly 24 hexadecimal characters (`^[0-9a-fA-F]{24}$`); anything else is `400`, not `404` |
+| Donation: `pageNumber` / `pageSize` on both list endpoints | 1 to 10000 / 1 to 100 |
+| Donation: donor organization `name` | 1 to 200 characters |
+| Donation: donor organization `contactEmail` | Email address (`format: email`), at most 254 characters; omit it instead of sending an empty string |
+| Donation: donor organization `website` | Absolute URL (`format: uri`), at most 2048 characters |
+| Donation: request-changes `reason` | 1 to 1000 characters |
+| Authorization: `owner` of `GET /api/v1/user/repositories/{owner}/{repo}` | At most 39 characters; letters and digits with single inner hyphens |
+| Authorization: `repo` of the same route | At most 100 characters; letters, digits, `.`, `_` and `-`, never just `.` or `..` |
+| Authorization: callback `code` and `state` | At most 2048 characters |
+| Authorization: admin `bootstrapSecret` / `credentialJson` | At most 256 / 16384 characters |
 
 See [docs/target/api-contracts.md](../target/api-contracts.md) for the full intended API surface including request/response shapes.

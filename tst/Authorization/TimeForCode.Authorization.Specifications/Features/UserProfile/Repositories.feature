@@ -26,3 +26,17 @@ Scenario: GitHub access token has been revoked
 	And The user's GitHub access token has been revoked at the external platform
 	When The user requests their repositories from the time for code platform
 	Then The user is informed they must re-authenticate via GitHub
+
+Scenario Outline: Requesting a repository with an invalid owner or name is rejected
+	Given The user has an access token
+	When The user requests repository "<repository>" from the time for code platform
+	Then The user is informed the repository request is invalid
+
+	Examples:
+		| repository                                                                                             |
+		| bad_owner/my-repo                                                                                      |
+		| -johndoe/my-repo                                                                                       |
+		| johndoe-/my-repo                                                                                       |
+		| aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/my-repo                                                       |
+		| johndoe/bad$name                                                                                       |
+		| johndoe/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa |

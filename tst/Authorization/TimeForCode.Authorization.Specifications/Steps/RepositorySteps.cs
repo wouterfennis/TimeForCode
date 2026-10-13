@@ -73,6 +73,12 @@ namespace TimeForCode.Authorization.Specifications.Steps
             repo.Url.Should().NotBeNullOrEmpty();
         }
 
+        [Then("The user is informed the repository request is invalid")]
+        public void ThenTheUserIsInformedTheRepositoryRequestIsInvalid()
+        {
+            _singleRepoResponse!.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        }
+
         [Then("The user is informed they must re-authenticate via GitHub")]
         public void ThenTheUserIsInformedTheyMustReAuthenticateViaGitHub()
         {

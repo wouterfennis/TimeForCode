@@ -85,6 +85,48 @@ namespace TimeForCode.Donation.Specifications.Steps
             }
         }
 
+        [When("The user requests page {int} of the donor organizations with {int} donor organizations per page")]
+        public async Task WhenTheUserRequestsPageOfTheDonorOrganizationsAsync(int pageNumber, int pageSize)
+        {
+            try
+            {
+                _getOrganizationsResult = await _donationClient.GetDonorOrganizationsAsync(pageNumber, pageSize);
+            }
+            catch (ApiException<ProblemDetails> ex)
+            {
+                _exception = ex;
+            }
+            catch (ApiException ex)
+            {
+                _exception = ex;
+            }
+        }
+
+        [When("The user requests the donor organization with the identifier {string}")]
+        public async Task WhenTheUserRequestsTheDonorOrganizationWithTheIdentifierAsync(string identifier)
+        {
+            try
+            {
+                _getOrganizationByIdResult = await _donationClient.GetDonorOrganizationByIdAsync(identifier);
+            }
+            catch (ApiException<ProblemDetails> ex)
+            {
+                _exception = ex;
+            }
+            catch (ApiException ex)
+            {
+                _exception = ex;
+            }
+        }
+
+        [Then("The user is informed the donor organization listing request is invalid")]
+        [Then("The user is informed the donor organization identifier is invalid")]
+        public void ThenTheUserIsInformedTheDonorOrganizationRequestIsInvalid()
+        {
+            _exception.Should().NotBeNull();
+            _exception!.StatusCode.Should().Be(400);
+        }
+
         [When("The user requests the donor organization details")]
         public async Task WhenTheUserRequestsTheDonorOrganizationDetailsAsync()
         {

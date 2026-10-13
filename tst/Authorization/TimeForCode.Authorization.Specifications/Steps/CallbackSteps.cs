@@ -54,6 +54,26 @@ namespace TimeForCode.Authorization.Specifications.Steps
             _result = await _authClient.TryCallbackAsync(code, Constants.StateKey);
         }
 
+        [When("The external platform calls the time for code platform with a {word} of 2049 characters")]
+        public async Task WhenTheExternalPlatformCallsTheTimeForCodePlatformWithAnOversizedParameterAsync(string parameter)
+        {
+            var oversized = new string('a', 2049);
+
+            _result = await _authClient.TryCallbackAsync(
+                parameter == "code" ? oversized : "code",
+                parameter == "state" ? oversized : Constants.StateKey);
+        }
+
+        [Then("The callback is rejected as invalid")]
+        public void ThenTheCallbackIsRejectedAsInvalid()
+        {
+            _result!.Exception.Should().BeOfType<ApiException<ProblemDetails>>();
+
+            var exception = (ApiException<ProblemDetails>)_result!.Exception!;
+            exception.StatusCode.Should().Be(400);
+            exception.Result.Title.Should().Be("One or more validation errors occurred.");
+        }
+
         [Then("An access token is returned")]
         public void ThenAAccessTokenIsReturned()
         {

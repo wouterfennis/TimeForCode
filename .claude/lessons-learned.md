@@ -78,6 +78,13 @@ Non-obvious knowledge from past sessions. Read and update through skill `lessons
 - **Why:** both cost a failed run each.
 - **How to apply:** give each project in an in-memory spec catalog its own id; render Mongo filters with `RenderArgs<T>` (driver 3.x) and compare JSON.
 
+### Declare input limits as attributes, not in controller code
+
+- **Date / issue:** 2026-10-13 / #76
+- **Lesson:** `Range`, `StringLength`, `MaxLength`, `RegularExpression` and `[Url]` on action parameters or request properties appear in the OpenAPI document and are enforced by `[ApiController]` (400 validation problem details). `[EmailAddress]` is enforced but not emitted as `format: email` (shared `OpenApiTransformers.AddEmailFormat` adds it); `MaxLength` cannot be put on a `Uri` property. `[EmailAddress]` rejects `""`, which the old FluentValidation rule allowed.
+- **Why:** manual `if (pageNumber < 1)` checks left the schema silent, and the donor-organization list answered 500 for huge page numbers.
+- **How to apply:** put shared limits in the module's `ApiConstraints`, change the Swagger snapshot only after reading the diff, and give a spec scenario to every behaviour change (for example malformed ids now 400, not 404).
+
 ### Spec step classes can be split with `partial`
 
 - **Date / issue:** 2026-10-08 / #75

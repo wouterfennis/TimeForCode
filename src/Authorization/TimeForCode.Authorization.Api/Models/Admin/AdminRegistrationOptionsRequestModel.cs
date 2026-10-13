@@ -11,6 +11,7 @@ namespace TimeForCode.Authorization.Api.Models.Admin
         /// Shared secret guarding who may claim the admin role.
         /// </summary>
         [Required]
+        [MaxLength(ApiConstraints.MaxSecretLength)]
         public required string BootstrapSecret { get; init; }
     }
 }

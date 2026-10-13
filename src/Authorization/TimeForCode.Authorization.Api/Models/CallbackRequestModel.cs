@@ -11,12 +11,14 @@ namespace TimeForCode.Authorization.Api.Models
         /// Gets or sets the authorization code.
         /// </summary>
         [Required]
+        [MaxLength(ApiConstraints.MaxOAuthParameterLength)]
         public required string Code { get; init; }
 
         /// <summary>
         /// Gets or sets the state parameter.
         /// </summary>
         [Required]
+        [MaxLength(ApiConstraints.MaxOAuthParameterLength)]
         public required string State { get; init; }
     }
 }
