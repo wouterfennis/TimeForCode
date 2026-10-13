@@ -34,6 +34,13 @@ Non-obvious knowledge from past sessions. Read and update through skill `lessons
 - **Why:** unrelated diffs pollute the PR and can break the "no changes under src/Website" criterion.
 - **How to apply:** after formatting, run `git status --short` and `git checkout --` every path outside the issue's scope.
 
+### Appending to a CRLF file with a shell rewrites the whole file
+
+- **Date / issue:** 2026-10-13 / PR #98
+- **Lesson:** Some tracked files (for example `Repositories.feature`) are committed with CRLF. Appending LF lines with `cat >>` or `sed -i` makes the working copy mixed, and `git add` then normalises the entire file to LF, so a 14-line addition shows as a 70-line diff.
+- **Why:** `core.autocrlf=true` here, and the review flagged the noise.
+- **How to apply:** check `git show HEAD:<file> | file -` before editing a file by shell; use the Edit tool (it keeps endings), or convert new lines to CRLF and `git -c core.autocrlf=false add <file>`. Confirm with `git diff --numstat`.
+
 ### Website specifications need the running stack
 
 - **Date / issue:** 2026-10-08 / #75
@@ -80,7 +87,7 @@ Non-obvious knowledge from past sessions. Read and update through skill `lessons
 
 ### Declare input limits as attributes, not in controller code
 
-- **Date / issue:** 2026-10-13 / #76
+- **Date / issue:** 2026-10-13 / #76, PR #98
 - **Lesson:** `Range`, `StringLength`, `MaxLength`, `RegularExpression` and `[Url]` on action parameters or request properties appear in the OpenAPI document and are enforced by `[ApiController]` (400 validation problem details). `[EmailAddress]` is enforced but not emitted as `format: email` (shared `OpenApiTransformers.AddEmailFormat` adds it); `MaxLength` cannot be put on a `Uri` property. `[EmailAddress]` rejects `""`, which the old FluentValidation rule allowed.
 - **Why:** manual `if (pageNumber < 1)` checks left the schema silent, and the donor-organization list answered 500 for huge page numbers.
 - **How to apply:** put shared limits in the module's `ApiConstraints`, change the Swagger snapshot only after reading the diff, and give a spec scenario to every behaviour change (for example malformed ids now 400, not 404).

@@ -21,9 +21,9 @@ This document describes the phased delivery plan for the TimeForCode platform. E
 **Scope**:
 
 - GitHub OAuth 2.0 login, JWT issuance, and token refresh. ✅
-- Project registration endpoint (submit GitHub URL, fetch metadata, persist). ⚠️
-- Admin approval workflow for submitted projects.
-- Project listing and search API.
+- Project registration endpoint (submit GitHub URL, fetch metadata, persist). ✅
+- Admin approval workflow for submitted projects. ✅
+- Project listing and search API. ✅
 - Basic website UI: login, project list, project detail page.
 
 **Definition of Done**:

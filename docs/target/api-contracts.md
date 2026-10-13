@@ -57,9 +57,9 @@ Returns the currently authenticated user's profile.
 
 ### Projects
 
-#### POST /api/v1/project ⚠️
+#### POST /api/v1/project ✅
 
-Register a new project.
+Register a public GitHub repository as a project in state `Draft`; metadata is fetched from GitHub. Errors: `400` private or archived repository, `401` no user token, `409` repository already registered.
 
 **Request**:
 
@@ -70,27 +70,21 @@ Register a new project.
 
 ```
 
-**Response** (201 Created):
+**Response** (201 Created, `Location` points at `GET /api/v1/project/{id}`):
 
 ```json
 {
-  "id": "uuid",
-  "name": "repo",
-  "description": "string",
-  "language": "C#",
-  "status": "Draft",
-  "githubUrl": "https://github.com/owner/repo"
+  "projectId": "5f43a0e74b12c84f1b000001"
 }
-
 ```
 
 #### GET /api/v1/project ✅
 
 Implemented: searches active projects by text, language and tag with paging. Query parameters are `searchText`, `language`, `tag`, `pageNumber` and `pageSize`; the response uses `projects`, `totalCount`, `pageNumber` and `pageSize`. See [project search](../current/api-surface.md#project-search) for the contract.
 
-#### GET /api/v1/project/{id} ❌
+#### GET /api/v1/project/{id} ✅
 
-Get a single project's full details.
+Implemented: returns the full details of an `Active` project (`404` for any other state or an unknown id); no authentication required. See [docs/current/api-surface.md](../current/api-surface.md).
 
 #### Project lifecycle ✅
 
