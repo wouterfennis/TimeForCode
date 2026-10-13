@@ -11,17 +11,46 @@ namespace TimeForCode.Donation.Specifications.TestBuilder
             return Build(ProjectStatus.Active, Constants.TestUserId, id);
         }
 
-        internal static Project Build(ProjectStatus status, string ownerId, string? id = null)
+        internal static Project BuildActive(
+            int number,
+            string? name = null,
+            string? language = null,
+            string[]? topics = null,
+            DateTimeOffset? publishedAt = null)
+        {
+            var snapshot = BuildSnapshot();
+            var customised = snapshot with
+            {
+                Name = name ?? snapshot.Name,
+                FullName = $"testuser/{name ?? snapshot.Name}",
+                Language = language ?? snapshot.Language,
+                Topics = topics ?? snapshot.Topics
+            };
+
+            return Build(ProjectStatus.Active, Constants.TestUserId, IdFor(number), customised, publishedAt);
+        }
+
+        internal static string IdFor(int number)
+        {
+            return number.ToString("x24");
+        }
+
+        internal static Project Build(
+            ProjectStatus status,
+            string ownerId,
+            string? id = null,
+            GithubSnapshot? snapshot = null,
+            DateTimeOffset? publishedAt = null)
         {
             var objectId = id != null ? new ObjectId(id) : new ObjectId(Constants.TestProjectId);
             return new Project
             {
                 Id = objectId,
-                Snapshot = BuildSnapshot(),
+                Snapshot = snapshot ?? BuildSnapshot(),
                 GithubRepositoryUrl = new Uri(Constants.TestGithubRepositoryUrl),
                 Status = status,
                 PublishedByUserId = ownerId,
-                PublishedAt = new DateTimeOffset(2024, 1, 1, 0, 0, 0, TimeSpan.Zero)
+                PublishedAt = publishedAt ?? new DateTimeOffset(2024, 1, 1, 0, 0, 0, TimeSpan.Zero)
             };
         }
 

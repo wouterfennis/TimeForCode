@@ -48,7 +48,7 @@ The Donation API is responsible for projects, donations, organizations, and cont
 | Method | Path | Status | Description |
 | --- | --- | --- | --- |
 | `POST` | `/api/v1/project` | ✅ | Registers a public GitHub repository as a project in state `Draft` (user JWT required); fetches full metadata from GitHub; returns 400 for private/archived repos, 409 if the repository is already registered in any state |
-| `GET` | `/api/v1/project` | ✅ | Returns a paginated list of `Active` projects; no authentication required |
+| `GET` | `/api/v1/project` | ✅ | Searches `Active` projects with optional text, language and tag filters and paging; no authentication required (see [Project search](#project-search)) |
 | `GET` | `/api/v1/project/{id}` | ✅ | Returns full project details of an `Active` project (404 otherwise); no authentication required |
 | `GET` | `/api/v1/project/{id}/manage` | ✅ | Maintainer reads their own project in any state (user JWT, owner only); returns `{ "project": { ..., "status" }, "reviewerReason" }`; `403` for another user's project, `404` unknown project |
 | `POST` | `/api/v1/project/{id}/submit` | ✅ | Maintainer submits a `Draft` project for review → `PendingApproval` (user JWT, owner only) |
@@ -74,6 +74,49 @@ Content-Type: application/json
 ```
 
 Example `409` problem details: `{ "title": "Transition not allowed", "status": 409, "detail": "A project can only be approved from state PendingApproval, but it is Draft." }`.
+
+#### Project search
+
+`GET /api/v1/project` is anonymous and only ever returns `Active` projects; `Draft`, `PendingApproval` and `Archived` projects are never exposed.
+
+| Query parameter | Default | Description |
+| --- | --- | --- |
+| `searchText` | none | Case-insensitive literal substring match on the project name, full name or description (regex characters are escaped); at most 100 characters |
+| `language` | none | Exact, case-sensitive match on the GitHub language, for example `C#`; at most 100 characters |
+| `tag` | none | Case-insensitive match on one GitHub topic (topics are stored lowercase); at most 100 characters |
+| `pageNumber` | `1` | 1-based page number, 1 to 10000 |
+| `pageSize` | `20` | Items per page, 1 to 100 |
+
+Supplied criteria are combined with AND; leading and trailing whitespace is trimmed and blank values count as absent. Sort order is fixed: publication date (`publishedAt`) newest first, then project id descending, so pages are stable.
+
+```http
+GET /api/v1/project?searchText=rocket&language=C%23&tag=gaming&pageNumber=1&pageSize=20
+```
+
+```json
+{
+  "projects": [
+    {
+      "id": "5f43a0e74b12c84f1b000001",
+      "name": "rocket-planner",
+      "fullName": "owner/rocket-planner",
+      "description": "Plan your launches",
+      "githubUrl": "https://github.com/owner/rocket-planner",
+      "language": "C#",
+      "stargazersCount": 42,
+      "forksCount": 5,
+      "openIssuesCount": 3,
+      "ownerLogin": "owner",
+      "ownerAvatarUrl": "https://avatars.githubusercontent.com/u/1?v=4"
+    }
+  ],
+  "totalCount": 1,
+  "pageNumber": 1,
+  "pageSize": 20
+}
+```
+
+`totalCount` is the number of projects matching all criteria, not the page length; no matches returns `200` with an empty `projects` array and `totalCount` `0`. The limits are also declared in the OpenAPI document (`minimum`, `maximum`, `maxLength`) so generated clients can see them. Error cases: `400` validation problem details (`errors` lists the offending parameter) for `pageNumber` outside 1 to 10000, `pageSize` outside 1 to 100, or a `searchText`, `language` or `tag` longer than 100 characters; `500` unexpected error, including a search that exceeds the 5 second server-side time limit.
 
 ### Donation Endpoints
 

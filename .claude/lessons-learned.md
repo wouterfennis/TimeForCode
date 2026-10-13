@@ -64,6 +64,20 @@ Non-obvious knowledge from past sessions. Read and update through skill `lessons
 - **Why:** removing or renaming an endpoint breaks every consumer at compile time.
 - **How to apply:** build the whole solution after any controller change; accept the snapshot only after reading the diff.
 
+### Adding query params to a controller action breaks generated-client callers
+
+- **Date / issue:** 2026-10-13 / #76
+- **Lesson:** NSwag emits positional parameters, so extending `GET /api/v1/project` removed the 2-argument `GetProjectsAsync(null, null)` overload and broke three Website call sites; `dotnet build TimeForCode.sln` fails until they change.
+- **Why:** the user accepted this because the Website is deprecated; the Donation test projects still build and pass on their own.
+- **How to apply:** grep `GetXxxAsync(` in `src/Website` before touching an action's signature, ask first, and build the Api project before the Specifications so `TimeForCode.Donation.Api.json` is regenerated.
+
+### Reqnroll catalog fakes need distinct ids and `BsonDocument` needs `ToJson()` in assertions
+
+- **Date / issue:** 2026-10-13 / #76
+- **Lesson:** `ProjectBuilder.BuildActive()` and the lifecycle project share `Constants.TestProjectId`, so an "is not included" check on that id fails; use `ProjectBuilder.IdFor(n)`. FluentAssertions treats `BsonDocument` as a collection of elements, so compare `ToJson()` strings.
+- **Why:** both cost a failed run each.
+- **How to apply:** give each project in an in-memory spec catalog its own id; render Mongo filters with `RenderArgs<T>` (driver 3.x) and compare JSON.
+
 ### Spec step classes can be split with `partial`
 
 - **Date / issue:** 2026-10-08 / #75

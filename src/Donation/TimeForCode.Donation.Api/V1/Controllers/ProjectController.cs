@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Net.Mime;
 using System.Security.Claims;
@@ -19,6 +20,10 @@ namespace TimeForCode.Donation.Api.V1.Controllers
     [EnableRateLimiting("api")]
     public class ProjectController : ControllerBase
     {
+        private const int MaxPageNumber = 10_000;
+        private const int MaxPageSize = 100;
+        private const int MaxSearchCriterionLength = 100;
+
         private readonly IMediator _mediator;
 
         /// <summary>
@@ -86,38 +91,34 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         }
 
         /// <summary>
-        /// Returns a paginated list of all published projects.
+        /// Searches the active projects (anonymous); other states are never returned.
         /// </summary>
-        /// <param name="pageNumber">The page number (1-based, default 1).</param>
-        /// <param name="pageSize">The number of items per page (default 20).</param>
-        /// <returns>A paginated list of published projects.</returns>
+        /// <remarks>Results are sorted by publication date, newest first, with the project id (descending) as tie-breaker.</remarks>
+        /// <param name="pageNumber">The page number (1 to 10000, default 1).</param>
+        /// <param name="pageSize">The number of items per page (1 to 100, default 20).</param>
+        /// <param name="searchText">Optional text (at most 100 characters); matches the project name, full name or description (case-insensitive, literal substring).</param>
+        /// <param name="language">Optional exact programming language, for example <c>C#</c>.</param>
+        /// <param name="tag">Optional topic (case-insensitive); only projects with this topic are returned.</param>
+        /// <returns>A paginated list of active projects matching all supplied criteria, with the total match count.</returns>
         [HttpGet(Name = nameof(GetProjects))]
         [ProducesResponseType(typeof(GetProjectsResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetProjects([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 20)
+        public async Task<IActionResult> GetProjects(
+            [FromQuery, Range(1, MaxPageNumber)] int pageNumber = 1,
+            [FromQuery, Range(1, MaxPageSize)] int pageSize = 20,
+            [FromQuery, MaxLength(MaxSearchCriterionLength)] string? searchText = null,
+            [FromQuery, MaxLength(MaxSearchCriterionLength)] string? language = null,
+            [FromQuery, MaxLength(MaxSearchCriterionLength)] string? tag = null)
         {
-            if (pageNumber < 1)
+            var query = new GetProjectsQuery
             {
-                return BadRequest(new ProblemDetails
-                {
-                    Title = "Invalid page number",
-                    Detail = "Page number must be greater than or equal to 1.",
-                    Status = StatusCodes.Status400BadRequest
-                });
-            }
-
-            if (pageSize < 1 || pageSize > 100)
-            {
-                return BadRequest(new ProblemDetails
-                {
-                    Title = "Invalid page size",
-                    Detail = "Page size must be between 1 and 100.",
-                    Status = StatusCodes.Status400BadRequest
-                });
-            }
-
-            var query = new GetProjectsQuery { PageNumber = pageNumber, PageSize = pageSize };
+                SearchText = searchText,
+                Language = language,
+                Tag = tag,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
             var result = await _mediator.Send(query);
 
             if (result.IsFailure)

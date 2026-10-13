@@ -43,12 +43,13 @@ namespace TimeForCode.Donation.Specifications.Steps
             SetupLifecycleProject(ProjectStatus.PendingApproval);
         }
 
-        [Given("^There is a project that is (in draft|active|archived)$")]
+        [Given("^There is a project that is (in draft|pending approval|active|archived)$")]
         public void GivenThereIsAProjectThatIs(string state)
         {
             var status = state switch
             {
                 "in draft" => ProjectStatus.Draft,
+                "pending approval" => ProjectStatus.PendingApproval,
                 "active" => ProjectStatus.Active,
                 _ => ProjectStatus.Archived
             };

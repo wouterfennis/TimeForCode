@@ -361,14 +361,17 @@
         "tags": [
           "Project"
         ],
-        "summary": "Returns a paginated list of all published projects.",
+        "summary": "Searches the active projects (anonymous); other states are never returned.",
+        "description": "Results are sorted by publication date, newest first, with the project id (descending) as tie-breaker.",
         "operationId": "GetProjects",
         "parameters": [
           {
             "name": "pageNumber",
             "in": "query",
-            "description": "The page number (1-based, default 1).",
+            "description": "The page number (1 to 10000, default 1).",
             "schema": {
+              "maximum": 10000,
+              "minimum": 1,
               "pattern": "^-?(?:0|[1-9]\\d*)$",
               "type": [
                 "integer",
@@ -381,8 +384,10 @@
           {
             "name": "pageSize",
             "in": "query",
-            "description": "The number of items per page (default 20).",
+            "description": "The number of items per page (1 to 100, default 20).",
             "schema": {
+              "maximum": 100,
+              "minimum": 1,
               "pattern": "^-?(?:0|[1-9]\\d*)$",
               "type": [
                 "integer",
@@ -390,6 +395,33 @@
               ],
               "format": "int32",
               "default": 20
+            }
+          },
+          {
+            "name": "searchText",
+            "in": "query",
+            "description": "Optional text (at most 100 characters); matches the project name, full name or description (case-insensitive, literal substring).",
+            "schema": {
+              "maxLength": 100,
+              "type": "string"
+            }
+          },
+          {
+            "name": "language",
+            "in": "query",
+            "description": "Optional exact programming language, for example `C#`.",
+            "schema": {
+              "maxLength": 100,
+              "type": "string"
+            }
+          },
+          {
+            "name": "tag",
+            "in": "query",
+            "description": "Optional topic (case-insensitive); only projects with this topic are returned.",
+            "schema": {
+              "maxLength": 100,
+              "type": "string"
             }
           }
         ],

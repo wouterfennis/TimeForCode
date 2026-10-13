@@ -82,6 +82,10 @@ sequenceDiagram
 
 A maintainer submits a `Draft` project for review (`POST /api/v1/project/{id}/submit`, user JWT, owner only). An administrator, authenticated with an admin JWT (scope `admin`), then approves it (`POST .../approve`, project becomes `Active` and appears in the public list) or sends it back (`POST .../request-changes` with a reason, project returns to `Draft` and the reason is stored). Maintainers can archive an `Active` project (`.../archive`) and re-activate an `Archived` one (`.../reactivate`). The `Project` aggregate rejects every other transition; the API answers `409 Conflict`. A non-admin calling an admin endpoint gets `403`, an anonymous caller `401`.
 
+## Scenario 3c — Search Active Projects
+
+A visitor calls `GET /api/v1/project` without authentication, optionally with `searchText`, `language`, `tag`, `pageNumber` and `pageSize`. The controller rejects a `pageNumber` below 1 or a `pageSize` outside 1 to 100 with `400` problem details. Otherwise `GetProjectsHandler` trims the criteria, treats blank values as absent, lower-cases the tag and calls `IProjectRepository.SearchActiveAsync`. The MongoDB repository builds one filter (`Active` status AND the supplied criteria), counts the matches and returns the requested page sorted by `PublishedAt` descending, then `_id` descending. The response carries the page and the total match count. Contract: [api-surface.md](../../current/api-surface.md#project-search).
+
 ## Scenario 4 — Log Hours Against a Donation (Target)
 
 ```mermaid

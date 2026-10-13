@@ -26,7 +26,7 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
         public async Task Handle_PublishedProjectsExist_ReturnsSuccess()
         {
             var project = BuildPublishedProject();
-            _mockRepository.Setup(r => r.GetAllActiveAsync(1, 20))
+            _mockRepository.Setup(r => r.SearchActiveAsync(new ProjectSearchCriteria(null, null, null, 1, 20), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(((IReadOnlyList<Project>)[project], 1));
 
             var query = new GetProjectsQuery { PageNumber = 1, PageSize = 20 };
@@ -42,7 +42,7 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
         [TestMethod]
         public async Task Handle_NoPublishedProjects_ReturnsSuccessWithEmptyList()
         {
-            _mockRepository.Setup(r => r.GetAllActiveAsync(It.IsAny<int>(), It.IsAny<int>()))
+            _mockRepository.Setup(r => r.SearchActiveAsync(It.IsAny<ProjectSearchCriteria>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(((IReadOnlyList<Project>)[], 0));
 
             var query = new GetProjectsQuery { PageNumber = 1, PageSize = 20 };
@@ -57,7 +57,7 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
         public async Task Handle_PublishedProject_MapsAllFieldsCorrectly()
         {
             var project = BuildPublishedProject();
-            _mockRepository.Setup(r => r.GetAllActiveAsync(It.IsAny<int>(), It.IsAny<int>()))
+            _mockRepository.Setup(r => r.SearchActiveAsync(It.IsAny<ProjectSearchCriteria>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(((IReadOnlyList<Project>)[project], 1));
 
             var query = new GetProjectsQuery { PageNumber = 1, PageSize = 20 };
@@ -80,7 +80,7 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
         [TestMethod]
         public async Task Handle_PaginationParameters_ArePassedToRepository()
         {
-            _mockRepository.Setup(r => r.GetAllActiveAsync(2, 10))
+            _mockRepository.Setup(r => r.SearchActiveAsync(It.IsAny<ProjectSearchCriteria>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(((IReadOnlyList<Project>)[], 0));
 
             var query = new GetProjectsQuery { PageNumber = 2, PageSize = 10 };
@@ -89,7 +89,59 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
             result.IsSuccess.Should().BeTrue();
             result.Value.PageNumber.Should().Be(2);
             result.Value.PageSize.Should().Be(10);
-            _mockRepository.Verify(r => r.GetAllActiveAsync(2, 10), Times.Once);
+            _mockRepository.Verify(r => r.SearchActiveAsync(new ProjectSearchCriteria(null, null, null, 2, 10), It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        [TestMethod]
+        public async Task Handle_SearchCriteriaProvided_PassesNormalizedCriteriaToRepository()
+        {
+            _mockRepository.Setup(r => r.SearchActiveAsync(It.IsAny<ProjectSearchCriteria>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(((IReadOnlyList<Project>)[], 0));
+
+            var query = new GetProjectsQuery
+            {
+                SearchText = "  rocket ",
+                Language = " C# ",
+                Tag = " Gaming ",
+                PageNumber = 3,
+                PageSize = 15
+            };
+            var result = await _sut.Handle(query, CancellationToken.None);
+
+            result.IsSuccess.Should().BeTrue();
+            _mockRepository.Verify(
+                r => r.SearchActiveAsync(new ProjectSearchCriteria("rocket", "C#", "gaming", 3, 15), It.IsAny<CancellationToken>()),
+                Times.Once);
+        }
+
+        [TestMethod]
+        public async Task Handle_CancellationToken_IsPassedToRepository()
+        {
+            using var cancellation = new CancellationTokenSource();
+            _mockRepository.Setup(r => r.SearchActiveAsync(It.IsAny<ProjectSearchCriteria>(), cancellation.Token))
+                .ReturnsAsync(((IReadOnlyList<Project>)[], 0));
+
+            var result = await _sut.Handle(new GetProjectsQuery(), cancellation.Token);
+
+            result.IsSuccess.Should().BeTrue();
+            _mockRepository.Verify(r => r.SearchActiveAsync(It.IsAny<ProjectSearchCriteria>(), cancellation.Token), Times.Once);
+        }
+
+        [TestMethod]
+        [DataRow("")]
+        [DataRow("   ")]
+        public async Task Handle_BlankSearchCriteria_TreatsCriteriaAsAbsent(string blank)
+        {
+            _mockRepository.Setup(r => r.SearchActiveAsync(It.IsAny<ProjectSearchCriteria>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(((IReadOnlyList<Project>)[], 0));
+
+            var query = new GetProjectsQuery { SearchText = blank, Language = blank, Tag = blank };
+            var result = await _sut.Handle(query, CancellationToken.None);
+
+            result.IsSuccess.Should().BeTrue();
+            _mockRepository.Verify(
+                r => r.SearchActiveAsync(new ProjectSearchCriteria(null, null, null, 1, 20), It.IsAny<CancellationToken>()),
+                Times.Once);
         }
 
         private static Project BuildPublishedProject()

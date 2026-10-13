@@ -20,7 +20,14 @@ namespace TimeForCode.Donation.Application.Handlers
         {
             _logger.LogInformation("Getting projects page {PageNumber} with page size {PageSize}", request.PageNumber, request.PageSize);
 
-            var (projects, totalCount) = await _projectRepository.GetAllActiveAsync(request.PageNumber, request.PageSize);
+            var criteria = new ProjectSearchCriteria(
+                Normalize(request.SearchText),
+                Normalize(request.Language),
+                Normalize(request.Tag)?.ToLowerInvariant(),
+                request.PageNumber,
+                request.PageSize);
+
+            var (projects, totalCount) = await _projectRepository.SearchActiveAsync(criteria, cancellationToken);
 
             _logger.LogDebug("Retrieved {Count} projects out of {TotalCount} total", projects.Count, totalCount);
 
@@ -54,6 +61,11 @@ namespace TimeForCode.Donation.Application.Handlers
                 PageNumber = request.PageNumber,
                 PageSize = request.PageSize
             });
+        }
+
+        private static string? Normalize(string? value)
+        {
+            return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
         }
     }
 }
