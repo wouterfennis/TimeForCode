@@ -1,6 +1,7 @@
 ﻿using TimeForCode.Authorization.Commands;
 using TimeForCode.Authorization.Values;
 using TimeForCode.Shared.Api.Authentication.Models;
+using AccountInformation = TimeForCode.Authorization.Domain.Entities.AccountInformation;
 
 namespace TimeForCode.Authorization.Application.Services
 {
@@ -8,6 +9,12 @@ namespace TimeForCode.Authorization.Application.Services
     {
         Task<Result<ExternalAccessToken>> GetAccessTokenFromExternalProviderAsync(string state, string code);
         AccessToken GenerateInternalToken(string userId);
+
+        /// <summary>
+        /// Generates a user token carrying the account's GitHub login and avatar URL as the <c>login</c> and
+        /// <c>avatar_url</c> claims, so resource APIs can show the user without calling back.
+        /// </summary>
+        AccessToken GenerateInternalToken(AccountInformation account);
 
         /// <summary>
         /// Generates an internal token carrying an additional role and scope claim. Used exclusively by the

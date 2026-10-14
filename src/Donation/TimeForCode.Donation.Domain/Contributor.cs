@@ -1,27 +1,35 @@
-﻿namespace TimeForCode.Donation.Domain
-{
-    public class Contributor : User
-    {
-        public string? Email { get; private init; }
-        public string? AvatarUrl { get; private init; }
-        private Contributor(string name, Uri githubReference, string? email, string? avatarUrl)
-            : base(name, githubReference)
-        {
-            Email = email;
-            AvatarUrl = avatarUrl;
-        }
-        public static Contributor Create(string name, Uri githubReference, string? email = null, string? avatarUrl = null)
-        {
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                throw new ArgumentException("Contributor name cannot be null or empty.", nameof(name));
-            }
-            if (githubReference == null)
-            {
-                throw new ArgumentNullException(nameof(githubReference), "GitHub reference cannot be null.");
-            }
-            return new Contributor(name, githubReference, email, avatarUrl);
-        }
+using MongoDB.Bson;
+using TimeForCode.Donation.Domain.Entities;
 
+namespace TimeForCode.Donation.Domain
+{
+    /// <summary>
+    /// A platform user who logs time on projects; persisted as its own document and upserted by <see cref="PlatformUserId"/>.
+    /// </summary>
+    public class Contributor : DocumentEntity
+    {
+        public required string PlatformUserId { get; init; }
+        public required string GithubLogin { get; init; }
+        public required string AvatarUrl { get; init; }
+
+        public static Contributor Create(string platformUserId, string githubLogin, string avatarUrl)
+        {
+            if (string.IsNullOrWhiteSpace(platformUserId))
+            {
+                throw new ArgumentException("Platform user id cannot be null or empty.", nameof(platformUserId));
+            }
+            if (string.IsNullOrWhiteSpace(githubLogin))
+            {
+                throw new ArgumentException("GitHub login cannot be null or empty.", nameof(githubLogin));
+            }
+
+            return new Contributor
+            {
+                Id = ObjectId.GenerateNewId(),
+                PlatformUserId = platformUserId,
+                GithubLogin = githubLogin,
+                AvatarUrl = avatarUrl
+            };
+        }
     }
 }

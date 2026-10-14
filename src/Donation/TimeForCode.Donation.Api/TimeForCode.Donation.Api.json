@@ -6,6 +6,185 @@
     "version": "v1"
   },
   "paths": {
+    "/api/v1/project/{id}/contribution": {
+      "post": {
+        "tags": [
+          "Contribution"
+        ],
+        "summary": "Logs hours the caller spent on a published project.",
+        "operationId": "AddContribution",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The project identifier.",
+            "required": true,
+            "schema": {
+              "pattern": "^[0-9a-fA-F]{24}$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "The hours spent and an optional GitHub pull request or commit link.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddContributionRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddContributionRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddContributionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContributionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. Retry after the number of seconds given in the Retry-After header.",
+            "headers": {
+              "Retry-After": {
+                "description": "Number of seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Contribution"
+        ],
+        "summary": "Returns the contributions logged on a published project (anonymous), earliest first.",
+        "operationId": "GetContributions",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The project identifier.",
+            "required": true,
+            "schema": {
+              "pattern": "^[0-9a-fA-F]{24}$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetContributionsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. Retry after the number of seconds given in the Retry-After header.",
+            "headers": {
+              "Retry-After": {
+                "description": "Number of seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/DonorOrganization": {
       "post": {
         "tags": [
@@ -1249,6 +1428,90 @@
   },
   "components": {
     "schemas": {
+      "AddContributionRequest": {
+        "required": [
+          "hours"
+        ],
+        "type": "object",
+        "properties": {
+          "hours": {
+            "maximum": 10000,
+            "minimum": 1,
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The whole number of hours spent on the project.",
+            "format": "int32"
+          },
+          "githubReference": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Optional evidence: an HTTPS link to github.com, for example a pull request or a commit.",
+            "format": "uri"
+          }
+        },
+        "description": "Represents a request to log time spent on a project."
+      },
+      "ContributionResponse": {
+        "required": [
+          "id",
+          "projectId",
+          "contributorId",
+          "contributorGitHubLogin",
+          "contributorAvatarUrl",
+          "hours",
+          "loggedAt"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The contribution identifier."
+          },
+          "projectId": {
+            "type": "string",
+            "description": "The identifier of the project the time was logged on."
+          },
+          "contributorId": {
+            "type": "string",
+            "description": "The identifier of the contributor who logged the time."
+          },
+          "contributorGitHubLogin": {
+            "type": "string",
+            "description": "The GitHub login of the contributor at the time of logging."
+          },
+          "contributorAvatarUrl": {
+            "type": "string",
+            "description": "The avatar URL of the contributor at the time of logging."
+          },
+          "hours": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The number of hours logged.",
+            "format": "int32"
+          },
+          "githubReference": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Optional link to a GitHub pull request or commit that evidences the work."
+          },
+          "loggedAt": {
+            "type": "string",
+            "description": "The moment the hours were logged.",
+            "format": "date-time"
+          }
+        },
+        "description": "Represents a time contribution logged on a project."
+      },
       "CreateDonorOrganizationRequest": {
         "required": [
           "name"
@@ -1333,6 +1596,22 @@
           }
         },
         "description": "Represents a donor organization response."
+      },
+      "GetContributionsResponse": {
+        "required": [
+          "contributions"
+        ],
+        "type": "object",
+        "properties": {
+          "contributions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContributionResponse"
+            },
+            "description": "The contributions, earliest first."
+          }
+        },
+        "description": "Represents the contributions logged on a project."
       },
       "GetDonorOrganizationsResponse": {
         "required": [
@@ -1911,6 +2190,9 @@
     }
   },
   "tags": [
+    {
+      "name": "Contribution"
+    },
     {
       "name": "DonorOrganization"
     },

@@ -100,7 +100,7 @@ graph LR
 
 | Component | Responsibility |
 | --- | --- |
-| `TimeForCode.Donation.Api` | REST endpoints for project registration, search and listing, detail, and the review lifecycle (submit, approve, request changes, archive, re-activate; policies `ApiUser` and `ApiAdmin`); donor-organization creation, listing, detail, update, and deletion |
+| `TimeForCode.Donation.Api` | REST endpoints for project registration, search and listing, detail, and the review lifecycle (submit, approve, request changes, archive, re-activate; policies `ApiUser` and `ApiAdmin`); donor-organization creation, listing, detail, update, and deletion; logging and listing project contributions |
 | `TimeForCode.Donation.Application` | MediatR command handlers; GitHub metadata fetch interface |
 | `TimeForCode.Donation.Domain` | Project entity with lifecycle state machine (Draft, PendingApproval, Active, Archived); GithubSnapshot record; DocumentEntity base class |
 | `TimeForCode.Donation.Infrastructure` | MongoDB project repository (including `ProjectSearchDefinitions`: the active-project search filter and the status, language and topic indexes created at startup); GitHub public REST API client |
@@ -116,7 +116,8 @@ graph LR
 | `Donation` | Hours pledged by an organisation or individual to a project |
 | `DonationTransaction` | Single hour-log entry against an active donation |
 | `DonorOrganization` | Company registered as a donor |
-| `Contributor` | Developer who logs hours |
+| `Contributor` | Developer who logs hours; own MongoDB document, upserted by platform user id (unique index) on every logged contribution |
+| `Contribution` | Time-log entry of a contributor on an `Active` project; stores the `ContributorId` plus a snapshot of the GitHub login and avatar (extended reference, like `GithubSnapshot` on `Project`) |
 | `Maintainer` | Developer who owns a project |
 | `Milestone` | Phase within a project, synced from GitHub milestones |
 

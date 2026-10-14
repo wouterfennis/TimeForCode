@@ -139,6 +139,15 @@ GET /api/v1/project?searchText=rocket&language=C%23&tag=gaming&pageNumber=1&page
 | `PUT` | `/api/v1/donororganization/{id}` | ✅ | Updates a donor organization; returns 404 when not found or 409 for a duplicate name |
 | `DELETE` | `/api/v1/donororganization/{id}` | ✅ | Deletes a donor organization; returns 204 No Content on success or 404 when not found |
 
+### Contribution Endpoints
+
+| Method | Path | Status | Description |
+| --- | --- | --- | --- |
+| `POST` | `/api/v1/project/{id}/contribution` | ✅ | Logs hours on an `Active` project (user JWT); body `{ "hours": 1-10000, "githubReference": "https://github.com/..." }` (`githubReference` optional, HTTPS github.com only); upserts the caller as a `Contributor` by `sub` and returns `201` with the contribution (id, contributor id, GitHub login and avatar snapshot, hours, reference, `loggedAt`); `400` for invalid hours or reference or a token without `login`/`avatar_url` claims, `401` without a token, `404` for an unknown or non-`Active` project |
+| `GET` | `/api/v1/project/{id}/contribution` | ✅ | Lists the contributions of an `Active` project, earliest first, as `{ "contributions": [...] }` (at most 1000); no authentication required; `404` for an unknown or non-`Active` project |
+
+The user JWT issued by the Authorization API carries the `login` and `avatar_url` claims (GitHub login and avatar URL of the account) next to `sub`, `scope` and `aud`; the Donation API reads them to fill the contributor snapshot.
+
 ### Contributor Endpoints
 
 | Method | Path | Status | Description |
