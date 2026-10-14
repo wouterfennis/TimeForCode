@@ -85,16 +85,16 @@ namespace TimeForCode.Donation.Specifications.Steps
             Contributions.CreateAsync(NewContribution(otherProject.Id, TestUserContributor(), 7, FirstLoggedAt));
         }
 
-        [When("The user logs {int} hours on the project")]
-        public Task WhenTheUserLogsHoursOnTheProjectAsync(int hours)
+        [When("^The user logs (-?\\d+) hours on the project((?: with the GitHub reference \"[^\"]*\")?)$")]
+        public Task WhenTheUserLogsHoursOnTheProjectAsync(int hours, string referenceSuffix)
         {
-            return LogHoursAsync(hours, null);
-        }
+            // The suffix is empty without a reference, otherwise ` with the GitHub reference "<url>"`
+            var reference = referenceSuffix.Split('"').ElementAtOrDefault(1);
+            var githubReference = reference == null ? null : new Uri(reference, UriKind.RelativeOrAbsolute);
 
-        [When("The user logs {int} hours on the project with the GitHub reference {string}")]
-        public Task WhenTheUserLogsHoursOnTheProjectWithTheGitHubReferenceAsync(int hours, string reference)
-        {
-            return LogHoursAsync(hours, new Uri(reference, UriKind.RelativeOrAbsolute));
+            return CaptureAsync(async () => _addContributionResult = await _donationClient.AddContributionAsync(
+                _registeredProjectId ?? Constants.TestProjectId,
+                new AddContributionRequest { Hours = hours, GithubReference = githubReference }));
         }
 
         [When("The user requests the contributions of the project")]
@@ -102,12 +102,6 @@ namespace TimeForCode.Donation.Specifications.Steps
         public Task WhenTheUserRequestsTheContributionsOfTheProjectAsync()
         {
             return GetContributionsAsync(_registeredProjectId ?? Constants.TestProjectId);
-        }
-
-        [When("The user requests the contributions of the project with the identifier {string}")]
-        public Task WhenTheUserRequestsTheContributionsOfTheProjectWithTheIdentifierAsync(string identifier)
-        {
-            return GetContributionsAsync(identifier);
         }
 
         [Then("The contribution is recorded on the time for code platform")]
@@ -155,19 +149,13 @@ namespace TimeForCode.Donation.Specifications.Steps
             _addContributionResult!.GithubReference.Should().Be(reference);
         }
 
-        [Then("The user is registered as a contributor on the time for code platform")]
-        public void ThenTheUserIsRegisteredAsAContributorOnTheTimeForCodePlatform()
+        [Then("^The user is registered as (?:a|one) contributor on the time for code platform$")]
+        public void ThenTheUserIsRegisteredAsOneContributorOnTheTimeForCodePlatform()
         {
             var contributor = Contributors.Contributors.Should().ContainSingle().Subject;
             contributor.PlatformUserId.Should().Be(Constants.TestUserId);
             contributor.GithubLogin.Should().Be(Constants.TestUserLogin);
             contributor.AvatarUrl.Should().Be(Constants.TestUserAvatarUrl);
-        }
-
-        [Then("The user is registered as one contributor on the time for code platform")]
-        public void ThenTheUserIsRegisteredAsOneContributorOnTheTimeForCodePlatform()
-        {
-            Contributors.Contributors.Count(c => c.PlatformUserId == Constants.TestUserId).Should().Be(1);
         }
 
         [Then("Both contributions are linked to that contributor")]
@@ -184,20 +172,6 @@ namespace TimeForCode.Donation.Specifications.Steps
         {
             _exception.Should().NotBeNull();
             _exception!.StatusCode.Should().Be(StatusCodes.Status404NotFound);
-        }
-
-        [Then("The user is informed the GitHub reference is invalid")]
-        public void ThenTheUserIsInformedTheGitHubReferenceIsInvalid()
-        {
-            _exception.Should().NotBeNull();
-            _exception!.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
-        }
-
-        [Then("The user is informed the hours are invalid")]
-        public void ThenTheUserIsInformedTheHoursAreInvalid()
-        {
-            _exception.Should().NotBeNull();
-            _exception!.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
         }
 
         [Then("The contributions of the project are returned")]
@@ -258,38 +232,9 @@ namespace TimeForCode.Donation.Specifications.Steps
             _getContributionsResult!.Contributions.Should().BeEmpty();
         }
 
-        private async Task LogHoursAsync(int hours, Uri? githubReference)
+        private Task GetContributionsAsync(string projectId)
         {
-            try
-            {
-                _addContributionResult = await _donationClient.AddContributionAsync(
-                    _registeredProjectId ?? Constants.TestProjectId,
-                    new AddContributionRequest { Hours = hours, GithubReference = githubReference });
-            }
-            catch (ApiException<ProblemDetails> exception)
-            {
-                _exception = exception;
-            }
-            catch (ApiException exception)
-            {
-                _exception = exception;
-            }
-        }
-
-        private async Task GetContributionsAsync(string projectId)
-        {
-            try
-            {
-                _getContributionsResult = await _donationClient.GetContributionsAsync(projectId);
-            }
-            catch (ApiException<ProblemDetails> exception)
-            {
-                _exception = exception;
-            }
-            catch (ApiException exception)
-            {
-                _exception = exception;
-            }
+            return CaptureAsync(async () => _getContributionsResult = await _donationClient.GetContributionsAsync(projectId));
         }
 
         private Contributor TestUserContributor()
