@@ -9,7 +9,7 @@ namespace TimeForCode.Donation.Infrastructure.Persistence.Database
     [ExcludeFromCodeCoverage(Justification = "Repository implementation")]
     internal class ContributionRepository : IContributionRepository
     {
-        // Upper bound for one project listing; keeps the unpaged endpoint from reading an unbounded collection.
+        // Upper bound for one project listing; keeps the unpaged endpoint from reading an unbounded collection. The newest contributions win.
         private const int MaxContributionsPerProject = 1000;
 
         private static readonly object IndexCreationLock = new();
@@ -59,12 +59,15 @@ namespace TimeForCode.Donation.Infrastructure.Persistence.Database
                 return [];
             }
 
-            return await _collection
+            var newest = await _collection
                 .Find(Builders<Contribution>.Filter.Eq(c => c.ProjectId, objectId))
-                .SortBy(c => c.LoggedAt)
-                .ThenBy(c => c.Id)
+                .SortByDescending(c => c.LoggedAt)
+                .ThenByDescending(c => c.Id)
                 .Limit(MaxContributionsPerProject)
                 .ToListAsync(cancellationToken);
+
+            newest.Reverse();
+            return newest;
         }
     }
 }

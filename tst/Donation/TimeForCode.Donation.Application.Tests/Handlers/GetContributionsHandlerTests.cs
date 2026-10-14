@@ -51,17 +51,16 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
         };
 
         [TestMethod]
-        public async Task Handle_ContributionsLoggedOutOfOrder_ReturnsEarliestFirst()
+        public async Task Handle_Contributions_KeepsRepositoryOrder()
         {
             GivenProject(ProjectStatus.Active);
-            var early = Contribution(2, new DateTimeOffset(2024, 1, 1, 0, 0, 0, TimeSpan.Zero));
-            var late = Contribution(3, new DateTimeOffset(2024, 3, 1, 0, 0, 0, TimeSpan.Zero));
+            var first = Contribution(2, new DateTimeOffset(2024, 3, 1, 0, 0, 0, TimeSpan.Zero));
+            var second = Contribution(3, new DateTimeOffset(2024, 1, 1, 0, 0, 0, TimeSpan.Zero));
             _contributionRepository.Setup(r => r.GetByProjectIdAsync(ProjectId.ToString(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync([late, early]);
+                .ReturnsAsync([first, second]);
 
             var result = await _sut.Handle(Query(), CancellationToken.None);
 
-            result.IsSuccess.Should().BeTrue();
             result.Value.Contributions.Select(c => c.Hours).Should().Equal(2, 3);
         }
 

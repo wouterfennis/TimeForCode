@@ -55,5 +55,35 @@ namespace TimeForCode.Donation.Application.Tests.Validators
 
             result.Errors.Should().Contain(e => e.PropertyName == nameof(AddContributionCommand.GithubReference));
         }
+
+        [TestMethod]
+        public async Task Validate_HoursAboveMaximum_ReturnsFailure()
+        {
+            var result = await _sut.ValidateAsync(Command(AddContributionCommand.MaxHours + 1), CancellationToken.None);
+
+            result.Errors.Should().Contain(e => e.PropertyName == nameof(AddContributionCommand.Hours));
+        }
+
+        [TestMethod]
+        [DataRow("https://github.com/")]
+        [DataRow("https://github.com:8443/owner/repo/pull/12")]
+        [DataRow("https://user:secret@github.com/owner/repo/pull/12")]
+        [DataRow("https://github.com/owner/repo/pull/12?redir=https://evil.example")]
+        public async Task Validate_ReferenceNotAPathOnGithub_ReturnsFailure(string reference)
+        {
+            var result = await _sut.ValidateAsync(Command(githubReference: new Uri(reference)), CancellationToken.None);
+
+            result.Errors.Should().Contain(e => e.PropertyName == nameof(AddContributionCommand.GithubReference));
+        }
+
+        [TestMethod]
+        public async Task Validate_ReferenceTooLong_ReturnsFailure()
+        {
+            var reference = new Uri("https://github.com/owner/repo/pull/" + new string('1', AddContributionCommand.MaxReferenceLength));
+
+            var result = await _sut.ValidateAsync(Command(githubReference: reference), CancellationToken.None);
+
+            result.Errors.Should().Contain(e => e.PropertyName == nameof(AddContributionCommand.GithubReference));
+        }
     }
 }

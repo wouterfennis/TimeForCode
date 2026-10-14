@@ -18,6 +18,10 @@ namespace TimeForCode.Donation.Domain
             {
                 throw new ArgumentException("Platform user id cannot be null or empty.", nameof(platformUserId));
             }
+            if (string.IsNullOrWhiteSpace(avatarUrl))
+            {
+                throw new ArgumentException("Avatar URL cannot be null or empty.", nameof(avatarUrl));
+            }
             if (string.IsNullOrWhiteSpace(githubLogin))
             {
                 throw new ArgumentException("GitHub login cannot be null or empty.", nameof(githubLogin));

@@ -38,8 +38,6 @@ namespace TimeForCode.Donation.Application.Handlers
             return Result<GetContributionsResult>.Success(new GetContributionsResult
             {
                 Contributions = contributions
-                    .OrderBy(c => c.LoggedAt)
-                    .ThenBy(c => c.Id)
                     .Select(c => c.ToDto())
                     .ToList()
             });

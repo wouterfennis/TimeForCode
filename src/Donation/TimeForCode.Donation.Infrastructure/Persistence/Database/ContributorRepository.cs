@@ -51,12 +51,19 @@ namespace TimeForCode.Donation.Infrastructure.Persistence.Database
             {
                 return await UpsertOnceAsync(contributor);
             }
-            catch (MongoCommandException ex) when (ex.Code == 11000)
+            catch (Exception ex) when (IsDuplicateKey(ex))
             {
                 // Two first-time requests of the same user raced on the unique index; the document now exists.
                 return await UpsertOnceAsync(contributor);
             }
         }
+
+        private static bool IsDuplicateKey(Exception ex) => ex switch
+        {
+            MongoCommandException command => command.Code == 11000,
+            MongoWriteException write => write.WriteError.Category == ServerErrorCategory.DuplicateKey,
+            _ => false
+        };
 
         private async Task<Contributor> UpsertOnceAsync(Contributor contributor)
         {
