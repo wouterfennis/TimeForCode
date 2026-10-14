@@ -43,7 +43,9 @@ namespace TimeForCode.Donation.Specifications.Steps
             var claims = new[]
             {
                 new Claim(ClaimTypes.NameIdentifier, userId),
-                new Claim("scope", scope)
+                new Claim("scope", scope),
+                new Claim("login", Constants.TestUserLogin),
+                new Claim("avatar_url", Constants.TestUserAvatarUrl)
             };
 
             var token = new JwtSecurityToken(

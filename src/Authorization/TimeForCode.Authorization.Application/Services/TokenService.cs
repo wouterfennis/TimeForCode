@@ -9,6 +9,7 @@ using TimeForCode.Authorization.Application.Options;
 using TimeForCode.Authorization.Commands;
 using TimeForCode.Authorization.Values;
 using TimeForCode.Shared.Api.Authentication.Models;
+using AccountInformation = TimeForCode.Authorization.Domain.Entities.AccountInformation;
 
 namespace TimeForCode.Authorization.Application.Services
 {
@@ -20,6 +21,7 @@ namespace TimeForCode.Authorization.Application.Services
         private readonly TokenCreationOptions _tokenCreationOptions;
         private readonly IRefreshTokenRepository _refreshTokenRepository;
         private readonly IStateRepository _stateRepository;
+        private readonly IAccountInformationRepository _accountInformationRepository;
         private readonly ILogger<TokenService> _logger;
 
         public TokenService(RSA rsa,
@@ -27,6 +29,7 @@ namespace TimeForCode.Authorization.Application.Services
             TimeProvider timeProvider,
             IRefreshTokenRepository refreshTokenRepository,
             IStateRepository stateRepository,
+            IAccountInformationRepository accountInformationRepository,
             IOptions<TokenCreationOptions> tokenCreationOptions,
             ILogger<TokenService> logger)
         {
@@ -36,6 +39,7 @@ namespace TimeForCode.Authorization.Application.Services
             _timeProvider = timeProvider;
             _refreshTokenRepository = refreshTokenRepository;
             _stateRepository = stateRepository;
+            _accountInformationRepository = accountInformationRepository;
             _logger = logger;
         }
 
@@ -65,9 +69,14 @@ namespace TimeForCode.Authorization.Application.Services
             return Result<ExternalAccessToken>.Success(accessToken);
         }
 
-        public AccessToken GenerateInternalToken(string userId)
+        public AccessToken GenerateInternalToken(AccountInformation account)
         {
-            return BuildInternalToken(userId, role: null, scope: "user");
+            return BuildInternalToken(
+                account.Id.ToString(),
+                role: null,
+                scope: "user",
+                login: account.Login,
+                avatarUrl: account.AvatarUrl);
         }
 
         public AccessToken GenerateInternalToken(string userId, string role, string scope)
@@ -75,7 +84,7 @@ namespace TimeForCode.Authorization.Application.Services
             return BuildInternalToken(userId, role, scope);
         }
 
-        private AccessToken BuildInternalToken(string userId, string? role, string scope)
+        private AccessToken BuildInternalToken(string userId, string? role, string scope, string? login = null, string? avatarUrl = null)
         {
             _logger.LogDebug("Generating internal token for user {UserId}", userId);
 
@@ -94,6 +103,16 @@ namespace TimeForCode.Authorization.Application.Services
             if (role != null)
             {
                 claims["role"] = role;
+            }
+
+            if (login != null)
+            {
+                claims["login"] = login;
+            }
+
+            if (avatarUrl != null)
+            {
+                claims["avatar_url"] = avatarUrl;
             }
 
             var tokenDescriptor = new SecurityTokenDescriptor
@@ -132,7 +151,14 @@ namespace TimeForCode.Authorization.Application.Services
                 return Result<AccessToken>.Failure("Refresh token expired");
             }
 
-            return Result<AccessToken>.Success(GenerateInternalToken(existingToken.UserId));
+            var account = await _accountInformationRepository.GetByInternalIdAsync(existingToken.UserId);
+            if (account == null)
+            {
+                _logger.LogWarning("Account {UserId} not found during refresh", existingToken.UserId);
+                return Result<AccessToken>.Failure("Account not found");
+            }
+
+            return Result<AccessToken>.Success(GenerateInternalToken(account));
         }
 
         public Uri GetRedirectUri(string state)
