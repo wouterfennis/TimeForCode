@@ -8,7 +8,6 @@ namespace TimeForCode.Authorization.Application.Services
     public interface ITokenService
     {
         Task<Result<ExternalAccessToken>> GetAccessTokenFromExternalProviderAsync(string state, string code);
-        AccessToken GenerateInternalToken(string userId);
 
         /// <summary>
         /// Generates a user token carrying the account's GitHub login and avatar URL as the <c>login</c> and
@@ -18,7 +17,7 @@ namespace TimeForCode.Authorization.Application.Services
 
         /// <summary>
         /// Generates an internal token carrying an additional role and scope claim. Used exclusively by the
-        /// admin passkey flow; every existing caller keeps using the single-argument overload unchanged.
+        /// admin passkey flow; regular users get the account overload.
         /// </summary>
         AccessToken GenerateInternalToken(string userId, string role, string scope);
         Task<Result<AccessToken>> RefreshInternalTokenAsync(RefreshToken refreshToken);

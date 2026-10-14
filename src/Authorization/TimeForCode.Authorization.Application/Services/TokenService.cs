@@ -69,22 +69,14 @@ namespace TimeForCode.Authorization.Application.Services
             return Result<ExternalAccessToken>.Success(accessToken);
         }
 
-        public AccessToken GenerateInternalToken(string userId)
-        {
-            return BuildInternalToken(userId, role: null, scope: "user");
-        }
-
         public AccessToken GenerateInternalToken(AccountInformation account)
         {
             return BuildInternalToken(
                 account.Id.ToString(),
                 role: null,
                 scope: "user",
-                new Dictionary<string, object>
-                {
-                    { "login", account.Login },
-                    { "avatar_url", account.AvatarUrl }
-                });
+                login: account.Login,
+                avatarUrl: account.AvatarUrl);
         }
 
         public AccessToken GenerateInternalToken(string userId, string role, string scope)
@@ -92,7 +84,7 @@ namespace TimeForCode.Authorization.Application.Services
             return BuildInternalToken(userId, role, scope);
         }
 
-        private AccessToken BuildInternalToken(string userId, string? role, string scope, IReadOnlyDictionary<string, object>? additionalClaims = null)
+        private AccessToken BuildInternalToken(string userId, string? role, string scope, string? login = null, string? avatarUrl = null)
         {
             _logger.LogDebug("Generating internal token for user {UserId}", userId);
 
@@ -113,9 +105,14 @@ namespace TimeForCode.Authorization.Application.Services
                 claims["role"] = role;
             }
 
-            foreach (var claim in additionalClaims ?? new Dictionary<string, object>())
+            if (login != null)
             {
-                claims[claim.Key] = claim.Value;
+                claims["login"] = login;
+            }
+
+            if (avatarUrl != null)
+            {
+                claims["avatar_url"] = avatarUrl;
             }
 
             var tokenDescriptor = new SecurityTokenDescriptor
