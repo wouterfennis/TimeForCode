@@ -43,7 +43,7 @@ namespace TimeForCode.Authorization.Application.Tests.Services
 
             result.IsSuccess.Should().BeTrue();
             _repositoryMock.Verify(x => x.CreateOrUpdateAsync(It.Is<AccountInformation>(a =>
-                !System.Text.Json.JsonSerializer.Serialize(a, new System.Text.Json.JsonSerializerOptions()).Contains("external-secret"))));
+                !System.Text.Json.JsonSerializer.Serialize(a).Contains("external-secret"))));
         }
 
         [TestMethod]
