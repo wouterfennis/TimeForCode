@@ -37,6 +37,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
             var migration = _provider.GetServices<IHostedService>().OfType<StoredGitHubTokenCleanupService>().Single();
 
             await migration.StartAsync(CancellationToken.None);
+            await migration.ExecuteTask!;
         }
 
         [Then("No access token of the external platform is stored for the account")]

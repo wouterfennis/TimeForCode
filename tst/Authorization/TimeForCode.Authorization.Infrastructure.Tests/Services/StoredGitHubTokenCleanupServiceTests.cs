@@ -29,6 +29,7 @@ namespace TimeForCode.Authorization.Infrastructure.Tests.Services
         public async Task StartAsync_RemovesTheStoredTokens()
         {
             await _sut.StartAsync(CancellationToken.None);
+            await _sut.ExecuteTask!;
 
             _repository.Verify(x => x.RemoveStoredGitHubAccessTokensAsync(), Times.Once);
         }
@@ -38,9 +39,27 @@ namespace TimeForCode.Authorization.Infrastructure.Tests.Services
         {
             _repository.Setup(x => x.RemoveStoredGitHubAccessTokensAsync()).ThrowsAsync(new TimeoutException());
 
-            Func<Task> act = () => _sut.StartAsync(CancellationToken.None);
+            Func<Task> act = async () =>
+            {
+                await _sut.StartAsync(CancellationToken.None);
+                await _sut.ExecuteTask!;
+            };
 
             await act.Should().NotThrowAsync();
+        }
+
+        [TestMethod]
+        public async Task StartAsync_SlowRepository_DoesNotBlockHostStartup()
+        {
+            var neverCompletes = new TaskCompletionSource<long>();
+            _repository.Setup(x => x.RemoveStoredGitHubAccessTokensAsync()).Returns(neverCompletes.Task);
+
+            var start = _sut.StartAsync(CancellationToken.None);
+
+            await start.WaitAsync(TimeSpan.FromSeconds(5));
+            start.IsCompletedSuccessfully.Should().BeTrue();
+            neverCompletes.SetResult(0);
+            await _sut.StopAsync(CancellationToken.None);
         }
     }
 }

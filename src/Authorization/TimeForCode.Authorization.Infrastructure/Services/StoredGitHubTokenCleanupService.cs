@@ -6,9 +6,9 @@ using TimeForCode.Authorization.Application.Interfaces;
 namespace TimeForCode.Authorization.Infrastructure.Services
 {
     /// <summary>
-    /// Removes the GitHub access tokens that earlier versions stored on accounts. Idempotent, so it runs on every start.
+    /// Removes the GitHub access tokens that earlier versions stored on accounts. Runs in the background so it never delays startup; idempotent, so it runs on every start.
     /// </summary>
-    public class StoredGitHubTokenCleanupService : IHostedService
+    public class StoredGitHubTokenCleanupService : BackgroundService
     {
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly ILogger<StoredGitHubTokenCleanupService> _logger;
@@ -19,7 +19,7 @@ namespace TimeForCode.Authorization.Infrastructure.Services
             _logger = logger;
         }
 
-        public async Task StartAsync(CancellationToken cancellationToken)
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             try
             {
@@ -36,6 +36,5 @@ namespace TimeForCode.Authorization.Infrastructure.Services
             }
         }
 
-        public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
     }
 }

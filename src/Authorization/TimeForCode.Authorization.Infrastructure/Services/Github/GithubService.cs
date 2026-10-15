@@ -6,6 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using RestSharp;
 using System.Net;
 using System.Net.Mime;
+using System.Text.RegularExpressions;
 using System.Text;
 using System.Text.Json;
 using TimeForCode.Authorization.Application.Interfaces;
@@ -18,10 +19,11 @@ using TimeForCode.Authorization.Values;
 
 namespace TimeForCode.Authorization.Infrastructure.Services.Github
 {
-    internal class GithubService : IIdentityProviderService, IGithubApiService
+    internal partial class GithubService : IIdentityProviderService, IGithubApiService
     {
         private const string UserEndpoint = "/user";
         private const string UsersEndpoint = "/users";
+        private const string MaxPageSize = "100";
         private const string ReposEndpoint = "/repos";
         private readonly ExternalIdentityProvider _identityProviderOptions;
         private readonly IOptions<ExternalIdentityProviderOptions> _options;
@@ -102,7 +104,14 @@ namespace TimeForCode.Authorization.Infrastructure.Services.Github
 
         public async Task<Result<IEnumerable<RepositoryInfo>>> GetUserRepositoriesAsync(string login)
         {
+            if (!IsSafePathSegment(login))
+            {
+                return Result<IEnumerable<RepositoryInfo>>.Failure("Invalid GitHub login.", HttpStatusCode.NotFound);
+            }
+
             var request = CreatePublicDataRequest($"{UsersEndpoint}/{login}/repos");
+            request.AddQueryParameter("type", "owner");
+            request.AddQueryParameter("per_page", MaxPageSize);
 
             var response = await _restClient.ExecuteAsync<List<GithubRepository>>(request);
 
@@ -119,6 +128,11 @@ namespace TimeForCode.Authorization.Infrastructure.Services.Github
 
         public async Task<Result<RepositoryInfo>> GetRepositoryAsync(string owner, string repo)
         {
+            if (!IsSafePathSegment(owner) || !IsSafePathSegment(repo))
+            {
+                return Result<RepositoryInfo>.Failure("Invalid GitHub repository.", HttpStatusCode.NotFound);
+            }
+
             var request = CreatePublicDataRequest($"{ReposEndpoint}/{owner}/{repo}");
 
             var response = await _restClient.ExecuteAsync<GithubRepository>(request);
@@ -151,11 +165,25 @@ namespace TimeForCode.Authorization.Infrastructure.Services.Github
 
             _restClient.AcceptedContentTypes = [MediaTypeNames.Application.Json];
 
-            var credentials = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{_identityProviderOptions.ClientId}:{_identityProviderOptions.ClientSecret}"));
             var request = new RestRequest(uriBuilder.ToString(), Method.Get);
-            request.AddHeader(OAuthConstants.AuthorizationHeader, $"{OAuthConstants.BasicPrefix}{credentials}");
+
+            // The client secret must never travel over plain HTTP; without it GitHub serves the same public data at the anonymous rate limit.
+            if (_identityProviderOptions.IsHttps)
+            {
+                var credentials = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{_identityProviderOptions.ClientId}:{_identityProviderOptions.ClientSecret}"));
+                request.AddHeader(OAuthConstants.AuthorizationHeader, $"{OAuthConstants.BasicPrefix}{credentials}");
+            }
+
             return request;
         }
+
+        /// <summary>
+        /// Rejects values that could change the request path (separators, query characters, dot segments).
+        /// </summary>
+        private static bool IsSafePathSegment(string value) => SafePathSegment().IsMatch(value);
+
+        [GeneratedRegex(@"^(?!\.+$)[A-Za-z0-9._-]+$", RegexOptions.CultureInvariant)]
+        private static partial Regex SafePathSegment();
 
         private static RepositoryInfo MapToRepositoryInfo(GithubRepository repository)
         {

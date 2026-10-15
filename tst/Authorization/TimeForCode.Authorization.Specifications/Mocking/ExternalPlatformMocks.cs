@@ -31,7 +31,7 @@ namespace TimeForCode.Authorization.Specifications.Mocking
 
         public static void RegisterPublicRepositories(MockHttpMessageHandler mockHttp)
         {
-            mockHttp.When($"{BaseUrl}/users/johndoe/repos")
+            mockHttp.When($"{BaseUrl}/users/johndoe/repos*")
                 .Respond("application/json", JsonSerializer.Serialize(new[] { PublicRepository }));
             mockHttp.When($"{BaseUrl}/repos/*")
                 .Respond("application/json", JsonSerializer.Serialize(PublicRepository));
@@ -39,7 +39,7 @@ namespace TimeForCode.Authorization.Specifications.Mocking
 
         public static void RegisterPrivateRepository(MockHttpMessageHandler mockHttp)
         {
-            mockHttp.When($"{BaseUrl}/users/johndoe/repos")
+            mockHttp.When($"{BaseUrl}/users/johndoe/repos*")
                 .Respond("application/json", JsonSerializer.Serialize(new[] { PublicRepository, PrivateRepository }));
             mockHttp.When($"{BaseUrl}/repos/johndoe/secret-repo")
                 .Respond(HttpStatusCode.NotFound, "application/json", "{\"message\":\"Not Found\"}");
