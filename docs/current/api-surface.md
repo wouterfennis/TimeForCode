@@ -27,8 +27,8 @@ The Authorization API exposes OAuth 2.0 endpoints and an OpenID Connect discover
 | Method | Path | Status | Description |
 | --- | --- | --- | --- |
 | `GET` | `/api/v1/user` | ✅ | Returns the currently authenticated user's profile |
-| `GET` | `/api/v1/user/repositories` | ✅ | Returns the caller's public GitHub repositories |
-| `GET` | `/api/v1/user/repositories/{owner}/{repo}` | ✅ | Returns one public GitHub repository; `400` when `owner` or `repo` is not a valid GitHub name (see [declared input limits](#declared-input-limits)) |
+| `GET` | `/api/v1/user/repositories` | ✅ | Returns the caller's public GitHub repositories, read with the application's own GitHub credentials (no user token is stored); `502` when GitHub fails |
+| `GET` | `/api/v1/user/repositories/{owner}/{repo}` | ✅ | Returns one public GitHub repository (`404` for private or unknown ones), read with the application's own GitHub credentials; `400` when `owner` or `repo` is not a valid GitHub name (see [declared input limits](#declared-input-limits)) |
 
 ### OpenID Connect / JWKS
 

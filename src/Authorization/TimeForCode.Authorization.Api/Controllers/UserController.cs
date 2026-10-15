@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 using System.Net.Mime;
@@ -17,23 +17,18 @@ namespace TimeForCode.Authorization.Api.Controllers
     [Authorize(Policy = "ApiUser")]
     public class UserController : ControllerBase
     {
-        private const string UnauthorizedTitle = "Unauthorized";
-
         private readonly IAccountInformationRepository _accountInformationRepository;
         private readonly IGithubApiService _githubApiService;
-        private readonly IEncryptionService _encryptionService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UserController"/> class.
         /// </summary>
         public UserController(
             IAccountInformationRepository accountInformationRepository,
-            IGithubApiService githubApiService,
-            IEncryptionService encryptionService)
+            IGithubApiService githubApiService)
         {
             _accountInformationRepository = accountInformationRepository;
             _githubApiService = githubApiService;
-            _encryptionService = encryptionService;
         }
 
         /// <summary>
@@ -82,8 +77,8 @@ namespace TimeForCode.Authorization.Api.Controllers
         /// <returns></returns>
         [HttpGet("repositories")]
         [ProducesResponseType(typeof(IEnumerable<RepositoryResponse>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status502BadGateway)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetUserRepositoriesAsync()
         {
@@ -101,29 +96,17 @@ namespace TimeForCode.Authorization.Api.Controllers
                 return NotFound(problemDetails);
             }
 
-            if (string.IsNullOrEmpty(userEntity.EncryptedGitHubAccessToken))
-            {
-                var problemDetails = new ProblemDetails
-                {
-                    Title = UnauthorizedTitle,
-                    Detail = "No GitHub access token available. Please re-authenticate via GitHub."
-                };
-
-                return Unauthorized(problemDetails);
-            }
-
-            var githubToken = _encryptionService.Decrypt(userEntity.EncryptedGitHubAccessToken);
-            var repositoriesResult = await _githubApiService.GetUserRepositoriesAsync(githubToken);
+            var repositoriesResult = await _githubApiService.GetUserRepositoriesAsync(userEntity.Login);
 
             if (repositoriesResult.IsFailure)
             {
                 var problemDetails = new ProblemDetails
                 {
-                    Title = UnauthorizedTitle,
-                    Detail = "The GitHub access token is expired or revoked. Please re-authenticate via GitHub."
+                    Title = "Bad Gateway",
+                    Detail = "An upstream error occurred while contacting GitHub."
                 };
 
-                return Unauthorized(problemDetails);
+                return StatusCode(StatusCodes.Status502BadGateway, problemDetails);
             }
 
             var repositories = repositoriesResult.Value.Select(r => new RepositoryResponse
@@ -147,7 +130,6 @@ namespace TimeForCode.Authorization.Api.Controllers
         [HttpGet("repositories/{owner}/{repo}")]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(RepositoryResponse), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status502BadGateway)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -169,19 +151,7 @@ namespace TimeForCode.Authorization.Api.Controllers
                 return NotFound(problemDetails);
             }
 
-            if (string.IsNullOrEmpty(userEntity.EncryptedGitHubAccessToken))
-            {
-                var problemDetails = new ProblemDetails
-                {
-                    Title = UnauthorizedTitle,
-                    Detail = "No GitHub access token available. Please re-authenticate via GitHub."
-                };
-
-                return Unauthorized(problemDetails);
-            }
-
-            var githubToken = _encryptionService.Decrypt(userEntity.EncryptedGitHubAccessToken);
-            var repositoryResult = await _githubApiService.GetRepositoryAsync(owner, repo, githubToken);
+            var repositoryResult = await _githubApiService.GetRepositoryAsync(owner, repo);
 
             if (repositoryResult.IsFailure)
             {
@@ -194,17 +164,6 @@ namespace TimeForCode.Authorization.Api.Controllers
                     };
 
                     return NotFound(problemDetails);
-                }
-
-                if (repositoryResult.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                {
-                    var unauthorizedProblemDetails = new ProblemDetails
-                    {
-                        Title = UnauthorizedTitle,
-                        Detail = "The GitHub access token is expired or revoked. Please re-authenticate via GitHub."
-                    };
-
-                    return Unauthorized(unauthorizedProblemDetails);
                 }
 
                 var upstreamProblemDetails = new ProblemDetails

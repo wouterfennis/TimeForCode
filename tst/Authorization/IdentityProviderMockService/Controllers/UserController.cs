@@ -43,12 +43,13 @@ namespace IdentityProviderMockService.Controllers
             return Ok(user);
         }
 
-        [HttpGet("repos")]
+        [HttpGet("/users/{login}/repos")]
+        [AllowAnonymous]
         [ProducesResponseType(typeof(IEnumerable<RepositoryResponse>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public IActionResult GetUserRepos()
+        public IActionResult GetUserRepos(string login)
         {
-            _logger.LogDebug("user repos are returned");
+            _logger.LogDebug("public repos of {Login} are returned", login);
 
             return Ok(GetMockRepositories());
         }

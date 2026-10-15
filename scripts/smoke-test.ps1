@@ -7,7 +7,7 @@
     Verifies that all services are reachable and that the full OAuth2
     authentication flow works end-to-end:
 
-        Browser -> Website -> Auth API -> IdP Mock -> Auth API callback
+        Browser -> Auth API -> IdP Mock -> Auth API callback
                            -> JWT issued -> /api/v1/user returns user profile
 
 .PARAMETER AuthApiBaseUrl
@@ -19,8 +19,8 @@
 .PARAMETER DonationApiBaseUrl
     Base URL of the Donation API. Default: http://localhost:8082
 
-.PARAMETER WebsiteBaseUrl
-    Base URL of the Website. Default: http://localhost:8083
+.PARAMETER ClientRedirectUri
+    Front-end origin the login redirects back to (must be a configured valid redirect URI). No Website needs to run. Default: http://localhost:8083
 
 .EXAMPLE
     .\scripts\smoke-test.ps1
@@ -33,7 +33,7 @@ param(
     [string] $AuthApiBaseUrl    = "http://localhost:8080",
     [string] $IdpMockBaseUrl    = "http://localhost:8081",
     [string] $DonationApiBaseUrl = "http://localhost:8082",
-    [string] $WebsiteBaseUrl    = "http://localhost:8083"
+    [string] $ClientRedirectUri    = "http://localhost:8083"
 )
 
 Set-StrictMode -Version Latest
@@ -106,7 +106,6 @@ $checks = @(
     @{ Label = "Auth API OIDC discovery  ($AuthApiBaseUrl)";    Url = "$AuthApiBaseUrl/.well-known/openid-configuration" }
     @{ Label = "IdP Mock OIDC discovery  ($IdpMockBaseUrl)";    Url = "$IdpMockBaseUrl/.well-known/openid-configuration" }
     @{ Label = "Donation API             ($DonationApiBaseUrl)"; Url = "$DonationApiBaseUrl/api/v1/project" }
-    @{ Label = "Website                  ($WebsiteBaseUrl)";     Url = "$WebsiteBaseUrl" }
 )
 
 foreach ($check in $checks) {
@@ -173,7 +172,7 @@ Write-Section "3. Authentication flow"
 $cookieJar = [System.IO.Path]::GetTempFileName()
 try {
     # -- Step 3.1: Login endpoint -> redirect to IdP Mock ------------------
-    $redirectUri = [System.Uri]::EscapeDataString($WebsiteBaseUrl)
+    $redirectUri = [System.Uri]::EscapeDataString($ClientRedirectUri)
     $loginUrl    = "$AuthApiBaseUrl/api/v1/authentication/login?IdentityProvider=Github&RedirectUri=$redirectUri"
 
     $r1 = curl -si --max-redirs 0 -c $cookieJar $loginUrl 2>&1
@@ -225,8 +224,8 @@ try {
     $hasAccessToken  = $null -ne ($r3 | Select-String "Set-Cookie:.*AccessToken")
     $hasRefreshToken = $null -ne ($r3 | Select-String "Set-Cookie:.*RefreshToken")
 
-    if ($s3 -eq 302 -and $websiteRedirect -match [regex]::Escape($WebsiteBaseUrl)) {
-        Write-Pass "Step 3.3: Auth API callback -> 302 to Website"
+    if ($s3 -eq 302 -and $websiteRedirect -match [regex]::Escape($ClientRedirectUri)) {
+        Write-Pass "Step 3.3: Auth API callback -> 302 to the client redirect URI"
     } else {
         Write-Fail "Step 3.3: Auth API callback redirect" "Status=$s3, Location=$websiteRedirect"
     }
@@ -281,6 +280,65 @@ try {
                 Write-Pass "Step 3.5: User profile returned (login='$($user.login)')"
             } else {
                 Write-Fail "Step 3.5: User profile body unexpected" "$userBody"
+            }
+
+            # -- Section 3b: GitHub token handling (no user token kept, app credentials) --
+            Write-Section "3b. GitHub token handling"
+
+            if ($idpRedirect -notmatch "[?&]scope=") {
+                Write-Pass "Step 3b.1: authorize redirect requests no GitHub scope"
+            } else {
+                Write-Fail "Step 3b.1: authorize redirect still requests a scope" "$idpRedirect"
+            }
+
+            $userUrl = "$AuthApiBaseUrl/api/v1/user"
+            $authHeaderUser = "Authorization: Bearer $bearer"
+
+            $rRepos = curl -si -H $authHeaderUser "$userUrl/repositories" 2>&1
+            $sRepos = Get-StatusCode $rRepos
+            $reposJson = $rRepos | Select-String '^\[' | Select-Object -First 1
+            if ($sRepos -eq 200 -and $reposJson) {
+                $repos = @($reposJson.ToString() | ConvertFrom-Json)
+                Write-Pass "Step 3b.2: GET /user/repositories -> 200 without a stored token ($($repos.Count) repositories)"
+                $firstRepo = $repos | Select-Object -First 1
+            } else {
+                Write-Fail "Step 3b.2: GET /user/repositories" "Status=$sRepos"
+                $firstRepo = $null
+            }
+
+            $singleName = if ($firstRepo) { $firstRepo.name } else { "mock-repo-one" }
+            $sSingle = Get-StatusCode (curl -si -H $authHeaderUser "$userUrl/repositories/johndoe/$singleName" 2>&1)
+            if ($sSingle -eq 200) { Write-Pass "Step 3b.3: GET /user/repositories/johndoe/$singleName -> 200" }
+            else                  { Write-Fail "Step 3b.3: GET /user/repositories/johndoe/$singleName" "Status=$sSingle" }
+
+            $sBad = Get-StatusCode (curl -si -H $authHeaderUser "$userUrl/repositories/bad_owner/repo" 2>&1)
+            if ($sBad -eq 400) { Write-Pass "Step 3b.4: invalid owner -> 400" }
+            else               { Write-Fail "Step 3b.4: invalid owner" "Status=$sBad" }
+
+            # The database is only reachable through the container runtime; skip when unavailable.
+            if (Get-Command podman -ErrorAction SilentlyContinue) {
+                $legacy = podman exec mongo mongosh -u root -p example --authenticationDatabase admin AuthorizationServer --quiet --eval 'db.AccountInformation.countDocuments({EncryptedGitHubAccessToken:{$exists:true}})' 2>&1 | Select-Object -Last 1
+                if ("$legacy".Trim() -eq "0") { Write-Pass "Step 3b.5: no account document stores a GitHub access token" }
+                else                          { Write-Fail "Step 3b.5: accounts with a stored GitHub token" "mongosh said: $legacy" }
+            } else {
+                Write-Output "  [SKIP] Step 3b.5: podman not available, database not inspected"
+            }
+
+            # -- Section 3c: Admin ceremony state (real encryption, shared key ring) --
+            Write-Section "3c. Admin ceremony state"
+
+            $adminAuthUrl = "$AuthApiBaseUrl/api/v1/admin-authentication/authentication"
+            $sUnreadable = [int](curl -s -o /dev/null -w "%{http_code}" -X POST -H "Content-Type: application/json" `
+                -b "AdminAssertionState=not-a-valid-ceremony-state" --data-raw '{"credentialJson":"{}"}' $adminAuthUrl 2>&1 | Select-Object -Last 1)
+            if ($sUnreadable -eq 400) { Write-Pass "Step 3c.1: unreadable ceremony state -> 400 (not 500)" }
+            else                      { Write-Fail "Step 3c.1: unreadable ceremony state" "Status=$sUnreadable" }
+
+            if (Get-Command podman -ErrorAction SilentlyContinue) {
+                $keys = podman exec mongo mongosh -u root -p example --authenticationDatabase admin AuthorizationServer --quiet --eval 'db.DataProtectionKeyDocument.countDocuments({})' 2>&1 | Select-Object -Last 1
+                if ([int]"$keys".Trim() -ge 1) { Write-Pass "Step 3c.2: data protection key ring is stored in the database ($keys key(s))" }
+                else                           { Write-Fail "Step 3c.2: no data protection key in the database" "mongosh said: $keys" }
+            } else {
+                Write-Output "  [SKIP] Step 3c.2: podman not available, database not inspected"
             }
 
             # -- Section 4: Project lifecycle (maintainer path, role checks) ---

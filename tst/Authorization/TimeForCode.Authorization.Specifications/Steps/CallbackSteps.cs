@@ -1,5 +1,6 @@
 ﻿using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
+using MongoDB.Bson;
 using Moq;
 using Reqnroll;
 using RichardSzalay.MockHttp;
@@ -87,6 +88,19 @@ namespace TimeForCode.Authorization.Specifications.Steps
             var repository = _provider.GetRequiredService<Mock<IAccountInformationRepository>>();
 
             repository.Verify(r => r.CreateOrUpdateAsync(It.IsAny<AccountInformation>()));
+        }
+
+        [Then("No access token of the external platform is stored for the user")]
+        public void ThenNoAccessTokenOfTheExternalPlatformIsStoredForTheUser()
+        {
+            var repository = _provider.GetRequiredService<Mock<IAccountInformationRepository>>();
+
+            var saved = repository.Invocations
+                .Where(i => i.Method.Name == nameof(IAccountInformationRepository.CreateOrUpdateAsync))
+                .Select(i => (AccountInformation)i.Arguments[0])
+                .Single();
+
+            saved.ToBsonDocument().ToJson().Should().NotContainEquivalentOf("token");
         }
 
         [Given("The user does not yet have a profile on the time for code platform")]

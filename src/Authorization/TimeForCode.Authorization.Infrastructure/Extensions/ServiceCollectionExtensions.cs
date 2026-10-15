@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using RestSharp;
@@ -42,10 +42,21 @@ namespace TimeForCode.Authorization.Infrastructure.Extensions
             services.AddScoped<IAccountInformationRepository, AccountInformationRepository>();
             services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 
+            services.AddHostedService<StoredGitHubTokenCleanupService>();
+
             services.AddMemoryCache();
             services.AddSingleton<IStateRepository, StateRepository>();
 
-            services.AddDataProtection();
+            // Without a database (OpenAPI document generation at build time, specifications) the keys cannot be shared;
+            // the framework then falls back to its default, local key ring.
+            if (string.IsNullOrWhiteSpace(configuration.GetSection(DbOptions.SectionName).GetValue<string>(nameof(DbOptions.ConnectionString))))
+            {
+                services.AddDataProtection();
+            }
+            else
+            {
+                services.AddSharedKeyRingDataProtection();
+            }
             services.AddScoped<IEncryptionService, DataProtectionEncryptionService>();
 
             AddAdminPasskeySlice(services, configuration);

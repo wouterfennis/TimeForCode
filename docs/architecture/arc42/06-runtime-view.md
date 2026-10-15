@@ -21,7 +21,7 @@ sequenceDiagram
     Website-->>Browser: Login page
     Browser->>Website: Click "Sign in with GitHub"
     Website->>AuthAPI: GET /api/v1/authentication/login
-    AuthAPI-->>Browser: 302 Redirect to GitHub (with state, client_id, scope)
+    AuthAPI-->>Browser: 302 Redirect to GitHub (with state, client_id; no scope, so public profile access only)
     Browser->>GitHub: GET /login/oauth/authorize
     GitHub-->>Browser: GitHub login & consent page
     Browser->>GitHub: User approves
@@ -30,7 +30,7 @@ sequenceDiagram
     GitHub-->>AuthAPI: External access token
     AuthAPI->>GitHub: GET /user (fetch profile)
     GitHub-->>AuthAPI: User profile (id, login, email)
-    AuthAPI->>AuthAPI: Link GitHub account to internal user
+    AuthAPI->>AuthAPI: Discard the GitHub token; link GitHub account to internal user
     AuthAPI->>AuthAPI: Issue internal JWT + refresh token
     AuthAPI-->>Browser: 302 Redirect to Website (set HttpOnly cookies)
     Browser->>Website: GET / (authenticated, JWT cookie present)

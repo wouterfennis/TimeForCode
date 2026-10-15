@@ -7,6 +7,8 @@ namespace TimeForCode.Authorization.Infrastructure.Persistence.Database
 {
     public class AccountInformationRepository : IAccountInformationRepository
     {
+        private const string LegacyTokenField = "EncryptedGitHubAccessToken";
+
         private readonly IMongoCollection<AccountInformation> _collection;
 
         public AccountInformationRepository(IMongoDbContext context)
@@ -39,6 +41,14 @@ namespace TimeForCode.Authorization.Infrastructure.Persistence.Database
             }
         }
 
+        public async Task<long> RemoveStoredGitHubAccessTokensAsync()
+        {
+            var filter = Builders<AccountInformation>.Filter.Exists(LegacyTokenField);
+            var update = Builders<AccountInformation>.Update.Unset(LegacyTokenField);
+            var result = await _collection.UpdateManyAsync(filter, update);
+            return result.ModifiedCount;
+        }
+
         private async Task CreateAsync(AccountInformation entity)
         {
             await _collection.InsertOneAsync(entity);
@@ -55,8 +65,7 @@ namespace TimeForCode.Authorization.Infrastructure.Persistence.Database
                 .Set(x => x.Company, entity.Company)
                 .Set(x => x.Email, entity.Email)
                 .Set(x => x.Bio, entity.Bio)
-                .Set(x => x.Location, entity.Location)
-                .Set(x => x.EncryptedGitHubAccessToken, entity.EncryptedGitHubAccessToken);
+                .Set(x => x.Location, entity.Location);
             await _collection.UpdateOneAsync(filter, update);
         }
     }

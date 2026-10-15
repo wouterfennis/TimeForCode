@@ -10,18 +10,15 @@ namespace TimeForCode.Authorization.Application.Services
     {
         private readonly IIdentityProviderServiceFactory _identityProviderServiceFactory;
         private readonly IAccountInformationRepository _accountRepository;
-        private readonly IEncryptionService _encryptionService;
         private readonly ILogger<AccountService> _logger;
 
         public AccountService(
             IIdentityProviderServiceFactory identityProviderServiceFactory,
             IAccountInformationRepository accountRepository,
-            IEncryptionService encryptionService,
             ILogger<AccountService> logger)
         {
             _identityProviderServiceFactory = identityProviderServiceFactory;
             _accountRepository = accountRepository;
-            _encryptionService = encryptionService;
             _logger = logger;
         }
 
@@ -46,7 +43,6 @@ namespace TimeForCode.Authorization.Application.Services
             }
 
             var accountInformation = accountInformationResult.Value;
-            accountInformation.EncryptedGitHubAccessToken = _encryptionService.Encrypt(accessToken.Token);
 
             var createOrUpdateResult = await _accountRepository.CreateOrUpdateAsync(accountInformation);
 

@@ -107,7 +107,7 @@ namespace IdentityProviderMockService.Controllers
             _logger.LogDebug("Token is returned");
             var claims = new Dictionary<string, object>
             {
-                { "scope", authorizeDetails!.Scope }
+                { "scope", authorizeDetails!.Scope ?? string.Empty }
             };
 
             var tokenHandler = new JwtSecurityTokenHandler();
@@ -188,13 +188,13 @@ namespace IdentityProviderMockService.Controllers
                 </div>
                 <p class="scope-note">
                   <strong>{{HtmlEncode(request.ClientId)}}</strong> is requesting access to your account
-                  with scope <code>{{HtmlEncode(request.Scope)}}</code>.
+                  with scope <code>{{HtmlEncode(request.Scope ?? string.Empty)}}</code>.
                 </p>
                 <form method="post" action="/login/oauth/confirm">
                   <input type="hidden" name="state"        value="{{HtmlEncode(request.State)}}" />
                   <input type="hidden" name="redirect_uri" value="{{HtmlEncode(request.RedirectUri)}}" />
                   <input type="hidden" name="client_id"    value="{{HtmlEncode(request.ClientId)}}" />
-                  <input type="hidden" name="scope"        value="{{HtmlEncode(request.Scope)}}" />
+                  <input type="hidden" name="scope"        value="{{HtmlEncode(request.Scope ?? string.Empty)}}" />
                   <button type="submit">Authorize</button>
                 </form>
                 <p class="mock-notice">&#9432;&nbsp;This is a <strong>mock</strong> identity provider for testing.</p>

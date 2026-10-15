@@ -63,7 +63,6 @@ namespace TimeForCode.Authorization.Application.Handlers
             var query = HttpUtility.ParseQueryString(string.Empty);
             query[OAuthConstants.State] = state;
             query[OAuthConstants.RedirectUri] = _options.CallbackUri;
-            query[OAuthConstants.Scope] = OAuthConstants.UserScope;
             query[OAuthConstants.ClientId] = clientId;
             return query.ToString()!;
         }
