@@ -252,7 +252,7 @@ namespace TimeForCode.Authorization.Infrastructure.Tests.Services
             _mockHttp.VerifyNoOutstandingExpectation();
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("..")]
         [DataRow(".")]
         [DataRow("a/b")]
@@ -266,7 +266,7 @@ namespace TimeForCode.Authorization.Infrastructure.Tests.Services
             result.StatusCode.Should().Be(HttpStatusCode.NotFound);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("..", "repo")]
         [DataRow("johndoe", "..")]
         [DataRow("johndoe", "a/b")]

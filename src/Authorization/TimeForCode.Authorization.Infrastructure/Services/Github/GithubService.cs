@@ -1,14 +1,13 @@
 ﻿using DnsClient.Internal;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using RestSharp;
 using System.Net;
 using System.Net.Mime;
-using System.Text.RegularExpressions;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using TimeForCode.Authorization.Application.Interfaces;
 using TimeForCode.Authorization.Application.Models;
 using TimeForCode.Authorization.Application.Options;
