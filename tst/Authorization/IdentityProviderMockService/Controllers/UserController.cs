@@ -49,7 +49,7 @@ namespace IdentityProviderMockService.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public IActionResult GetUserRepos(string login)
         {
-            _logger.LogDebug("public repos of {Login} are returned", login);
+            _logger.LogDebug("public repos are returned");
 
             return Ok(GetMockRepositories());
         }
