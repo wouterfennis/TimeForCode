@@ -1,6 +1,6 @@
 # TimeForCode
 
-.NET 10 solution `TimeForCode.sln`; bounded contexts under `src/` and `tst/`: **Authorization**, **Donation**, **Shared**, **Website** (deprecated: not in the solution or CI, see `src/Website/DEPRECATED.md`). Deploy IaC in `deploy/`, docs in `docs/` (arc42 in `docs/architecture/arc42/`, live state in `docs/current/`).
+.NET 10 solution `TimeForCode.sln`; bounded contexts under `src/` and `tst/`: **Authorization**, **Donation**, **Shared**, **Website** (deprecated: not in the solution or CI, see `src/Website/DEPRECATED.md`). The React SPA that replaces it is `src/Frontend/TimeForCode.Frontend` (npm, Node 24; `npm ci`, `npm run lint|typecheck|test|build`; see `docs/frontend/architecture.md`). Deploy IaC in `deploy/`, docs in `docs/` (arc42 in `docs/architecture/arc42/`, live state in `docs/current/`).
 
 | Layer (per module) | Path |
 | --- | --- |

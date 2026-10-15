@@ -10,6 +10,7 @@ This document describes how the new front-end is built and how it talks to the b
 
 | Concern | Choice | Reason |
 | --- | --- | --- |
+| Runtime for tooling | Node 24 (LTS) | Pinned; see [Project setup](#project-setup) |
 | Language | TypeScript, `strict` mode | Type safety against the generated API types |
 | Framework | React | Largest ecosystem for accessible component libraries and testing |
 | Build tool | Vite | Fast dev server, simple configuration |
@@ -18,6 +19,7 @@ This document describes how the new front-end is built and how it talks to the b
 | Forms | React Hook Form with Zod | Typed validation; map API `ProblemDetails` onto fields |
 | API client | Generated from the OpenAPI snapshots | No hand-written DTOs; see below |
 | Styling | CSS custom properties from [design-system.md](design-system.md), plus CSS Modules | No heavy UI framework; tokens stay the single source of truth |
+| Linting | oxlint with the React, jsx-a11y, TypeScript, import and Vitest rules | Default linter of the Vite React template; accessibility rules built in |
 | Unit and component tests | Vitest, Testing Library, axe | Fast feedback, accessibility checks included |
 | E2E tests | Existing Reqnroll + Playwright suite, extended | Reuse the journeys already specified (ADR-006) |
 
@@ -36,10 +38,28 @@ src/
         │   ├── features/            # projects/, profile/, admin/, auth/
         │   ├── lib/                 # small helpers
         │   └── messages/            # all user-facing strings
-        └── tests/
+        └── tests/                   # shared test setup and helpers (axe)
 ```
 
 Organise by feature, not by file type. A feature folder owns its pages, queries, and tests. Shared building blocks go in `components/`.
+
+## Project setup
+
+Implemented in Phase 0 (#110); commands are in the project [README](../../src/Frontend/TimeForCode.Frontend/README.md).
+
+- **Node version**: Node 24, pinned in `.nvmrc` and `package.json` `engines`. `.npmrc` sets `engine-strict`, so installing with another major version fails. CI reads `.nvmrc`.
+- **Lock file**: `package-lock.json` is committed and CI installs with `npm ci`. Dependency versions are pinned exactly.
+- **Scripts**: `lint`, `typecheck`, `test` and `build` are the checks the pull request workflow runs. Lint warnings fail the check (`--deny-warnings`).
+- **Strictness**: `strict` and `noUncheckedIndexedAccess` are on.
+- **Accessibility tests**: component tests run axe through the small `axeViolations` helper in `tests/axe.ts` (axe-core directly, no wrapper library). jsdom cannot compute colour contrast, so contrast is checked in the E2E suite or by hand.
+
+Choices that differ from the latest versions or the usual defaults, with the reason:
+
+| Default | Chosen | Reason |
+| --- | --- | --- |
+| Latest TypeScript (7) | TypeScript 6 | The Vite React template still pins TypeScript 6, and parts of the ecosystem do not support the native TypeScript 7 compiler yet (typescript-eslint supports up to 6.0); revisit when they do |
+| Latest jsdom (30) | jsdom 29 | jsdom 30 needs Node 24.15 or later; 29 supports every Node 24 release |
+| ESLint | oxlint | The Vite React template ships oxlint; it has the React, hooks and jsx-a11y rules built in, while the ESLint jsx-a11y plugin does not support ESLint 10 yet |
 
 ## Authentication and the BFF
 
@@ -114,9 +134,8 @@ Login starts with a browser navigation to the Authorization API login endpoint (
 ## Build and deployment
 
 - Add a Node build stage to `Dockerfile.website` that builds the SPA and copies it into the BFF image.
-- Add the front-end build, lint, type-check, and unit tests to the pull request workflow. The existing workflows are in `.github/workflows/`.
+- The front-end build, lint, type-check, and unit tests run in the `frontend` job of the pull request and main-branch workflows (`.github/workflows/`). A failing check fails the job; on `main` it also blocks Release Please.
 - The deployment topology does not change: one Website container, now hosting the SPA. See [Deployment Status](../current/deployment-status.md).
-- Pin the Node version in `.nvmrc` or `package.json` `engines`, and commit the lock file.
 
 ## Testing strategy
 

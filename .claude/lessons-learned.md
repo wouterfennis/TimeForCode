@@ -40,6 +40,13 @@ Non-obvious knowledge from past sessions. Read and update through skill `lessons
 - **Lesson:** Some tracked files (for example `Repositories.feature`) are committed with CRLF. Appending LF lines with `cat >>` or `sed -i` makes the working copy mixed, and `git add` then normalises the entire file to LF, so a 14-line addition shows as a 70-line diff.
 - **Why:** `core.autocrlf=true` here, and the review flagged the noise.
 - **How to apply:** check `git show HEAD:<file> | file -` before editing a file by shell; use the Edit tool (it keeps endings), or convert new lines to CRLF and `git -c core.autocrlf=false add <file>`. Confirm with `git diff --numstat`.
+- **Exception (2026-10-15 / #110):** `.gitignore` is committed with mixed endings; the Edit tool turned its trailing LF lines into CRLF (4 extra changed lines). For mixed files, rebuild from `git show HEAD:<file>` and append with `printf`.
+
+### Front-end (Node) work needs a few workarounds
+
+- **Date / issue:** 2026-10-15 / #110
+- **Lesson:** Any Bash command whose text contains `node_modules` or a lockfile name is blocked by the read-guard hook, even `grep -c`; append `# allow-excluded` when that is intended. Local Node is 24.12, so packages that need Node 24.15 or later (jsdom 30, some CLIs) fail with `engine-strict`. `dotnet build` rewrites the committed `*.Api.json` OpenAPI files with other line endings; restore them with `git checkout --` before committing.
+- **Why:** each one cost a retry while scaffolding the SPA.
 
 ### Website specifications need the running stack
 

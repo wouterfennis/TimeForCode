@@ -7,6 +7,42 @@ on:
     types: [opened, synchronize, reopened]
 
 jobs:
+  frontend:
+    name: Front-end checks
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    defaults:
+      run:
+        working-directory: src/Frontend/TimeForCode.Frontend
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+      with:
+        node-version-file: src/Frontend/TimeForCode.Frontend/.nvmrc
+        cache: npm
+        cache-dependency-path: src/Frontend/TimeForCode.Frontend/package-lock.json
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Lint
+      run: npm run lint
+
+    - name: Type-check
+      run: npm run typecheck
+
+    - name: Test
+      run: npm test
+
+    - name: Build
+      run: npm run build
+
   build:
     name: Build and analyze
     runs-on: ubuntu-latest
