@@ -55,8 +55,7 @@ namespace TimeForCode.Authorization.Infrastructure.Persistence.Database
                 .Set(x => x.Company, entity.Company)
                 .Set(x => x.Email, entity.Email)
                 .Set(x => x.Bio, entity.Bio)
-                .Set(x => x.Location, entity.Location)
-                .Set(x => x.EncryptedGitHubAccessToken, entity.EncryptedGitHubAccessToken);
+                .Set(x => x.Location, entity.Location);
             await _collection.UpdateOneAsync(filter, update);
         }
     }

@@ -21,12 +21,6 @@ Scenario: Authenticated user retrieves a single repository by owner and name
 	When The user requests repository "johndoe/my-repo" from the time for code platform
 	Then A single repository is returned with name, description, star count, language, and URL
 
-Scenario: GitHub access token has been revoked
-	Given The user has an access token
-	And The user's GitHub access token has been revoked at the external platform
-	When The user requests their repositories from the time for code platform
-	Then The user is informed they must re-authenticate via GitHub
-
 Scenario Outline: Requesting a repository with an invalid owner or name is rejected
 	Given The user has an access token
 	When The user requests repository "<repository>" from the time for code platform

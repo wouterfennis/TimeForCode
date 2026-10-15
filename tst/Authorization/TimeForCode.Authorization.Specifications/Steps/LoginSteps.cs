@@ -39,6 +39,14 @@ namespace TimeForCode.Authorization.Specifications.Steps
             _result!.Exception!.Headers["Location"].Single().Should().NotBeNullOrEmpty();
         }
 
+        [Then("The redirect does not request profile write or email access")]
+        public void ThenTheRedirectDoesNotRequestProfileWriteOrEmailAccess()
+        {
+            var location = new Uri(_result!.Exception!.Headers["Location"].Single());
+
+            System.Web.HttpUtility.ParseQueryString(location.Query).AllKeys.Should().NotContain("scope");
+        }
+
         [Then("The user is informed the login redirect uri is rejected")]
         public void ThenTheUserIsInformedTheRedirectUriIsRejected()
         {

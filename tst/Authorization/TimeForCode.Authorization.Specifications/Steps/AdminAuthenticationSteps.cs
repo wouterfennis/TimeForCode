@@ -50,6 +50,40 @@ namespace TimeForCode.Authorization.Specifications.Steps
             _result = await _authClient.TryAdminCompleteAuthenticationAsync("credential-json-from-unregistered-device");
         }
 
+        [Given("The user started an admin login on one instance")]
+        public async Task GivenTheUserStartedAnAdminLoginOnOneInstanceAsync()
+        {
+            var options = await _authClient.TryAdminAuthenticationOptionsAsync();
+
+            options.Exception.Should().BeNull();
+        }
+
+        [When("The user completes the admin login on a different instance")]
+        public async Task WhenTheUserCompletesTheAdminLoginOnADifferentInstanceAsync()
+        {
+            SeedAssertionStateCookie();
+            _result = await _authClient.TryAdminCompleteAuthenticationAsync("credential-json");
+        }
+
+        [When("The user completes an admin login with a ceremony state that cannot be read")]
+        public async Task WhenTheUserCompletesAnAdminLoginWithACeremonyStateThatCannotBeReadAsync()
+        {
+            var ceremonyService = _provider.GetRequiredService<Mock<IPasskeyCeremonyService>>();
+            ceremonyService.Setup(x => x.CompleteAuthenticationAsync(It.IsAny<string>(), "unreadable-ceremony-state"))
+                .ReturnsAsync(AdminAssertionOutcomeBuilder.BuildFailed());
+
+            var uri = new Uri("http://localhost:8083");
+            _cookieContainer.Add(uri, new Cookie(AdminAuthenticationController.AssertionStateCookieKey, "unreadable-ceremony-state"));
+            _result = await _authClient.TryAdminCompleteAuthenticationAsync("credential-json");
+        }
+
+        [Then("The admin login is rejected as invalid")]
+        public void ThenTheAdminLoginIsRejectedAsInvalid()
+        {
+            _result!.Exception.Should().NotBeNull();
+            _result!.Exception!.StatusCode.Should().Be(400);
+        }
+
         private void SeedAssertionStateCookie()
         {
             var uri = new Uri("http://localhost:8083");

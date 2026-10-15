@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
+using System.Security.Cryptography;
 using TimeForCode.Authorization.Application.Interfaces;
 using TimeForCode.Authorization.Application.Interfaces.Admin;
 using TimeForCode.Authorization.Application.Options;
@@ -21,6 +22,7 @@ namespace TimeForCode.Authorization.Infrastructure.Services.Admin
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IEncryptionService _encryptionService;
         private readonly AdminPasskeyOptions _options;
+        private const string UnreadableStateMessage = "The ceremony state could not be read.";
 
         public PasskeyCeremonyService(IPasskeyHandler<AdminPasskeyUser> passkeyHandler,
             IHttpContextAccessor httpContextAccessor,
@@ -53,11 +55,17 @@ namespace TimeForCode.Authorization.Infrastructure.Services.Admin
 
         public async Task<AdminAttestationOutcome> CompleteRegistrationAsync(string credentialJson, string ceremonyState)
         {
+            var attestationState = TryDecryptCeremonyState(ceremonyState);
+            if (attestationState == null)
+            {
+                return new AdminAttestationOutcome { Succeeded = false, ErrorMessage = UnreadableStateMessage };
+            }
+
             var context = new PasskeyAttestationContext
             {
                 HttpContext = HttpContext,
                 CredentialJson = credentialJson,
-                AttestationState = _encryptionService.Decrypt(ceremonyState)
+                AttestationState = attestationState
             };
 
             var result = await _passkeyHandler.PerformAttestationAsync(context);
@@ -94,11 +102,17 @@ namespace TimeForCode.Authorization.Infrastructure.Services.Admin
 
         public async Task<AdminAssertionOutcome> CompleteAuthenticationAsync(string credentialJson, string ceremonyState)
         {
+            var assertionState = TryDecryptCeremonyState(ceremonyState);
+            if (assertionState == null)
+            {
+                return new AdminAssertionOutcome { Succeeded = false, ErrorMessage = UnreadableStateMessage };
+            }
+
             var context = new PasskeyAssertionContext
             {
                 HttpContext = HttpContext,
                 CredentialJson = credentialJson,
-                AssertionState = _encryptionService.Decrypt(ceremonyState)
+                AssertionState = assertionState
             };
 
             var result = await _passkeyHandler.PerformAssertionAsync(context);
@@ -109,6 +123,21 @@ namespace TimeForCode.Authorization.Infrastructure.Services.Admin
             }
 
             return new AdminAssertionOutcome { Succeeded = true, SignCount = result.Passkey.SignCount };
+        }
+
+        /// <summary>
+        /// The state comes from a client cookie, so an unreadable value (tampered, expired key, other key ring) is a bad request, not a server error.
+        /// </summary>
+        private string? TryDecryptCeremonyState(string ceremonyState)
+        {
+            try
+            {
+                return _encryptionService.Decrypt(ceremonyState);
+            }
+            catch (CryptographicException)
+            {
+                return null;
+            }
         }
 
         private HttpContext HttpContext => _httpContextAccessor.HttpContext!;
