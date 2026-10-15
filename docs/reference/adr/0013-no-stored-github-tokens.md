@@ -9,7 +9,7 @@ The login requested GitHub scope `user` (profile write access and email) and sto
 
 ## Decision
 
-The login requests no scope (public profile access only) and the GitHub token is discarded after the profile fetch. Public repository data (`GET user/repositories` and `GET user/repositories/{owner}/{repo}`) is read with the application's own GitHub client id and secret (HTTP Basic, only over HTTPS). Tokens stored by earlier versions are removed at startup. Related: [ADR-001](0001-use-internal-jwt.md).
+The login requests no scope (public profile access only) and the GitHub token is discarded after the profile fetch. Public repository data (`GET user/repositories` and `GET user/repositories/{owner}/{repo}`) is read with the application's own GitHub client id and secret (HTTP Basic, only over HTTPS). No migration removes tokens stored by earlier versions: such a field may remain on old account documents (ignored when reading) until it is cleared manually. Related: [ADR-001](0001-use-internal-jwt.md).
 
 ## Consequences
 
