@@ -41,9 +41,3 @@ Scenario: A private repository cannot be requested
 	And The user owns a private repository at the external platform
 	When The user requests repository "johndoe/secret-repo" from the time for code platform
 	Then The user is informed the repository was not found
-
-Scenario: Previously stored access tokens are removed
-	Given An existing account has a stored access token of the external platform
-	When The time for code platform migrates its stored accounts
-	Then No access token of the external platform is stored for the account
-	And The account profile is unchanged

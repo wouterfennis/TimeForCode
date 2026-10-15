@@ -42,7 +42,6 @@ namespace TimeForCode.Authorization.Infrastructure.Extensions
             services.AddScoped<IAccountInformationRepository, AccountInformationRepository>();
             services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 
-            services.AddHostedService<StoredGitHubTokenCleanupService>();
 
             services.AddMemoryCache();
             services.AddSingleton<IStateRepository, StateRepository>();

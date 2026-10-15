@@ -315,15 +315,6 @@ try {
             if ($sBad -eq 400) { Write-Pass "Step 3b.4: invalid owner -> 400" }
             else               { Write-Fail "Step 3b.4: invalid owner" "Status=$sBad" }
 
-            # The database is only reachable through the container runtime; skip when unavailable.
-            if (Get-Command podman -ErrorAction SilentlyContinue) {
-                $legacy = podman exec mongo mongosh -u root -p example --authenticationDatabase admin AuthorizationServer --quiet --eval 'db.AccountInformation.countDocuments({EncryptedGitHubAccessToken:{$exists:true}})' 2>&1 | Select-Object -Last 1
-                if ("$legacy".Trim() -eq "0") { Write-Pass "Step 3b.5: no account document stores a GitHub access token" }
-                else                          { Write-Fail "Step 3b.5: accounts with a stored GitHub token" "mongosh said: $legacy" }
-            } else {
-                Write-Output "  [SKIP] Step 3b.5: podman not available, database not inspected"
-            }
-
             # -- Section 3c: Admin ceremony state (real encryption, shared key ring) --
             Write-Section "3c. Admin ceremony state"
 
