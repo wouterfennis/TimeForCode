@@ -14,7 +14,8 @@ Raw `dotnet build`/`dotnet test` output is thousands of lines. Keep it out of co
 3. **Use the plain command.** A `PreToolUse` hook rewrites a lone `dotnet build|test ...` (optionally ending in `2>&1`) to `.claude/hooks/quiet-run.ps1`, which prints only errors/warnings/summary (max 60 lines) and the full-log path on failure. Do not add pipes, `;` or `&&` to it — a compound command bypasses the trimming.
 4. **Do not pass `--logger "console;verbosity=normal"`** — it defeats the filter. Use `--filter "FullyQualifiedName~<Name>"` to rerun only failing tests.
 5. **On failure**, fix from the trimmed output first. Open the full log (path printed as `full output: ...`) only with a ranged read around the failing test name.
-6. Without hooks (other tooling), emulate: `dotnet test <proj> --nologo -v q 2>&1 | Select-String -Pattern 'error|Failed|Passed!|Total' | Select-Object -First 40`.
+6. **Final solution runs are deduplicated**: `quiet-run.ps1` records `.agent-state/last-full-build` / `last-full-test` after a green `TimeForCode.sln` run and answers "Skipped: ..." (exit 0) when no `.cs`/`.csproj`/`.feature`/etc. file changed since. So the implement, review and ship phases may each call the final check; only the first after a real change does the work. Delete the stamp to force a rerun. Never re-run manually "to be sure".
+7. Without hooks (other tooling), emulate: `dotnet test <proj> --nologo -v q 2>&1 | Select-String -Pattern 'error|Failed|Passed!|Total' | Select-Object -First 40`.
 
 ## Format
 

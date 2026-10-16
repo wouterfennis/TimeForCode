@@ -24,7 +24,7 @@ Invoke this skill when:
 
 | Input | Source |
 | --- | --- |
-| `markdownlint-cli` version `0.48.0` installed | Verified in Step 1 |
+| `markdownlint-cli` version `0.49.0` installed | Verified in Step 1 |
 | Repository root path | Working directory |
 | `.markdownlint.json` config at repository root | Must exist before running |
 
@@ -43,10 +43,10 @@ Invoke this skill when:
 markdownlint --version
 ```
 
-**Expected output:** Version `0.48.0` (to match CI).
+**Expected output:** Version `0.49.0` (to match CI).
 
 **If not found:** Stop and report:
-> "`markdownlint-cli@0.48.0` is not installed. Install it with `npm install -g markdownlint-cli@0.48.0` and re-run the markdown-lint skill."
+> "`markdownlint-cli@0.49.0` is not installed. Install it with `npm install -g markdownlint-cli@0.49.0` and re-run the markdown-lint skill."
 
 Do not attempt to install it yourself.
 
@@ -56,8 +56,11 @@ Do not attempt to install it yourself.
 
 Run markdownlint against all Markdown files, respecting the project config at `.markdownlint.json`:
 
+`--ignore node_modules` does not exclude nested `node_modules` folders (for example `docs/frontend/mockups/node_modules`), and `--fix` would then rewrite third-party files. Lint the git-tracked and untracked, non-ignored files instead. Define `$files` once and reuse it in every step below:
+
 ```powershell
-markdownlint "**/*.md" --ignore node_modules --ignore .git 2>&1
+$files = git ls-files -co --exclude-standard -- '*.md' | Where-Object { Test-Path $_ }
+markdownlint @files 2>&1
 ```
 
 Capture the full output and the exit code. If the exit code is `0`, record that no violations were found and jump to Step 6.
@@ -93,13 +96,13 @@ Then list the full per-file detail beneath the table.
 Run markdownlint with `--fix` to apply formatting corrections that do not alter document meaning:
 
 ```powershell
-markdownlint "**/*.md" --ignore node_modules --ignore .git --fix 2>&1
+markdownlint @files --fix 2>&1
 ```
 
 Re-run the scan to capture any remaining violations:
 
 ```powershell
-markdownlint "**/*.md" --ignore node_modules --ignore .git 2>&1
+markdownlint @files 2>&1
 ```
 
 ---
@@ -121,7 +124,7 @@ If a remaining violation would require changing the intended meaning of the text
 After all manual fixes, run the final scan:
 
 ```powershell
-markdownlint "**/*.md" --ignore node_modules --ignore .git 2>&1
+markdownlint @files 2>&1
 ```
 
 Record:

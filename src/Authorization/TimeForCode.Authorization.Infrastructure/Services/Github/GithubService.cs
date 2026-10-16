@@ -39,7 +39,7 @@ namespace TimeForCode.Authorization.Infrastructure.Services.Github
             _logger = logger;
         }
 
-        public async Task<Result<GetAccessTokenResult>> GetAccessTokenAsync(string code)
+        public async Task<Result<GetAccessTokenResult>> GetAccessTokenAsync(string code, string codeVerifier)
         {
             var uriBuilder = new UriBuilder
             {
@@ -61,6 +61,7 @@ namespace TimeForCode.Authorization.Infrastructure.Services.Github
                 client_id = _identityProviderOptions.ClientId,
                 client_secret = _identityProviderOptions.ClientSecret,
                 code = code,
+                code_verifier = codeVerifier,
                 redirect_uri = _options.Value.CallbackUri
             });
 

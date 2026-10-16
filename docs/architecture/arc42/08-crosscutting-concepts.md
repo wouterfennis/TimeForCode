@@ -138,6 +138,8 @@ The GitHub access token is used once to fetch the profile and is then discarded;
 
 ASP.NET Core Data Protection encrypts the admin passkey ceremony state that travels in a cookie. The key ring is stored in the MongoDB collection `DataProtectionKeyDocument` and uses a fixed application name, so every instance can read state written by another and keys survive restarts. A ceremony state that cannot be decrypted is rejected as a bad request, not a server error. Without a configured database connection (OpenAPI document generation, specifications) the framework's default local key ring is used.
 
+The OAuth login state is durable and single-use (see [ADR-015](../../reference/adr/0015-durable-single-use-login-state.md)). Each login stores a record in the MongoDB collection `StateEntry` with a random key, the redirect URI, a PKCE code verifier and a 10-minute expiry; a TTL index removes expired records. The callback consumes the record atomically, so a state works once on any instance, and the token exchange sends the PKCE `code_verifier` that matches the `code_challenge` of the authorize request.
+
 ---
 
 ## Mermaid Diagram Convention

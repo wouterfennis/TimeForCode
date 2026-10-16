@@ -6,6 +6,22 @@ $command = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($Encoded)
 if ($command -notmatch '^dotnet\s+(build|test)\b') { Write-Error 'quiet-run only wraps dotnet build/test'; exit 2 }
 $kind = $Matches[1]
 
+# Solution-wide runs are skipped when the same kind already passed and no source file changed since.
+$isSolution = $command -match 'TimeForCode\.sln'
+$root = (git rev-parse --show-toplevel 2>$null)
+$fullStamp = if ($root) { Join-Path $root ".agent-state/last-full-$kind" } else { $null }
+if ($isSolution -and $fullStamp -and (Test-Path -LiteralPath $fullStamp)) {
+    $stampTime = (Get-Item -LiteralPath $fullStamp).LastWriteTime
+    $files = git -C $root ls-files -co --exclude-standard -- src tst Directory.Build.props Directory.Packages.props TimeForCode.sln 2>$null |
+        Where-Object { $_ -match '\.(cs|csproj|props|targets|feature|json|txt|sln)$' }
+    $newer = $files | Where-Object { $p = Join-Path $root $_; (Test-Path -LiteralPath $p) -and ([IO.File]::GetLastWriteTime($p) -gt $stampTime) } | Select-Object -First 1
+    if (-not $newer) {
+        "Skipped: solution $kind already passed at $($stampTime.ToString('s')) and no source file changed since. Delete .agent-state/last-full-$kind to force a rerun."
+        exit 0
+    }
+}
+$startTime = Get-Date
+
 $log = Join-Path ([IO.Path]::GetTempPath()) ("dotnet-$kind-" + (Get-Date -Format 'yyyyMMdd-HHmmss') + '.log')
 $env:DOTNET_NOLOGO = '1'
 $env:DOTNET_CLI_TELEMETRY_OPTOUT = '1'
@@ -32,6 +48,11 @@ if ($exit -eq 0) {
         $dir = Join-Path $root '.agent-state'
         New-Item -ItemType Directory -Force -Path $dir | Out-Null
         Set-Content -LiteralPath (Join-Path $dir 'last-dotnet-run') -Value (Get-Date -Format 's') -Encoding utf8
+        if ($isSolution) {
+            $fullPath = Join-Path $dir "last-full-$kind"
+            Set-Content -LiteralPath $fullPath -Value (Get-Date -Format 's') -Encoding utf8
+            (Get-Item -LiteralPath $fullPath).LastWriteTime = $startTime
+        }
     }
 }
 

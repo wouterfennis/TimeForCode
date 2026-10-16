@@ -1,6 +1,10 @@
 # Remove the line below if you want to inherit .editorconfig settings from higher directories
 root = true
 
+# All files
+[*]
+end_of_line = lf
+
 # C# files
 [*.cs]
 

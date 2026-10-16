@@ -24,7 +24,7 @@ namespace TimeForCode.Authorization.Application.Tests.Services
             _factoryMock = new Mock<IIdentityProviderServiceFactory>();
             _providerMock = new Mock<IIdentityProviderService>();
             _repositoryMock = new Mock<IAccountInformationRepository>();
-            _factoryMock.Setup(x => x.GetIdentityProviderServiceFromState("state"))
+            _factoryMock.Setup(x => x.GetIdentityProviderService(IdentityProvider.Github))
                 .Returns(Result<IIdentityProviderService>.Success(_providerMock.Object));
 
             _sut = new AccountService(_factoryMock.Object, _repositoryMock.Object, NullLogger<AccountService>.Instance);
@@ -39,7 +39,7 @@ namespace TimeForCode.Authorization.Application.Tests.Services
             _repositoryMock.Setup(x => x.CreateOrUpdateAsync(account))
                 .ReturnsAsync(new CreateOrUpdateResult(account, IsNewAccount: true));
 
-            var result = await _sut.SaveAccountInformation("state", new ExternalAccessToken { Token = "external-secret" });
+            var result = await _sut.SaveAccountInformation(IdentityProvider.Github, new ExternalAccessToken { Token = "external-secret" });
 
             result.IsSuccess.Should().BeTrue();
             _repositoryMock.Verify(x => x.CreateOrUpdateAsync(It.Is<AccountInformation>(a =>
@@ -52,7 +52,7 @@ namespace TimeForCode.Authorization.Application.Tests.Services
             _providerMock.Setup(x => x.GetAccountInformation(It.IsAny<ExternalAccessToken>()))
                 .ReturnsAsync(Result<AccountInformation>.Failure("nope"));
 
-            var result = await _sut.SaveAccountInformation("state", new ExternalAccessToken { Token = "t" });
+            var result = await _sut.SaveAccountInformation(IdentityProvider.Github, new ExternalAccessToken { Token = "t" });
 
             result.IsFailure.Should().BeTrue();
             _repositoryMock.Verify(x => x.CreateOrUpdateAsync(It.IsAny<AccountInformation>()), Times.Never);

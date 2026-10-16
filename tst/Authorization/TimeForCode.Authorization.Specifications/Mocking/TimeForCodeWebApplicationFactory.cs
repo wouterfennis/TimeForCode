@@ -18,6 +18,13 @@ namespace TimeForCode.Authorization.Specifications.Mocking
 {
     public class TimeForCodeWebApplicationFactory : WebApplicationFactory<Startup>
     {
+        private readonly ScenarioInfrastructure _infrastructure;
+
+        public TimeForCodeWebApplicationFactory(ScenarioInfrastructure infrastructure)
+        {
+            _infrastructure = infrastructure;
+        }
+
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
             builder.ConfigureServices(services =>
@@ -26,6 +33,8 @@ namespace TimeForCode.Authorization.Specifications.Mocking
                 {
                     typeof(IRandomGenerator),
                     typeof(IMongoDbContext),
+                    typeof(IStateRepository),
+                    typeof(TimeProvider),
                     typeof(IAccountInformationRepository),
                     typeof(IRefreshTokenRepository),
                     typeof(IEncryptionService),
@@ -52,7 +61,13 @@ namespace TimeForCode.Authorization.Specifications.Mocking
                 mockRandomGenerator.Setup(x => x.GenerateRandomString())
                     .Returns(Constants.StateKey);
 
-                var mockHttp = new MockHttpMessageHandler();
+                mockRandomGenerator.Setup(x => x.GenerateCodeVerifier())
+                    .Returns(Constants.CodeVerifier);
+
+                services.TryAddSingleton<IStateRepository>(_infrastructure.States);
+                services.TryAddSingleton<TimeProvider>(_infrastructure.Time);
+
+                var mockHttp = _infrastructure.MockHttp;
                 services.TryAddSingleton(mockHttp);
 
                 var restClient = new RestClient(new RestClientOptions { ConfigureMessageHandler = _ => mockHttp });

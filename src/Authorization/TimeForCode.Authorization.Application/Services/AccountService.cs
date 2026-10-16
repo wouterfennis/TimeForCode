@@ -22,11 +22,11 @@ namespace TimeForCode.Authorization.Application.Services
             _logger = logger;
         }
 
-        public async Task<Result<SaveAccountResult>> SaveAccountInformation(string state, ExternalAccessToken accessToken)
+        public async Task<Result<SaveAccountResult>> SaveAccountInformation(IdentityProvider identityProvider, ExternalAccessToken accessToken)
         {
             _logger.LogInformation("Saving account information");
 
-            var identityProviderServiceResult = _identityProviderServiceFactory.GetIdentityProviderServiceFromState(state);
+            var identityProviderServiceResult = _identityProviderServiceFactory.GetIdentityProviderService(identityProvider);
 
             if (identityProviderServiceResult.IsFailure)
             {
