@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.DataProtection.Repositories;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
@@ -28,6 +29,7 @@ namespace TimeForCode.Authorization.Specifications.Mocking
                     typeof(IAccountInformationRepository),
                     typeof(IRefreshTokenRepository),
                     typeof(IEncryptionService),
+                    typeof(IXmlRepository),
                     typeof(IAdminCredentialRepository),
                     typeof(IPasskeyCeremonyService),
                     typeof(RestClient)
@@ -45,6 +47,7 @@ namespace TimeForCode.Authorization.Specifications.Mocking
                 var mockRandomGenerator = new Mock<IRandomGenerator>();
                 MockDataAccess(services);
                 MockAdminPasskey(services);
+                services.TryAddSingleton<IXmlRepository, InMemoryXmlRepository>();
 
                 mockRandomGenerator.Setup(x => x.GenerateRandomString())
                     .Returns(Constants.StateKey);

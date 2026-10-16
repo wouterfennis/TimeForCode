@@ -7,12 +7,31 @@ namespace TimeForCode.Donation.Specifications.Steps
 {
     internal partial class ProjectSteps
     {
-        [When("The user requests the project with the identifier {string}")]
-        public async Task WhenTheUserRequestsTheProjectWithTheIdentifierAsync(string identifier)
+        [When("^The user requests the (project|contributions of the project) with the identifier \"(.*)\"$")]
+        public Task WhenTheUserRequestsTheProjectWithTheIdentifierAsync(string subject, string identifier)
+        {
+            return subject == "project"
+                ? CaptureAsync(async () => _getProjectByIdResult = await _donationClient.GetProjectByIdAsync(identifier))
+                : GetContributionsAsync(identifier);
+        }
+
+        [Then("The user is informed the project identifier is invalid")]
+        [Then("The user is informed the GitHub reference is invalid")]
+        [Then("The user is informed the hours are invalid")]
+        public void ThenTheUserIsInformedTheRequestIsInvalid()
+        {
+            _exception.Should().NotBeNull();
+            _exception!.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
+        }
+
+        /// <summary>
+        /// Runs an API call and keeps a failed response in <c>_exception</c> for the Then-steps.
+        /// </summary>
+        private async Task CaptureAsync(Func<Task> apiCall)
         {
             try
             {
-                _getProjectByIdResult = await _donationClient.GetProjectByIdAsync(identifier);
+                await apiCall();
             }
             catch (ApiException<ProblemDetails> exception)
             {
@@ -22,13 +41,6 @@ namespace TimeForCode.Donation.Specifications.Steps
             {
                 _exception = exception;
             }
-        }
-
-        [Then("The user is informed the project identifier is invalid")]
-        public void ThenTheUserIsInformedTheProjectIdentifierIsInvalid()
-        {
-            _exception.Should().NotBeNull();
-            _exception!.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
         }
     }
 }

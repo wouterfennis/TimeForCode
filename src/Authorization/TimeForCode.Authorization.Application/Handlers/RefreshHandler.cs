@@ -32,11 +32,19 @@ namespace TimeForCode.Authorization.Application.Handlers
                 return Result<TokenResult>.Failure(replacement.ErrorMessage);
             }
 
+            var accessToken = await _tokenService.GenerateInternalTokenForSessionAsync(replacement.Value.UserId);
+
+            if (accessToken.IsFailure)
+            {
+                _logger.LogWarning("Failed to issue access token during refresh: {Error}", accessToken.ErrorMessage);
+                return Result<TokenResult>.Failure(accessToken.ErrorMessage);
+            }
+
             _logger.LogInformation("Token refresh handled successfully");
 
             return Result<TokenResult>.Success(new TokenResult
             {
-                InternalAccessToken = _tokenService.GenerateInternalTokenForSession(replacement.Value.UserId),
+                InternalAccessToken = accessToken.Value,
                 RefreshToken = replacement.Value.RefreshToken
             });
         }

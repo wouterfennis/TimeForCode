@@ -36,14 +36,28 @@ namespace TimeForCode.Authorization.Application.Tests.Handlers
             var newRefreshToken = new Values.RefreshToken { Token = "new", ExpiresAfter = Now.AddDays(7) };
             _refreshTokenServiceMock.Setup(x => x.ReplaceRefreshTokenAsync(It.IsAny<Values.RefreshToken>()))
                 .ReturnsAsync(Result<RefreshTokenReplacement>.Success(new RefreshTokenReplacement(newRefreshToken, "user-1")));
-            _tokenServiceMock.Setup(x => x.GenerateInternalTokenForSession("user-1"))
-                .Returns(new AccessToken { Token = "jwt", ExpiresAfter = Now.AddMinutes(60) });
+            _tokenServiceMock.Setup(x => x.GenerateInternalTokenForSessionAsync("user-1"))
+                .ReturnsAsync(Result<AccessToken>.Success(new AccessToken { Token = "jwt", ExpiresAfter = Now.AddMinutes(60) }));
 
             var result = await _sut.Handle(Command(), CancellationToken.None);
 
             result.IsSuccess.Should().BeTrue();
             result.Value.InternalAccessToken.Token.Should().Be("jwt");
             result.Value.RefreshToken.Token.Should().Be("new");
+        }
+
+        [TestMethod]
+        public async Task Handle_AccessTokenCannotBeIssued_Fails()
+        {
+            var newRefreshToken = new Values.RefreshToken { Token = "new", ExpiresAfter = Now.AddDays(7) };
+            _refreshTokenServiceMock.Setup(x => x.ReplaceRefreshTokenAsync(It.IsAny<Values.RefreshToken>()))
+                .ReturnsAsync(Result<RefreshTokenReplacement>.Success(new RefreshTokenReplacement(newRefreshToken, "user-1")));
+            _tokenServiceMock.Setup(x => x.GenerateInternalTokenForSessionAsync("user-1"))
+                .ReturnsAsync(Result<AccessToken>.Failure("Account not found"));
+
+            var result = await _sut.Handle(Command(), CancellationToken.None);
+
+            result.IsFailure.Should().BeTrue();
         }
 
         [TestMethod]
@@ -55,7 +69,7 @@ namespace TimeForCode.Authorization.Application.Tests.Handlers
             var result = await _sut.Handle(Command(), CancellationToken.None);
 
             result.IsFailure.Should().BeTrue();
-            _tokenServiceMock.Verify(x => x.GenerateInternalTokenForSession(It.IsAny<string>()), Times.Never);
+            _tokenServiceMock.Verify(x => x.GenerateInternalTokenForSessionAsync(It.IsAny<string>()), Times.Never);
         }
     }
 }

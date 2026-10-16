@@ -23,7 +23,6 @@ namespace IdentityProviderMockService.Models
         /// Scope
         /// </summary>
         [JsonPropertyName("scope")]
-        [Required]
-        public required string Scope { get; init; }
+        public string? Scope { get; init; }
     }
 }

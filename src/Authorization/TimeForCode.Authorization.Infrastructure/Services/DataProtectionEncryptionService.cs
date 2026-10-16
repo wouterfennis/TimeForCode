@@ -5,7 +5,7 @@ namespace TimeForCode.Authorization.Infrastructure.Services
 {
     internal class DataProtectionEncryptionService : IEncryptionService
     {
-        private const string Purpose = "GitHubAccessToken";
+        private const string Purpose = "AdminCeremonyState";
         private readonly IDataProtector _protector;
 
         public DataProtectionEncryptionService(IDataProtectionProvider provider)

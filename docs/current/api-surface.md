@@ -27,8 +27,8 @@ The Authorization API exposes OAuth 2.0 endpoints and an OpenID Connect discover
 | Method | Path | Status | Description |
 | --- | --- | --- | --- |
 | `GET` | `/api/v1/user` | ✅ | Returns the currently authenticated user's profile |
-| `GET` | `/api/v1/user/repositories` | ✅ | Returns the caller's public GitHub repositories |
-| `GET` | `/api/v1/user/repositories/{owner}/{repo}` | ✅ | Returns one public GitHub repository; `400` when `owner` or `repo` is not a valid GitHub name (see [declared input limits](#declared-input-limits)) |
+| `GET` | `/api/v1/user/repositories` | ✅ | Returns the caller's public GitHub repositories, read with the application's own GitHub credentials (no user token is stored); `502` when GitHub fails |
+| `GET` | `/api/v1/user/repositories/{owner}/{repo}` | ✅ | Returns one public GitHub repository (`404` for private or unknown ones), read with the application's own GitHub credentials; `400` when `owner` or `repo` is not a valid GitHub name (see [declared input limits](#declared-input-limits)) |
 
 ### OpenID Connect / JWKS
 
@@ -138,6 +138,15 @@ GET /api/v1/project?searchText=rocket&language=C%23&tag=gaming&pageNumber=1&page
 | `GET` | `/api/v1/donororganization/{id}` | ✅ | Returns a donor organization's details; returns 404 when not found |
 | `PUT` | `/api/v1/donororganization/{id}` | ✅ | Updates a donor organization; returns 404 when not found or 409 for a duplicate name |
 | `DELETE` | `/api/v1/donororganization/{id}` | ✅ | Deletes a donor organization; returns 204 No Content on success or 404 when not found |
+
+### Contribution Endpoints
+
+| Method | Path | Status | Description |
+| --- | --- | --- | --- |
+| `POST` | `/api/v1/project/{id}/contribution` | ✅ | Logs hours on an `Active` project (user JWT); body `{ "hours": 1-10000, "githubReference": "https://github.com/..." }` (`githubReference` optional, HTTPS github.com only); upserts the caller as a `Contributor` by `sub` and returns `201` with the contribution (id, contributor id, GitHub login and avatar snapshot, hours, reference, `loggedAt`); `400` for invalid hours or reference or a token without `login`/`avatar_url` claims, `401` without a token, `404` for an unknown or non-`Active` project |
+| `GET` | `/api/v1/project/{id}/contribution` | ✅ | Lists the contributions of an `Active` project, earliest first, as `{ "contributions": [...] }` (at most 1000); no authentication required; `404` for an unknown or non-`Active` project |
+
+The user JWT issued by the Authorization API carries the `login` and `avatar_url` claims (GitHub login and avatar URL of the account) next to `sub`, `scope` and `aud`; the Donation API reads them to fill the contributor snapshot.
 
 ### Contributor Endpoints
 

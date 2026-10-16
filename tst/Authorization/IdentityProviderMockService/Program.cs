@@ -49,7 +49,7 @@ namespace IdentityProviderMockService
 
             // Add Authorization
             builder.Services.AddAuthorizationBuilder()
-                            .AddPolicy("ApiUser", policy => policy.RequireClaim("scope", "user"));
+                            .AddPolicy("ApiUser", policy => policy.RequireAuthenticatedUser());
 
             var app = builder.Build();
 

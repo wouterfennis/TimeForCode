@@ -16,6 +16,7 @@ namespace TimeForCode.Authorization.Infrastructure.Tests.Services
     public class GithubServiceTests
     {
         private const string BaseUrl = "http://localhost:8081";
+        private const string HttpsBaseUrl = "https://localhost:8081";
         private const string TestToken = "test-access-token";
 
         private MockHttpMessageHandler _mockHttp = default!;
@@ -25,7 +26,11 @@ namespace TimeForCode.Authorization.Infrastructure.Tests.Services
         public void Setup()
         {
             _mockHttp = new MockHttpMessageHandler();
+            _sut = CreateSut(isHttps: false);
+        }
 
+        private GithubService CreateSut(bool isHttps)
+        {
             var restClient = new RestClient(new RestClientOptions
             {
                 ConfigureMessageHandler = _ => _mockHttp
@@ -44,13 +49,13 @@ namespace TimeForCode.Authorization.Infrastructure.Tests.Services
                     RestApiPort = 8081,
                     ClientId = "test-client",
                     ClientSecret = "test-secret",
-                    IsHttps = false,
+                    IsHttps = isHttps,
                     Issuer = BaseUrl,
                     MetaDataAddress = null
                 }
             });
 
-            _sut = new GithubService(options, restClient, NullLogger<GithubService>.Instance);
+            return new GithubService(options, restClient, NullLogger<GithubService>.Instance);
         }
 
         // ── GetAccessTokenAsync ──────────────────────────────────────────────────
@@ -123,6 +128,18 @@ namespace TimeForCode.Authorization.Infrastructure.Tests.Services
         }
 
         [TestMethod]
+        public async Task GetAccountInformation_WhenEmailIsNotPublic_MapsAnEmptyEmail()
+        {
+            _mockHttp.When(HttpMethod.Get, $"{BaseUrl}/user")
+                .Respond("application/json", "{\"id\":42,\"login\":\"johndoe\",\"node_id\":\"n\",\"avatar_url\":\"a\",\"name\":\"John\",\"company\":null,\"email\":null}");
+
+            var result = await _sut.GetAccountInformation(new ExternalAccessToken { Token = TestToken });
+
+            result.IsSuccess.Should().BeTrue();
+            result.Value.Email.Should().BeEmpty();
+        }
+
+        [TestMethod]
         public async Task GetAccountInformation_WhenTokenIsRevoked_ReturnsFailure()
         {
             _mockHttp.When(HttpMethod.Get, $"{BaseUrl}/user")
@@ -136,6 +153,8 @@ namespace TimeForCode.Authorization.Infrastructure.Tests.Services
 
         // ── GetUserRepositoriesAsync ─────────────────────────────────────────────
 
+        private static string ExpectedAppAuthorization => "Basic " + Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes("test-client:test-secret"));
+
         [TestMethod]
         public async Task GetUserRepositoriesAsync_WhenProviderReturnsRepos_ReturnsOnlyPublicOnes()
         {
@@ -145,10 +164,10 @@ namespace TimeForCode.Authorization.Infrastructure.Tests.Services
                 new GithubRepositoryPayload { Name = "private-repo", Description = "A private repo", StargazersCount = 0, Language = "C#", HtmlUrl = "https://github.com/johndoe/private-repo", IsPrivate = true }
             };
 
-            _mockHttp.When(HttpMethod.Get, $"{BaseUrl}/user/repos")
+            _mockHttp.When(HttpMethod.Get, $"{BaseUrl}/users/johndoe/repos*")
                 .Respond("application/json", JsonSerializer.Serialize(repos));
 
-            var result = await _sut.GetUserRepositoriesAsync(TestToken);
+            var result = await _sut.GetUserRepositoriesAsync("johndoe");
 
             result.IsSuccess.Should().BeTrue();
             result.Value.Should().HaveCount(1);
@@ -163,10 +182,10 @@ namespace TimeForCode.Authorization.Infrastructure.Tests.Services
                 new GithubRepositoryPayload { Name = "private-one", Description = null, StargazersCount = 0, Language = null, HtmlUrl = "https://github.com/johndoe/private-one", IsPrivate = true }
             };
 
-            _mockHttp.When(HttpMethod.Get, $"{BaseUrl}/user/repos")
+            _mockHttp.When(HttpMethod.Get, $"{BaseUrl}/users/johndoe/repos*")
                 .Respond("application/json", JsonSerializer.Serialize(repos));
 
-            var result = await _sut.GetUserRepositoriesAsync(TestToken);
+            var result = await _sut.GetUserRepositoriesAsync("johndoe");
 
             result.IsSuccess.Should().BeTrue();
             result.Value.Should().BeEmpty();
@@ -180,10 +199,10 @@ namespace TimeForCode.Authorization.Infrastructure.Tests.Services
                 new GithubRepositoryPayload { Name = "my-repo", Description = "Some description", StargazersCount = 99, Language = "TypeScript", HtmlUrl = "https://github.com/johndoe/my-repo", IsPrivate = false }
             };
 
-            _mockHttp.When(HttpMethod.Get, $"{BaseUrl}/user/repos")
+            _mockHttp.When(HttpMethod.Get, $"{BaseUrl}/users/johndoe/repos*")
                 .Respond("application/json", JsonSerializer.Serialize(repos));
 
-            var result = await _sut.GetUserRepositoriesAsync(TestToken);
+            var result = await _sut.GetUserRepositoriesAsync("johndoe");
 
             result.IsSuccess.Should().BeTrue();
             var repo = result.Value.Single();
@@ -195,15 +214,81 @@ namespace TimeForCode.Authorization.Infrastructure.Tests.Services
         }
 
         [TestMethod]
-        public async Task GetUserRepositoriesAsync_WhenTokenIsRevoked_ReturnsFailure()
+        public async Task GetUserRepositoriesAsync_AuthenticatesWithTheApplicationCredentials()
         {
-            _mockHttp.When(HttpMethod.Get, $"{BaseUrl}/user/repos")
-                .Respond(HttpStatusCode.Unauthorized, "application/json", "{\"message\":\"Bad credentials\"}");
+            _mockHttp.Expect(HttpMethod.Get, $"{HttpsBaseUrl}/users/johndoe/repos*")
+                .WithHeaders("Authorization", ExpectedAppAuthorization)
+                .Respond("application/json", "[]");
 
-            var result = await _sut.GetUserRepositoriesAsync("revoked-token");
+            var result = await CreateSut(isHttps: true).GetUserRepositoriesAsync("johndoe");
+
+            result.IsSuccess.Should().BeTrue();
+            _mockHttp.VerifyNoOutstandingExpectation();
+        }
+
+        [TestMethod]
+        public async Task GetUserRepositoriesAsync_OverPlainHttp_DoesNotSendTheApplicationCredentials()
+        {
+            _mockHttp.Expect(HttpMethod.Get, $"{BaseUrl}/users/johndoe/repos*")
+                .With(request => !request.Headers.Contains("Authorization"))
+                .Respond("application/json", "[]");
+
+            var result = await _sut.GetUserRepositoriesAsync("johndoe");
+
+            result.IsSuccess.Should().BeTrue();
+            _mockHttp.VerifyNoOutstandingExpectation();
+        }
+
+        [TestMethod]
+        public async Task GetUserRepositoriesAsync_RequestsOwnedRepositoriesWithTheMaximumPageSize()
+        {
+            _mockHttp.Expect(HttpMethod.Get, $"{BaseUrl}/users/johndoe/repos")
+                .WithQueryString("type=owner&per_page=100")
+                .Respond("application/json", "[]");
+
+            var result = await _sut.GetUserRepositoriesAsync("johndoe");
+
+            result.IsSuccess.Should().BeTrue();
+            _mockHttp.VerifyNoOutstandingExpectation();
+        }
+
+        [TestMethod]
+        [DataRow("..")]
+        [DataRow(".")]
+        [DataRow("a/b")]
+        [DataRow("a?b")]
+        [DataRow("")]
+        public async Task GetUserRepositoriesAsync_UnsafeLogin_ReturnsNotFoundWithoutCallingTheProvider(string login)
+        {
+            var result = await _sut.GetUserRepositoriesAsync(login);
 
             result.IsFailure.Should().BeTrue();
-            result.ErrorMessage.Should().NotBeNullOrEmpty();
+            result.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        }
+
+        [TestMethod]
+        [DataRow("..", "repo")]
+        [DataRow("johndoe", "..")]
+        [DataRow("johndoe", "a/b")]
+        [DataRow("johndoe", "a?b")]
+        public async Task GetRepositoryAsync_UnsafeSegment_ReturnsNotFoundWithoutCallingTheProvider(string owner, string repo)
+        {
+            var result = await _sut.GetRepositoryAsync(owner, repo);
+
+            result.IsFailure.Should().BeTrue();
+            result.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        }
+
+        [TestMethod]
+        public async Task GetUserRepositoriesAsync_WhenProviderFails_ReturnsFailureWithStatusCode()
+        {
+            _mockHttp.When(HttpMethod.Get, $"{BaseUrl}/users/johndoe/repos*")
+                .Respond(HttpStatusCode.Forbidden, "application/json", "{\"message\":\"rate limit exceeded\"}");
+
+            var result = await _sut.GetUserRepositoriesAsync("johndoe");
+
+            result.IsFailure.Should().BeTrue();
+            result.StatusCode.Should().Be(HttpStatusCode.Forbidden);
         }
 
         // ── GetRepositoryAsync ───────────────────────────────────────────────────
@@ -216,7 +301,7 @@ namespace TimeForCode.Authorization.Infrastructure.Tests.Services
             _mockHttp.When(HttpMethod.Get, $"{BaseUrl}/repos/johndoe/my-repo")
                 .Respond("application/json", JsonSerializer.Serialize(repo));
 
-            var result = await _sut.GetRepositoryAsync("johndoe", "my-repo", TestToken);
+            var result = await _sut.GetRepositoryAsync("johndoe", "my-repo");
 
             result.IsSuccess.Should().BeTrue();
             result.Value.Name.Should().Be("my-repo");
@@ -227,15 +312,42 @@ namespace TimeForCode.Authorization.Infrastructure.Tests.Services
         }
 
         [TestMethod]
+        public async Task GetRepositoryAsync_AuthenticatesWithTheApplicationCredentials()
+        {
+            var repo = new GithubRepositoryPayload { Name = "my-repo", Description = null, StargazersCount = 0, Language = null, HtmlUrl = "https://github.com/johndoe/my-repo", IsPrivate = false };
+            _mockHttp.Expect(HttpMethod.Get, $"{HttpsBaseUrl}/repos/johndoe/my-repo")
+                .WithHeaders("Authorization", ExpectedAppAuthorization)
+                .Respond("application/json", JsonSerializer.Serialize(repo));
+
+            var result = await CreateSut(isHttps: true).GetRepositoryAsync("johndoe", "my-repo");
+
+            result.IsSuccess.Should().BeTrue();
+            _mockHttp.VerifyNoOutstandingExpectation();
+        }
+
+        [TestMethod]
         public async Task GetRepositoryAsync_WhenRepoNotFound_ReturnsFailure()
         {
             _mockHttp.When(HttpMethod.Get, $"{BaseUrl}/repos/johndoe/nonexistent")
                 .Respond(HttpStatusCode.NotFound, "application/json", "{\"message\":\"Not Found\"}");
 
-            var result = await _sut.GetRepositoryAsync("johndoe", "nonexistent", TestToken);
+            var result = await _sut.GetRepositoryAsync("johndoe", "nonexistent");
 
             result.IsFailure.Should().BeTrue();
-            result.ErrorMessage.Should().NotBeNullOrEmpty();
+            result.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        }
+
+        [TestMethod]
+        public async Task GetRepositoryAsync_WhenRepoIsPrivate_ReturnsNotFound()
+        {
+            var repo = new GithubRepositoryPayload { Name = "secret-repo", Description = null, StargazersCount = 0, Language = null, HtmlUrl = "https://github.com/johndoe/secret-repo", IsPrivate = true };
+            _mockHttp.When(HttpMethod.Get, $"{BaseUrl}/repos/johndoe/secret-repo")
+                .Respond("application/json", JsonSerializer.Serialize(repo));
+
+            var result = await _sut.GetRepositoryAsync("johndoe", "secret-repo");
+
+            result.IsFailure.Should().BeTrue();
+            result.StatusCode.Should().Be(HttpStatusCode.NotFound);
         }
 
         // ── GetTokenValidationParameters ─────────────────────────────────────────

@@ -7,6 +7,7 @@ using System.Net;
 using System.Text.Json;
 using TimeForCode.Authorization.Application.Interfaces;
 using TimeForCode.Authorization.Infrastructure.Services.Github;
+using TimeForCode.Authorization.Specifications.Mocking;
 
 namespace TimeForCode.Authorization.Specifications.Steps
 {
@@ -47,25 +48,9 @@ namespace TimeForCode.Authorization.Specifications.Steps
                 Location = "Netherlands"
             };
 
-            var repositories = new List<GithubRepository>
-            {
-                new GithubRepository
-                {
-                    Name = "my-repo",
-                    Description = "A test repository",
-                    StargazersCount = 42,
-                    Language = "C#",
-                    HtmlUrl = "https://github.com/johndoe/my-repo",
-                    IsPrivate = false
-                }
-            };
-
             mockHttp.When("http://localhost:8081/user")
                     .Respond("application/json", JsonSerializer.Serialize(accountInformation));
-            mockHttp.When("http://localhost:8081/user/repos")
-                    .Respond("application/json", JsonSerializer.Serialize(repositories));
-            mockHttp.When("http://localhost:8081/repos/*")
-                    .Respond("application/json", JsonSerializer.Serialize(repositories.First()));
+            ExternalPlatformMocks.RegisterPublicRepositories(mockHttp);
         }
 
         [Given("The user has no account at the external platform")]

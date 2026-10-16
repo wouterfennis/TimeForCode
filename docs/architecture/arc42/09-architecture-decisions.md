@@ -24,6 +24,7 @@ ADR documents live in [docs/reference/adr/](../../reference/adr/README.md).
 | [ADR-010](../../reference/adr/0010-bounded-context-entity-duplication.md) | Keep GithubEntity and DocumentEntity per bounded context | Accepted | 2026-06-26 |
 | [ADR-011](../../reference/adr/0011-webauthn-admin-authentication.md) | WebAuthn passkey authentication for the admin role | Accepted | 2026-09-01 |
 | [ADR-012](../../reference/adr/0012-react-spa-frontend.md) | React SPA behind a same-origin BFF for the new front-end | Proposed | 2026-10-06 |
+| [ADR-013](../../reference/adr/0013-no-stored-github-tokens.md) | Do not store GitHub access tokens; read public data with application credentials | Accepted | 2026 |
 | [ADR-014](../../reference/adr/0014-no-backwards-compatibility-before-release.md) | No backwards compatibility before the first production release | Accepted | 2026-10-16 |
 
 ---

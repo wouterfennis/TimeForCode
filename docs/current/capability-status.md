@@ -77,7 +77,7 @@ This document provides an explicit, feature-level view of what is implemented, p
 | Capability | Status | Notes |
 | --- | --- | --- |
 | Hours donated per organization | ❌ | Not implemented |
-| Hours spent per project | ❌ | Not implemented |
+| Hours spent per project | ⚠️ | Contributions can be logged and listed per project (`POST`/`GET /api/v1/project/{id}/contribution`); no total field or dashboard yet |
 | Contribution history for a user | ❌ | Not implemented |
 | Impact dashboard | ❌ | Not implemented |
 | Badges and tiers | ❌ | Concept only |

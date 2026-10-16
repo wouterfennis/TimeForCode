@@ -43,7 +43,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
         {
             using var scope = _provider.CreateScope();
             var tokenService = scope.ServiceProvider.GetRequiredService<ITokenService>();
-            var accessToken = tokenService.GenerateInternalToken(new ObjectId().ToString());
+            var accessToken = tokenService.GenerateInternalToken(new ObjectId().ToString(), "user", "user");
 
             var uri = new Uri("http://localhost:8083");
             var cookieValue = HttpUtility.UrlEncode(JsonSerializer.Serialize(accessToken));

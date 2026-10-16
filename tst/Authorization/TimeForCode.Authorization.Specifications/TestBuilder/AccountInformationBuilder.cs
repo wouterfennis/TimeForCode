@@ -17,13 +17,12 @@ namespace TimeForCode.Authorization.Specifications.TestBuilder
                 AvatarUrl = "AvatarUrl",
                 Company = "Company",
                 Id = new MongoDB.Bson.ObjectId(),
-                Login = "Login",
+                Login = "johndoe",
                 NodeId = "NodeId",
                 Name = "Name",
                 Email = "Email",
                 Bio = "Software developer",
-                Location = "Netherlands",
-                EncryptedGitHubAccessToken = "github_test_token"
+                Location = "Netherlands"
             };
         }
     }
