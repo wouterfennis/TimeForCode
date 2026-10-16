@@ -1,6 +1,6 @@
 # TimeForCode front-end
 
-React single-page application that replaces the deprecated Blazor Website ([ADR-012](../../../docs/reference/adr/0012-react-spa-frontend.md)). Stack, folder layout and testing strategy: [docs/frontend/architecture.md](../../../docs/frontend/architecture.md).
+React single-page application for TimeForCode ([ADR-012](../../../docs/reference/adr/0012-react-spa-frontend.md)). Stack, folder layout and testing strategy: [docs/frontend/architecture.md](../../../docs/frontend/architecture.md).
 
 ## Prerequisites
 
@@ -17,6 +17,7 @@ Run from this folder:
 | `npm run lint` | Lint with oxlint; warnings fail the check |
 | `npm run typecheck` | Type-check with `tsc` in strict mode |
 | `npm test` | Run the Vitest component tests once (`npm run test:watch` to watch) |
+| `npm run test:coverage` | Run the tests with coverage; writes `coverage/lcov.info` for SonarCloud |
 | `npm run build` | Type-check and build to `dist/` |
 
-The pull request workflow runs `npm ci`, lint, type-check, test and build.
+The pull request workflow runs `npm ci --ignore-scripts`, lint, type-check, `test:coverage` and build.

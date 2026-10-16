@@ -11,7 +11,7 @@ This document describes how the new front-end is built and how it talks to the b
 | Concern | Choice | Reason |
 | --- | --- | --- |
 | Runtime for tooling | Node 24 (LTS) | Pinned; see [Project setup](#project-setup) |
-| Language | TypeScript, `strict` mode | Type safety against the generated API types |
+| Language | TypeScript 7, `strict` mode | Type safety against the generated API types; the native compiler keeps the type-check fast |
 | Framework | React | Largest ecosystem for accessible component libraries and testing |
 | Build tool | Vite | Fast dev server, simple configuration |
 | Routing | React Router | Mature, supports route-level data loading |
@@ -30,7 +30,7 @@ Treat the choices as defaults. Replacing one is fine if the reason is recorded i
 ```text
 src/
 └── Frontend/
-    └── TimeForCode.Frontend/        # new SPA (package.json, vite.config.ts)
+    └── TimeForCode.Frontend/        # the SPA (package.json, vite.config.ts)
         ├── src/
         │   ├── api/                 # generated clients (do not edit by hand)
         │   ├── app/                 # shell, routing, providers
@@ -48,16 +48,16 @@ Organise by feature, not by file type. A feature folder owns its pages, queries,
 Implemented in Phase 0 (#110); commands are in the project [README](../../src/Frontend/TimeForCode.Frontend/README.md).
 
 - **Node version**: Node 24, pinned in `.nvmrc` and `package.json` `engines`. `.npmrc` sets `engine-strict`, so installing with another major version fails. CI reads `.nvmrc`.
-- **Lock file**: `package-lock.json` is committed and CI installs with `npm ci`. Dependency versions are pinned exactly.
-- **Scripts**: `lint`, `typecheck`, `test` and `build` are the checks the pull request workflow runs. Lint warnings fail the check (`--deny-warnings`).
-- **Strictness**: `strict` and `noUncheckedIndexedAccess` are on.
+- **Lock file**: `package-lock.json` is committed. CI installs with `npm ci --ignore-scripts`, so no package install scripts run. Dependency versions are pinned exactly.
+- **Scripts**: `lint`, `typecheck`, `test:coverage` and `build` are the checks the pull request workflow runs. Lint warnings fail the check (`--deny-warnings`).
+- **Coverage**: `test:coverage` writes `coverage/lcov.info` with paths relative to the repository root. The `frontend` CI job uploads it, and the .NET job passes it to SonarCloud (`sonar.javascript.lcov.reportPaths`). Test files, `tests/`, `src/main.tsx` and `vite.config.ts` are excluded from coverage.
+- **Strictness**: `strict` and `noUncheckedIndexedAccess` are on. `tsc` is the native TypeScript 7 compiler; Vite and Vitest transpile without it, so only the type-check depends on it.
 - **Accessibility tests**: component tests run axe through the small `axeViolations` helper in `tests/axe.ts` (axe-core directly, no wrapper library). jsdom cannot compute colour contrast, so contrast is checked in the E2E suite or by hand.
 
 Choices that differ from the latest versions or the usual defaults, with the reason:
 
 | Default | Chosen | Reason |
 | --- | --- | --- |
-| Latest TypeScript (7) | TypeScript 6 | The Vite React template still pins TypeScript 6, and parts of the ecosystem do not support the native TypeScript 7 compiler yet (typescript-eslint supports up to 6.0); revisit when they do |
 | Latest jsdom (30) | jsdom 29 | jsdom 30 needs Node 24.15 or later; 29 supports every Node 24 release |
 | ESLint | oxlint | The Vite React template ships oxlint; it has the React, hooks and jsx-a11y rules built in, while the ESLint jsx-a11y plugin does not support ESLint 10 yet |
 
