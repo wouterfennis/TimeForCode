@@ -7,6 +7,7 @@ using System.Security.Cryptography;
 using TimeForCode.Authorization.Application.Interfaces;
 using TimeForCode.Authorization.Application.Options;
 using TimeForCode.Authorization.Commands;
+using TimeForCode.Authorization.Domain.Entities;
 using TimeForCode.Authorization.Values;
 using TimeForCode.Shared.Api.Authentication.Models;
 using AccountInformation = TimeForCode.Authorization.Domain.Entities.AccountInformation;
@@ -19,14 +20,12 @@ namespace TimeForCode.Authorization.Application.Services
         private readonly IIdentityProviderServiceFactory _identityProviderServiceFactory;
         private readonly TimeProvider _timeProvider;
         private readonly TokenCreationOptions _tokenCreationOptions;
-        private readonly IStateRepository _stateRepository;
         private readonly IAccountInformationRepository _accountInformationRepository;
         private readonly ILogger<TokenService> _logger;
 
         public TokenService(RSA rsa,
             IIdentityProviderServiceFactory identityProviderServiceFactory,
             TimeProvider timeProvider,
-            IStateRepository stateRepository,
             IAccountInformationRepository accountInformationRepository,
             IOptions<TokenCreationOptions> tokenCreationOptions,
             ILogger<TokenService> logger)
@@ -35,24 +34,23 @@ namespace TimeForCode.Authorization.Application.Services
             _tokenCreationOptions = tokenCreationOptions.Value;
             _identityProviderServiceFactory = identityProviderServiceFactory;
             _timeProvider = timeProvider;
-            _stateRepository = stateRepository;
             _accountInformationRepository = accountInformationRepository;
             _logger = logger;
         }
 
-        public async Task<Result<ExternalAccessToken>> GetAccessTokenFromExternalProviderAsync(string state, string code)
+        public async Task<Result<ExternalAccessToken>> GetAccessTokenFromExternalProviderAsync(StateEntry stateEntry, string code)
         {
-            _logger.LogDebug("Getting access token from external provider for state {State}", state);
+            _logger.LogDebug("Getting access token from external provider {IdentityProvider}", stateEntry.IdentityProvider);
 
-            var result = _identityProviderServiceFactory.GetIdentityProviderServiceFromState(state);
+            var result = _identityProviderServiceFactory.GetIdentityProviderService(stateEntry.IdentityProvider);
             if (result.IsFailure)
             {
-                _logger.LogWarning("Failed to get identity provider service from state: {Error}", result.ErrorMessage);
+                _logger.LogWarning("Failed to get identity provider service: {Error}", result.ErrorMessage);
                 return Result<ExternalAccessToken>.Failure(result.ErrorMessage);
             }
             var identityProviderService = result.Value;
 
-            var externalAccessTokenResult = await identityProviderService.GetAccessTokenAsync(code);
+            var externalAccessTokenResult = await identityProviderService.GetAccessTokenAsync(code, stateEntry.CodeVerifier);
             if (externalAccessTokenResult.IsFailure)
             {
                 _logger.LogWarning("Failed to get access token from identity provider: {Error}", externalAccessTokenResult.ErrorMessage);
@@ -145,12 +143,6 @@ namespace TimeForCode.Authorization.Application.Services
             }
 
             return Result<AccessToken>.Success(GenerateInternalToken(account));
-        }
-
-        public Uri GetRedirectUri(string state)
-        {
-            var stateEntry = _stateRepository.GetState(state);
-            return stateEntry == null ? throw new InvalidOperationException("State not found") : stateEntry.RedirectUri;
         }
     }
 }

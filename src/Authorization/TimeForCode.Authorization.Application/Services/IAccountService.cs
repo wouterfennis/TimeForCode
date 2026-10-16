@@ -5,6 +5,6 @@ namespace TimeForCode.Authorization.Application.Services
 {
     public interface IAccountService
     {
-        Task<Result<SaveAccountResult>> SaveAccountInformation(string state, ExternalAccessToken accessToken);
+        Task<Result<SaveAccountResult>> SaveAccountInformation(IdentityProvider identityProvider, ExternalAccessToken accessToken);
     }
 }

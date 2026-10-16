@@ -33,7 +33,6 @@ namespace TimeForCode.Authorization.Application.Tests.Services
                 _rsa,
                 new Mock<IIdentityProviderServiceFactory>().Object,
                 timeProvider.Object,
-                new Mock<IStateRepository>().Object,
                 _accountRepositoryMock.Object,
                 Microsoft.Extensions.Options.Options.Create(new TokenCreationOptions
                 {

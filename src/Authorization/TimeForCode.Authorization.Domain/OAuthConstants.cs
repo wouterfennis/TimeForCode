@@ -9,6 +9,10 @@
         public const string State = "state";
         public const string RedirectUri = "redirect_uri";
         public const string ClientId = "client_id";
+        public const string CodeChallenge = "code_challenge";
+        public const string CodeChallengeMethod = "code_challenge_method";
+        public const string CodeChallengeMethodS256 = "S256";
+        public const string CodeVerifier = "code_verifier";
         public const string AuthorizationHeader = "Authorization";
         public const string BearerPrefix = "Bearer ";
         public const string BasicPrefix = "Basic ";

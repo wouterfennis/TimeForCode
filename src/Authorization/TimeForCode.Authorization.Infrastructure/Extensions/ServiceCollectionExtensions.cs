@@ -9,7 +9,7 @@ using TimeForCode.Authorization.Application.Options;
 using TimeForCode.Authorization.Infrastructure.Options;
 using TimeForCode.Authorization.Infrastructure.Persistence.Database;
 using TimeForCode.Authorization.Infrastructure.Persistence.Database.Admin;
-using TimeForCode.Authorization.Infrastructure.Persistence.Memory;
+
 using TimeForCode.Authorization.Infrastructure.Services;
 using TimeForCode.Authorization.Infrastructure.Services.Admin;
 using TimeForCode.Authorization.Infrastructure.Services.Github;
@@ -43,8 +43,7 @@ namespace TimeForCode.Authorization.Infrastructure.Extensions
             services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 
 
-            services.AddMemoryCache();
-            services.AddSingleton<IStateRepository, StateRepository>();
+            services.AddScoped<IStateRepository, StateRepository>();
 
             // Without a database (OpenAPI document generation at build time, specifications) the keys cannot be shared;
             // the framework then falls back to its default, local key ring.
