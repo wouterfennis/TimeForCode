@@ -788,12 +788,24 @@
       "JwkResponse": {
         "required": [
           "kty",
+          "kid",
+          "use",
+          "alg",
           "e",
           "n"
         ],
         "type": "object",
         "properties": {
           "kty": {
+            "type": "string"
+          },
+          "kid": {
+            "type": "string"
+          },
+          "use": {
+            "type": "string"
+          },
+          "alg": {
             "type": "string"
           },
           "e": {

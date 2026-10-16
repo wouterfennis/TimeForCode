@@ -32,6 +32,9 @@ namespace IdentityProviderMockService.Controllers
             var jwk = new JwkResponse
             {
                 KeyType = nameof(RSA),
+                KeyId = "mock-key",
+                Use = "sig",
+                Algorithm = "RS256",
                 Exponent = Base64UrlEncoder.Encode(_rsaParameters.Exponent),
                 Modulus = Base64UrlEncoder.Encode(_rsaParameters.Modulus)
             };

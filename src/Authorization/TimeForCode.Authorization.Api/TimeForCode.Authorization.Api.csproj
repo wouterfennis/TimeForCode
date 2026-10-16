@@ -26,5 +26,19 @@
     <ProjectReference Include="..\TimeForCode.Authorization.Values\TimeForCode.Authorization.Values.csproj" />
   </ItemGroup>
 
+  <!-- The document generator starts the app without configuration; Development lets it use a throwaway signing key. -->
+  <UsingTask TaskName="SetEnvironmentVariable" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <Name ParameterType="System.String" Required="true" />
+      <Value ParameterType="System.String" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Code Type="Fragment" Language="cs"><![CDATA[Environment.SetEnvironmentVariable(Name, Value);]]></Code>
+    </Task>
+  </UsingTask>
+
+  <Target Name="UseDevelopmentEnvironmentForOpenApi" BeforeTargets="GenerateOpenApiDocuments">
+    <SetEnvironmentVariable Name="ASPNETCORE_ENVIRONMENT" Value="Development" />
+  </Target>
 
 </Project>

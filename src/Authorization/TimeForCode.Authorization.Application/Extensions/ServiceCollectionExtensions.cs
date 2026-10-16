@@ -3,8 +3,6 @@ using MediatR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System.Diagnostics.CodeAnalysis;
-using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
 using TimeForCode.Authorization.Application.Handlers;
 using TimeForCode.Authorization.Application.Options;
 using TimeForCode.Authorization.Application.Services;
@@ -21,8 +19,9 @@ namespace TimeForCode.Authorization.Application.Extensions
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/> to add services to.</param>
         /// <param name="configuration">The <see cref="IConfiguration"/> instance used to configure the services.</param>
+        /// <param name="allowEphemeralSigningKey">Whether a missing signing certificate may be replaced by a throwaway key (Development only).</param>
         /// <returns>The <see cref="IServiceCollection"/> with the application layer services added.</returns>
-        public static IServiceCollection AddApplicationLayer(this IServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection AddApplicationLayer(this IServiceCollection services, IConfiguration configuration, bool allowEphemeralSigningKey)
         {
             services.AddMediatR(cfg =>
             {
@@ -48,7 +47,7 @@ namespace TimeForCode.Authorization.Application.Extensions
                 .Configure<AdminPasskeyOptions>(options => configuration.GetSection(AdminPasskeyOptions.SectionName)
                 .Bind(options));
 
-            ConfigureSigningCertificate(services, configuration);
+            ConfigureSigningCertificate(services, configuration, allowEphemeralSigningKey);
 
             services.AddScoped<IAccountService, AccountService>();
             services.AddScoped<ITokenService, TokenService>();
@@ -57,25 +56,9 @@ namespace TimeForCode.Authorization.Application.Extensions
             return services;
         }
 
-        private static void ConfigureSigningCertificate(IServiceCollection services, IConfiguration configuration)
+        private static void ConfigureSigningCertificate(IServiceCollection services, IConfiguration configuration, bool allowEphemeralSigningKey)
         {
-            var rsa = LoadCertificate(configuration);
-            services.AddSingleton(rsa);
-        }
-
-        public static RSA LoadCertificate(IConfiguration configuration)
-        {
-            var rsaOptions = RsaOptions.Bind(configuration);
-
-            var certificateBytes = Convert.FromBase64String(rsaOptions.Base64Certificate);
-
-            if (certificateBytes == null || certificateBytes.Length == 0)
-            {
-                return RSA.Create();
-            }
-
-            var certificate = X509CertificateLoader.LoadPkcs12(certificateBytes, (string?)null);
-            return certificate.GetRSAPrivateKey()!;
+            services.AddSingleton(SigningKeySet.Load(configuration, allowEphemeralSigningKey));
         }
     }
 }

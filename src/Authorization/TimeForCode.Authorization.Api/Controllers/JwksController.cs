@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.Net.Mime;
 using System.Security.Cryptography;
+using TimeForCode.Authorization.Application.Services;
 using TimeForCode.Shared.Api.Authentication.Models;
 
 namespace TimeForCode.Authorization.Api.Controllers
@@ -15,17 +16,17 @@ namespace TimeForCode.Authorization.Api.Controllers
     public class JwksController : ControllerBase
     {
         private readonly ILogger<JwksController> _logger;
-        private readonly RSAParameters _rsaParameters;
+        private readonly SigningKeySet _signingKeys;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="JwksController"/> class.
         /// </summary>
         /// <param name="logger">Logger instance for logging.</param>
-        /// <param name="rsa">RSA instance to export parameters.</param>
-        public JwksController(ILogger<JwksController> logger, RSA rsa)
+        /// <param name="signingKeys">The current and previous signing keys to publish.</param>
+        public JwksController(ILogger<JwksController> logger, SigningKeySet signingKeys)
         {
             _logger = logger;
-            _rsaParameters = rsa.ExportParameters(includePrivateParameters: false);
+            _signingKeys = signingKeys;
         }
 
         /// <summary>
@@ -39,15 +40,24 @@ namespace TimeForCode.Authorization.Api.Controllers
         {
             _logger.LogDebug("jwks is returned");
 
-            var jwk = new JwkResponse
+            var keys = _signingKeys.PublishedKeys.Select(ToJwk).ToList();
+
+            var jwks = new JwksResponse { Keys = keys };
+            return Ok(jwks);
+        }
+
+        private static JwkResponse ToJwk(RsaSecurityKey key)
+        {
+            var parameters = key.Rsa.ExportParameters(includePrivateParameters: false);
+            return new JwkResponse
             {
                 KeyType = nameof(RSA),
-                Exponent = Base64UrlEncoder.Encode(_rsaParameters.Exponent),
-                Modulus = Base64UrlEncoder.Encode(_rsaParameters.Modulus)
+                KeyId = key.KeyId,
+                Use = SigningKeySet.Use,
+                Algorithm = SigningKeySet.Algorithm,
+                Exponent = Base64UrlEncoder.Encode(parameters.Exponent),
+                Modulus = Base64UrlEncoder.Encode(parameters.Modulus)
             };
-
-            var jwks = new JwksResponse { Keys = [jwk] };
-            return Ok(jwks);
         }
     }
 }

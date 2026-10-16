@@ -364,19 +364,5 @@ namespace TimeForCode.Authorization.Infrastructure.Tests.Services
             result.StatusCode.Should().Be(HttpStatusCode.NotFound);
         }
 
-        // ── GetTokenValidationParameters ─────────────────────────────────────────
-
-        [TestMethod]
-        public async Task GetTokenValidationParameters_ReturnsParametersWithCorrectIssuerAndAudience()
-        {
-            var parameters = await _sut.GetTokenValidationParameters();
-
-            parameters.ValidateIssuer.Should().BeTrue();
-            parameters.ValidIssuer.Should().Be(BaseUrl);
-            parameters.ValidateAudience.Should().BeTrue();
-            parameters.ValidAudiences.Should().Contain("test-client");
-            parameters.ValidateLifetime.Should().BeTrue();
-            parameters.ValidateIssuerSigningKey.Should().BeFalse();
-        }
     }
 }

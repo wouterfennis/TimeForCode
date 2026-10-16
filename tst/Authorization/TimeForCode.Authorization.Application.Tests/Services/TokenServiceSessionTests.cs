@@ -30,7 +30,7 @@ namespace TimeForCode.Authorization.Application.Tests.Services
             timeProvider.Setup(x => x.GetUtcNow()).Returns(Now);
 
             _sut = new TokenService(
-                _rsa,
+                new SigningKeySet(_rsa),
                 new Mock<IIdentityProviderServiceFactory>().Object,
                 timeProvider.Object,
                 _accountRepositoryMock.Object,

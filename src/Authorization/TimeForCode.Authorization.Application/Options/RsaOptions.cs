@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Configuration;
-using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 
 namespace TimeForCode.Authorization.Application.Options
@@ -9,14 +8,23 @@ namespace TimeForCode.Authorization.Application.Options
     {
         public const string SectionName = "RsaOptions";
 
-        [Required]
-        public required string Base64Certificate { get; set; }
+        /// <summary>
+        /// Signing certificate; only optional in Development, where a throwaway key is generated.
+        /// </summary>
+        public string? Base64Certificate { get; set; }
+
+        /// <summary>
+        /// Optional certificate of the key that was replaced; its public key stays published so earlier tokens remain valid.
+        /// </summary>
+        public string? PreviousBase64Certificate { get; set; }
 
         public static RsaOptions Bind(IConfiguration configuration)
         {
+            var section = configuration.GetSection(SectionName);
             var rsaOptions = new RsaOptions
             {
-                Base64Certificate = configuration.GetSection(SectionName).GetValue<string>(nameof(Base64Certificate))!,
+                Base64Certificate = section.GetValue<string>(nameof(Base64Certificate)),
+                PreviousBase64Certificate = section.GetValue<string>(nameof(PreviousBase64Certificate)),
             };
             return rsaOptions;
         }

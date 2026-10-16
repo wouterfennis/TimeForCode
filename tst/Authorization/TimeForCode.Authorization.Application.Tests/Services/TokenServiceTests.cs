@@ -19,6 +19,7 @@ namespace TimeForCode.Authorization.Application.Tests.Services
         private static readonly ObjectId AccountId = ObjectId.GenerateNewId();
         private Mock<IAccountInformationRepository> _accountRepositoryMock = null!;
         private Mock<IIdentityProviderServiceFactory> _factoryMock = null!;
+        private SigningKeySet _signingKeys = null!;
         private TokenService _sut = null!;
 
         [TestInitialize]
@@ -27,8 +28,9 @@ namespace TimeForCode.Authorization.Application.Tests.Services
             _accountRepositoryMock = new Mock<IAccountInformationRepository>();
             _factoryMock = new Mock<IIdentityProviderServiceFactory>();
 
+            _signingKeys = new SigningKeySet(RSA.Create(2048));
             _sut = new TokenService(
-                RSA.Create(2048),
+                _signingKeys,
                 _factoryMock.Object,
                 TimeProvider.System,
                 _accountRepositoryMock.Object,
@@ -55,6 +57,16 @@ namespace TimeForCode.Authorization.Application.Tests.Services
             Bio = null,
             Location = null
         };
+
+        [TestMethod]
+        public void GenerateInternalToken_ForAccount_HeaderNamesTheCurrentSigningKey()
+        {
+            var token = _sut.GenerateInternalToken(Account());
+
+            var jwt = new JwtSecurityTokenHandler().ReadJwtToken(token.Token);
+            jwt.Header.Kid.Should().Be(_signingKeys.Current.KeyId);
+            jwt.Header.Alg.Should().Be("RS256");
+        }
 
         [TestMethod]
         public void GenerateInternalToken_ForAccount_ContainsLoginAndAvatarClaims()

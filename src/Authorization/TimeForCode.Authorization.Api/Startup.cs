@@ -3,6 +3,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Diagnostics.CodeAnalysis;
 using TimeForCode.Authorization.Application.Extensions;
 using TimeForCode.Authorization.Application.Options;
+using TimeForCode.Authorization.Application.Services;
 using TimeForCode.Authorization.Infrastructure.Extensions;
 using TimeForCode.Shared.Api.Extensions;
 using SharedApiServiceCollectionExtensions = TimeForCode.Shared.Api.Extensions.ServiceCollectionExtensions;
@@ -16,13 +17,15 @@ namespace TimeForCode.Authorization.Api
     public class Startup
     {
         private IConfiguration _configuration { get; }
+        private IWebHostEnvironment _environment { get; }
 
         /// <summary>
         /// Constructor
         /// </summary>
-        public Startup(IConfiguration configuration)
+        public Startup(IConfiguration configuration, IWebHostEnvironment environment)
         {
             _configuration = configuration;
+            _environment = environment;
         }
 
         /// <summary>
@@ -52,10 +55,8 @@ namespace TimeForCode.Authorization.Api
                     "API to interact with the authorization backend"));
             services.AddDefaultControllers();
 
-            services.AddApplicationLayer(_configuration);
+            services.AddApplicationLayer(_configuration, allowEphemeralSigningKey: _environment.IsDevelopment());
             services.AddInfrastructureLayer(_configuration);
-
-            var rsa = Application.Extensions.ServiceCollectionExtensions.LoadCertificate(_configuration);
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>
@@ -67,10 +68,13 @@ namespace TimeForCode.Authorization.Api
                         ValidateLifetime = true,
                         ValidateIssuerSigningKey = true,
                         ValidIssuer = authenticationOptions.Issuer,
-                        ValidAudience = authenticationOptions.Audience,
-                        IssuerSigningKey = new RsaSecurityKey(rsa)
+                        ValidAudience = authenticationOptions.Audience
                     };
                 });
+
+            services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
+                .Configure<SigningKeySet>((options, signingKeys) =>
+                    options.TokenValidationParameters.IssuerSigningKeys = signingKeys.PublishedKeys);
 
             services.AddAuthorizationBuilder()
                     .AddPolicy("ApiUser", policy => policy.RequireClaim("scope", "user"));

@@ -80,7 +80,7 @@ All .NET services in this stack listen on port **8080** inside the container (no
 
 All services are configured via environment variables defined in `docker-compose.yaml`. Key configuration points:
 
-- **Token signing**: RSA key pair provided as a base64-encoded PKCS#12 certificate via `RsaOptions__Base64Certificate`.
+- **Token signing**: RSA key pair provided as a base64-encoded PKCS#12 certificate via `RsaOptions__Base64Certificate`; outside the Development environment the Authorization API refuses to start without it. Tokens carry a `kid` header derived from the public key. For key rotation, move the old certificate to `RsaOptions__PreviousBase64Certificate`: its public key stays in the JWKS so tokens signed with it remain valid until they expire, then remove it. Rotation is manual and the previous key is never expired automatically. Locally set `RSA_PREVIOUS_BASE64_CERTIFICATE` for compose; in Azure pass the secure Bicep parameter `previousSigningCertificate`. Without a certificate in Development the API generates a throwaway key at every start, so tokens do not survive a restart and instances do not share keys.
 - **Token lifetime**: Access token expires in 60 minutes; refresh token in 7 days.
 - **Redirect URIs**: The Authorization API validates redirect URIs against an allowlist.
 - **Database**: Each service connects to MongoDB using a connection string from `DbOptions__ConnectionString`.
