@@ -1,2 +1,3 @@
 *.verified.txt text eol=lf
 *.verified.json text eol=lf
+*.Api.json text eol=lf

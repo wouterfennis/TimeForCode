@@ -45,7 +45,7 @@ Non-obvious knowledge from past sessions. Read and update through skill `lessons
 ### Front-end (Node) work needs a few workarounds
 
 - **Date / issue:** 2026-10-15 / #110
-- **Lesson:** Any Bash command whose text contains `node_modules` or a lockfile name is blocked by the read-guard hook, even `grep -c`; append `# allow-excluded` when that is intended. Local Node is 24.12, so packages that need Node 24.15 or later (jsdom 30, some CLIs) fail with `engine-strict`. `dotnet build` rewrites the committed `*.Api.json` OpenAPI files with other line endings; restore them with `git checkout --` before committing.
+- **Lesson:** The read-guard hook blocks Bash read commands (`grep`, `cat`, `ls`...) that touch `node_modules` or a lockfile; append `# allow-excluded` when that is intended. Local Node is 24.12, so packages that need Node 24.15 or later (jsdom 30, some CLIs) fail with `engine-strict`; pick a release that supports every Node 24.
 - **Why:** each one cost a retry while scaffolding the SPA.
 
 ### Website specifications need the running stack
