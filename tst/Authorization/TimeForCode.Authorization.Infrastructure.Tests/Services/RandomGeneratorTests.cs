@@ -36,6 +36,15 @@ namespace TimeForCode.Authorization.Infrastructure.Tests.Services
         }
 
         [TestMethod]
+        public void GenerateRandomString_ShouldReturnAUrlSafeStringWithAtLeast256BitsOfEntropy()
+        {
+            var result = _randomGenerator.GenerateRandomString();
+
+            result.Length.Should().BeGreaterThanOrEqualTo(43);
+            result.Should().MatchRegex("^[A-Za-z0-9_-]+$");
+        }
+
+        [TestMethod]
         public void GenerateCodeVerifier_ShouldReturnAnUnreservedStringOfAtLeast43Characters()
         {
             var result = _randomGenerator.GenerateCodeVerifier();

@@ -8,7 +8,7 @@ namespace TimeForCode.Authorization.Infrastructure.Services
     {
         public string GenerateRandomString()
         {
-            return Guid.NewGuid().ToString("N");
+            return Base64Url.EncodeToString(RandomNumberGenerator.GetBytes(32));
         }
 
         public string GenerateCodeVerifier()

@@ -26,6 +26,7 @@ ADR documents live in [docs/reference/adr/](../../reference/adr/README.md).
 | [ADR-012](../../reference/adr/0012-react-spa-frontend.md) | React SPA behind a same-origin BFF for the new front-end | Proposed | 2026-10-06 |
 | [ADR-013](../../reference/adr/0013-no-stored-github-tokens.md) | Do not store GitHub access tokens; read public data with application credentials | Accepted | 2026 |
 | [ADR-014](../../reference/adr/0014-no-backwards-compatibility-before-release.md) | No backwards compatibility before the first production release | Accepted | 2026-10-16 |
+| [ADR-015](../../reference/adr/0015-durable-single-use-login-state.md) | Keep OAuth login state in MongoDB with a TTL index, single-use and PKCE-protected | Accepted | 2026-10-16 |
 
 ---
 

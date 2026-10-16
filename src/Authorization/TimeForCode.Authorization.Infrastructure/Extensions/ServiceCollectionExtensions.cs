@@ -9,7 +9,6 @@ using TimeForCode.Authorization.Application.Options;
 using TimeForCode.Authorization.Infrastructure.Options;
 using TimeForCode.Authorization.Infrastructure.Persistence.Database;
 using TimeForCode.Authorization.Infrastructure.Persistence.Database.Admin;
-
 using TimeForCode.Authorization.Infrastructure.Services;
 using TimeForCode.Authorization.Infrastructure.Services.Admin;
 using TimeForCode.Authorization.Infrastructure.Services.Github;
