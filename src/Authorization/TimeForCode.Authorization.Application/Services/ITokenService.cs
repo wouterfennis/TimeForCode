@@ -20,7 +20,11 @@ namespace TimeForCode.Authorization.Application.Services
         /// admin passkey flow; regular users get the account overload.
         /// </summary>
         AccessToken GenerateInternalToken(string userId, string role, string scope);
-        Task<Result<AccessToken>> RefreshInternalTokenAsync(RefreshToken refreshToken);
+
+        /// <summary>
+        /// Issues the access token for an already validated session: the admin session gets the admin role and scope, other users get a user token built from their account (fails when the account no longer exists).
+        /// </summary>
+        Task<Result<AccessToken>> GenerateInternalTokenForSessionAsync(string userId);
         Uri GetRedirectUri(string state);
     }
 }

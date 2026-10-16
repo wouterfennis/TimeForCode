@@ -24,28 +24,28 @@ namespace TimeForCode.Authorization.Application.Handlers
         {
             _logger.LogInformation("Handling token refresh");
 
-            var internalTokenResult = await _tokenService.RefreshInternalTokenAsync(request.RefreshToken);
+            var replacement = await _refreshTokenService.ReplaceRefreshTokenAsync(request.RefreshToken);
 
-            if (internalTokenResult.IsFailure)
+            if (replacement.IsFailure)
             {
-                _logger.LogWarning("Failed to refresh internal token: {Error}", internalTokenResult.ErrorMessage);
-                return Result<TokenResult>.Failure(internalTokenResult.ErrorMessage);
+                _logger.LogWarning("Failed to replace refresh token: {Error}", replacement.ErrorMessage);
+                return Result<TokenResult>.Failure(replacement.ErrorMessage);
             }
 
-            var refreshToken = await _refreshTokenService.ReplaceRefreshTokenAsync(request.RefreshToken);
+            var accessToken = await _tokenService.GenerateInternalTokenForSessionAsync(replacement.Value.UserId);
 
-            if (refreshToken.IsFailure)
+            if (accessToken.IsFailure)
             {
-                _logger.LogWarning("Failed to replace refresh token: {Error}", refreshToken.ErrorMessage);
-                return Result<TokenResult>.Failure(refreshToken.ErrorMessage);
+                _logger.LogWarning("Failed to issue access token during refresh: {Error}", accessToken.ErrorMessage);
+                return Result<TokenResult>.Failure(accessToken.ErrorMessage);
             }
 
             _logger.LogInformation("Token refresh handled successfully");
 
             return Result<TokenResult>.Success(new TokenResult
             {
-                InternalAccessToken = internalTokenResult.Value,
-                RefreshToken = refreshToken.Value
+                InternalAccessToken = accessToken.Value,
+                RefreshToken = replacement.Value.RefreshToken
             });
         }
     }

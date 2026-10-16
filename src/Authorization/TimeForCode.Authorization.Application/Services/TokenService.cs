@@ -19,7 +19,6 @@ namespace TimeForCode.Authorization.Application.Services
         private readonly IIdentityProviderServiceFactory _identityProviderServiceFactory;
         private readonly TimeProvider _timeProvider;
         private readonly TokenCreationOptions _tokenCreationOptions;
-        private readonly IRefreshTokenRepository _refreshTokenRepository;
         private readonly IStateRepository _stateRepository;
         private readonly IAccountInformationRepository _accountInformationRepository;
         private readonly ILogger<TokenService> _logger;
@@ -27,7 +26,6 @@ namespace TimeForCode.Authorization.Application.Services
         public TokenService(RSA rsa,
             IIdentityProviderServiceFactory identityProviderServiceFactory,
             TimeProvider timeProvider,
-            IRefreshTokenRepository refreshTokenRepository,
             IStateRepository stateRepository,
             IAccountInformationRepository accountInformationRepository,
             IOptions<TokenCreationOptions> tokenCreationOptions,
@@ -37,7 +35,6 @@ namespace TimeForCode.Authorization.Application.Services
             _tokenCreationOptions = tokenCreationOptions.Value;
             _identityProviderServiceFactory = identityProviderServiceFactory;
             _timeProvider = timeProvider;
-            _refreshTokenRepository = refreshTokenRepository;
             _stateRepository = stateRepository;
             _accountInformationRepository = accountInformationRepository;
             _logger = logger;
@@ -133,28 +130,17 @@ namespace TimeForCode.Authorization.Application.Services
             };
         }
 
-        public async Task<Result<AccessToken>> RefreshInternalTokenAsync(RefreshToken refreshToken)
+        public async Task<Result<AccessToken>> GenerateInternalTokenForSessionAsync(string userId)
         {
-            _logger.LogDebug("Refreshing internal token");
-
-            Domain.Entities.RefreshToken? existingToken = await _refreshTokenRepository.GetByTokenAsync(refreshToken.Token);
-
-            if (existingToken == null)
+            if (userId == AdminSession.UserId)
             {
-                _logger.LogWarning("Refresh token not found during refresh");
-                return Result<AccessToken>.Failure("Refresh token not found");
+                return Result<AccessToken>.Success(GenerateInternalToken(AdminSession.UserId, AdminSession.Role, AdminSession.Scope));
             }
 
-            if (existingToken.IsExpired(_timeProvider.GetUtcNow()))
-            {
-                _logger.LogWarning("Refresh token expired for user {UserId}", existingToken.UserId);
-                return Result<AccessToken>.Failure("Refresh token expired");
-            }
-
-            var account = await _accountInformationRepository.GetByInternalIdAsync(existingToken.UserId);
+            var account = await _accountInformationRepository.GetByInternalIdAsync(userId);
             if (account == null)
             {
-                _logger.LogWarning("Account {UserId} not found during refresh", existingToken.UserId);
+                _logger.LogWarning("Account {UserId} not found during refresh", userId);
                 return Result<AccessToken>.Failure("Account not found");
             }
 

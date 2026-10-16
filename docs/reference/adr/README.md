@@ -22,6 +22,7 @@ ADRs are referenced from [Arc42 Section 09 — Architecture Decisions](../archit
 | [ADR-010](0010-bounded-context-entity-duplication.md) | Keep GithubEntity and DocumentEntity per bounded context | Accepted |
 | [ADR-011](0011-webauthn-admin-authentication.md) | WebAuthn passkey authentication for the admin role | Accepted |
 | [ADR-012](0012-react-spa-frontend.md) | React SPA behind a same-origin BFF for the new front-end | Proposed |
+| [ADR-014](0014-no-backwards-compatibility-before-release.md) | No backwards compatibility before the first production release | Accepted |
 
 ---
 

@@ -24,9 +24,11 @@ namespace TimeForCode.Authorization.Specifications.Steps
         private readonly IServiceProvider _provider;
         private readonly CookieContainer _cookieContainer;
         private TryResponse<CallbackResponseModel?, ApiException?>? _result;
+        private readonly SessionContext _session;
 
-        public AdminAuthenticationSteps(IAuthClient authClient, IServiceProvider provider, CookieContainer cookieContainer)
+        public AdminAuthenticationSteps(IAuthClient authClient, IServiceProvider provider, CookieContainer cookieContainer, SessionContext session)
         {
+            _session = session;
             _authClient = authClient;
             _provider = provider;
             _cookieContainer = cookieContainer;
@@ -93,6 +95,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
         [Given("The user has an admin session token")]
         public void GivenTheUserHasAnAdminSessionToken()
         {
+            _session.UserId = "admin";
             using var scope = _provider.CreateScope();
             var tokenService = scope.ServiceProvider.GetRequiredService<ITokenService>();
             var accessToken = tokenService.GenerateInternalToken("admin", "admin", "admin");
