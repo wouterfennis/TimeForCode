@@ -14,7 +14,11 @@ namespace TimeForCode.Authorization.Application.Services
         /// admin passkey flow; every existing caller keeps using the single-argument overload unchanged.
         /// </summary>
         AccessToken GenerateInternalToken(string userId, string role, string scope);
-        Task<Result<AccessToken>> RefreshInternalTokenAsync(RefreshToken refreshToken);
+
+        /// <summary>
+        /// Issues the access token for an already validated session; the admin session gets the admin role and scope.
+        /// </summary>
+        AccessToken GenerateInternalTokenForSession(string userId);
         Uri GetRedirectUri(string state);
     }
 }

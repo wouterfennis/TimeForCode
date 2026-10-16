@@ -1,6 +1,5 @@
 using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Options;
 using Moq;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
@@ -11,18 +10,16 @@ using TimeForCode.Authorization.Application.Services;
 namespace TimeForCode.Authorization.Application.Tests.Services
 {
     [TestClass]
-    public class TokenServiceRefreshTests
+    public class TokenServiceSessionTests
     {
         private static readonly DateTimeOffset Now = new(2026, 10, 16, 12, 0, 0, TimeSpan.Zero);
 
-        private Mock<IRefreshTokenRepository> _repositoryMock = null!;
         private RSA _rsa = null!;
         private TokenService _sut = null!;
 
         [TestInitialize]
         public void Setup()
         {
-            _repositoryMock = new Mock<IRefreshTokenRepository>();
             _rsa = RSA.Create(2048);
 
             var timeProvider = new Mock<TimeProvider>();
@@ -32,7 +29,6 @@ namespace TimeForCode.Authorization.Application.Tests.Services
                 _rsa,
                 new Mock<IIdentityProviderServiceFactory>().Object,
                 timeProvider.Object,
-                _repositoryMock.Object,
                 new Mock<IStateRepository>().Object,
                 Microsoft.Extensions.Options.Options.Create(new TokenCreationOptions
                 {
@@ -48,46 +44,22 @@ namespace TimeForCode.Authorization.Application.Tests.Services
         public void Cleanup() => _rsa.Dispose();
 
         [TestMethod]
-        public async Task RefreshInternalTokenAsync_RegularUser_IssuesUserScopeWithoutRole()
+        public void GenerateInternalTokenForSession_RegularUser_IssuesUserScopeWithoutRole()
         {
-            ArrangeToken("plain", "user-1");
+            JwtSecurityToken jwt = Read(_sut.GenerateInternalTokenForSession("user-1").Token);
 
-            var result = await _sut.RefreshInternalTokenAsync(Token("plain"));
-
-            JwtSecurityToken jwt = Read(result.Value.Token);
             jwt.Claims.Should().Contain(c => c.Type == "scope" && c.Value == "user");
             jwt.Claims.Should().NotContain(c => c.Type == "role");
         }
 
         [TestMethod]
-        public async Task RefreshInternalTokenAsync_AdminSession_IssuesAdminScopeAndRole()
+        public void GenerateInternalTokenForSession_AdminSession_IssuesAdminScopeAndRole()
         {
-            ArrangeToken("plain", "admin");
+            JwtSecurityToken jwt = Read(_sut.GenerateInternalTokenForSession(AdminSession.UserId).Token);
 
-            var result = await _sut.RefreshInternalTokenAsync(Token("plain"));
-
-            JwtSecurityToken jwt = Read(result.Value.Token);
             jwt.Claims.Should().Contain(c => c.Type == "scope" && c.Value == "admin");
             jwt.Claims.Should().Contain(c => c.Type == "role" && c.Value == "admin");
         }
-
-        private void ArrangeToken(string token, string userId)
-        {
-            _repositoryMock.Setup(x => x.GetByTokenHashAsync(RefreshTokenHasher.Hash(token)))
-                .ReturnsAsync(new Domain.Entities.RefreshToken
-                {
-                    Id = MongoDB.Bson.ObjectId.GenerateNewId(),
-                    TokenHash = RefreshTokenHasher.Hash(token),
-                    UserId = userId,
-                    ExpiresAfter = Now.AddDays(1),
-                });
-        }
-
-        private static Values.RefreshToken Token(string token) => new()
-        {
-            Token = token,
-            ExpiresAfter = Now.AddDays(1)
-        };
 
         private static JwtSecurityToken Read(string token) => new JwtSecurityTokenHandler().ReadJwtToken(token);
     }

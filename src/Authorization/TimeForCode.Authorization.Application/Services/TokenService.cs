@@ -14,20 +14,16 @@ namespace TimeForCode.Authorization.Application.Services
 {
     public class TokenService : ITokenService
     {
-        private const string AdminUserId = "admin";
-
         private readonly RsaSecurityKey _rsaSecurityKey;
         private readonly IIdentityProviderServiceFactory _identityProviderServiceFactory;
         private readonly TimeProvider _timeProvider;
         private readonly TokenCreationOptions _tokenCreationOptions;
-        private readonly IRefreshTokenRepository _refreshTokenRepository;
         private readonly IStateRepository _stateRepository;
         private readonly ILogger<TokenService> _logger;
 
         public TokenService(RSA rsa,
             IIdentityProviderServiceFactory identityProviderServiceFactory,
             TimeProvider timeProvider,
-            IRefreshTokenRepository refreshTokenRepository,
             IStateRepository stateRepository,
             IOptions<TokenCreationOptions> tokenCreationOptions,
             ILogger<TokenService> logger)
@@ -36,7 +32,6 @@ namespace TimeForCode.Authorization.Application.Services
             _tokenCreationOptions = tokenCreationOptions.Value;
             _identityProviderServiceFactory = identityProviderServiceFactory;
             _timeProvider = timeProvider;
-            _refreshTokenRepository = refreshTokenRepository;
             _stateRepository = stateRepository;
             _logger = logger;
         }
@@ -116,27 +111,11 @@ namespace TimeForCode.Authorization.Application.Services
             };
         }
 
-        public async Task<Result<AccessToken>> RefreshInternalTokenAsync(RefreshToken refreshToken)
+        public AccessToken GenerateInternalTokenForSession(string userId)
         {
-            _logger.LogDebug("Refreshing internal token");
-
-            Domain.Entities.RefreshToken? existingToken = await _refreshTokenRepository.GetByTokenHashAsync(RefreshTokenHasher.Hash(refreshToken.Token));
-
-            if (existingToken == null)
-            {
-                _logger.LogWarning("Refresh token not found during refresh");
-                return Result<AccessToken>.Failure("Refresh token not found");
-            }
-
-            if (existingToken.IsExpired(_timeProvider.GetUtcNow()))
-            {
-                _logger.LogWarning("Refresh token expired for user {UserId}", existingToken.UserId);
-                return Result<AccessToken>.Failure("Refresh token expired");
-            }
-
-            return Result<AccessToken>.Success(existingToken.UserId == AdminUserId
-                ? GenerateInternalToken(AdminUserId, "admin", "admin")
-                : GenerateInternalToken(existingToken.UserId));
+            return userId == AdminSession.UserId
+                ? GenerateInternalToken(AdminSession.UserId, AdminSession.Role, AdminSession.Scope)
+                : GenerateInternalToken(userId);
         }
 
         public Uri GetRedirectUri(string state)

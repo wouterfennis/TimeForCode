@@ -1,6 +1,6 @@
 using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Options;
+using MongoDB.Bson;
 using Moq;
 using TimeForCode.Authorization.Application.Interfaces;
 using TimeForCode.Authorization.Application.Options;
@@ -64,17 +64,32 @@ namespace TimeForCode.Authorization.Application.Tests.Services
         }
 
         [TestMethod]
-        public async Task ReplaceRefreshTokenAsync_ActiveToken_MarksOldTokenRotatedAndCreatesNew()
+        public async Task ReplaceRefreshTokenAsync_ExpiredToken_FailsWithoutRevokingOrRotating()
         {
-            var existing = Entity("plain-old", rotatedAt: null);
+            Domain.Entities.RefreshToken existing = Entity("plain-old", rotatedAt: null, expiresAfter: Now.AddMinutes(-1));
             _repositoryMock.Setup(x => x.GetByTokenHashAsync(RefreshTokenHasher.Hash("plain-old")))
                 .ReturnsAsync(existing);
 
             var result = await _sut.ReplaceRefreshTokenAsync(Token("plain-old"));
 
+            result.IsFailure.Should().BeTrue();
+            _repositoryMock.Verify(x => x.TryMarkRotatedAsync(It.IsAny<ObjectId>(), It.IsAny<DateTimeOffset>()), Times.Never);
+            _repositoryMock.Verify(x => x.DeleteByUserIdAsync(It.IsAny<string>()), Times.Never);
+        }
+
+        [TestMethod]
+        public async Task ReplaceRefreshTokenAsync_ActiveToken_RotatesAndReturnsNewTokenWithUserId()
+        {
+            Domain.Entities.RefreshToken existing = Entity("plain-old", rotatedAt: null);
+            _repositoryMock.Setup(x => x.GetByTokenHashAsync(RefreshTokenHasher.Hash("plain-old")))
+                .ReturnsAsync(existing);
+            _repositoryMock.Setup(x => x.TryMarkRotatedAsync(existing.Id, Now)).ReturnsAsync(true);
+
+            var result = await _sut.ReplaceRefreshTokenAsync(Token("plain-old"));
+
             result.IsSuccess.Should().BeTrue();
-            existing.RotatedAt.Should().Be(Now);
-            _repositoryMock.Verify(x => x.UpdateAsync(existing), Times.Once);
+            result.Value.UserId.Should().Be("user-1");
+            result.Value.RefreshToken.Token.Should().Be("plain-token");
             _repositoryMock.Verify(x => x.CreateAsync(It.Is<Domain.Entities.RefreshToken>(t => t.UserId == "user-1")), Times.Once);
             _repositoryMock.Verify(x => x.DeleteByUserIdAsync(It.IsAny<string>()), Times.Never);
         }
@@ -82,7 +97,7 @@ namespace TimeForCode.Authorization.Application.Tests.Services
         [TestMethod]
         public async Task ReplaceRefreshTokenAsync_AlreadyRotatedToken_FailsAndRevokesAllTokensOfUser()
         {
-            var existing = Entity("plain-old", rotatedAt: Now.AddMinutes(-1));
+            Domain.Entities.RefreshToken existing = Entity("plain-old", rotatedAt: Now.AddMinutes(-1));
             _repositoryMock.Setup(x => x.GetByTokenHashAsync(RefreshTokenHasher.Hash("plain-old")))
                 .ReturnsAsync(existing);
 
@@ -94,9 +109,24 @@ namespace TimeForCode.Authorization.Application.Tests.Services
         }
 
         [TestMethod]
+        public async Task ReplaceRefreshTokenAsync_LostRotationRace_FailsAndRevokesAllTokensOfUser()
+        {
+            Domain.Entities.RefreshToken existing = Entity("plain-old", rotatedAt: null);
+            _repositoryMock.Setup(x => x.GetByTokenHashAsync(RefreshTokenHasher.Hash("plain-old")))
+                .ReturnsAsync(existing);
+            _repositoryMock.Setup(x => x.TryMarkRotatedAsync(existing.Id, Now)).ReturnsAsync(false);
+
+            var result = await _sut.ReplaceRefreshTokenAsync(Token("plain-old"));
+
+            result.IsFailure.Should().BeTrue();
+            _repositoryMock.Verify(x => x.DeleteByUserIdAsync("user-1"), Times.Once);
+            _repositoryMock.Verify(x => x.CreateAsync(It.IsAny<Domain.Entities.RefreshToken>()), Times.Never);
+        }
+
+        [TestMethod]
         public async Task ExpireRefreshTokenAsync_KnownToken_DeletesByHash()
         {
-            var existing = Entity("plain-old", rotatedAt: null);
+            Domain.Entities.RefreshToken existing = Entity("plain-old", rotatedAt: null);
             _repositoryMock.Setup(x => x.GetByTokenHashAsync(RefreshTokenHasher.Hash("plain-old")))
                 .ReturnsAsync(existing);
 
@@ -111,12 +141,12 @@ namespace TimeForCode.Authorization.Application.Tests.Services
             ExpiresAfter = Now.AddDays(1)
         };
 
-        private static Domain.Entities.RefreshToken Entity(string token, DateTimeOffset? rotatedAt) => new()
+        private static Domain.Entities.RefreshToken Entity(string token, DateTimeOffset? rotatedAt, DateTimeOffset? expiresAfter = null) => new()
         {
-            Id = MongoDB.Bson.ObjectId.GenerateNewId(),
+            Id = ObjectId.GenerateNewId(),
             TokenHash = RefreshTokenHasher.Hash(token),
             UserId = "user-1",
-            ExpiresAfter = Now.AddDays(1),
+            ExpiresAfter = expiresAfter ?? Now.AddDays(1),
             RotatedAt = rotatedAt
         };
     }

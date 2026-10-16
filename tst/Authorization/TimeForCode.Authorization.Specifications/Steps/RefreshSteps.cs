@@ -166,6 +166,8 @@ namespace TimeForCode.Authorization.Specifications.Steps
             var repository = _provider.GetService<Mock<IRefreshTokenRepository>>()!;
             repository.Setup(x => x.GetByTokenHashAsync(RefreshTokenHasher.Hash(PlainRefreshToken)))
                 .ReturnsAsync(_storedRefreshToken);
+            repository.Setup(x => x.TryMarkRotatedAsync(It.IsAny<ObjectId>(), It.IsAny<DateTimeOffset>()))
+                .ReturnsAsync(true);
         }
     }
 }

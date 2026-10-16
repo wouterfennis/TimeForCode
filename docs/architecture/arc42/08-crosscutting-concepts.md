@@ -20,6 +20,16 @@ All API endpoints (except public project listings and the login flow) require a 
 
 **Token storage**: HttpOnly, Secure cookies only. Never localStorage or sessionStorage.
 
+**Refresh tokens**:
+
+- Only a SHA-256 hash of the token is persisted (`TokenHash`); the readable value exists only in the cookie.
+- Each refresh rotates the token. The old record is kept and marked `RotatedAt` through a conditional update, so exactly one of two concurrent requests wins the rotation.
+- Presenting a rotated token again (replay, or the losing side of a race) fails and deletes all refresh tokens of that user, which ends every session of the user.
+- Records are removed by a MongoDB TTL index on `ExpiresAfter` (stored as a BSON date), including rotated ones.
+- `refresh` and `logout` are POST only. Logout expires both cookies with the same cookie attributes they were set with.
+- The admin session (user id `admin`, no account record) refreshes to a token with role and scope `admin`; every other user gets scope `user`.
+- CSRF: the state-changing endpoints rely on `SameSite=Strict` cookies; there is no separate anti-forgery token.
+
 See [authorization and roles](../../target/authorization-and-roles.md) for the full role and permission model.
 
 ---

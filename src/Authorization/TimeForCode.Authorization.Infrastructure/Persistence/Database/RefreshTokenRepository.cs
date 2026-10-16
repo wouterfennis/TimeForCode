@@ -1,4 +1,5 @@
-﻿using MongoDB.Driver;
+﻿using MongoDB.Bson;
+using MongoDB.Driver;
 using TimeForCode.Authorization.Application.Interfaces;
 using TimeForCode.Authorization.Domain.Entities;
 
@@ -62,9 +63,13 @@ namespace TimeForCode.Authorization.Infrastructure.Persistence.Database
             await _collection.InsertOneAsync(entity);
         }
 
-        public Task UpdateAsync(RefreshToken existingToken)
+        public async Task<bool> TryMarkRotatedAsync(ObjectId id, DateTimeOffset rotatedAt)
         {
-            return _collection.ReplaceOneAsync(t => t.Id == existingToken.Id, existingToken);
+            var result = await _collection.UpdateOneAsync(
+                t => t.Id == id && t.RotatedAt == null,
+                Builders<RefreshToken>.Update.Set(t => t.RotatedAt, rotatedAt));
+
+            return result.ModifiedCount == 1;
         }
 
         public Task DeleteAsync(RefreshToken existingToken)
