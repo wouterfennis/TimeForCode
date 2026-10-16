@@ -1,4 +1,3 @@
-﻿using Microsoft.IdentityModel.Tokens;
 using TimeForCode.Authorization.Commands;
 using TimeForCode.Authorization.Domain.Entities;
 using TimeForCode.Authorization.Values;
@@ -9,6 +8,5 @@ namespace TimeForCode.Authorization.Application.Interfaces
     {
         Task<Result<GetAccessTokenResult>> GetAccessTokenAsync(string code, string codeVerifier);
         Task<Result<AccountInformation>> GetAccountInformation(ExternalAccessToken accessToken);
-        Task<TokenValidationParameters> GetTokenValidationParameters();
     }
 }

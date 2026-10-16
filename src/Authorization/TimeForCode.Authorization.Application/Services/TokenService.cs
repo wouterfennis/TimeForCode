@@ -3,7 +3,6 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using TimeForCode.Authorization.Application.Interfaces;
 using TimeForCode.Authorization.Application.Options;
 using TimeForCode.Authorization.Commands;
@@ -16,21 +15,21 @@ namespace TimeForCode.Authorization.Application.Services
 {
     public class TokenService : ITokenService
     {
-        private readonly RsaSecurityKey _rsaSecurityKey;
+        private readonly SigningKeySet _signingKeys;
         private readonly IIdentityProviderServiceFactory _identityProviderServiceFactory;
         private readonly TimeProvider _timeProvider;
         private readonly TokenCreationOptions _tokenCreationOptions;
         private readonly IAccountInformationRepository _accountInformationRepository;
         private readonly ILogger<TokenService> _logger;
 
-        public TokenService(RSA rsa,
+        public TokenService(SigningKeySet signingKeys,
             IIdentityProviderServiceFactory identityProviderServiceFactory,
             TimeProvider timeProvider,
             IAccountInformationRepository accountInformationRepository,
             IOptions<TokenCreationOptions> tokenCreationOptions,
             ILogger<TokenService> logger)
         {
-            _rsaSecurityKey = new RsaSecurityKey(rsa);
+            _signingKeys = signingKeys;
             _tokenCreationOptions = tokenCreationOptions.Value;
             _identityProviderServiceFactory = identityProviderServiceFactory;
             _timeProvider = timeProvider;
@@ -116,7 +115,7 @@ namespace TimeForCode.Authorization.Application.Services
                 NotBefore = _timeProvider.GetUtcNow().UtcDateTime,
                 Issuer = _tokenCreationOptions.Issuer,
                 Claims = claims,
-                SigningCredentials = new SigningCredentials(_rsaSecurityKey, SecurityAlgorithms.RsaSha256)
+                SigningCredentials = new SigningCredentials(_signingKeys.Current, SigningKeySet.Algorithm)
             };
             var token = tokenHandler.CreateToken(tokenDescriptor);
             var tokenString = tokenHandler.WriteToken(token);
