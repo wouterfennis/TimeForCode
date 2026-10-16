@@ -23,8 +23,7 @@ namespace IdentityProviderMockService.Models
         /// Scope
         /// </summary>
         [FromForm]
-        [Required]
-        public required string Scope { get; init; }
+        public string? Scope { get; init; }
 
         /// <summary>
         /// Client id

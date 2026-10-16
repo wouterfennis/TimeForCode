@@ -122,6 +122,14 @@ Local test doubles (mocks, stubs, in-memory databases) are used in unit and inte
 
 ---
 
+## Third-Party Tokens and Data Protection
+
+The GitHub access token is used once to fetch the profile and is then discarded; it is never persisted (see [ADR-013](../../reference/adr/0013-no-stored-github-tokens.md)). Public GitHub data is read with the application's own credentials, which are only sent over HTTPS, and every path segment taken from a request is validated before it is used in an outgoing URL.
+
+ASP.NET Core Data Protection encrypts the admin passkey ceremony state that travels in a cookie. The key ring is stored in the MongoDB collection `DataProtectionKeyDocument` and uses a fixed application name, so every instance can read state written by another and keys survive restarts. A ceremony state that cannot be decrypted is rejected as a bad request, not a server error. Without a configured database connection (OpenAPI document generation, specifications) the framework's default local key ring is used.
+
+---
+
 ## Mermaid Diagram Convention
 
 All architecture and workflow diagrams in this documentation use Mermaid. Every diagram must be accompanied by surrounding prose that explains intent, inputs, outputs, and key decision points. Diagrams alone are not sufficient.

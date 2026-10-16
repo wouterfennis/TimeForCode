@@ -1,5 +1,4 @@
 using FluentAssertions;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Reqnroll;
 using RichardSzalay.MockHttp;
@@ -7,6 +6,7 @@ using System.Net;
 using System.Text.Json;
 using TimeForCode.Authorization.Api.Client;
 using TimeForCode.Authorization.Api.Client.Extensions;
+using TimeForCode.Authorization.Specifications.Mocking;
 
 namespace TimeForCode.Authorization.Specifications.Steps
 {
@@ -28,12 +28,17 @@ namespace TimeForCode.Authorization.Specifications.Steps
             _provider = provider;
         }
 
-        [Given("The user's GitHub access token has been revoked at the external platform")]
-        public void GivenTheUsersGitHubAccessTokenHasBeenRevokedAtTheExternalPlatform()
+        [Given("The user has no stored access token of the external platform")]
+        public void GivenTheUserHasNoStoredAccessTokenOfTheExternalPlatform()
         {
-            var mockHttp = _provider.GetRequiredService<MockHttpMessageHandler>();
-            mockHttp.When("http://localhost:8081/user/repos")
-                .Respond(HttpStatusCode.Unauthorized, "application/json", "{\"title\":\"Unauthorized\"}");
+            // No token is stored by design; only the external platform's public data is available.
+            ExternalPlatformMocks.RegisterPublicRepositories(_provider.GetRequiredService<MockHttpMessageHandler>());
+        }
+
+        [Given("The user owns a private repository at the external platform")]
+        public void GivenTheUserOwnsAPrivateRepositoryAtTheExternalPlatform()
+        {
+            ExternalPlatformMocks.RegisterPrivateRepository(_provider.GetRequiredService<MockHttpMessageHandler>());
         }
 
         [When("The user requests their repositories from the time for code platform")]
@@ -79,11 +84,18 @@ namespace TimeForCode.Authorization.Specifications.Steps
             _singleRepoResponse!.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
 
-        [Then("The user is informed they must re-authenticate via GitHub")]
-        public void ThenTheUserIsInformedTheyMustReAuthenticateViaGitHub()
+        [Then("The private repository is not in the returned list")]
+        public void ThenThePrivateRepositoryIsNotInTheReturnedList()
         {
-            _listResult!.Exception.Should().NotBeNull();
-            _listResult!.Exception!.StatusCode.Should().Be(StatusCodes.Status401Unauthorized);
+            _listResult!.Exception.Should().BeNull();
+            _listResult!.Response.Should().NotBeEmpty();
+            _listResult!.Response!.Select(r => r.Name).Should().NotContain(ExternalPlatformMocks.PrivateRepository.Name);
+        }
+
+        [Then("The user is informed the repository was not found")]
+        public void ThenTheUserIsInformedTheRepositoryWasNotFound()
+        {
+            _singleRepoResponse!.StatusCode.Should().Be(HttpStatusCode.NotFound);
         }
     }
 }
