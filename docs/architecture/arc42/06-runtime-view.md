@@ -48,8 +48,8 @@ sequenceDiagram
     participant AuthAPI as Authorization API
 
     Website->>AuthAPI: POST /api/v1/authentication/refresh (refresh token cookie)
-    AuthAPI->>AuthAPI: Validate refresh token (expiry, revocation)
-    AuthAPI->>AuthAPI: Issue new access token + rotate refresh token
+    AuthAPI->>AuthAPI: Validate refresh token (expiry, hash lookup, rotated?)
+    AuthAPI->>AuthAPI: Issue new access token + rotate refresh token (user or admin scope)
     AuthAPI-->>Website: 200 OK (new HttpOnly cookies set)
 ```
 

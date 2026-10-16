@@ -19,10 +19,14 @@ namespace TimeForCode.Authorization.Specifications.Steps
         private readonly IAuthClient _authClient;
         private readonly CookieContainer _cookieContainer;
         private readonly IServiceProvider _provider;
+        private readonly HttpClient _httpClient;
+        private readonly SessionContext _session;
         private TryVoid<ApiException?>? _result;
 
-        public LogoutSteps(IAuthClient authClient, CookieContainer cookieContainer, IServiceProvider provider)
+        public LogoutSteps(IAuthClient authClient, CookieContainer cookieContainer, IServiceProvider provider, HttpClient httpClient, SessionContext session)
         {
+            _httpClient = httpClient;
+            _session = session;
             _authClient = authClient;
             _cookieContainer = cookieContainer;
             _provider = provider;
@@ -52,10 +56,28 @@ namespace TimeForCode.Authorization.Specifications.Steps
             _result = await _authClient.TryLogoutAsync();
         }
 
+        [When("The user logs out with a read-only request")]
+        public async Task WhenTheUserLogsOutWithAReadOnlyRequestAsync()
+        {
+            _session.ReadOnlyRequestResponse = await _httpClient.GetAsync("/api/v1/authentication/logout");
+        }
+
         [Then("The logout is confirmed")]
         public static void ThenTheLogoutIsConfirmed()
         {
             // do nothing, no exceptions should have been thrown
+        }
+
+        [Then("The access token cookie is expired")]
+        public void ThenTheAccessTokenCookieIsExpired()
+        {
+            _cookieContainer.GetAllCookies()[CookieConstants.TokenKey].Should().BeNull();
+        }
+
+        [Then("The refresh token cookie is expired")]
+        public void ThenTheRefreshTokenCookieIsExpired()
+        {
+            _cookieContainer.GetAllCookies()[CookieConstants.RefreshTokenKey].Should().BeNull();
         }
     }
 }

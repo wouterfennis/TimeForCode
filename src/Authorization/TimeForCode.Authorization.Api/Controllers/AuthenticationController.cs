@@ -102,7 +102,7 @@ namespace TimeForCode.Authorization.Api.Controllers
         /// Logout endpoint.
         /// </summary>
         /// <returns></returns>
-        [HttpGet]
+        [HttpPost]
         [Route("logout")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -116,6 +116,10 @@ namespace TimeForCode.Authorization.Api.Controllers
             };
 
             await _sender.Send(command);
+
+
+            ExpireTokenResponseCookies();
+
 
             return NoContent();
         }
@@ -133,7 +137,7 @@ namespace TimeForCode.Authorization.Api.Controllers
         /// Refresh endpoint.
         /// </summary>
         /// <returns>New access token and refresh token</returns>
-        [HttpGet]
+        [HttpPost]
         [Route("refresh")]
         [EnableRateLimiting("auth")]
         [ProducesResponseType(typeof(CallbackResponseModel), StatusCodes.Status200OK)]
@@ -180,6 +184,19 @@ namespace TimeForCode.Authorization.Api.Controllers
             };
 
             return response;
+        }
+
+        private void ExpireTokenResponseCookies()
+        {
+            var cookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict
+            };
+
+            HttpContext.Response.Cookies.Delete(CookieConstants.TokenKey, cookieOptions);
+            HttpContext.Response.Cookies.Delete(CookieConstants.RefreshTokenKey, cookieOptions);
         }
 
         private void SetTokenResponseCookies(TokenResult result)

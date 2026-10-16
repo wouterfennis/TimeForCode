@@ -13,3 +13,17 @@ Scenario: User has logged in at the time for code platform
 	And The user has a refresh token
 	When The user logs out from the external platform
 	Then The logout is confirmed
+
+Scenario: The logout removes the session cookies
+	Given The user has an access token
+	And The user has a refresh token
+	When The user logs out from the external platform
+	Then The logout is confirmed
+	And The access token cookie is expired
+	And The refresh token cookie is expired
+
+Scenario: A logout is requested with a read-only request
+	Given The user has an access token
+	And The user has a refresh token
+	When The user logs out with a read-only request
+	Then The request is not allowed

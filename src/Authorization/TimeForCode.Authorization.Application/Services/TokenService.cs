@@ -14,6 +14,8 @@ namespace TimeForCode.Authorization.Application.Services
 {
     public class TokenService : ITokenService
     {
+        private const string AdminUserId = "admin";
+
         private readonly RsaSecurityKey _rsaSecurityKey;
         private readonly IIdentityProviderServiceFactory _identityProviderServiceFactory;
         private readonly TimeProvider _timeProvider;
@@ -118,7 +120,7 @@ namespace TimeForCode.Authorization.Application.Services
         {
             _logger.LogDebug("Refreshing internal token");
 
-            Domain.Entities.RefreshToken? existingToken = await _refreshTokenRepository.GetByTokenAsync(refreshToken.Token);
+            Domain.Entities.RefreshToken? existingToken = await _refreshTokenRepository.GetByTokenHashAsync(RefreshTokenHasher.Hash(refreshToken.Token));
 
             if (existingToken == null)
             {
@@ -132,7 +134,9 @@ namespace TimeForCode.Authorization.Application.Services
                 return Result<AccessToken>.Failure("Refresh token expired");
             }
 
-            return Result<AccessToken>.Success(GenerateInternalToken(existingToken.UserId));
+            return Result<AccessToken>.Success(existingToken.UserId == AdminUserId
+                ? GenerateInternalToken(AdminUserId, "admin", "admin")
+                : GenerateInternalToken(existingToken.UserId));
         }
 
         public Uri GetRedirectUri(string state)

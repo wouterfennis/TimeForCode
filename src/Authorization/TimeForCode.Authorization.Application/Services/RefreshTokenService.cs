@@ -39,7 +39,7 @@ namespace TimeForCode.Authorization.Application.Services
             {
                 Id = ObjectId.GenerateNewId(),
                 ExpiresAfter = _timeProvider.GetUtcNow().AddDays(_tokenCreationOptions.DefaultRefreshTokenExpirationAfterInDays),
-                Token = token,
+                TokenHash = RefreshTokenHasher.Hash(token),
                 UserId = userId
             };
 
@@ -54,7 +54,7 @@ namespace TimeForCode.Authorization.Application.Services
 
         public async Task<Result<RefreshToken>> ReplaceRefreshTokenAsync(RefreshToken oldRefreshToken)
         {
-            Domain.Entities.RefreshToken? existingToken = await _refreshTokenRepository.GetByTokenAsync(oldRefreshToken.Token);
+            Domain.Entities.RefreshToken? existingToken = await _refreshTokenRepository.GetByTokenHashAsync(RefreshTokenHasher.Hash(oldRefreshToken.Token));
 
             if (existingToken == null)
             {
@@ -62,7 +62,15 @@ namespace TimeForCode.Authorization.Application.Services
                 return Result<RefreshToken>.Failure("Refresh token not found");
             }
 
-            await ExpireRefreshTokenAsync(existingToken);
+            if (existingToken.IsRotated)
+            {
+                _logger.LogWarning("Rotated refresh token replayed for user {UserId}; revoking all refresh tokens", existingToken.UserId);
+                await _refreshTokenRepository.DeleteByUserIdAsync(existingToken.UserId);
+                return Result<RefreshToken>.Failure("Refresh token reuse detected");
+            }
+
+            existingToken.RotatedAt = _timeProvider.GetUtcNow();
+            await _refreshTokenRepository.UpdateAsync(existingToken);
 
             var newRefreshToken = await CreateRefreshTokenAsync(existingToken.UserId);
 
@@ -73,7 +81,7 @@ namespace TimeForCode.Authorization.Application.Services
 
         public async Task ExpireRefreshTokenAsync(RefreshToken refreshToken)
         {
-            Domain.Entities.RefreshToken? existingToken = await _refreshTokenRepository.GetByTokenAsync(refreshToken.Token);
+            Domain.Entities.RefreshToken? existingToken = await _refreshTokenRepository.GetByTokenHashAsync(RefreshTokenHasher.Hash(refreshToken.Token));
 
             if (existingToken == null)
             {
