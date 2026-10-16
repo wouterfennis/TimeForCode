@@ -10,24 +10,27 @@ using TimeForCode.Authorization.Api.Client;
 using TimeForCode.Authorization.Api.Client.Extensions;
 using TimeForCode.Authorization.Application.Interfaces;
 using TimeForCode.Authorization.Domain.Entities;
+using TimeForCode.Authorization.Specifications.Mocking;
 using TimeForCode.Authorization.Specifications.TestBuilder;
 using TimeForCode.Shared.Api.Authentication;
 
 namespace TimeForCode.Authorization.Specifications.Steps
 {
     [Binding]
-    internal class CallbackSteps
+    internal partial class CallbackSteps
     {
         private readonly IAuthClient _authClient;
         private readonly System.IServiceProvider _provider;
         private readonly CookieContainer _cookieContainer;
+        private readonly ScenarioInfrastructure _infrastructure;
         private TryResponse<CallbackResponseModel?, System.Exception?>? _result = null;
 
-        public CallbackSteps(IAuthClient authClient, System.IServiceProvider provider, CookieContainer cookieContainer)
+        public CallbackSteps(IAuthClient authClient, System.IServiceProvider provider, CookieContainer cookieContainer, ScenarioInfrastructure infrastructure)
         {
             _authClient = authClient;
             _provider = provider;
             _cookieContainer = cookieContainer;
+            _infrastructure = infrastructure;
         }
 
         [Given("The external platform does not return the access token")]
@@ -52,7 +55,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
         {
             string code = "code";
 
-            _result = await _authClient.TryCallbackAsync(code, Constants.StateKey);
+            _result = await (_infrastructure.CallbackClient ?? _authClient).TryCallbackAsync(code, Constants.StateKey);
         }
 
         [When("The external platform calls the time for code platform with a {word} of 2049 characters")]

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using FluentAssertions;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Reqnroll;
 using RichardSzalay.MockHttp;
@@ -14,10 +15,21 @@ namespace TimeForCode.Authorization.Specifications.Steps
     internal class GeneralSteps
     {
         private readonly IServiceProvider _provider;
+        private readonly SessionContext _session;
+        private readonly ScenarioInfrastructure _infrastructure;
 
-        public GeneralSteps(IServiceProvider provider)
+        public GeneralSteps(IServiceProvider provider, SessionContext session, ScenarioInfrastructure infrastructure)
         {
+            _session = session;
+            _infrastructure = infrastructure;
             _provider = provider;
+        }
+
+        [Then("The request is not allowed")]
+        public void ThenTheRequestIsNotAllowed()
+        {
+            _session.ReadOnlyRequestResponse.Should().NotBeNull();
+            _session.ReadOnlyRequestResponse!.StatusCode.Should().Be(HttpStatusCode.MethodNotAllowed);
         }
 
         [Given("The user has an account at the external platform")]
@@ -72,6 +84,11 @@ namespace TimeForCode.Authorization.Specifications.Steps
             };
 
             mockHttp.When("http://localhost:8081/login/oauth/access_token")
+                .With(request =>
+                {
+                    _infrastructure.RecordAccessTokenRequest(request.Content!.ReadAsStringAsync().GetAwaiter().GetResult());
+                    return true;
+                })
                 .Respond("application/json", JsonSerializer.Serialize(accessTokenResult));
         }
 

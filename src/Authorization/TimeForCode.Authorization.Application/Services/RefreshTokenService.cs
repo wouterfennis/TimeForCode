@@ -39,7 +39,7 @@ namespace TimeForCode.Authorization.Application.Services
             {
                 Id = ObjectId.GenerateNewId(),
                 ExpiresAfter = _timeProvider.GetUtcNow().AddDays(_tokenCreationOptions.DefaultRefreshTokenExpirationAfterInDays),
-                Token = token,
+                TokenHash = RefreshTokenHasher.Hash(token),
                 UserId = userId
             };
 
@@ -52,28 +52,42 @@ namespace TimeForCode.Authorization.Application.Services
             };
         }
 
-        public async Task<Result<RefreshToken>> ReplaceRefreshTokenAsync(RefreshToken oldRefreshToken)
+        public async Task<Result<RefreshTokenReplacement>> ReplaceRefreshTokenAsync(RefreshToken oldRefreshToken)
         {
-            Domain.Entities.RefreshToken? existingToken = await _refreshTokenRepository.GetByTokenAsync(oldRefreshToken.Token);
+            Domain.Entities.RefreshToken? existingToken = await _refreshTokenRepository.GetByTokenHashAsync(RefreshTokenHasher.Hash(oldRefreshToken.Token));
 
             if (existingToken == null)
             {
                 _logger.LogWarning("Refresh token not found during replacement");
-                return Result<RefreshToken>.Failure("Refresh token not found");
+                return Result<RefreshTokenReplacement>.Failure("Refresh token not found");
             }
 
-            await ExpireRefreshTokenAsync(existingToken);
+            DateTimeOffset now = _timeProvider.GetUtcNow();
+
+            if (existingToken.IsExpired(now))
+            {
+                _logger.LogWarning("Refresh token expired for user {UserId}", existingToken.UserId);
+                return Result<RefreshTokenReplacement>.Failure("Refresh token expired");
+            }
+
+            // The conditional update lets exactly one of two concurrent requests win the rotation.
+            if (existingToken.IsRotated || !await _refreshTokenRepository.TryMarkRotatedAsync(existingToken.Id, now))
+            {
+                _logger.LogWarning("Rotated refresh token replayed for user {UserId}; revoking all refresh tokens", existingToken.UserId);
+                await _refreshTokenRepository.DeleteByUserIdAsync(existingToken.UserId);
+                return Result<RefreshTokenReplacement>.Failure("Refresh token reuse detected");
+            }
 
             var newRefreshToken = await CreateRefreshTokenAsync(existingToken.UserId);
 
             _logger.LogDebug("Refresh token replaced for user {UserId}", existingToken.UserId);
 
-            return Result<RefreshToken>.Success(newRefreshToken);
+            return Result<RefreshTokenReplacement>.Success(new RefreshTokenReplacement(newRefreshToken, existingToken.UserId));
         }
 
         public async Task ExpireRefreshTokenAsync(RefreshToken refreshToken)
         {
-            Domain.Entities.RefreshToken? existingToken = await _refreshTokenRepository.GetByTokenAsync(refreshToken.Token);
+            Domain.Entities.RefreshToken? existingToken = await _refreshTokenRepository.GetByTokenHashAsync(RefreshTokenHasher.Hash(refreshToken.Token));
 
             if (existingToken == null)
             {

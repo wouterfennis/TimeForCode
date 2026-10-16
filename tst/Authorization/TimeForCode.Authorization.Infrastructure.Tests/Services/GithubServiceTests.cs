@@ -73,7 +73,7 @@ namespace TimeForCode.Authorization.Infrastructure.Tests.Services
             _mockHttp.When(HttpMethod.Post, $"{BaseUrl}/login/oauth/access_token")
                 .Respond("application/json", JsonSerializer.Serialize(accessTokenResult));
 
-            var result = await _sut.GetAccessTokenAsync("auth-code");
+            var result = await _sut.GetAccessTokenAsync("auth-code", "verifier");
 
             result.IsSuccess.Should().BeTrue();
             result.Value.AccessToken.Should().Be(TestToken);
@@ -82,12 +82,26 @@ namespace TimeForCode.Authorization.Infrastructure.Tests.Services
         }
 
         [TestMethod]
+        public async Task GetAccessTokenAsync_Always_SendsTheCodeVerifier()
+        {
+            var accessTokenResult = new AccessTokenPayload { TokenType = "bearer", AccessToken = TestToken, Scope = "user" };
+            _mockHttp.Expect(HttpMethod.Post, $"{BaseUrl}/login/oauth/access_token")
+                .WithPartialContent("\"code_verifier\":\"verifier\"")
+                .Respond("application/json", JsonSerializer.Serialize(accessTokenResult));
+
+            var result = await _sut.GetAccessTokenAsync("auth-code", "verifier");
+
+            result.IsSuccess.Should().BeTrue();
+            _mockHttp.VerifyNoOutstandingExpectation();
+        }
+
+        [TestMethod]
         public async Task GetAccessTokenAsync_WhenProviderReturnsError_ReturnsFailure()
         {
             _mockHttp.When(HttpMethod.Post, $"{BaseUrl}/login/oauth/access_token")
                 .Respond(HttpStatusCode.BadRequest, "application/json", "{\"error\":\"bad_verification_code\"}");
 
-            var result = await _sut.GetAccessTokenAsync("invalid-code");
+            var result = await _sut.GetAccessTokenAsync("invalid-code", "verifier");
 
             result.IsFailure.Should().BeTrue();
             result.ErrorMessage.Should().NotBeNullOrEmpty();

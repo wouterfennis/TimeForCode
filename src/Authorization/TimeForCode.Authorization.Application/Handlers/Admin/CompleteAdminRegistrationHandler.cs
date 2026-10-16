@@ -12,8 +12,6 @@ namespace TimeForCode.Authorization.Application.Handlers.Admin
 {
     public class CompleteAdminRegistrationHandler : IRequestHandler<CompleteAdminRegistrationCommand, Result<TokenResult>>
     {
-        private const string AdminUserId = "admin";
-
         private readonly IAdminCredentialRepository _adminCredentialRepository;
         private readonly IPasskeyCeremonyService _passkeyCeremonyService;
         private readonly ITokenService _tokenService;
@@ -83,8 +81,8 @@ namespace TimeForCode.Authorization.Application.Handlers.Admin
 
         private async Task<Result<TokenResult>> IssueTokensAsync()
         {
-            var accessToken = _tokenService.GenerateInternalToken(AdminUserId, "admin", "admin");
-            var refreshToken = await _refreshTokenService.CreateRefreshTokenAsync(AdminUserId);
+            var accessToken = _tokenService.GenerateInternalToken(AdminSession.UserId, AdminSession.Role, AdminSession.Scope);
+            var refreshToken = await _refreshTokenService.CreateRefreshTokenAsync(AdminSession.UserId);
 
             return Result<TokenResult>.Success(new TokenResult
             {

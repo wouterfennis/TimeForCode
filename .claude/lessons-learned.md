@@ -32,14 +32,6 @@ Non-obvious knowledge from past sessions. Read and update through skill `lessons
 - **Lesson:** The solution-wide format modifies files in other modules, which pollutes the PR.
 - **How to apply:** after formatting, run `git status --short` and `git checkout --` every path outside the issue's scope.
 
-### Appending to a CRLF file with a shell rewrites the whole file
-
-- **Date / issue:** 2026-10-13 / PR #98
-- **Lesson:** Some tracked files (for example `Repositories.feature`) are committed with CRLF. Appending LF lines with `cat >>` or `sed -i` makes the working copy mixed, and `git add` then normalises the entire file to LF, so a 14-line addition shows as a 70-line diff.
-- **Why:** `core.autocrlf=true` here, and the review flagged the noise.
-- **How to apply:** check `git show HEAD:<file> | file -` before editing a file by shell; use the Edit tool (it keeps endings), or convert new lines to CRLF and `git -c core.autocrlf=false add <file>`. Confirm with `git diff --numstat`.
-- **Exception (2026-10-15 / #110):** `.gitignore` is committed with mixed endings, so the Edit tool turned its trailing LF lines into CRLF. For mixed files, rebuild from `git show HEAD:<file>` and append with `printf`.
-
 ### Read guard and Node engines (front-end work)
 
 - **Date / issue:** 2026-10-15 / #110

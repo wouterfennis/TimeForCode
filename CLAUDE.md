@@ -13,6 +13,8 @@ Stack: MediatR + `Result<T>`, MongoDB, MSTest + FluentAssertions + Moq, Reqnroll
 
 Commands: `dotnet build TimeForCode.sln` · `dotnet test tst/<Module>/<Project>` (one project while iterating, the whole solution once at the end) · `gh issue view <n> --json ... --jq ...` (skill `gh-compact-view`).
 
+**No backwards compatibility before the first production release** (ADR-014, `docs/reference/adr/0014-no-backwards-compatibility-before-release.md`): change data shapes and API contracts in place, write no migration code, shims or deprecation paths, and note the data reset a breaking change needs.
+
 Tests do not need a running database or container (mocks and in-memory fakes); `podman compose` is only for running the services locally (`scripts/start-local.ps1`).
 
 ## Environment

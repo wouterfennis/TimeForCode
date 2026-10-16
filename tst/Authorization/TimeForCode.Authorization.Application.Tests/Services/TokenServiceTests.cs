@@ -7,7 +7,9 @@ using System.Security.Cryptography;
 using TimeForCode.Authorization.Application.Interfaces;
 using TimeForCode.Authorization.Application.Options;
 using TimeForCode.Authorization.Application.Services;
+using TimeForCode.Authorization.Commands;
 using TimeForCode.Authorization.Domain.Entities;
+using TimeForCode.Authorization.Values;
 
 namespace TimeForCode.Authorization.Application.Tests.Services
 {
@@ -15,23 +17,20 @@ namespace TimeForCode.Authorization.Application.Tests.Services
     public class TokenServiceTests
     {
         private static readonly ObjectId AccountId = ObjectId.GenerateNewId();
-
-        private Mock<IRefreshTokenRepository> _refreshTokenRepositoryMock = null!;
         private Mock<IAccountInformationRepository> _accountRepositoryMock = null!;
+        private Mock<IIdentityProviderServiceFactory> _factoryMock = null!;
         private TokenService _sut = null!;
 
         [TestInitialize]
         public void Setup()
         {
-            _refreshTokenRepositoryMock = new Mock<IRefreshTokenRepository>();
             _accountRepositoryMock = new Mock<IAccountInformationRepository>();
+            _factoryMock = new Mock<IIdentityProviderServiceFactory>();
 
             _sut = new TokenService(
                 RSA.Create(2048),
-                new Mock<IIdentityProviderServiceFactory>().Object,
+                _factoryMock.Object,
                 TimeProvider.System,
-                _refreshTokenRepositoryMock.Object,
-                new Mock<IStateRepository>().Object,
                 _accountRepositoryMock.Object,
                 Microsoft.Extensions.Options.Options.Create(new TokenCreationOptions
                 {
@@ -70,53 +69,27 @@ namespace TimeForCode.Authorization.Application.Tests.Services
         }
 
         [TestMethod]
-        public async Task RefreshInternalTokenAsync_ValidRefreshToken_ContainsLoginAndAvatarClaims()
+        public async Task GetAccessTokenFromExternalProviderAsync_ValidState_SendsTheStoredCodeVerifier()
         {
-            _refreshTokenRepositoryMock.Setup(x => x.GetByTokenAsync("token"))
-                .ReturnsAsync(new RefreshToken
-                {
-                    Id = ObjectId.GenerateNewId(),
-                    Token = "token",
-                    UserId = AccountId.ToString(),
-                    ExpiresAfter = DateTime.UtcNow.AddHours(1)
-                });
-            _accountRepositoryMock.Setup(x => x.GetByInternalIdAsync(AccountId.ToString()))
-                .ReturnsAsync(Account());
-
-            var result = await _sut.RefreshInternalTokenAsync(new Values.RefreshToken
+            var providerMock = new Mock<IIdentityProviderService>();
+            providerMock.Setup(x => x.GetAccessTokenAsync("code", "verifier"))
+                .ReturnsAsync(Result<GetAccessTokenResult>.Success(new GetAccessTokenResult { AccessToken = "external", Scope = "s", TokenType = "t" }));
+            _factoryMock.Setup(x => x.GetIdentityProviderService(IdentityProvider.Github))
+                .Returns(Result<IIdentityProviderService>.Success(providerMock.Object));
+            var entry = new StateEntry
             {
-                Token = "token",
-                ExpiresAfter = DateTime.UtcNow.AddHours(1)
-            });
+                Id = ObjectId.GenerateNewId(),
+                Key = "state",
+                IdentityProvider = IdentityProvider.Github,
+                RedirectUri = new Uri("https://localhost/"),
+                CodeVerifier = "verifier",
+                ExpiresAfter = DateTimeOffset.UtcNow.AddMinutes(10)
+            };
+
+            var result = await _sut.GetAccessTokenFromExternalProviderAsync(entry, "code");
 
             result.IsSuccess.Should().BeTrue();
-            var jwt = new JwtSecurityTokenHandler().ReadJwtToken(result.Value.Token);
-            jwt.Subject.Should().Be(AccountId.ToString());
-            jwt.Claims.Single(c => c.Type == "login").Value.Should().Be("octocat");
-            jwt.Claims.Single(c => c.Type == "avatar_url").Value.Should().Be("https://avatars.githubusercontent.com/u/42");
-        }
-
-        [TestMethod]
-        public async Task RefreshInternalTokenAsync_AccountNoLongerExists_ReturnsFailure()
-        {
-            _refreshTokenRepositoryMock.Setup(x => x.GetByTokenAsync("token"))
-                .ReturnsAsync(new RefreshToken
-                {
-                    Id = ObjectId.GenerateNewId(),
-                    Token = "token",
-                    UserId = AccountId.ToString(),
-                    ExpiresAfter = DateTime.UtcNow.AddHours(1)
-                });
-            _accountRepositoryMock.Setup(x => x.GetByInternalIdAsync(AccountId.ToString()))
-                .ReturnsAsync((AccountInformation)null!);
-
-            var result = await _sut.RefreshInternalTokenAsync(new Values.RefreshToken
-            {
-                Token = "token",
-                ExpiresAfter = DateTime.UtcNow.AddHours(1)
-            });
-
-            result.IsFailure.Should().BeTrue();
+            result.Value.Token.Should().Be("external");
         }
     }
 }

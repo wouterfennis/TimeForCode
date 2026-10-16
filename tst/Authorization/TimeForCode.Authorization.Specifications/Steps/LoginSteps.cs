@@ -3,22 +3,26 @@ using Microsoft.AspNetCore.Http;
 using Reqnroll;
 using TimeForCode.Authorization.Api.Client;
 using TimeForCode.Authorization.Api.Client.Extensions;
+using TimeForCode.Authorization.Specifications.Mocking;
 using TimeForCode.Authorization.Values;
 
 namespace TimeForCode.Authorization.Specifications.Steps
 {
     [Binding]
-    internal class LoginSteps
+    internal partial class LoginSteps
     {
         private readonly IAuthClient _authClient;
         private TryVoid<ApiException?>? _result = null;
+        private readonly ScenarioInfrastructure _infrastructure;
 
-        public LoginSteps(IAuthClient authClient)
+        public LoginSteps(IAuthClient authClient, ScenarioInfrastructure infrastructure)
         {
             _authClient = authClient;
+            _infrastructure = infrastructure;
         }
 
         [Given("The user logs in at the time for code platform")]
+        [Given("The user logs in at one instance of the time for code platform")]
         [When("The user logs in at the time for code platform")]
         public async Task WhenTheUserLogsInAtTheTimeForCodePlatformAsync()
         {

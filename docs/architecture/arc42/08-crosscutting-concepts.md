@@ -20,6 +20,16 @@ All API endpoints (except public project listings and the login flow) require a 
 
 **Token storage**: HttpOnly, Secure cookies only. Never localStorage or sessionStorage.
 
+**Refresh tokens**:
+
+- Only a SHA-256 hash of the token is persisted (`TokenHash`); the readable value exists only in the cookie.
+- Each refresh rotates the token. The old record is kept and marked `RotatedAt` through a conditional update, so exactly one of two concurrent requests wins the rotation.
+- Presenting a rotated token again (replay, or the losing side of a race) fails and deletes all refresh tokens of that user, which ends every session of the user.
+- Records are removed by a MongoDB TTL index on `ExpiresAfter` (stored as a BSON date), including rotated ones.
+- `refresh` and `logout` are POST only. Logout expires both cookies with the same cookie attributes they were set with.
+- The admin session (user id `admin`, no account record) refreshes to a token with role and scope `admin`; every other user gets scope `user`.
+- CSRF: the state-changing endpoints rely on `SameSite=Strict` cookies; there is no separate anti-forgery token.
+
 See [authorization and roles](../../target/authorization-and-roles.md) for the full role and permission model.
 
 ---
@@ -127,6 +137,8 @@ Local test doubles (mocks, stubs, in-memory databases) are used in unit and inte
 The GitHub access token is used once to fetch the profile and is then discarded; it is never persisted (see [ADR-013](../../reference/adr/0013-no-stored-github-tokens.md)). Public GitHub data is read with the application's own credentials, which are only sent over HTTPS, and every path segment taken from a request is validated before it is used in an outgoing URL.
 
 ASP.NET Core Data Protection encrypts the admin passkey ceremony state that travels in a cookie. The key ring is stored in the MongoDB collection `DataProtectionKeyDocument` and uses a fixed application name, so every instance can read state written by another and keys survive restarts. A ceremony state that cannot be decrypted is rejected as a bad request, not a server error. Without a configured database connection (OpenAPI document generation, specifications) the framework's default local key ring is used.
+
+The OAuth login state is durable and single-use (see [ADR-015](../../reference/adr/0015-durable-single-use-login-state.md)). Each login stores a record in the MongoDB collection `StateEntry` with a random key, the redirect URI, a PKCE code verifier and a 10-minute expiry; a TTL index removes expired records. The callback consumes the record atomically, so a state works once on any instance, and the token exchange sends the PKCE `code_verifier` that matches the `code_challenge` of the authorize request.
 
 ---
 

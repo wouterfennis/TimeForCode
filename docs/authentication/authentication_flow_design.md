@@ -53,13 +53,13 @@ sequenceDiagram
 
     Client->>Auth: GET /login?redirectUri=...
     Auth->>Auth: Check redirectUri against allow-list
-    Auth->>Auth: Create state, remember provider + redirectUri (10 min)
-    Auth-->>Client: 302 to GitHub authorize (client_id, redirect_uri, state)
+    Auth->>Mongo: Store state, provider, redirectUri, PKCE verifier (10 min)
+    Auth-->>Client: 302 to GitHub authorize (client_id, redirect_uri, state, code_challenge)
     Client->>GitHub: Sign in and approve
     GitHub-->>Client: 302 to /callback?code=...&state=...
     Client->>Auth: GET /callback?code=...&state=...
-    Auth->>Auth: Look up state, select identity provider
-    Auth->>GitHub: POST access_token (client_id, client_secret, code, redirect_uri)
+    Auth->>Mongo: Take state (read and delete in one step)
+    Auth->>GitHub: POST access_token (client_id, client_secret, code, redirect_uri, code_verifier)
     GitHub-->>Auth: GitHub access token
     Auth->>GitHub: GET /user (Bearer GitHub token)
     GitHub-->>Auth: Public profile
@@ -77,8 +77,8 @@ sequenceDiagram
 The client calls `login` with the identity provider (GitHub) and a `redirectUri`, the place the user should end up after signing in.
 
 - The `redirectUri` must match an entry in `AuthenticationOptions:ValidRedirectUris`. The match compares scheme, host, port, path (ignoring a trailing slash), query and fragment; anything else is answered with `400` and a `ProblemDetails` body. This is the guard against open redirects, because the same URL is used for the final redirect.
-- The handler creates a random `state` string and stores a `StateEntry` (state key, identity provider, return URL) in an in-process memory cache for 10 minutes.
-- It then builds the GitHub authorize URL with `client_id`, `redirect_uri` (the Authorization API's own callback URL from `ExternalIdentityProviderOptions:CallbackUri`) and `state`, and answers `302`.
+- The handler creates a random `state` string and stores a `StateEntry` (state key, identity provider, return URL, PKCE code verifier, expiry) in MongoDB, so any instance can complete the login. A TTL index removes entries after the expiry, 10 minutes after the login started.
+- It then builds the GitHub authorize URL with `client_id`, `redirect_uri` (the Authorization API's own callback URL from `ExternalIdentityProviderOptions:CallbackUri`), `state`, and the PKCE `code_challenge` (SHA-256 of the verifier, `code_challenge_method=S256`), and answers `302`.
 - **No `scope` is requested.** GitHub then grants access to public profile data only (see [ADR-013](../reference/adr/0013-no-stored-github-tokens.md)).
 
 ### 2. The callback and the code exchange
@@ -86,8 +86,8 @@ The client calls `login` with the identity provider (GitHub) and a `redirectUri`
 GitHub redirects the browser to `callback` with a one-time `code` and the original `state` (authorization response, [RFC 6749 section 4.1.2](https://datatracker.ietf.org/doc/html/rfc6749#section-4.1.2)). This is where the *token exchange* happens (access token request, [section 4.1.3](https://datatracker.ietf.org/doc/html/rfc6749#section-4.1.3)):
 
 1. The request is validated: `code` and `state` must both be non-empty.
-2. The `state` is looked up in the cache. An unknown or expired `state` fails the request, which stops forged or replayed callbacks that were never started here. The stored entry also tells the API which identity provider to use.
-3. The API calls GitHub's token endpoint server to server with a JSON `POST` containing `client_id`, `client_secret`, `code` and `redirect_uri`. The client secret never reaches the browser.
+2. The `state` is taken from MongoDB: read and deleted in one atomic step, so it works once. An unknown, already used or expired `state` fails the request, which stops forged or replayed callbacks. The expiry is checked in the handler because the TTL index removes entries with a delay of up to a minute. The stored entry also tells the API which identity provider to use.
+3. The API calls GitHub's token endpoint server to server with a JSON `POST` containing `client_id`, `client_secret`, `code`, `redirect_uri` and the stored `code_verifier`. The client secret never reaches the browser.
 4. GitHub answers with an access token. The browser never sees it.
 
 Any failure in these steps is logged with the provider's message, but the client only receives `400` with the generic text "Authentication failed." so provider details do not leak.
@@ -172,7 +172,8 @@ Administrators do not use GitHub. They sign in with a WebAuthn passkey (`/api/v1
 
 | Concern | How it is handled |
 | --- | --- |
-| Forged callback | `state` must exist in the cache and ties the callback to a login this API started |
+| Forged or replayed callback | `state` must exist in the database, is consumed on first use and expires after 10 minutes |
+| Authorization code interception | PKCE: GitHub only accepts the code together with the verifier that never left the server |
 | Open redirect | The return URL must match the configured allow-list before the login starts |
 | Authorization code theft | The code is only useful together with the client secret, which stays on the server |
 | Stolen database | No GitHub token is stored; the refresh token is a random value that expires |
@@ -183,7 +184,6 @@ Administrators do not use GitHub. They sign in with a WebAuthn passkey (`/api/v1
 
 ## Known limitations
 
-- **State is held in process memory.** With more than one Authorization API instance (or after a restart) a callback can reach an instance that does not know the `state` and the login fails. The state is also not deleted after use; it only expires after 10 minutes.
 - **The signing key is not rotated.** The JWKS endpoint publishes one key without a key id.
 - **Access tokens cannot be revoked** before they expire.
 - **Email may be missing.** Only the public GitHub email is available since no scope is requested.
@@ -210,8 +210,8 @@ Secrets belong in environment-specific configuration, never in the repository.
 | Internal access token format and claims (`iss`, `aud`, `sub`, `exp`, `nbf`) | [RFC 7519 — JSON Web Token](https://datatracker.ietf.org/doc/html/rfc7519) |
 | Public signing key published at `jwks.json` | [RFC 7517 — JSON Web Key](https://datatracker.ietf.org/doc/html/rfc7517) |
 | Discovery document at `openid-configuration` | [OpenID Connect Discovery 1.0](https://openid.net/specs/openid-connect-discovery-1_0.html) |
-| Not used: protecting the code with a verifier | [RFC 7636 — PKCE](https://datatracker.ietf.org/doc/html/rfc7636) |
+| Protecting the code with a verifier | [RFC 7636 — PKCE](https://datatracker.ietf.org/doc/html/rfc7636) |
 | GitHub's own behaviour (endpoints, scopes, rate limits) | [Authorizing OAuth apps](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps) |
 | Admin login | [W3C Web Authentication](https://www.w3.org/TR/webauthn-3/) |
 
-The discovery document only carries `issuer` and `jwks_uri`, so it is a minimal subset of the OpenID Connect format and the platform does not implement OpenID Connect login itself. PKCE is not used; the flow relies on the client secret and `state`, which is acceptable for a confidential client but is the first thing to add if the hardening in RFC 9700 is pursued.
+The discovery document only carries `issuer` and `jwks_uri`, so it is a minimal subset of the OpenID Connect format and the platform does not implement OpenID Connect login itself. The GitHub flow uses PKCE (S256) on top of the client secret and `state`, as RFC 9700 recommends.

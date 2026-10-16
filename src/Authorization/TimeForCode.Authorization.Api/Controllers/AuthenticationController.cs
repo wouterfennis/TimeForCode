@@ -102,7 +102,7 @@ namespace TimeForCode.Authorization.Api.Controllers
         /// Logout endpoint.
         /// </summary>
         /// <returns></returns>
-        [HttpGet]
+        [HttpPost]
         [Route("logout")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -116,6 +116,8 @@ namespace TimeForCode.Authorization.Api.Controllers
             };
 
             await _sender.Send(command);
+
+            ExpireTokenResponseCookies();
 
             return NoContent();
         }
@@ -133,7 +135,7 @@ namespace TimeForCode.Authorization.Api.Controllers
         /// Refresh endpoint.
         /// </summary>
         /// <returns>New access token and refresh token</returns>
-        [HttpGet]
+        [HttpPost]
         [Route("refresh")]
         [EnableRateLimiting("auth")]
         [ProducesResponseType(typeof(CallbackResponseModel), StatusCodes.Status200OK)]
@@ -182,36 +184,38 @@ namespace TimeForCode.Authorization.Api.Controllers
             return response;
         }
 
+        private void ExpireTokenResponseCookies()
+        {
+            // Delete only matches the cookie when path, secure and samesite equal those used when it was set.
+            var cookieOptions = CreateCookieOptions();
+
+            HttpContext.Response.Cookies.Delete(CookieConstants.TokenKey, cookieOptions);
+            HttpContext.Response.Cookies.Delete(CookieConstants.RefreshTokenKey, cookieOptions);
+        }
+
+        private static CookieOptions CreateCookieOptions(DateTimeOffset? expires = null, TimeSpan? maxAge = null)
+        {
+            return new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                Expires = expires,
+                MaxAge = maxAge
+            };
+        }
+
         private void SetTokenResponseCookies(TokenResult result)
         {
-            var accessTokenCookieOptions = new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.Strict,
-                Expires = result.InternalAccessToken.ExpiresAfter
-            };
-
-            var refreshTokenCookieOptions = new CookieOptions(accessTokenCookieOptions)
-            {
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.Strict,
-                Expires = result.RefreshToken.ExpiresAfter
-            };
+            var accessTokenCookieOptions = CreateCookieOptions(result.InternalAccessToken.ExpiresAfter);
+            var refreshTokenCookieOptions = CreateCookieOptions(result.RefreshToken.ExpiresAfter);
 
             HttpContext.Response.Cookies.Append(CookieConstants.TokenKey, JsonSerializer.Serialize(result.InternalAccessToken), accessTokenCookieOptions);
             HttpContext.Response.Cookies.Append(CookieConstants.RefreshTokenKey, JsonSerializer.Serialize(result.RefreshToken), refreshTokenCookieOptions);
 
             if (result.IsNewUser)
             {
-                var isNewUserCookieOptions = new CookieOptions
-                {
-                    HttpOnly = true,
-                    Secure = true,
-                    SameSite = SameSiteMode.Strict,
-                    MaxAge = TimeSpan.FromMinutes(5)
-                };
+                var isNewUserCookieOptions = CreateCookieOptions(maxAge: TimeSpan.FromMinutes(5));
 
                 HttpContext.Response.Cookies.Append("IsNewUser", "true", isNewUserCookieOptions);
             }

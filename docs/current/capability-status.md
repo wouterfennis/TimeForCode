@@ -14,7 +14,7 @@ This document provides an explicit, feature-level view of what is implemented, p
 | --- | --- | --- |
 | GitHub OAuth 2.0 login | ✅ | Full flow implemented |
 | Internal JWT issuance (RS256) | ✅ | Access token + refresh token |
-| Refresh token rotation | ✅ | 7-day expiry, rotated on use |
+| Refresh token rotation | ✅ | 7-day expiry, rotated on use; only a SHA-256 hash is stored; replaying a rotated token revokes all of the user's refresh tokens; records are removed by a TTL index on expiry; admin sessions refresh to an `admin` scope token |
 | Secure cookie storage | ✅ | HttpOnly, Secure cookies |
 | Logout | ✅ | Clears tokens |
 | User account creation on first login | ✅ | Linked to GitHub identity |

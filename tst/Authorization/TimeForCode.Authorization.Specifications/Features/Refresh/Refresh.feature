@@ -19,3 +19,32 @@ Scenario: User has valid refresh token
 	Then An access token is returned
 	And A refresh token is returned
 
+Scenario: The refresh token is not kept in readable form
+	Given The user has a refresh token
+	When The user calls the refresh token endpoint
+	Then The refresh token is not stored in readable form
+
+Scenario: A rotated refresh token is replayed
+	Given The user has a refresh token
+	And The user has already refreshed with that refresh token
+	When The user calls the refresh token endpoint
+	Then The following refresh error message is returned: "Token refresh failed."
+	And All other refresh tokens of the user are revoked
+
+Scenario: A refresh is requested with a read-only request
+	Given The user has a refresh token
+	When The user calls the refresh token endpoint with a read-only request
+	Then The request is not allowed
+
+Scenario: The admin refreshes the session
+	Given The user has an admin session token
+	And The user has a refresh token
+	When The user calls the refresh token endpoint
+	Then An access token is returned
+	And The access token contains the admin role and the admin scope
+
+Scenario: A regular user refreshes the session
+	Given The user has a refresh token
+	When The user calls the refresh token endpoint
+	Then An access token is returned
+	And The access token contains the user scope
