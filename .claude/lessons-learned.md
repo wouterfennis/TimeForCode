@@ -14,9 +14,8 @@ Non-obvious knowledge from past sessions. Read and update through skill `lessons
 ### Ask about scope-changing decisions up front
 
 - **Date / issue:** 2026-10-08 / #75
-- **Lesson:** A lifecycle change that alters existing behaviour (register status, a removed endpoint) deserves one AskUserQuestion before coding.
-- **Why:** the answer "replace the DELETE endpoint" collided with the issue's "no changes under src/Website" criterion, because `Profile.razor` called it; the user then accepted a broken Website.
-- **How to apply:** grep `src/Website` and other consumers for an endpoint before removing it, and surface the conflict in the question.
+- **Lesson:** A change that alters existing behaviour (lifecycle status, a removed endpoint) deserves one AskUserQuestion before coding.
+- **How to apply:** grep for other consumers of an endpoint before removing it, and surface any conflict with the issue's criteria in the question.
 
 ## Tooling and environment
 
@@ -30,8 +29,7 @@ Non-obvious knowledge from past sessions. Read and update through skill `lessons
 ### `dotnet format ./TimeForCode.sln` churns unrelated files
 
 - **Date / issue:** 2026-10-08 / #75
-- **Lesson:** The solution-wide format (and builds that regenerate `*.Api.json`) modify files in other modules (Authorization, Shared, Website, tst/Website).
-- **Why:** unrelated diffs pollute the PR and can break the "no changes under src/Website" criterion.
+- **Lesson:** The solution-wide format modifies files in other modules, which pollutes the PR.
 - **How to apply:** after formatting, run `git status --short` and `git checkout --` every path outside the issue's scope.
 
 ### Appending to a CRLF file with a shell rewrites the whole file
@@ -40,20 +38,12 @@ Non-obvious knowledge from past sessions. Read and update through skill `lessons
 - **Lesson:** Some tracked files (for example `Repositories.feature`) are committed with CRLF. Appending LF lines with `cat >>` or `sed -i` makes the working copy mixed, and `git add` then normalises the entire file to LF, so a 14-line addition shows as a 70-line diff.
 - **Why:** `core.autocrlf=true` here, and the review flagged the noise.
 - **How to apply:** check `git show HEAD:<file> | file -` before editing a file by shell; use the Edit tool (it keeps endings), or convert new lines to CRLF and `git -c core.autocrlf=false add <file>`. Confirm with `git diff --numstat`.
-- **Exception (2026-10-15 / #110):** `.gitignore` is committed with mixed endings; the Edit tool turned its trailing LF lines into CRLF (4 extra changed lines). For mixed files, rebuild from `git show HEAD:<file>` and append with `printf`.
+- **Exception (2026-10-15 / #110):** `.gitignore` is committed with mixed endings, so the Edit tool turned its trailing LF lines into CRLF. For mixed files, rebuild from `git show HEAD:<file>` and append with `printf`.
 
-### Front-end (Node) work needs a few workarounds
+### Read guard and Node engines (front-end work)
 
 - **Date / issue:** 2026-10-15 / #110
-- **Lesson:** The read-guard hook blocks Bash read commands (`grep`, `cat`, `ls`...) that touch `node_modules` or a lockfile; append `# allow-excluded` when that is intended. Local Node is 24.12, so packages that need Node 24.15 or later (jsdom 30, some CLIs) fail with `engine-strict`; pick a release that supports every Node 24.
-- **Why:** each one cost a retry while scaffolding the SPA.
-
-### Website specifications need the running stack
-
-- **Date / issue:** 2026-10-08 / #75
-- **Lesson:** `TimeForCode.Website.Specifications` fails with `ERR_CONNECTION_REFUSED` on localhost:8083 unless the local services run (`scripts/start-local.ps1`).
-- **Why:** it is an environment failure, not a regression; the solution-wide test run always shows it.
-- **How to apply:** list it under Loose Ends; judge the Donation and Authorization test projects separately.
+- **Lesson:** The read-guard hook blocks Bash reads (`grep`, `cat`, `ls`...) of `node_modules` and lockfiles, except a dependency's own `package.json`; append `# allow-excluded` when a wider read is intended. Local Node is 24.12, so packages needing 24.15 or later fail with `engine-strict`; pick a release that supports every Node 24.
 
 ## Donation module
 
@@ -76,14 +66,7 @@ Non-obvious knowledge from past sessions. Read and update through skill `lessons
 - **Date / issue:** 2026-10-08 / #75
 - **Lesson:** `TimeForCode.Donation.Api.json` is regenerated on build and drives the generated client used by the Specifications and the Website; `SwaggerTests` then fails until the verified snapshot is replaced after review (skill `swagger-snapshot-review`).
 - **Why:** removing or renaming an endpoint breaks every consumer at compile time.
-- **How to apply:** build the whole solution after any controller change; accept the snapshot only after reading the diff.
-
-### Adding query params to a controller action breaks generated-client callers
-
-- **Date / issue:** 2026-10-13 / #76
-- **Lesson:** NSwag emits positional parameters, so extending `GET /api/v1/project` removed the 2-argument `GetProjectsAsync(null, null)` overload and broke three Website call sites; `dotnet build TimeForCode.sln` fails until they change.
-- **Why:** the user accepted this because the Website is deprecated; the Donation test projects still build and pass on their own.
-- **How to apply:** grep `GetXxxAsync(` in `src/Website` before touching an action's signature, ask first, and build the Api project before the Specifications so `TimeForCode.Donation.Api.json` is regenerated.
+- **How to apply:** build the whole solution after any controller change (Api project first, so the JSON is regenerated); accept the snapshot only after reading the diff. NSwag emits positional parameters, so adding a query param removes the old overload and breaks its callers; grep `GetXxxAsync(` first.
 
 ### Reqnroll catalog fakes need distinct ids and `BsonDocument` needs `ToJson()` in assertions
 
