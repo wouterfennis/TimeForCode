@@ -1,7 +1,6 @@
 ﻿using DnsClient.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 using RestSharp;
 using System.Net;
 using System.Net.Mime;
@@ -197,19 +196,5 @@ namespace TimeForCode.Authorization.Infrastructure.Services.Github
             };
         }
 
-        public Task<TokenValidationParameters> GetTokenValidationParameters()
-        {
-            var tokenValidationParameters = new TokenValidationParameters
-            {
-                ValidateIssuer = true,
-                ValidIssuer = _identityProviderOptions.Issuer,
-                ValidateAudience = true,
-                ValidAudiences = [_identityProviderOptions.ClientId],
-                ValidateLifetime = true,
-                ValidateIssuerSigningKey = false
-            };
-
-            return Task.FromResult(tokenValidationParameters);
-        }
     }
 }

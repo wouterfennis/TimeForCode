@@ -12,7 +12,7 @@ All API endpoints (except public project listings and the login flow) require a 
 
 **Token validation rules** (all services):
 
-1. Verify the RS256 signature against the Authorization API's JWKS endpoint.
+1. Verify the RS256 signature against the Authorization API's JWKS endpoint. The key is selected by the token's `kid` header; the JWKS lists the current and the previous signing key so a rotation does not invalidate live tokens.
 2. Verify the token has not expired (`exp` claim).
 3. Verify the `iss` (issuer) matches the Authorization API base URL.
 4. Verify the `aud` (audience) includes this service's URL.
