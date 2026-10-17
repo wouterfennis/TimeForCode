@@ -17,7 +17,9 @@ namespace TimeForCode.Authorization.Api.Controllers
     [Route("api/v1/[controller]")]
     [ApiController]
     [Authorize(Policy = "ApiUser")]
+#pragma warning disable S6960 // Profile, account deletion and GitHub repository endpoints share the api/v1/user route and generated client.
     public class UserController : ControllerBase
+#pragma warning restore S6960
     {
         private readonly IAccountInformationRepository _accountInformationRepository;
         private readonly IGithubApiService _githubApiService;
@@ -51,13 +53,7 @@ namespace TimeForCode.Authorization.Api.Controllers
 
             if (userEntity == null)
             {
-                var problemDetails = new ProblemDetails
-                {
-                    Title = "User not found",
-                    Detail = $"User with id {userId} not found"
-                };
-
-                return NotFound(problemDetails);
+                return UserNotFound(userId);
             }
 
             var user = new UserResponse
@@ -96,11 +92,7 @@ namespace TimeForCode.Authorization.Api.Controllers
             {
                 if (result.StatusCode == System.Net.HttpStatusCode.NotFound)
                 {
-                    return NotFound(new ProblemDetails
-                    {
-                        Title = "User not found",
-                        Detail = $"User with id {userId} not found"
-                    });
+                    return UserNotFound(userId);
                 }
 
                 return StatusCode(StatusCodes.Status502BadGateway, new ProblemDetails
@@ -131,13 +123,7 @@ namespace TimeForCode.Authorization.Api.Controllers
 
             if (userEntity == null)
             {
-                var problemDetails = new ProblemDetails
-                {
-                    Title = "User not found",
-                    Detail = $"User with id {userId} not found"
-                };
-
-                return NotFound(problemDetails);
+                return UserNotFound(userId);
             }
 
             var repositoriesResult = await _githubApiService.GetUserRepositoriesAsync(userEntity.Login);
@@ -186,13 +172,7 @@ namespace TimeForCode.Authorization.Api.Controllers
 
             if (userEntity == null)
             {
-                var problemDetails = new ProblemDetails
-                {
-                    Title = "User not found",
-                    Detail = $"User with id {userId} not found"
-                };
-
-                return NotFound(problemDetails);
+                return UserNotFound(userId);
             }
 
             var repositoryResult = await _githubApiService.GetRepositoryAsync(owner, repo);
@@ -229,6 +209,15 @@ namespace TimeForCode.Authorization.Api.Controllers
             };
 
             return Ok(repository);
+        }
+
+        private NotFoundObjectResult UserNotFound(string userId)
+        {
+            return NotFound(new ProblemDetails
+            {
+                Title = "User not found",
+                Detail = $"User with id {userId} not found"
+            });
         }
     }
 }
