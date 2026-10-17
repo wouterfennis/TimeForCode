@@ -18,6 +18,7 @@ This document provides an explicit, feature-level view of what is implemented, p
 | Secure cookie storage | ✅ | HttpOnly, Secure cookies |
 | Logout | ✅ | Clears tokens |
 | User account creation on first login | ✅ | Linked to GitHub identity |
+| Delete account and personal data | ✅ | `DELETE /api/v1/user` removes the profile and refresh tokens and anonymises the contributor in the Donation module; stored data is listed in [personal data](../reference/personal-data.md). No data export yet |
 | Multiple identity providers (e.g. Google) | ❌ | Architecture supports it; not configured |
 | Admin identity management | ❌ | No admin account management |
 

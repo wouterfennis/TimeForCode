@@ -52,6 +52,15 @@ namespace TimeForCode.Donation.Infrastructure.Persistence.Database
             await _collection.InsertOneAsync(contribution);
         }
 
+        public async Task AnonymiseByContributorIdAsync(ObjectId contributorId, CancellationToken cancellationToken)
+        {
+            var update = Builders<Contribution>.Update
+                .Set(c => c.ContributorGitHubLogin, Contributor.DeletedUserLogin)
+                .Set(c => c.ContributorAvatarUrl, Contributor.DeletedUserAvatarUrl);
+
+            await _collection.UpdateManyAsync(Builders<Contribution>.Filter.Eq(c => c.ContributorId, contributorId), update, cancellationToken: cancellationToken);
+        }
+
         public async Task<IReadOnlyList<Contribution>> GetByProjectIdAsync(string projectId, CancellationToken cancellationToken)
         {
             if (!ObjectId.TryParse(projectId, out var objectId))

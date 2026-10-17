@@ -8,6 +8,7 @@ using TimeForCode.Donation.Api.Client;
 using TimeForCode.Donation.Application.Interfaces;
 using TimeForCode.Donation.Commands;
 using TimeForCode.Donation.Domain;
+using TimeForCode.Donation.Specifications.Mocking;
 using TimeForCode.Donation.Specifications.TestBuilder;
 using TimeForCode.Donation.Values;
 
@@ -18,6 +19,7 @@ namespace TimeForCode.Donation.Specifications.Steps
     {
         private readonly IDonationClient _donationClient;
         private readonly IServiceProvider _provider;
+        private readonly BearerTokenHandler _bearerTokenHandler;
 
         private TimeForCode.Donation.Api.Client.RegisterProjectResult? _registerResult;
         private GetProjectsResponse? _getProjectsResult;
@@ -25,10 +27,11 @@ namespace TimeForCode.Donation.Specifications.Steps
         private ApiException? _exception;
         private string? _registeredProjectId;
 
-        public ProjectSteps(IDonationClient donationClient, IServiceProvider provider)
+        public ProjectSteps(IDonationClient donationClient, IServiceProvider provider, BearerTokenHandler bearerTokenHandler)
         {
             _donationClient = donationClient;
             _provider = provider;
+            _bearerTokenHandler = bearerTokenHandler;
         }
 
         [Given("There is a project published by another user")]

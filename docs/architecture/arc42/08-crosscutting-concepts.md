@@ -140,6 +140,10 @@ ASP.NET Core Data Protection encrypts the admin passkey ceremony state that trav
 
 The OAuth login state is durable and single-use (see [ADR-015](../../reference/adr/0015-durable-single-use-login-state.md)). Each login stores a record in the MongoDB collection `StateEntry` with a random key, the redirect URI, a PKCE code verifier and a 10-minute expiry; a TTL index removes expired records. The callback consumes the record atomically, so a state works once on any instance, and the token exchange sends the PKCE `code_verifier` that matches the `code_challenge` of the authorize request.
 
+## Personal Data and Account Deletion
+
+The stored personal data fields, their purpose and retention are listed in [personal data](../../reference/personal-data.md). A user removes the account with `DELETE /api/v1/user`. The Authorization API first calls the Donation API (`POST /api/v1/contributor/{userId}/anonymise`) with a service token of scope `service`, which replaces the contributor and the identity snapshot on the contributions with a generic deleted user and keeps the hours. Only then it deletes the refresh tokens and the account, so a Donation failure leaves everything in place and the deletion can be retried. Contributors are found by their platform user id, which the anonymisation replaces, therefore the contributions are rewritten before the contributor. Remaining risks are listed in chapter 11 (RISK-07 to RISK-10).
+
 ---
 
 ## Mermaid Diagram Convention

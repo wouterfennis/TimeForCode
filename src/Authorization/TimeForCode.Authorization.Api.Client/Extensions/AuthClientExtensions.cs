@@ -55,6 +55,20 @@ namespace TimeForCode.Authorization.Api.Client.Extensions
             return TryVoid<ApiException?>.Create(default);
         }
 
+        public static async Task<TryVoid<ApiException?>> TryDeleteAccountAsync(this IAuthClient client)
+        {
+            try
+            {
+                await client.DeleteAccountAsync();
+            }
+            catch (ApiException exception)
+            {
+                return TryVoid<ApiException?>.Create(exception);
+            }
+
+            return TryVoid<ApiException?>.Create(default);
+        }
+
         public static async Task<TryVoid<ApiException<ProblemDetails>?>> TryRefreshAsync(this IAuthClient client)
         {
             try

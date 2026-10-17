@@ -47,6 +47,8 @@ graph LR
 
     Client["Front-end / External Client"]
     GitHub["GitHub OAuth"]
+    DonationAPI["Donation API
+(anonymise contributor)"]
     MongoDB[("MongoDB")]
 
     Client -->|HTTP requests| AuthAPI_Ctrl
@@ -54,6 +56,7 @@ graph LR
     AuthApp -->|reads domain rules| AuthDomain
     AuthApp -->|calls abstractions| AuthInfra
     AuthInfra -->|HTTP| GitHub
+    AuthInfra -->|HTTP, service token| DonationAPI
     AuthInfra -->|wire protocol| MongoDB
 ```
 
@@ -61,10 +64,10 @@ graph LR
 
 | Component | Responsibility |
 | --- | --- |
-| `TimeForCode.Authorization.Api` | REST endpoints: login, callback, refresh, logout, user, JWKS |
+| `TimeForCode.Authorization.Api` | REST endpoints: login, callback, refresh, logout, user (profile, repositories, account deletion), JWKS |
 | `TimeForCode.Authorization.Application` | MediatR command handlers; token service; account linking |
 | `TimeForCode.Authorization.Domain` | OAuth constants and domain primitives |
-| `TimeForCode.Authorization.Infrastructure` | GitHub OAuth client; MongoDB user and token repositories; RSA key loading |
+| `TimeForCode.Authorization.Infrastructure` | GitHub OAuth client; Donation API client (account deletion); MongoDB user and token repositories; RSA key loading |
 | `TimeForCode.Authorization.Commands` | MediatR command and result types |
 | `TimeForCode.Authorization.Values` | Shared value objects (ExternalAccessToken, TokenResult) |
 | `TimeForCode.Authorization.Api.Client` | Typed HTTP client for the Authorization API, generated from its OpenAPI document; used by the specification tests |

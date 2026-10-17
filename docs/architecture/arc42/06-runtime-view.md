@@ -57,6 +57,28 @@ The Frontend does not need to re-direct the user; the `CookieAuthorizationHandle
 
 ---
 
+## Scenario 2b — Delete Account
+
+A signed-in user removes the account and personal data. The Donation API goes first, so its failure leaves everything in place and the user can retry.
+
+```mermaid
+sequenceDiagram
+    participant Website
+    participant AuthAPI as Authorization API
+    participant DonationAPI as Donation API
+
+    Website->>AuthAPI: DELETE /api/v1/user (access token)
+    AuthAPI->>DonationAPI: POST /api/v1/contributor/{userId}/anonymise (service token)
+    DonationAPI->>DonationAPI: Replace contributions identity, then contributor
+    DonationAPI-->>AuthAPI: 204 No Content
+    AuthAPI->>AuthAPI: Delete refresh tokens, then the account
+    AuthAPI-->>Website: 204 No Content (token cookies expired)
+```
+
+When the Donation API fails, the Authorization API answers 502 and removes nothing. See [personal data](../../reference/personal-data.md).
+
+---
+
 ## Scenario 3 — Register a Project
 
 ```mermaid

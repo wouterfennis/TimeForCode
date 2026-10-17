@@ -66,6 +66,7 @@ Architecture is documented using the [Arc42](https://arc42.org) template. All ar
 | --- | --- |
 | [Glossary](reference/glossary.md) | Shared domain and technical terms |
 | [ADR Index](reference/adr/README.md) | Architecture Decision Records |
+| [Personal data](reference/personal-data.md) | Stored personal data, purpose, retention and account deletion |
 | [Docs Conventions](README.md) | Documentation standards, status labels, and authoring rules |
 
 ---
