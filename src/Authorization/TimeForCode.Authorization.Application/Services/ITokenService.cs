@@ -17,8 +17,8 @@ namespace TimeForCode.Authorization.Application.Services
         AccessToken GenerateInternalToken(AccountInformation account);
 
         /// <summary>
-        /// Generates an internal token carrying an additional role and scope claim. Used exclusively by the
-        /// admin passkey flow; regular users get the account overload.
+        /// Generates an internal token carrying an additional role and scope claim. Used by the
+        /// admin passkey flow and for the service token sent to the donation API; regular users get the account overload.
         /// </summary>
         AccessToken GenerateInternalToken(string userId, string role, string scope);
 

@@ -91,3 +91,12 @@ Non-obvious knowledge from past sessions. Read and update through skill `lessons
 - **Lesson:** Reqnroll step classes keep state in private fields (for example `_exception`), so shared Then-steps only see state in the same class. Split large step classes as `partial class` files (`ProjectSteps.Lifecycle.cs`).
 - **Why:** a second step class would not see the first one's captured API error.
 - **How to apply:** extend the existing partial class rather than adding a new binding class for the same feature area.
+
+## Authorization module
+
+### Reqnroll steps share errors through `SessionContext`, and logout-style calls expire the client cookies
+
+- **Date / issue:** 2026-10-17 / #107
+- **Lesson:** `_exception` fields are private per step class, so a reused Then step ("The user is informed their profile was not found") sees nothing from a new When step; use `SessionContext.LastException`. An endpoint that expires the token cookies also removes them from the spec `CookieContainer`, so a "kept token" scenario must re-add the cookies after the call.
+- **Why:** both cost a failed spec run.
+- **How to apply:** set `LastException` in new When steps; copy `GetAllCookies()` before the call and re-add them to simulate a token the user kept.

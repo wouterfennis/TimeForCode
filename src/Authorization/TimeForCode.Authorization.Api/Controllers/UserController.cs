@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 using System.Net.Mime;
 using System.Security.Claims;
 using TimeForCode.Authorization.Api.Models;
 using TimeForCode.Authorization.Application.Interfaces;
+using TimeForCode.Authorization.Commands;
 
 namespace TimeForCode.Authorization.Api.Controllers
 {
@@ -19,16 +21,19 @@ namespace TimeForCode.Authorization.Api.Controllers
     {
         private readonly IAccountInformationRepository _accountInformationRepository;
         private readonly IGithubApiService _githubApiService;
+        private readonly ISender _sender;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UserController"/> class.
         /// </summary>
         public UserController(
             IAccountInformationRepository accountInformationRepository,
-            IGithubApiService githubApiService)
+            IGithubApiService githubApiService,
+            ISender sender)
         {
             _accountInformationRepository = accountInformationRepository;
             _githubApiService = githubApiService;
+            _sender = sender;
         }
 
         /// <summary>
@@ -69,6 +74,45 @@ namespace TimeForCode.Authorization.Api.Controllers
             };
 
             return Ok(user);
+        }
+
+        /// <summary>
+        /// Delete the account of the user: removes the profile and refresh tokens and anonymises the contributions.
+        /// </summary>
+        /// <returns></returns>
+        [HttpDelete("", Name = "DeleteAccount")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status502BadGateway)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> DeleteAccountAsync()
+        {
+            var userId = User.Claims.Single(x => x.Type == ClaimTypes.NameIdentifier)?.Value!;
+
+            var result = await _sender.Send(new DeleteAccountCommand { UserId = userId });
+
+            if (result.IsFailure)
+            {
+                if (result.StatusCode == System.Net.HttpStatusCode.NotFound)
+                {
+                    return NotFound(new ProblemDetails
+                    {
+                        Title = "User not found",
+                        Detail = $"User with id {userId} not found"
+                    });
+                }
+
+                return StatusCode(StatusCodes.Status502BadGateway, new ProblemDetails
+                {
+                    Title = "Account could not be deleted",
+                    Detail = "The account was kept because a dependent service could not be updated. Try again later."
+                });
+            }
+
+            TokenCookies.Expire(HttpContext.Response);
+
+            return NoContent();
         }
 
         /// <summary>

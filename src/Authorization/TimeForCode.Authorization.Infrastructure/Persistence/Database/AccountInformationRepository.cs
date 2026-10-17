@@ -24,6 +24,11 @@ namespace TimeForCode.Authorization.Infrastructure.Persistence.Database
             return await _collection.Find(Builders<AccountInformation>.Filter.Eq("_id", new ObjectId(internalId))).FirstOrDefaultAsync();
         }
 
+        public async Task DeleteByInternalIdAsync(string internalId)
+        {
+            await _collection.DeleteOneAsync(Builders<AccountInformation>.Filter.Eq("_id", new ObjectId(internalId)));
+        }
+
         public async Task<CreateOrUpdateResult> CreateOrUpdateAsync(AccountInformation entity)
         {
             var existingEntity = await GetByIdentityProviderIdAsync(entity.IdentityProviderId);

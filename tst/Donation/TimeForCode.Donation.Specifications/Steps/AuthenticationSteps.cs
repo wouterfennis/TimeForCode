@@ -35,7 +35,7 @@ namespace TimeForCode.Donation.Specifications.Steps
             _bearerTokenHandler.Token = null;
         }
 
-        private static string GenerateTestToken(string userId, string scope = "user")
+        internal static string GenerateTestToken(string userId, string scope = "user")
         {
             var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Constants.TestJwtSigningKey));
             var credentials = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256);

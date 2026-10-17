@@ -29,8 +29,13 @@ namespace TimeForCode.Authorization.Infrastructure.Extensions
             services.AddScoped<IRandomGenerator, RandomGenerator>();
             services.AddScoped<IIdentityProviderService, GithubService>();
             services.AddScoped<IGithubApiService, GithubService>();
+            services.AddScoped<IDonationService, DonationService>();
 
             services.AddSingleton(TimeProvider.System);
+
+            services
+                .Configure<DonationOptions>(options => configuration.GetSection(DonationOptions.SectionName)
+                .Bind(options));
 
             services
                 .Configure<DbOptions>(options => configuration.GetSection(DbOptions.SectionName)

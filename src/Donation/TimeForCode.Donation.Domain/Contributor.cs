@@ -8,6 +8,9 @@ namespace TimeForCode.Donation.Domain
     /// </summary>
     public class Contributor : DocumentEntity
     {
+        public const string DeletedUserLogin = "deleted-user";
+        public const string DeletedUserAvatarUrl = "https://github.com/ghost.png";
+
         public required string PlatformUserId { get; init; }
         public required string GithubLogin { get; init; }
         public required string AvatarUrl { get; init; }
