@@ -2,7 +2,7 @@
 
 Status: Mixed
 
-Routes marked **Exists** have a counterpart in the current Blazor Website. Routes marked **Planned** depend on backend endpoints that are not implemented yet (see [API Surface](../current/api-surface.md)) and must not be built until the API exists.
+Routes marked **Exists** have backend endpoints that are implemented. Routes marked **Planned** depend on backend endpoints that are not implemented yet (see [API Surface](../current/api-surface.md)) and must not be built until the API exists.
 
 ---
 
@@ -52,9 +52,9 @@ The diagram shows navigation hierarchy, not every link. Public pages are reachab
 | `/donations`, `/donations/:id` | Donations | Signed-in user | Planned |
 | `/organizations/:id/report` | Impact report | Org member, admin | Planned |
 
-The admin passkey sign-in and first-claim registration is a button on the home page in the current site, not a route. The new front-end may keep it that way or give it a dedicated route; decide when building it.
+The admin passkey sign-in and first-claim registration can be a button on the home page rather than a route. The front-end may do it that way or give it a dedicated route; decide when building it.
 
-Note that the current Blazor site exposes the donor-organization screens under `/admin/...` but links to them from the main navigation for every visitor. The new front-end shows admin navigation only to the `admin` role.
+The front-end shows admin navigation only to the `admin` role.
 
 ## Navigation model
 

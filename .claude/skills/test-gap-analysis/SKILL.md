@@ -160,7 +160,7 @@ These gaps are low-risk but should be addressed in a maintenance pass.
 
 | Bounded Context | Gap type | Detail |
 | --- | --- | --- |
-| Website | MISSING_ARCH_TESTS | No architecture test project found |
+| Frontend | MISSING_ARCH_TESTS | No architecture test project found |
 | … | … | … |
 
 ---

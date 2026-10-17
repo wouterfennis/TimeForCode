@@ -35,4 +35,4 @@ resource appService 'Microsoft.Web/sites@2021-02-01' = {
   }
 }
 
-output websiteEndpoint string = appService.properties.defaultHostName
+output endpoint string = appService.properties.defaultHostName

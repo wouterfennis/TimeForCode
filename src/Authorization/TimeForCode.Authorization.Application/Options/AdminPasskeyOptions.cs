@@ -15,7 +15,7 @@ namespace TimeForCode.Authorization.Application.Options
 
         /// <summary>
         /// The relying-party (origin) domain the browser calls <c>navigator.credentials</c> from — the
-        /// Website's origin, not the Authorization API's own host. Must be explicit; never inferred from
+        /// front-end's origin, not the Authorization API's own host. Must be explicit; never inferred from
         /// the request host header.
         /// </summary>
         [Required]

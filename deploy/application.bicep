@@ -76,7 +76,7 @@ module apiAppServiceModule 'modules/appService.bicep' = {
       }
       {
         name: 'TokenCreationOptions__Audiences__0'
-        value: 'https://timeforcode-website.azurewebsites.net'
+        value: 'https://timeforcode-frontend.azurewebsites.net'
       }
       {
         name: 'TokenCreationOptions__TokenExpiresInMinutes'
@@ -92,11 +92,11 @@ module apiAppServiceModule 'modules/appService.bicep' = {
       }
       {
         name: 'AuthenticationOptions__Audience'
-        value: 'https://timeforcode-website.azurewebsites.net'
+        value: 'https://timeforcode-frontend.azurewebsites.net'
       }
       {
         name: 'AuthenticationOptions__ValidRedirectUris__0'
-        value: 'https://timeforcode-website.azurewebsites.net'
+        value: 'https://timeforcode-frontend.azurewebsites.net'
       }
       {
         name: 'RsaOptions__Base64Certificate'
@@ -141,44 +141,6 @@ module dbSidecarModule 'modules/appServiceSidecar.bicep' = {
       {
         name: 'MONGO_INITDB_DATABASE'
         value: parameters.database.mongoDb.databaseName
-      }
-    ]
-  }
-}
-
-module websiteAppServiceModule 'modules/appService.bicep' = {
-  scope: rgAuthApp
-  name: 'websiteAppServiceModule'
-  params: {
-    location: location
-    appServicePlanName: parameters.applicationInfrastructure.appServicePlan.name
-    appServicePlanResourceGroup: parameters.applicationInfrastructure.resourceGroup
-  	appServiceName: parameters.application.timeForCodeWebsite.appServiceName
-  	imageName: parameters.application.timeForCodeWebsite.imageName
-    additionalAppSettings: [
-      {
-        name: 'ASPNETCORE_ENVIRONMENT'
-        value: 'Production'
-      }
-      {
-        name: 'ASPNETCORE_URLS'
-        value: 'http://+:80'
-      }
-      {
-        name: 'Logging__LogLevel__Default'
-        value: 'Debug'
-      }
-      {
-        name: 'Logging__LogLevel__Microsoft.AspNetCore'
-        value: 'Warning'
-      }
-      {
-        name: 'AuthorizationServiceOptions__BaseUri'
-        value: 'https://timeforcode-auth-api.azurewebsites.net'
-      }
-      {
-        name: 'StorageOptions__StoragePath'
-        value: '/storage'
       }
     ]
   }

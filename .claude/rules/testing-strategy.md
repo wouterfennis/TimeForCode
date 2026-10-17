@@ -34,7 +34,7 @@ Per module under `tst/<Module>/TimeForCode.<Module>.<Kind>/`:
 | `Architecture.Tests` | ArchUnitNET layer and naming rules | Violations break the build |
 
 Frameworks: **MSTest**, FluentAssertions, Moq, Verify.MSTest, Reqnroll, ArchUnitNET. Do not introduce xUnit/NUnit/NetArchTest.
-Not every module has every kind (for example `Shared.Tests`, Website); check `repo-map` instead of assuming.
+Not every module has every kind (for example `Shared.Tests`); check `repo-map` instead of assuming.
 
 ## Conventions
 

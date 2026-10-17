@@ -111,3 +111,9 @@ $RECYCLE.BIN/
 # Claude Code local state
 .agent-state/
 .claude/settings.local.json
+
+# Front-end (Node) dependencies and build output
+node_modules/
+src/Frontend/**/dist/
+*.tsbuildinfo
+npm-debug.log*

@@ -12,21 +12,21 @@ The platform is split into four bounded contexts. Each context has its own API, 
 
 ```mermaid
 graph LR
-    Website["Website\n(Blazor)"]
+    Frontend["Frontend\n(React SPA)"]
     AuthAPI["Authorization API\n(.NET)"]
     DonationAPI["Donation API\n(.NET)"]
     MongoDB[("MongoDB")]
     GitHub["GitHub\n(External)"]
 
-    Website -->|login / token refresh| AuthAPI
-    Website -->|project & donation calls| DonationAPI
+    Frontend -->|login / token refresh| AuthAPI
+    Frontend -->|project & donation calls| DonationAPI
     AuthAPI -->|OAuth2 callback| GitHub
     AuthAPI -->|store users & tokens| MongoDB
     DonationAPI -->|store projects & donations| MongoDB
     DonationAPI -->|fetch repo metadata| GitHub
 ```
 
-The diagram above shows the current service topology. The Website drives authentication through the Authorization API and will drive donation operations through the Donation API once those endpoints are implemented.
+The diagram above shows the current service topology. The Frontend drives authentication through the Authorization API and will drive donation operations through the Donation API once those endpoints are implemented.
 
 ---
 
@@ -79,19 +79,17 @@ See [capability status](capability-status.md) for the full feature-level breakdo
 
 ---
 
-## Website
+## Frontend
 
-The Website is a Blazor application that serves as the user-facing frontend.
+The Frontend is a React + TypeScript single-page application (Vite) that serves as the user-facing front end.
 
 **What is implemented:**
 
-- Blazor project structure.
-- Integration with the Authorization API client for login flows.
-- Integration with the Donation API client library.
+- SPA scaffold with a placeholder page, served by nginx.
 
 **What is missing:**
 
-- Most UI pages and components for the donation platform features.
+- Integration with the Authorization and Donation APIs and all UI pages for the platform features.
 
 ---
 

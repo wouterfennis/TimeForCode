@@ -34,7 +34,9 @@ try {
         # Quoted strings are ignored when matching, so `grep "node_modules" .gitignore` is not a read of node_modules.
         $unquoted = $command -replace '"[^"]*"', '""' -replace "'[^']*'", "''"
         $readVerbs = '(?i)(^|[\s;|&(])(cat|type|head|tail|grep|rg|findstr|select-string|get-content|gc|find|tree|get-childitem|gci|ls|dir)\b'
-        if ($command -notmatch '#\s*allow-excluded' -and $unquoted -match $readVerbs -and $unquoted -match '(?i)(node_modules|[\\/]obj[\\/]|[\\/]\.git[\\/]|package-lock\.json|yarn\.lock)') {
+        # Reading a dependency's own package.json (version, engines) is cheap and allowed.
+        $guarded = $unquoted -replace '(?i)node_modules[\\/](@[\w.-]+[\\/])?[\w.-]+[\\/]package\.json', ''
+        if ($command -notmatch '#\s*allow-excluded' -and $guarded -match $readVerbs -and $guarded -match '(?i)(node_modules|[\\/]obj[\\/]|[\\/]\.git[\\/]|package-lock\.json|yarn\.lock)') {
             Send-Decision 'deny' 'Blocked by token-saving hook: node_modules, obj, .git internals and lockfiles are excluded. Use the Grep/Glob tools on src/, tst/ or docs/, or append "# allow-excluded" to the command if this read is intentional.'
         }
 

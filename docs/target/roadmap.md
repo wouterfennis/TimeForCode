@@ -24,7 +24,7 @@ This document describes the phased delivery plan for the TimeForCode platform. E
 - Project registration endpoint (submit GitHub URL, fetch metadata, persist). ✅
 - Admin approval workflow for submitted projects. ✅
 - Project listing and search API. ✅
-- Basic website UI: login, project list, project detail page.
+- Basic front-end UI: login, project list, project detail page.
 
 **Definition of Done**:
 
@@ -47,7 +47,7 @@ This document describes the phased delivery plan for the TimeForCode platform. E
 - Donation pledge creation and lifecycle management (Pending → Active → Completed / Cancelled).
 - Hour transaction logging against active donations.
 - Progress tracking (hours logged vs committed).
-- Website UI: donation form, contributor dashboard, donation status view.
+- Frontend UI: donation form, contributor dashboard, donation status view.
 
 **Definition of Done**:
 

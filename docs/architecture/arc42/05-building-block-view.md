@@ -13,7 +13,7 @@ At the highest level, TimeForCode consists of three deployable services and a sh
 ```mermaid
 graph LR
     subgraph TimeForCode
-        Website["Website\n(Blazor)"]
+        Frontend["Front-end\n(React SPA)"]
         AuthAPI["Authorization API\n(.NET)"]
         DonationAPI["Donation API\n(.NET)"]
         MongoDB[("MongoDB")]
@@ -21,8 +21,8 @@ graph LR
 
     GitHub["GitHub (External)"]
 
-    Website -->|REST calls| AuthAPI
-    Website -->|REST calls| DonationAPI
+    Frontend -->|REST calls via BFF| AuthAPI
+    Frontend -->|REST calls via BFF| DonationAPI
     AuthAPI -->|OAuth 2.0| GitHub
     AuthAPI -->|persistence| MongoDB
     DonationAPI -->|GitHub REST API| GitHub
@@ -45,7 +45,7 @@ graph LR
         AuthValues["Values\n(DTOs, Results)"]
     end
 
-    Client["Website / External Client"]
+    Client["Front-end / External Client"]
     GitHub["GitHub OAuth"]
     DonationAPI["Donation API
 (anonymise contributor)"]
@@ -70,7 +70,7 @@ graph LR
 | `TimeForCode.Authorization.Infrastructure` | GitHub OAuth client; Donation API client (account deletion); MongoDB user and token repositories; RSA key loading |
 | `TimeForCode.Authorization.Commands` | MediatR command and result types |
 | `TimeForCode.Authorization.Values` | Shared value objects (ExternalAccessToken, TokenResult) |
-| `TimeForCode.Authorization.Api.Client` | Typed HTTP client for the Website to call the Authorization API |
+| `TimeForCode.Authorization.Api.Client` | Typed HTTP client for the Authorization API, generated from its OpenAPI document; used by the specification tests |
 
 ---
 
@@ -87,7 +87,7 @@ graph LR
         DonInfra["Infrastructure Layer\n(Repositories)"]
     end
 
-    Client["Website"]
+    Client["Front-end"]
     GitHub["GitHub REST API"]
     MongoDB[("MongoDB")]
 
@@ -109,7 +109,7 @@ graph LR
 | `TimeForCode.Donation.Infrastructure` | MongoDB project repository (including `ProjectSearchDefinitions`: the active-project search filter and the status, language and topic indexes created at startup); GitHub public REST API client |
 | `TimeForCode.Donation.Commands` | MediatR command, query, and result types |
 | `TimeForCode.Donation.Values` | Shared value objects (ProjectStatus enum) |
-| `TimeForCode.Donation.Api.Client` | Typed HTTP client for the Website to call the Donation API |
+| `TimeForCode.Donation.Api.Client` | Typed HTTP client for the Donation API, generated from its OpenAPI document; used by the specification tests |
 
 ### Domain Entities
 
@@ -126,33 +126,20 @@ graph LR
 
 ---
 
-## Level 2 — Website
+## Level 2 — Front-end
 
-The Website is a Blazor application that acts as the user-facing shell. It does not contain business logic. It calls the Authorization API and the Donation API via typed HTTP clients.
+The front-end is a React single-page application written in TypeScript and built with Vite (`src/Frontend/TimeForCode.Frontend`). It is the user-facing shell and contains no business logic. It reaches the Authorization API and the Donation API through a same-origin backend-for-frontend (BFF) that turns the `HttpOnly` token cookies into bearer tokens (target state, [ADR-012](../../reference/adr/0012-react-spa-frontend.md)). Stack, folder layout and testing strategy: [front-end architecture](../../frontend/architecture.md).
 
-| Component | Responsibility |
+| Folder | Responsibility |
 | --- | --- |
-| `TimeForCode.Website` | Blazor pages and components |
-| `TimeForCode.Authorization.Api.Client` | Typed client for Authorization API |
-| `TimeForCode.Donation.Api.Client` | Typed client for Donation API |
-| `TimeForCode.Shared` | CookieAuthorizationHandler; shared authorization utilities |
+| `src/app` | Application shell, routing and providers |
+| `src/components` | Design-system components |
+| `src/features` | One folder per feature with its pages, queries and tests |
+| `src/messages` | All user-facing strings |
+| `src/api` | Clients generated from the OpenAPI snapshots (target state) |
+| `tests` | Shared test setup and helpers, including the axe accessibility check |
 
-### Website test layer
-
-Browser-level acceptance tests in `tst/Website/TimeForCode.Website.Specifications` exercise the same pages through Playwright. Interactive and informational elements are annotated with `data-testid` attributes so selectors remain framework-neutral after a future frontend migration.
-
-```mermaid
-graph LR
-    subgraph Website Tests
-        WebSpec["TimeForCode.Website.Specifications\n(Playwright / Reqnroll)"]
-    end
-
-    Website["TimeForCode.Website\n(running under Docker Compose)"]
-    IdpMock["IdentityProviderMockService\n(OAuth 2.0 mock)"]
-
-    WebSpec -->|HTTP + DOM| Website
-    Website -->|OAuth redirect| IdpMock
-```
+Component tests run with Vitest, Testing Library and axe. Interactive and informational elements get `data-testid` attributes, so the browser-level Playwright acceptance tests can select them independently of the markup.
 
 ---
 

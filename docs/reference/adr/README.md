@@ -17,7 +17,6 @@ ADRs are referenced from [Arc42 Section 09 — Architecture Decisions](../archit
 | [ADR-005](0005-http-only-cookies.md) | Store tokens in HttpOnly cookies, not localStorage | Accepted |
 | [ADR-006](0006-reqnroll-bdd.md) | Use Reqnroll + BDD for acceptance tests | Accepted |
 | [ADR-007](0007-swagger-snapshot-gate.md) | Swagger snapshot gate for API contract review | Accepted |
-| [ADR-008](0008-exclude-e2e-from-ci.md) | Exclude E2E tests from CI | Accepted |
 | [ADR-009](0009-result-type-error-handling.md) | Use Result&lt;T&gt; for expected failures, exceptions for programming errors | Accepted |
 | [ADR-010](0010-bounded-context-entity-duplication.md) | Keep GithubEntity and DocumentEntity per bounded context | Accepted |
 | [ADR-011](0011-webauthn-admin-authentication.md) | WebAuthn passkey authentication for the admin role | Accepted |

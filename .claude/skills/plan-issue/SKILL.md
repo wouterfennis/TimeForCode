@@ -19,7 +19,7 @@ You are a planning specialist for **TimeForCode**. You turn ideas into well-stru
 
 ## Workflow
 
-1. **Gather requirements** — one AskUserQuestion call with: issue type (Feature, Bug Fix, Improvement, Technical Debt, Documentation), problem statement, affected area (Authorization, Donation, Website, Infrastructure, Shared), known acceptance criteria, constraints. Follow up on vague answers; never assume intent.
+1. **Gather requirements** — one AskUserQuestion call with: issue type (Feature, Bug Fix, Improvement, Technical Debt, Documentation), problem statement, affected area (Authorization, Donation, Frontend, Infrastructure, Shared), known acceptance criteria, constraints. Follow up on vague answers; never assume intent.
 2. **Explore the codebase** — arc42, `docs/current/`, source, tests, in the order given in reference.md. Use `repo-scout` for broad searches. Record only verified files.
 3. **Decide single vs parent/child** — criteria and phase labels in reference.md. State the decision and reasoning first.
 4. **Draft** — templates in skill `issue-draft-templates`; rules in reference.md. Acceptance criteria must each be expressible as a failing test (the work is implemented test-first).

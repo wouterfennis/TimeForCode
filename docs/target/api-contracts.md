@@ -8,7 +8,7 @@ This document defines the intended API surface for the TimeForCode platform. End
 
 ## General Conventions
 
-- **Authentication**: Bearer JWT in `Authorization` header (forwarded from HttpOnly cookie by the Website).
+- **Authentication**: Bearer JWT in `Authorization` header (forwarded from the HttpOnly cookie by the front-end BFF).
 - **Content type**: `application/json`.
 - **Versioning**: `/api/v1/` prefix.
 - **Errors**: ASP.NET Core `ProblemDetails` format.

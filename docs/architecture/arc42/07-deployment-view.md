@@ -14,7 +14,7 @@ All services run in Docker containers orchestrated by Docker Compose. The Identi
 graph LR
     subgraph Developer Machine
         subgraph Docker Compose Network
-            Website["Website\nBlazor :8083"]
+            Frontend["Frontend SPA\nnginx :8084"]
             AuthAPI["Authorization API\n:8080"]
             IdpMock["Identity Provider Mock\n:8081"]
             DonationAPI["Donation API\n:8082"]
@@ -22,9 +22,9 @@ graph LR
         end
     end
 
-    Browser["Browser"] -->|HTTP :8083| Website
-    Website -->|HTTP :8080| AuthAPI
-    Website -->|HTTP :8082| DonationAPI
+    Browser["Browser"] -->|HTTP :8084| Frontend
+    Browser -->|HTTP :8080| AuthAPI
+    Browser -->|HTTP :8082| DonationAPI
     AuthAPI -->|HTTP :8081| IdpMock
     DonationAPI -->|HTTP :8081| IdpMock
     AuthAPI -->|MongoDB wire protocol| MongoDB
@@ -58,7 +58,7 @@ graph LR
     AppServicePlan -->|hosts| AuthAppService
 ```
 
-> **Current**: Only the Authorization API has a Bicep definition. The Donation API and Website are not yet configured for Azure deployment.
+> **Current**: Only the Authorization API has a Bicep definition. The Donation API and Frontend are not yet configured for Azure deployment.
 
 ---
 
@@ -75,16 +75,16 @@ graph LR
             CosmosDB[("Azure Cosmos DB\nfor MongoDB\n(managed)")]
         end
         subgraph Resource Group - Application
-            WebsiteApp["Website\nApp Service"]
+            FrontendApp["Frontend SPA\nApp Service"]
             AuthApp["Authorization API\nApp Service"]
             DonationApp["Donation API\nApp Service"]
         end
     end
 
-    ACR["Azure Container Registry"] -->|image| WebsiteApp
+    ACR["Azure Container Registry"] -->|image| FrontendApp
     ACR -->|image| AuthApp
     ACR -->|image| DonationApp
-    AppServicePlan -->|hosts| WebsiteApp
+    AppServicePlan -->|hosts| FrontendApp
     AppServicePlan -->|hosts| AuthApp
     AppServicePlan -->|hosts| DonationApp
     AuthApp -->|reads secrets| KeyVault
@@ -97,7 +97,7 @@ graph LR
 
 | Component | Technology | Notes |
 | --- | --- | --- |
-| Website | Azure App Service (container) | Static assets + Blazor server |
+| Frontend | Azure App Service (container) | Static SPA assets served by nginx |
 | Authorization API | Azure App Service (container) | Current deployment extended |
 | Donation API | Azure App Service (container) | Not yet deployed |
 | Database | Azure Cosmos DB for MongoDB API | Drop-in replacement for MongoDB driver |

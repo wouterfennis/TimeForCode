@@ -30,7 +30,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
 
         private void SeedAttestationStateCookie()
         {
-            var uri = new Uri("http://localhost:8083");
+            var uri = new Uri("http://localhost:8084");
             _cookieContainer.Add(uri, new Cookie(AdminAuthenticationController.AttestationStateCookieKey, "protected-ceremony-state"));
         }
 

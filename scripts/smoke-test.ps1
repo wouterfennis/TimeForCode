@@ -20,7 +20,7 @@
     Base URL of the Donation API. Default: http://localhost:8082
 
 .PARAMETER ClientRedirectUri
-    Front-end origin the login redirects back to (must be a configured valid redirect URI). No Website needs to run. Default: http://localhost:8083
+    Front-end origin the login redirects back to (must be a configured valid redirect URI). No front-end needs to run. Default: http://localhost:8084
 
 .EXAMPLE
     .\scripts\smoke-test.ps1
@@ -33,7 +33,7 @@ param(
     [string] $AuthApiBaseUrl    = "http://localhost:8080",
     [string] $IdpMockBaseUrl    = "http://localhost:8081",
     [string] $DonationApiBaseUrl = "http://localhost:8082",
-    [string] $ClientRedirectUri    = "http://localhost:8083"
+    [string] $ClientRedirectUri    = "http://localhost:8084"
 )
 
 Set-StrictMode -Version Latest
@@ -217,17 +217,17 @@ try {
         Write-Fail "Step 3.2b: IdP Mock confirm" "Status=$s2b, Location=$callbackRedirect"
     }
 
-    # -- Step 3.3: Auth API callback -> JWT cookies + redirect to Website --
+    # -- Step 3.3: Auth API callback -> JWT cookies + redirect to front-end --
     $r3 = curl -si --max-redirs 0 -c $cookieJar -b $cookieJar $callbackRedirect 2>&1
     $s3 = Get-StatusCode $r3
-    $websiteRedirect = Get-HeaderValue $r3 "Location"
+    $frontendRedirect = Get-HeaderValue $r3 "Location"
     $hasAccessToken  = $null -ne ($r3 | Select-String "Set-Cookie:.*AccessToken")
     $hasRefreshToken = $null -ne ($r3 | Select-String "Set-Cookie:.*RefreshToken")
 
-    if ($s3 -eq 302 -and $websiteRedirect -match [regex]::Escape($ClientRedirectUri)) {
+    if ($s3 -eq 302 -and $frontendRedirect -match [regex]::Escape($ClientRedirectUri)) {
         Write-Pass "Step 3.3: Auth API callback -> 302 to the client redirect URI"
     } else {
-        Write-Fail "Step 3.3: Auth API callback redirect" "Status=$s3, Location=$websiteRedirect"
+        Write-Fail "Step 3.3: Auth API callback redirect" "Status=$s3, Location=$frontendRedirect"
     }
     if ($hasAccessToken)  { Write-Pass "Step 3.3: AccessToken cookie set" }
     else                  { Write-Fail "Step 3.3: AccessToken cookie missing" }

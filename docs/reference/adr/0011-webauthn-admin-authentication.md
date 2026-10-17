@@ -40,7 +40,7 @@ ASP.NET Core's passkey implementation does not validate attestation statements b
 
 ### Relying Party configuration
 
-`AdminPasskeyOptions.ServerDomain` (mapped to `IdentityPasskeyOptions.ServerDomain`) is explicitly configured to the Website's origin domain — where the browser actually calls `navigator.credentials` — rather than left to infer from the Authorization API's own request host header, since the Website and API run on different hosts/subdomains.
+`AdminPasskeyOptions.ServerDomain` (mapped to `IdentityPasskeyOptions.ServerDomain`) is explicitly configured to the front-end's origin domain — where the browser actually calls `navigator.credentials` — rather than left to infer from the Authorization API's own request host header, since the front-end and API run on different hosts/subdomains.
 
 ## Consequences
 

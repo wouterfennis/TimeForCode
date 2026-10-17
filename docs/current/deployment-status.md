@@ -38,16 +38,16 @@ The script covers service availability, OIDC discovery, the login flow and the p
 ```mermaid
 graph LR
     Browser["Browser"]
-    Website["Website\n:8083"]
+    Frontend["Frontend SPA\n:8084"]
     AuthAPI["Authorization API\n:8080"]
     DonationAPI["Donation API\n:8082"]
     IdpMock["Identity Provider Mock\n:8081"]
     Mongo[("MongoDB\n:27017")]
 
-    Browser --> Website
+    Browser --> Frontend
     Browser --> IdpMock
-    Website --> AuthAPI
-    Website --> DonationAPI
+    Browser --> AuthAPI
+    Browser --> DonationAPI
     AuthAPI --> IdpMock
     AuthAPI --> Mongo
     DonationAPI --> IdpMock
@@ -58,7 +58,7 @@ The Identity Provider Mock replaces GitHub in local development. The Authorizati
 
 | Service | URL | Notes |
 | --- | --- | --- |
-| Website | <http://localhost:8083> | Blazor frontend |
+| Frontend (SPA) | <http://localhost:8084> | React SPA served by nginx; not yet wired to the APIs |
 | Authorization API | <http://localhost:8080> | OAuth 2.0 + JWT |
 | Identity Provider Mock | <http://localhost:8081> | Simulates GitHub OAuth and GitHub REST API |
 | Donation API | <http://localhost:8082> | Project and donation management |
@@ -66,14 +66,14 @@ The Identity Provider Mock replaces GitHub in local development. The Authorizati
 
 ### Container port note
 
-All .NET services in this stack listen on port **8080** inside the container (not the traditional 80). This is required because the containers run as a non-root user (`appuser`) under Podman rootless mode — ports below 1024 are privileged and unavailable to non-root processes. The host-to-container port mapping in `docker-compose.yaml` still exposes the familiar ports (8080–8083) on the host machine.
+All .NET services in this stack listen on port **8080** inside the container (not the traditional 80). This is required because the containers run as a non-root user (`appuser`) under Podman rootless mode — ports below 1024 are privileged and unavailable to non-root processes. The host-to-container port mapping in `docker-compose.yaml` still exposes the familiar ports (8080–8084) on the host machine.
 
 | Container | Internal port | Host port |
 | --- | --- | --- |
 | authorization-api | 8080 | 8080 |
 | identity-provider-mock | 8080 | 8081 |
 | donation-api | 8080 | 8082 |
-| website | 8080 | 8083 |
+| frontend | 8080 | 8084 |
 | mongo | 27017 | 27017 |
 
 ### Configuration
@@ -129,7 +129,7 @@ The infrastructure is defined as code using Azure Bicep templates in the `deploy
 | Gap | Notes |
 | --- | --- |
 | Donation API not deployed | Only the Authorization API is currently deployed to Azure |
-| Website not deployed to Azure | Only runs locally |
+| Frontend not deployed to Azure | Only runs locally |
 | MongoDB managed service | Local compose uses a dev MongoDB; production database provisioning not yet defined in Bicep |
 | No staging environment | Only production is defined |
 | No secrets management | Secrets are passed as App Settings; Key Vault integration is not yet configured |

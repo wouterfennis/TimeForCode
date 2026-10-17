@@ -5,7 +5,7 @@
 
 ## Context
 
-TimeForCode uses GitHub OAuth 2.0 for authentication. After login, downstream services (e.g. the Donation API) need to authenticate requests from the Website. The question was whether to forward the GitHub access token to downstream services or issue an internal token.
+TimeForCode uses GitHub OAuth 2.0 for authentication. After login, downstream services (e.g. the Donation API) need to authenticate requests from the front-end. The question was whether to forward the GitHub access token to downstream services or issue an internal token.
 
 ## Decision
 

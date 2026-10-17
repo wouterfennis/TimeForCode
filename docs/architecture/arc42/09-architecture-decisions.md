@@ -19,7 +19,6 @@ ADR documents live in [docs/reference/adr/](../../reference/adr/README.md).
 | [ADR-005](../../reference/adr/0005-http-only-cookies.md) | Store tokens in HttpOnly cookies, not localStorage | Accepted | 2025 |
 | [ADR-006](../../reference/adr/0006-reqnroll-bdd.md) | Use Reqnroll + BDD for acceptance tests | Accepted | 2026-06-21 |
 | [ADR-007](../../reference/adr/0007-swagger-snapshot-gate.md) | Swagger snapshot gate for API contract review | Accepted | 2026-06-21 |
-| [ADR-008](../../reference/adr/0008-exclude-e2e-from-ci.md) | Exclude E2E tests from CI | Accepted | 2026-06-21 |
 | [ADR-009](../../reference/adr/0009-result-type-error-handling.md) | Use Result&lt;T&gt; for expected failures, exceptions for programming errors | Accepted | 2026 |
 | [ADR-010](../../reference/adr/0010-bounded-context-entity-duplication.md) | Keep GithubEntity and DocumentEntity per bounded context | Accepted | 2026-06-26 |
 | [ADR-011](../../reference/adr/0011-webauthn-admin-authentication.md) | WebAuthn passkey authentication for the admin role | Accepted | 2026-09-01 |
