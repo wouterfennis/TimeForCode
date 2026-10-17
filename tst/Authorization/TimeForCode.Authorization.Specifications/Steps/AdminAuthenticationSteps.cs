@@ -74,7 +74,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
             ceremonyService.Setup(x => x.CompleteAuthenticationAsync(It.IsAny<string>(), "unreadable-ceremony-state"))
                 .ReturnsAsync(AdminAssertionOutcomeBuilder.BuildFailed());
 
-            var uri = new Uri("http://localhost:8083");
+            var uri = new Uri("http://localhost:8084");
             _cookieContainer.Add(uri, new Cookie(AdminAuthenticationController.AssertionStateCookieKey, "unreadable-ceremony-state"));
             _result = await _authClient.TryAdminCompleteAuthenticationAsync("credential-json");
         }
@@ -88,7 +88,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
 
         private void SeedAssertionStateCookie()
         {
-            var uri = new Uri("http://localhost:8083");
+            var uri = new Uri("http://localhost:8084");
             _cookieContainer.Add(uri, new Cookie(AdminAuthenticationController.AssertionStateCookieKey, "protected-ceremony-state"));
         }
 
@@ -100,7 +100,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
             var tokenService = scope.ServiceProvider.GetRequiredService<ITokenService>();
             var accessToken = tokenService.GenerateInternalToken("admin", "admin", "admin");
 
-            var uri = new Uri("http://localhost:8083");
+            var uri = new Uri("http://localhost:8084");
             var cookieValue = HttpUtility.UrlEncode(JsonSerializer.Serialize(accessToken));
             _cookieContainer.Add(uri, new Cookie(CookieConstants.TokenKey, cookieValue));
         }

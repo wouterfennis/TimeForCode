@@ -19,17 +19,17 @@ graph LR
     GitHub["GitHub\n(External)"]
 
     subgraph TimeForCode Platform
-        Website["Website\n(Blazor)"]
+        Frontend["Frontend\n(React SPA)"]
         AuthAPI["Authorization API"]
         DonationAPI["Donation API"]
     end
 
-    DonorOrg -->|sign in, pledge hours| Website
-    IndividualDonor -->|sign in, log hours| Website
-    Maintainer -->|register project| Website
-    Admin -->|approve projects, manage platform| Website
-    Website <-->|OAuth 2.0 login| AuthAPI
-    Website <-->|projects, donations, tracking| DonationAPI
+    DonorOrg -->|sign in, pledge hours| Frontend
+    IndividualDonor -->|sign in, log hours| Frontend
+    Maintainer -->|register project| Frontend
+    Admin -->|approve projects, manage platform| Frontend
+    Frontend <-->|OAuth 2.0 login| AuthAPI
+    Frontend <-->|projects, donations, tracking| DonationAPI
     AuthAPI -->|OAuth 2.0 authorization| GitHub
     DonationAPI -->|fetch repository metadata| GitHub
 ```
@@ -56,7 +56,7 @@ graph LR
     Browser["Browser"]
 
     subgraph TimeForCode Services
-        Website["Website :8083\n(Blazor / HTTP)"]
+        Frontend["Frontend :8084\n(React SPA / HTTP)"]
         AuthAPI["Authorization API :8080\n(REST / HTTPS)"]
         DonationAPI["Donation API :8082\n(REST / HTTPS)"]
         MongoDB[("MongoDB\n(Wire Protocol)")]
@@ -64,9 +64,9 @@ graph LR
 
     GitHub["GitHub\n(HTTPS)"]
 
-    Browser -->|HTTPS| Website
-    Website -->|REST / JWT cookie| AuthAPI
-    Website -->|REST / JWT cookie| DonationAPI
+    Browser -->|HTTPS| Frontend
+    Frontend -->|REST / HTTPS| AuthAPI
+    Frontend -->|REST / HTTPS| DonationAPI
     AuthAPI -->|OAuth 2.0 / HTTPS| GitHub
     AuthAPI -->|MongoDB wire protocol| MongoDB
     DonationAPI -->|REST / HTTPS| GitHub
@@ -77,9 +77,9 @@ graph LR
 
 | From | To | Protocol | Auth |
 | --- | --- | --- | --- |
-| Browser | Website | HTTPS | Session cookie (JWT) |
-| Website | Authorization API | HTTPS REST | HttpOnly JWT cookie forwarded as Bearer token |
-| Website | Donation API | HTTPS REST | HttpOnly JWT cookie forwarded as Bearer token |
+| Browser | Frontend | HTTPS | None (static assets) |
+| Frontend | Authorization API | HTTPS REST | HttpOnly JWT cookies |
+| Frontend | Donation API | HTTPS REST | Bearer token |
 | Authorization API | GitHub OAuth | HTTPS | Client ID + secret (server-side) |
 | Donation API | GitHub REST API | HTTPS | Unauthenticated; locally routed to Identity Provider Mock via configurable base URL |
 | Authorization API | MongoDB | MongoDB wire protocol | Username + password |

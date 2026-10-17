@@ -1,0 +1,20 @@
+# Build the React SPA with the Node version the project targets
+FROM node:24-alpine AS build
+
+WORKDIR /app
+
+# Restore dependencies first so this layer is cached until the lockfile changes
+COPY src/Frontend/TimeForCode.Frontend/package.json src/Frontend/TimeForCode.Frontend/package-lock.json ./
+RUN npm ci
+
+# Build the static files into /app/dist
+COPY src/Frontend/TimeForCode.Frontend/ ./
+RUN npm run build
+
+# Serve the static files with nginx running as a non-root user (listens on 8080)
+FROM nginxinc/nginx-unprivileged:stable-alpine AS runtime
+
+COPY src/Frontend/nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /app/dist /usr/share/nginx/html
+
+EXPOSE 8080

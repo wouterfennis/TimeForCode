@@ -21,7 +21,7 @@ This document describes how the new front-end is built and how it talks to the b
 | Styling | CSS custom properties from [design-system.md](design-system.md), plus CSS Modules | No heavy UI framework; tokens stay the single source of truth |
 | Linting | oxlint with the React, jsx-a11y, TypeScript, import and Vitest rules | Default linter of the Vite React template; accessibility rules built in |
 | Unit and component tests | Vitest, Testing Library, axe | Fast feedback, accessibility checks included |
-| E2E tests | Existing Reqnroll + Playwright suite, extended | Reuse the journeys already specified (ADR-006) |
+| E2E tests | Playwright (planned) | Journeys against the full stack |
 
 Treat the choices as defaults. Replacing one is fine if the reason is recorded in the ADR.
 
@@ -70,14 +70,14 @@ This is the most important design constraint. Read it before writing any code.
 - Login sets the access and refresh tokens as `HttpOnly`, `Secure`, `SameSite=Strict` cookies from the Authorization API.
 - The cookie values are JSON documents, not bare JWTs.
 - The Donation API validates only a **bearer token in the `Authorization` header**. It does not read cookies.
-- Today the Blazor Website bridges the two: server-side code reads the cookie and attaches the bearer header (`CookieAuthorizationHandler`), and forwards the refresh cookie when refreshing (`RefreshTokenForwardingHandler`).
+- Server-side code can bridge the two: `CookieAuthorizationHandler` (Shared) reads the cookie and attaches the bearer header, and `RefreshTokenForwardingHandler` forwards the refresh cookie when refreshing.
 - [ADR-005](../reference/adr/0005-http-only-cookies.md) forbids tokens in JavaScript-accessible storage.
 
 **Consequence**: a browser SPA cannot call the Donation API directly. JavaScript cannot read the HttpOnly cookie to build the bearer header, and a `SameSite=Strict` cookie will not be sent from a different site anyway.
 
 A **BFF** (backend for frontend) is a small server that exists only to serve one front-end and sits between it and the backend APIs. An **SPA** (single-page application) is a website that loads once and then updates itself with JavaScript, fetching data from APIs.
 
-**Decision (proposed)**: serve the SPA from, and call all APIs through, a thin **backend-for-frontend (BFF)** on the same origin. The BFF is the existing ASP.NET Website project, reduced to:
+**Decision (proposed)**: serve the SPA from, and call all APIs through, a thin **backend-for-frontend (BFF)** on the same origin. The BFF is a new, thin ASP.NET host that does only the following:
 
 1. Serve the built SPA static files, with a fallback to `index.html` for client routes.
 2. Reverse-proxy `/api/auth/*` to the Authorization API and `/api/donation/*` to the Donation API (for example with YARP), reusing the existing cookie-to-bearer and refresh-forwarding handlers.
@@ -86,7 +86,7 @@ A **BFF** (backend for frontend) is a small server that exists only to serve one
 ```mermaid
 graph LR
     Browser["Browser (SPA)"]
-    BFF["BFF\n(ASP.NET Website host)"]
+    BFF["BFF\n(ASP.NET host)"]
     AuthAPI["Authorization API"]
     DonationAPI["Donation API"]
 
@@ -133,9 +133,9 @@ Login starts with a browser navigation to the Authorization API login endpoint (
 
 ## Build and deployment
 
-- Add a Node build stage to `Dockerfile.website` that builds the SPA and copies it into the BFF image.
+- `Dockerfile.frontend` builds the SPA and serves it with nginx (`src/Frontend/nginx.conf`). When the BFF host is added, the SPA build output is copied into the BFF image instead.
 - The front-end build, lint, type-check, and unit tests run in the `frontend` job of the pull request and main-branch workflows (`.github/workflows/`). A failing check fails the job; on `main` it also blocks Release Please.
-- The deployment topology does not change: one Website container, now hosting the SPA. See [Deployment Status](../current/deployment-status.md).
+- Target topology: one front-end container hosting the SPA. See [Deployment Status](../current/deployment-status.md).
 
 ## Testing strategy
 
@@ -143,7 +143,7 @@ Login starts with a browser navigation to the Authorization API login endpoint (
 | --- | --- | --- |
 | Unit | Vitest | Helpers, mapping of API errors to form errors |
 | Component | Testing Library, axe | Components and pages with a mocked API layer |
-| E2E | Reqnroll + Playwright (existing) | Journeys against the full stack; keep `data-testid` values |
+| E2E | Playwright (planned) | Journeys against the full stack; keep `data-testid` values |
 
 Follow [testing-strategy](../current/testing.md) and ADR-008: E2E tests stay out of CI and run on demand.
 

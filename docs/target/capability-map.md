@@ -100,7 +100,7 @@ This document maps every target platform capability against its current implemen
 
 ---
 
-## Website UI
+## Frontend UI
 
 | Capability | Current | Target | Gap |
 | --- | --- | --- | --- |

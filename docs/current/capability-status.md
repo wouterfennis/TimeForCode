@@ -84,14 +84,13 @@ This document provides an explicit, feature-level view of what is implemented, p
 
 ---
 
-## Website UI
+## React front end
 
 | Capability | Status | Notes |
 | --- | --- | --- |
-| Login / logout | ⚠️ | Auth integration present; UI minimal |
-| Publish/Unpublish toggle on profile | ✅ | Profile page shows Publish/Unpublish button per repository |
-| Project listing page | ✅ | /projects page lists all published projects |
-| Project detail page | ✅ | /projects/{id} page shows full project metadata |
+| SPA scaffold (Vite, React, TypeScript) | ⚠️ | Placeholder page only |
+| Front-end quality gates in CI | ✅ | Lint (oxlint), typecheck, Vitest with axe, coverage to SonarCloud and build run in the `frontend` job |
+| Login, project and donation screens | ❌ | Not implemented |
 | Donation pledge form | ❌ | Not implemented |
 | Organization profile page | ❌ | Not implemented |
 | Contributor profile page | ❌ | Not implemented |

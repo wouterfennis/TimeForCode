@@ -21,7 +21,7 @@ This glossary covers general project and domain terms used in the TimeForCode do
 | Open Source Project | A software project with a publicly accessible source code repository (in the current platform, hosted on GitHub) that is listed on TimeForCode to attract contributions. |
 | Pledge | The act of committing hours to a project. Creates a Donation record in the platform. |
 | Platform Administrator | A trusted operator of the TimeForCode platform. Responsible for approving projects, moderating content, and managing user issues. |
-| Project Listing | The public page on the TimeForCode website showing a project's description, needed skills, current donations, and progress. |
+| Project Listing | The public page on the TimeForCode site showing a project's description, needed skills, current donations, and progress. |
 | Recognition | A visible acknowledgement of a donor's contributions. Currently planned as badges and tiers. |
 | SPA (Single-Page Application) | A website that loads once in the browser and then updates the page with JavaScript, fetching data from APIs instead of requesting a new HTML page for each navigation. The new front-end is a React SPA. |
 | Spotlight | A promoted position on the website homepage or in a campaign, highlighting a specific project. |

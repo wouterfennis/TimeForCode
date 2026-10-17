@@ -26,7 +26,7 @@ services:
       - RefreshTokenOptions__DefaultExpirationAfterInDays=7
       - AuthenticationOptions__Issuer=http://authorization-api:8080
       - AuthenticationOptions__Audience=http://authorization-api:8080
-      - AuthenticationOptions__ValidRedirectUris__0=http://localhost:8083
+      - AuthenticationOptions__ValidRedirectUris__0=http://localhost:8084
       - TokenCreationOptions__Issuer=http://authorization-api:8080
       - TokenCreationOptions__Audiences__0=http://authorization-api:8080
       - TokenCreationOptions__Audiences__1=http://localhost:8082
@@ -87,28 +87,14 @@ services:
     networks:
       - app-network
 
-  website:
+  frontend:
     build:
       context: .
-      dockerfile: Dockerfile.website
-    image: timeforcode-website:latest
-    container_name: timeforcode-website
+      dockerfile: Dockerfile.frontend
+    image: timeforcode-frontend:latest
+    container_name: timeforcode-frontend
     ports:
-      - "8083:8080"
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:8080
-      - Logging__LogLevel__Default=Debug
-      - Logging__LogLevel__Microsoft.AspNetCore=Warning
-      - AuthorizationServiceOptions__BaseUri=http://authorization-api:8080
-      - AuthorizationServiceOptions__PublicBaseUri=http://localhost:8080
-      - DonationServiceOptions__BaseUri=http://donation-api:8080
-      - StorageOptions__StoragePath=/app/dataprotection
-    volumes:
-      - website-storage:/app/dataprotection
-    depends_on:
-      - authorization-api
-      - donation-api
+      - "8084:8080"
     networks:
       - app-network
 
@@ -132,4 +118,3 @@ networks:
 
 volumes:
   mongo-data:
-  website-storage:

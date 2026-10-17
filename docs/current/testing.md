@@ -27,9 +27,6 @@ graph LR
         DonInfraTests["Donation Infrastructure.Tests\n(unit)"]
     end
 
-    subgraph Website Tests
-        WebSpecTests["Website Specifications\n(BDD / browser)"]
-    end
 ```
 
 ### Authorization — Specifications
@@ -132,37 +129,6 @@ Unit tests for the Donation Infrastructure layer, covering:
 - `GithubRepositoryApiService` — URL parsing (invalid host, wrong segment count), successful metadata mapping, and API error responses (404, 5xx).
 - `ProjectRepository` — all CRUD operations including invalid `ObjectId` handling, empty-result paths, duplicate-key exception wrapping into `RepositoryConflictException`, and `GetByGithubUrlAsync`.
 
-### Website — Specifications
-
-**Path**: `tst/Website/TimeForCode.Website.Specifications`
-
-Browser-level BDD acceptance tests that drive the TimeForCode website through real user journeys using [Microsoft Playwright](https://playwright.dev/dotnet/). Tests interact only with the public HTTP/DOM surface of the running application and require the full Docker Compose stack to be up (`podman compose up --build`).
-
-Covered journeys:
-
-| Scenario | Description |
-| --- | --- |
-| Home (unauthenticated) | Visiting `/` shows the login link and the published-projects section |
-| Projects list | `/projects` shows at least one project tile; each tile links to the detail page |
-| Project detail | Navigating to `/projects/{id}` shows the project heading and a back link |
-| Login | Clicking the login link completes the OAuth flow via the Identity Provider Mock and returns to the home page authenticated |
-| Profile | `/profile` after login shows the user's GitHub login handle |
-| Logout | Triggering logout returns to the home page in an unauthenticated state |
-
-All selectors use `data-testid` attributes so they remain valid after the frontend migrates away from Blazor.
-
-This project has **no reference** to any Blazor or Website source assembly. It is purely a browser-automation client of the running application.
-
-#### Trace Viewer
-
-Every scenario is recorded via Playwright tracing (screenshots, DOM snapshots, network). After a test run, one `.zip` per scenario is written to `TestResults/traces/` inside the test output directory. Open a trace with:
-
-```powershell
-pwsh tst/Website/TimeForCode.Website.Specifications/bin/Debug/net10.0/playwright.ps1 show-trace "<path-to-trace.zip>"
-```
-
-See `tst/Website/TimeForCode.Website.Specifications/README.md` for full setup and run instructions.
-
 ---
 
 ## Swagger Snapshot Tests — API Contract Gate
@@ -219,13 +185,15 @@ All non-E2E tests pass as of the current implementation state. The CI pipeline r
 
 ### CI test categorisation
 
-A single `dotnet test --filter "TestCategory!=E2E"` command is sufficient for the current test mix. Unit, integration, architecture, and BDD specification tests all complete in under 30 seconds total, so per-type filtering provides no practical triage benefit. The filter is retained only to skip Website Specifications that require a running Docker Compose stack.
+A single `dotnet test --filter "TestCategory!=E2E"` command is sufficient for the current test mix. Unit, integration, architecture, and BDD specification tests all complete in under 30 seconds total, so per-type filtering provides no practical triage benefit. The filter is retained so that any future browser-level E2E tests that need a running compose stack can be tagged `E2E` and skipped.
 
 Should a need arise to isolate failures by type (e.g. slow infrastructure tests blocking fast unit feedback), apply `[TestCategory("Integration")]` / `[TestCategory("Architecture")]` attributes and extend the `--filter` expression. No changes to the CI workflow files are required to support this.
 
-### E2E tests
+### Front-end tests
 
-Website Specifications (`TimeForCode.Website.Specifications`) are categorised as E2E tests because they require the full Docker Compose stack (`podman compose up --build`). They are excluded from the standard CI filter. The recommended approach is a dedicated scheduled pipeline or a separate Docker Compose job that boots the stack before running `dotnet test --filter "TestCategory=E2E"`. This is tracked as a future improvement.
+The React SPA (`src/Frontend/TimeForCode.Frontend`) is tested with Vitest, Testing Library and axe (accessibility assertions) in a jsdom environment. Run from that directory: `npm run lint`, `npm run typecheck`, `npm run test:coverage` and `npm run build`. Coverage is written as `coverage/lcov.info` (v8 provider); `src/main.tsx` and the test files are excluded.
+
+The `frontend` job ("Front-end checks") in `pullRequest.yaml` and `build.yaml` runs `npm ci --ignore-scripts`, lint, typecheck, tests with coverage and the build. It uploads the lcov file as the `frontend-coverage` artifact, which the `build` job (`needs: frontend`) downloads before the SonarCloud scan end. On `main`, `release-please` also depends on this job.
 
 ---
 
@@ -233,8 +201,7 @@ Website Specifications (`TimeForCode.Website.Specifications`) are categorised as
 
 | Area | Gap |
 | --- | --- |
-| Website | No component-level tests; browser-journey coverage provided by `Website.Specifications` |
 | Matchmaking | No test coverage (feature not implemented) |
 | Performance | No load or stress tests |
 | Security | No automated penetration tests or DAST coverage |
-| E2E in CI | Website Specifications require Docker Compose; no dedicated CI job yet (see CI test categorisation section above) |
+| E2E | No browser-level E2E tests; the React SPA is covered by Vitest only |

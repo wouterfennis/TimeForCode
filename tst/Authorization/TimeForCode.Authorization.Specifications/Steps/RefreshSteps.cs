@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Bson;
 using Moq;
@@ -151,7 +151,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
                 ExpiresAfter = expiresAfter,
             };
 
-            var uri = new Uri("http://localhost:8083");
+            var uri = new Uri("http://localhost:8084");
             var cookieValue = HttpUtility.UrlEncode(JsonSerializer.Serialize(refreshToken));
             _cookieContainer.Add(uri, new Cookie(CookieConstants.RefreshTokenKey, cookieValue));
 

@@ -56,7 +56,7 @@ Non-obvious knowledge from past sessions. Read and update through skill `lessons
 ### NSwag client and Swagger snapshot follow the controller
 
 - **Date / issue:** 2026-10-08 / #75
-- **Lesson:** `TimeForCode.Donation.Api.json` is regenerated on build and drives the generated client used by the Specifications and the Website; `SwaggerTests` then fails until the verified snapshot is replaced after review (skill `swagger-snapshot-review`).
+- **Lesson:** `TimeForCode.Donation.Api.json` is regenerated on build and drives the generated client used by the Specifications; `SwaggerTests` then fails until the verified snapshot is replaced after review (skill `swagger-snapshot-review`).
 - **Why:** removing or renaming an endpoint breaks every consumer at compile time.
 - **How to apply:** build the whole solution after any controller change (Api project first, so the JSON is regenerated); accept the snapshot only after reading the diff. NSwag emits positional parameters, so adding a query param removes the old overload and breaks its callers; grep `GetXxxAsync(` first.
 

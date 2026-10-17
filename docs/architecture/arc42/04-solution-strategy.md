@@ -11,7 +11,7 @@ This section summarises the fundamental decisions and strategies that shape the 
 | Concern | Decision | Rationale |
 | --- | --- | --- |
 | Backend language | .NET / C# | Strong typing, mature ecosystem, team expertise |
-| Frontend | Blazor (WebAssembly or Server) | Allows sharing domain types with the backend; avoids a separate TypeScript stack |
+| Frontend | React + TypeScript SPA (Vite) | Design-system, accessibility and component-testing ecosystem, fast public pages; see ADR-012 |
 | Storage | MongoDB | Document model accommodates evolving schemas; well-supported in .NET |
 | Authentication | Internal JWT over OAuth 2.0 (GitHub) | Decouples internal auth from external provider; allows future provider additions without changing downstream services |
 | Infrastructure | Azure App Service + Docker containers | Portable container images; cost-effective for the current scale |
@@ -31,7 +31,7 @@ Current bounded contexts:
 
 - **Authorization** — identity, authentication, token issuance.
 - **Donation** — projects, donations, hour tracking, organisations.
-- **Website** — Blazor frontend (drives both contexts via API clients).
+- **Frontend** — React SPA (drives both contexts via their APIs).
 
 ### CQRS-Lite with MediatR
 

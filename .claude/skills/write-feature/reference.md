@@ -4,7 +4,7 @@ Detail for `/write-feature`. Read the section you need.
 
 ## Specification project layout
 
-Each module with Reqnroll specs has `tst/<Module>/TimeForCode.<Module>.Specifications/` (currently Authorization, Donation, Website; verify with `repo-map`):
+Each module with Reqnroll specs has `tst/<Module>/TimeForCode.<Module>.Specifications/` (currently Authorization, Donation; verify with `repo-map`):
 
 | Folder | Contents |
 | --- | --- |

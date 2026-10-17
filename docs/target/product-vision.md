@@ -107,7 +107,7 @@ The following mind map gives a high-level orientation to the platform's features
 mindmap
   root((Time For Code))
     User Interface
-        Website
+        Frontend
             Success Stories
             Forum
             Projects
@@ -128,7 +128,7 @@ mindmap
         CRUD Companies
     Technologies
         .NET
-        Blazor
+        React
         Striker .NET
         MongoDB/NoSQL
         Docker

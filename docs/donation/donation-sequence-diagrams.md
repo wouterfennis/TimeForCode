@@ -17,21 +17,21 @@ A project maintainer registers an open-source project by submitting a GitHub rep
 ```mermaid
 sequenceDiagram
     participant Maintainer
-    participant Website
+    participant Frontend
     participant DonationAPI as Donation API
     participant GitHub
     participant MongoDB
 
-    Maintainer->>Website: Submits GitHub repository URL
-    Website->>DonationAPI: POST /api/v1/project { githubUrl } (JWT bearer)
+    Maintainer->>Frontend: Submits GitHub repository URL
+    Frontend->>DonationAPI: POST /api/v1/project { githubUrl } (JWT bearer)
     DonationAPI->>DonationAPI: Validate JWT (policy: ApiUser)
     DonationAPI->>GitHub: GET /repos/:owner/:repo
     GitHub-->>DonationAPI: Repository metadata (name, description, language, topics, ...)
     DonationAPI->>DonationAPI: Validate repository is public and not archived
     DonationAPI->>DonationAPI: Construct Project entity (status: Published)
     DonationAPI->>MongoDB: Insert Project
-    DonationAPI-->>Website: 201 Created { projectId }
-    Website-->>Maintainer: "Project published"
+    DonationAPI-->>Frontend: 201 Created { projectId }
+    Frontend-->>Maintainer: "Project published"
 ```
 
 The project is immediately visible in the public project listing. There is no admin approval step.
@@ -51,22 +51,22 @@ Once a project is submitted, a platform administrator reviews it and either appr
 ```mermaid
 sequenceDiagram
     participant Admin
-    participant Website
+    participant Frontend
     participant DonationAPI as Donation API
     participant MongoDB
 
     DonationAPI-->>Admin: Notification: new project pending review
-    Admin->>Website: Opens admin review queue
-    Admin->>Website: Reviews project details
+    Admin->>Frontend: Opens admin review queue
+    Admin->>Frontend: Reviews project details
     alt Approved
-        Admin->>Website: Clicks Approve
-        Website->>DonationAPI: PATCH /api/v1/project/{id}/status { status: Active }
+        Admin->>Frontend: Clicks Approve
+        Frontend->>DonationAPI: PATCH /api/v1/project/{id}/status { status: Active }
         DonationAPI->>MongoDB: Update Project { status: Active }
-        DonationAPI-->>Website: 200 OK
-        Website-->>Admin: Project is now live
+        DonationAPI-->>Frontend: 200 OK
+        Frontend-->>Admin: Project is now live
     else Rejected
-        Admin->>Website: Clicks Reject with reason
-        Website->>DonationAPI: PATCH /api/v1/project/{id}/status { status: Draft, rejectionReason }
+        Admin->>Frontend: Clicks Reject with reason
+        Frontend->>DonationAPI: PATCH /api/v1/project/{id}/status { status: Draft, rejectionReason }
         DonationAPI->>MongoDB: Update Project { status: Draft }
         DonationAPI-->>Maintainer: Notification: project needs changes
     end
@@ -83,19 +83,19 @@ An authenticated donor (organization member or individual) pledges a number of d
 ```mermaid
 sequenceDiagram
     participant Donor
-    participant Website
+    participant Frontend
     participant DonationAPI as Donation API
     participant MongoDB
 
-    Donor->>Website: Browses project listing
-    Donor->>Website: Selects project and enters pledge details (hours, optional note)
-    Website->>DonationAPI: POST /api/v1/donation { projectId, hoursCommitted, donorOrganizationId? }
+    Donor->>Frontend: Browses project listing
+    Donor->>Frontend: Selects project and enters pledge details (hours, optional note)
+    Frontend->>DonationAPI: POST /api/v1/donation { projectId, hoursCommitted, donorOrganizationId? }
     DonationAPI->>DonationAPI: Validate JWT (role: DonorOrganizationMember or Contributor)
     DonationAPI->>MongoDB: Fetch Project (verify status is Active)
     DonationAPI->>DonationAPI: Construct Donation entity (status: Pending)
     DonationAPI->>MongoDB: Insert Donation
-    DonationAPI-->>Website: 201 Created { donationId, status: Pending, hoursCommitted }
-    Website-->>Donor: "Donation pledge confirmed"
+    DonationAPI-->>Frontend: 201 Created { donationId, status: Pending, hoursCommitted }
+    Frontend-->>Donor: "Donation pledge confirmed"
 ```
 
 A new donation starts in `Pending` state. It transitions to `Active` when the donor or an admin activates it, signalling that contributors should start logging hours.
@@ -109,13 +109,13 @@ An assigned contributor logs time against an active donation. The platform accum
 ```mermaid
 sequenceDiagram
     participant Contributor
-    participant Website
+    participant Frontend
     participant DonationAPI as Donation API
     participant MongoDB
 
-    Contributor->>Website: Opens active donation
-    Contributor->>Website: Logs hours (amount, description, optional GitHub link)
-    Website->>DonationAPI: POST /api/v1/donation/{id}/transaction { hours, description, githubReference? }
+    Contributor->>Frontend: Opens active donation
+    Contributor->>Frontend: Logs hours (amount, description, optional GitHub link)
+    Frontend->>DonationAPI: POST /api/v1/donation/{id}/transaction { hours, description, githubReference? }
     DonationAPI->>DonationAPI: Validate JWT (role: Contributor, assigned to donation)
     DonationAPI->>MongoDB: Fetch Donation (verify status is Active)
     DonationAPI->>DonationAPI: Validate hours do not exceed remaining commitment
@@ -128,8 +128,8 @@ sequenceDiagram
     else Still in progress
         DonationAPI->>MongoDB: Update Donation { hoursLogged }
     end
-    DonationAPI-->>Website: 201 Created { transactionId, hoursLogged, donationStatus }
-    Website-->>Contributor: "Hours logged. Progress updated."
+    DonationAPI-->>Frontend: 201 Created { transactionId, hoursLogged, donationStatus }
+    Frontend-->>Contributor: "Hours logged. Progress updated."
 ```
 
 **Key points**:
@@ -147,16 +147,16 @@ A donor organization views a summary of all their contributions.
 ```mermaid
 sequenceDiagram
     participant OrgMember
-    participant Website
+    participant Frontend
     participant DonationAPI as Donation API
     participant MongoDB
 
-    OrgMember->>Website: Navigates to organization dashboard
-    Website->>DonationAPI: GET /api/v1/organization/{id}/report
+    OrgMember->>Frontend: Navigates to organization dashboard
+    Frontend->>DonationAPI: GET /api/v1/organization/{id}/report
     DonationAPI->>DonationAPI: Validate JWT (role: DonorOrganizationMember, own org)
     DonationAPI->>MongoDB: Aggregate donations and transactions for organization
-    DonationAPI-->>Website: 200 OK { hoursCommitted, hoursLogged, projectsSupported, donations[] }
-    Website-->>OrgMember: Displays impact dashboard
+    DonationAPI-->>Frontend: 200 OK { hoursCommitted, hoursLogged, projectsSupported, donations[] }
+    Frontend-->>OrgMember: Displays impact dashboard
 ```
 
 The impact report aggregates data across all donations made by the organization: total hours committed, hours actually logged, number of projects supported, and a donation-by-donation breakdown.
