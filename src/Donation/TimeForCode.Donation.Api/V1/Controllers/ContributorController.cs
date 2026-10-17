@@ -29,8 +29,7 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         }
 
         /// <summary>
-        /// Replaces the identity of a contributor, and on their contributions, with a generic deleted user; the hours are kept.
-        /// Accepted when the user has no contributions or was already anonymised.
+        /// Replaces the identity of a contributor, and on their contributions, with a generic deleted user; the hours are kept. Accepted when the user has no contributions or was already anonymised.
         /// </summary>
         /// <param name="userId">The platform user identifier of the deleted account.</param>
         /// <returns>No content on success.</returns>

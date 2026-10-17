@@ -190,7 +190,7 @@
         "tags": [
           "Contributor"
         ],
-        "summary": "Replaces the identity of a contributor, and on their contributions, with a generic deleted user; the hours are kept.\r\nAccepted when the user has no contributions or was already anonymised.",
+        "summary": "Replaces the identity of a contributor, and on their contributions, with a generic deleted user; the hours are kept. Accepted when the user has no contributions or was already anonymised.",
         "operationId": "AnonymiseContributor",
         "parameters": [
           {
