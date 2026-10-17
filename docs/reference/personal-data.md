@@ -22,6 +22,8 @@ A user logs in with GitHub. The platform requests no OAuth scope (public profile
 
 The profile is refreshed from GitHub at every login.
 
+**There is no automatic deletion of idle accounts yet**: the retention of every field above is "until the user deletes the account", however long the user stays away. Only refresh tokens and login state expire on their own. Tracked in [#123](https://github.com/wouterfennis/TimeForCode/issues/123) and [risk RISK-10](../architecture/arc42/11-risks-and-technical-debt.md).
+
 ### Refresh token (`RefreshToken`)
 
 | Field | Purpose | Retention |

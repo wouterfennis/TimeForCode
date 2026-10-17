@@ -142,7 +142,7 @@ The OAuth login state is durable and single-use (see [ADR-015](../../reference/a
 
 ## Personal Data and Account Deletion
 
-The stored personal data fields, their purpose and retention are listed in [personal data](../../reference/personal-data.md). A user removes the account with `DELETE /api/v1/user`. The Authorization API first calls the Donation API (`POST /api/v1/contributor/{userId}/anonymise`) with a service token of scope `service`, which replaces the contributor and the identity snapshot on the contributions with a generic deleted user and keeps the hours. Only then it deletes the refresh tokens and the account, so a Donation failure leaves everything in place and the deletion can be retried. Contributors are found by their platform user id, which the anonymisation replaces, therefore the contributions are rewritten before the contributor. Remaining risks are listed in chapter 11 (RISK-07 to RISK-09).
+The stored personal data fields, their purpose and retention are listed in [personal data](../../reference/personal-data.md). A user removes the account with `DELETE /api/v1/user`. The Authorization API first calls the Donation API (`POST /api/v1/contributor/{userId}/anonymise`) with a service token of scope `service`, which replaces the contributor and the identity snapshot on the contributions with a generic deleted user and keeps the hours. Only then it deletes the refresh tokens and the account, so a Donation failure leaves everything in place and the deletion can be retried. Contributors are found by their platform user id, which the anonymisation replaces, therefore the contributions are rewritten before the contributor. Remaining risks are listed in chapter 11 (RISK-07 to RISK-10).
 
 ---
 
