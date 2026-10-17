@@ -3,7 +3,8 @@ name: ship-pr
 description: "Final workflow step: verify gates, commit with the attribution trailer, push the branch and open a pull request that links the issue. Asks before pushing."
 argument-hint: "<issue number>"
 disable-model-invocation: true
-allowed-tools: Bash(git status:*), Bash(git diff:*), Bash(git log:*), Bash(git branch:*), Bash(git add:*), Bash(git commit:*), Bash(gh issue view:*), Bash(dotnet format:*)---
+allowed-tools: Bash(git status:*), Bash(git diff:*), Bash(git log:*), Bash(git branch:*), Bash(git add:*), Bash(git commit:*), Bash(gh issue view:*), Bash(dotnet format:*)
+---
 
 # Ship PR
 
