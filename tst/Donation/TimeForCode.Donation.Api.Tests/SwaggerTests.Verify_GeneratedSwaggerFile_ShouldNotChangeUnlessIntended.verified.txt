@@ -185,6 +185,87 @@
         }
       }
     },
+    "/api/v1/contributor/{userId}/anonymise": {
+      "post": {
+        "tags": [
+          "Contributor"
+        ],
+        "summary": "Replaces the identity of a contributor, and on their contributions, with a generic deleted user; the hours are kept. Accepted when the user has no contributions or was already anonymised.",
+        "operationId": "AnonymiseContributor",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "description": "The platform user identifier of the deleted account.",
+            "required": true,
+            "schema": {
+              "pattern": "^[0-9a-fA-F]{24}$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content",
+            "content": {
+              "application/json": { }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. Retry after the number of seconds given in the Retry-After header.",
+            "headers": {
+              "Retry-After": {
+                "description": "Number of seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/DonorOrganization": {
       "post": {
         "tags": [
@@ -2192,6 +2273,9 @@
   "tags": [
     {
       "name": "Contribution"
+    },
+    {
+      "name": "Contributor"
     },
     {
       "name": "DonorOrganization"

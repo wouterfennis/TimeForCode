@@ -1,3 +1,4 @@
+using MongoDB.Bson;
 using TimeForCode.Donation.Application.Interfaces;
 using TimeForCode.Donation.Domain;
 
@@ -15,6 +16,32 @@ namespace TimeForCode.Donation.Specifications.Mocking
         public Task CreateAsync(Contribution contribution)
         {
             _contributions.Add(contribution);
+            return Task.CompletedTask;
+        }
+
+        public Task AnonymiseByContributorIdAsync(ObjectId contributorId, CancellationToken cancellationToken)
+        {
+            for (var i = 0; i < _contributions.Count; i++)
+            {
+                var c = _contributions[i];
+                if (c.ContributorId != contributorId)
+                {
+                    continue;
+                }
+
+                _contributions[i] = new Contribution
+                {
+                    Id = c.Id,
+                    ProjectId = c.ProjectId,
+                    ContributorId = c.ContributorId,
+                    ContributorGitHubLogin = Contributor.DeletedUserLogin,
+                    ContributorAvatarUrl = Contributor.DeletedUserAvatarUrl,
+                    Hours = c.Hours,
+                    GithubReference = c.GithubReference,
+                    LoggedAt = c.LoggedAt
+                };
+            }
+
             return Task.CompletedTask;
         }
 

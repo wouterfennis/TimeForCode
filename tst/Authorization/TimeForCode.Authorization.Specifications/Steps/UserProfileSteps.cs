@@ -15,13 +15,14 @@ namespace TimeForCode.Authorization.Specifications.Steps
     {
         private readonly IAuthClient _authClient;
         private readonly IServiceProvider _provider;
+        private readonly SessionContext _session;
         private UserResponse? _response = null;
-        private ApiException? _exception = null;
 
-        public UserProfileSteps(IAuthClient authClient, IServiceProvider provider)
+        public UserProfileSteps(IAuthClient authClient, IServiceProvider provider, SessionContext session)
         {
             _authClient = authClient;
             _provider = provider;
+            _session = session;
         }
 
         [Given("The user does not have a profile on the time for code platform")]
@@ -41,11 +42,11 @@ namespace TimeForCode.Authorization.Specifications.Steps
             }
             catch (ApiException<ProblemDetails> exception)
             {
-                _exception = exception;
+                _session.LastException = exception;
             }
             catch (ApiException exception)
             {
-                _exception = exception;
+                _session.LastException = exception;
             }
         }
 
@@ -65,8 +66,8 @@ namespace TimeForCode.Authorization.Specifications.Steps
         [Then("The user is informed their profile was not found")]
         public void ThenTheUserIsInformedTheirProfileWasNotFound()
         {
-            _exception.Should().NotBeNull();
-            _exception!.StatusCode.Should().Be(StatusCodes.Status404NotFound);
+            _session.LastException.Should().NotBeNull();
+            _session.LastException!.StatusCode.Should().Be(StatusCodes.Status404NotFound);
         }
     }
 }

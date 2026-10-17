@@ -107,6 +107,8 @@ Backend APIs enforce authorization using ASP.NET Core policy-based authorization
 
 Resource-level ownership checks (e.g. "edit own project only") are enforced in the application layer, not the API layer.
 
+The implemented tokens differ from this sketch: user tokens carry `scope` `user`, the admin session `admin`, and the Authorization API signs a `service` scope token for its call to the Donation API at account deletion (see [ADR-001](../reference/adr/0001-use-internal-jwt.md)).
+
 ---
 
 ## Security Boundary

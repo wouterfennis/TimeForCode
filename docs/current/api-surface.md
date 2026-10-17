@@ -27,6 +27,7 @@ The Authorization API exposes OAuth 2.0 endpoints and an OpenID Connect discover
 | Method | Path | Status | Description |
 | --- | --- | --- | --- |
 | `GET` | `/api/v1/user` | ✅ | Returns the currently authenticated user's profile |
+| `DELETE` | `/api/v1/user` | ✅ | Deletes the caller's account: asks the Donation API to anonymise the contributor, then deletes the refresh tokens and the profile and expires both token cookies; `204` on success, `404` when the profile does not exist, `502` when the Donation API fails (nothing is removed, retry later), `401` without a token. See [personal data](../reference/personal-data.md) |
 | `GET` | `/api/v1/user/repositories` | ✅ | Returns the caller's public GitHub repositories, read with the application's own GitHub credentials (no user token is stored); `502` when GitHub fails |
 | `GET` | `/api/v1/user/repositories/{owner}/{repo}` | ✅ | Returns one public GitHub repository (`404` for private or unknown ones), read with the application's own GitHub credentials; `400` when `owner` or `repo` is not a valid GitHub name (see [declared input limits](#declared-input-limits)) |
 
@@ -152,6 +153,7 @@ The user JWT issued by the Authorization API carries the `login` and `avatar_url
 
 | Method | Path | Status | Description |
 | --- | --- | --- | --- |
+| `POST` | `/api/v1/contributor/{userId}/anonymise` | ✅ | Service call from the Authorization API at account deletion (token scope `service` only; `403` for user and admin tokens): replaces the contributor and the login and avatar snapshot on their contributions with a generic deleted user and keeps the hours; `204`, also when the user has no contributions or was already anonymised; `400` for a malformed id |
 | `POST` | `/api/v1/contributor` | ❌ | Register as a contributor |
 | `GET` | `/api/v1/contributor/{id}` | ❌ | Get contributor details |
 

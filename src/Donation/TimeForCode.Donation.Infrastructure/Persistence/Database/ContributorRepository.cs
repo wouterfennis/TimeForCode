@@ -1,3 +1,4 @@
+using MongoDB.Bson;
 using MongoDB.Driver;
 using System.Diagnostics.CodeAnalysis;
 using TimeForCode.Donation.Application.Interfaces;
@@ -64,6 +65,23 @@ namespace TimeForCode.Donation.Infrastructure.Persistence.Database
             MongoWriteException write => write.WriteError.Category == ServerErrorCategory.DuplicateKey,
             _ => false
         };
+
+        public async Task<Contributor?> GetByPlatformUserIdAsync(string platformUserId)
+        {
+            return await _collection
+                .Find(Builders<Contributor>.Filter.Eq(c => c.PlatformUserId, platformUserId))
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task AnonymiseAsync(ObjectId contributorId, CancellationToken cancellationToken)
+        {
+            var update = Builders<Contributor>.Update
+                .Set(c => c.PlatformUserId, $"deleted-{contributorId}")
+                .Set(c => c.GithubLogin, Contributor.DeletedUserLogin)
+                .Set(c => c.AvatarUrl, Contributor.DeletedUserAvatarUrl);
+
+            await _collection.UpdateOneAsync(Builders<Contributor>.Filter.Eq(c => c.Id, contributorId), update, cancellationToken: cancellationToken);
+        }
 
         private async Task<Contributor> UpsertOnceAsync(Contributor contributor)
         {

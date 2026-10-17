@@ -8,6 +8,11 @@ namespace TimeForCode.Donation.Domain
     /// </summary>
     public class Contributor : DocumentEntity
     {
+        public const string DeletedUserLogin = "deleted-user";
+#pragma warning disable S1075 // Fixed GitHub placeholder avatar, not an environment-specific location
+        public const string DeletedUserAvatarUrl = "https://github.com/ghost.png";
+#pragma warning restore S1075
+
         public required string PlatformUserId { get; init; }
         public required string GithubLogin { get; init; }
         public required string AvatarUrl { get; init; }
