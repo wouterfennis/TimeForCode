@@ -5,7 +5,7 @@ WORKDIR /app
 
 # Restore dependencies first so this layer is cached until the lockfile changes
 COPY src/Frontend/TimeForCode.Frontend/package.json src/Frontend/TimeForCode.Frontend/package-lock.json ./
-RUN npm ci
+RUN npm ci --ignore-scripts
 
 # Build the static files into /app/dist
 COPY src/Frontend/TimeForCode.Frontend/ ./
