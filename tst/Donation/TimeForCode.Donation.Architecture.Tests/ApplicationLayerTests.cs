@@ -32,5 +32,15 @@ namespace TimeForCode.Donation.Architecture.Tests
 
             Evaluate(rule);
         }
+
+        [TestMethod]
+        public void ApplicationLayer_WithReferencesToMongoDbDriver_AreNotAllowed()
+        {
+            var rule = Types().That().Are(ApplicationLayer).Should()
+                .NotDependOnAnyTypesThat().ResideInNamespaceMatching(@"^MongoDB\.Driver(\..*)?$")
+                .Because("Application may use MongoDB.Bson ids only; queries belong in Infrastructure, see ADR-016");
+
+            Evaluate(rule);
+        }
     }
 }

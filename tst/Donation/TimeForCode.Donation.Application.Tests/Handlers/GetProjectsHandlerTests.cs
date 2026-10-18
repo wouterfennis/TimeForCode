@@ -167,10 +167,9 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
                     PushedAt = DateTimeOffset.UtcNow
                 },
                 GithubRepositoryUrl = new Uri("https://github.com/owner/test-repo"),
-                Status = ProjectStatus.Active,
                 PublishedByUserId = "user-123",
                 PublishedAt = DateTimeOffset.UtcNow
-            };
+            }.InStatus(ProjectStatus.Active);
         }
     }
 }
