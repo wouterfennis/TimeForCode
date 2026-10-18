@@ -4,6 +4,8 @@ Status: Mixed
 
 This section describes the most important runtime scenarios — how the building blocks interact at execution time.
 
+Published views of the [LikeC4 architecture model](../likec4/README.md): [GitHub login](https://wouterfennis.github.io/TimeForCode/architecture-model/#/view/githubLogin/) and [logging a time contribution](https://wouterfennis.github.io/TimeForCode/architecture-model/#/view/logContribution/).
+
 ---
 
 ## Scenario 1 — User Login via GitHub OAuth 2.0

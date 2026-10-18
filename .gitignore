@@ -111,3 +111,6 @@ $RECYCLE.BIN/
 # Claude Code local state
 .agent-state/
 .claude/settings.local.json
+# LikeC4 dependencies
+docs/architecture/likec4/node_modules/
+docs/architecture/likec4/dist/

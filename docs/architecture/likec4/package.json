@@ -1,0 +1,13 @@
+{
+  "name": "timeforcode-architecture",
+  "private": true,
+  "description": "LikeC4 architecture model of TimeForCode",
+  "scripts": {
+    "validate": "likec4 validate .",
+    "serve": "likec4 start .",
+    "build": "likec4 build . -o dist --use-hash-history --title TimeForCode"
+  },
+  "devDependencies": {
+    "likec4": "1.60.0"
+  }
+}

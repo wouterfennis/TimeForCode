@@ -1,0 +1,127 @@
+model {
+  donor = actor 'Donor' {
+    description 'Organization or individual who pledges and logs time'
+  }
+  maintainer = actor 'Project Maintainer' {
+    description 'Registers and manages an open-source project'
+  }
+  admin = actor 'Administrator' {
+    description 'Reviews projects and manages the platform'
+  }
+
+  github = system 'GitHub' {
+    #external
+    description 'OAuth 2.0 identity provider and source of repository metadata'
+  }
+  mongodb = system 'MongoDB' {
+    #external
+    description 'Document store, one database per bounded context'
+    technology 'MongoDB'
+    style {
+      shape storage
+    }
+  }
+
+  timeforcode = system 'TimeForCode' {
+    description 'Connects donated time to open-source projects'
+
+    authorization = container 'Authorization' {
+      description 'Bounded context: identity, token issuance and sessions'
+      technology '.NET 10'
+
+      authApi = layer 'API' {
+        description 'Controllers: login, callback, refresh, logout, user, JWKS'
+        technology 'ASP.NET Core'
+      }
+      authCommands = layer 'Commands' {
+        description 'MediatR command and result types'
+      }
+      authApplication = layer 'Application' {
+        description 'MediatR handlers, token service, account linking'
+        technology 'MediatR'
+      }
+      authDomain = layer 'Domain' {
+        description 'OAuth constants and domain primitives'
+      }
+      authInfrastructure = layer 'Infrastructure' {
+        description 'GitHub OAuth client, Donation API client, user and token repositories, RSA key loading'
+      }
+      authValues = layer 'Values' {
+        description 'Shared value objects (ExternalAccessToken, TokenResult)'
+      }
+
+      authApi -> authCommands 'sends'
+      authApi -> authApplication 'dispatches via MediatR'
+      authApplication -> authDomain 'uses'
+      authApplication -> authValues 'uses'
+      authInfrastructure -> authApplication 'implements interfaces of'
+    }
+
+    donation = container 'Donation' {
+      description 'Bounded context: projects, contributions and donor organizations'
+      technology '.NET 10'
+
+      donationApi = layer 'API' {
+        description 'Controllers: projects, review lifecycle, donor organizations, contributions'
+        technology 'ASP.NET Core'
+      }
+      donationCommands = layer 'Commands' {
+        description 'MediatR command, query and result types'
+      }
+      donationApplication = layer 'Application' {
+        description 'MediatR handlers, repository and GitHub metadata interfaces'
+        technology 'MediatR'
+      }
+      donationDomain = layer 'Domain' {
+        description 'Project aggregate with lifecycle state machine, contributions, contributors'
+      }
+      donationInfrastructure = layer 'Infrastructure' {
+        description 'MongoDB repositories, GitHub public REST API client'
+      }
+      donationValues = layer 'Values' {
+        description 'Shared value objects (ProjectStatus)'
+      }
+
+      donationApi -> donationCommands 'sends'
+      donationApi -> donationApplication 'dispatches via MediatR'
+      donationApplication -> donationDomain 'uses'
+      donationApplication -> donationValues 'uses'
+      donationInfrastructure -> donationApplication 'implements interfaces of'
+    }
+
+    shared = container 'Shared' {
+      description 'Cross-cutting library used by both bounded contexts'
+      technology '.NET 10'
+
+      cookieHandler = component 'CookieAuthorizationHandler' {
+        description 'Reads the JWT cookie and attaches it as bearer token on outgoing calls'
+      }
+      authorizeFilter = component 'AuthorizeFilter' {
+        description 'Validates the token on incoming requests'
+      }
+    }
+  }
+
+  // System context
+  donor -> timeforcode 'signs in, logs time contributions' 'HTTPS'
+  maintainer -> timeforcode 'signs in, registers projects' 'HTTPS'
+  admin -> timeforcode 'approves projects' 'HTTPS, admin scope'
+
+  // Bounded contexts
+  timeforcode.authorization -> github 'OAuth 2.0 login' 'HTTPS'
+  timeforcode.donation -> github 'fetches repository metadata' 'HTTPS REST'
+  timeforcode.authorization -> mongodb 'stores users and tokens' 'MongoDB wire protocol'
+  timeforcode.donation -> mongodb 'stores projects and contributions' 'MongoDB wire protocol'
+  timeforcode.authorization -> timeforcode.donation 'anonymises contributor on account deletion' 'HTTPS, service token'
+
+  // Layers to external systems
+  timeforcode.authorization.authInfrastructure -> github 'OAuth 2.0' 'HTTPS'
+  timeforcode.authorization.authInfrastructure -> mongodb 'persistence'
+  timeforcode.authorization.authInfrastructure -> timeforcode.donation.donationApi 'anonymise contributor' 'HTTPS, service token'
+  timeforcode.donation.donationInfrastructure -> github 'repository metadata' 'HTTPS REST'
+  timeforcode.donation.donationInfrastructure -> mongodb 'persistence'
+
+  // Shared
+  timeforcode.authorization.authApi -> timeforcode.shared.authorizeFilter 'validates tokens with'
+  timeforcode.donation.donationApi -> timeforcode.shared.authorizeFilter 'validates tokens with'
+}
