@@ -4,6 +4,8 @@ Status: Mixed
 
 This section describes how the system is deployed in its target and current environments.
 
+Published views of the [LikeC4 architecture model](../likec4/README.md): [production deployment](https://wouterfennis.github.io/TimeForCode/architecture-model/#/view/production/) and [local development](https://wouterfennis.github.io/TimeForCode/architecture-model/#/view/local/).
+
 ---
 
 ## Local Development

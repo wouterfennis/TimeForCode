@@ -1,0 +1,19 @@
+specification {
+  element actor {
+    style {
+      shape person
+    }
+  }
+  element system
+  element container
+  element component
+  element layer
+
+  tag external
+
+  deploymentNode environment
+  deploymentNode azure
+  deploymentNode resourceGroup
+  deploymentNode appService
+  deploymentNode developerMachine
+}

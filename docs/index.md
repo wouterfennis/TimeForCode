@@ -43,6 +43,8 @@ Documents that define what the platform should become. These are the build instr
 
 Architecture is documented using the [Arc42](https://arc42.org) template. All architecture-impacting changes must update the relevant Arc42 section. See [docs/architecture/arc42/README.md](architecture/arc42/README.md) for the index and governance rules.
 
+The interactive [architecture model](https://wouterfennis.github.io/TimeForCode/architecture-model/) (LikeC4) shows the context, bounded contexts, runtime flows and deployment; its source is in [architecture/likec4/](architecture/likec4/README.md).
+
 | Section | Title |
 | --- | --- |
 | [01](architecture/arc42/01-introduction-and-goals.md) | Introduction and Goals |
