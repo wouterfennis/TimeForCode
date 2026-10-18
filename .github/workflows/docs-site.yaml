@@ -52,7 +52,7 @@ jobs:
 
     - name: Install LikeC4
       working-directory: docs/architecture/likec4
-      run: npm ci
+      run: npm ci --ignore-scripts
 
     - name: Validate architecture model
       working-directory: docs/architecture/likec4
@@ -63,7 +63,10 @@ jobs:
       run: npm run build -- --base "/${{ github.event.repository.name }}/architecture-model/"
 
     - name: Add architecture model to site
-      run: cp -r docs/architecture/likec4/dist _site/architecture-model
+      # jekyll-build-pages runs as root in a container, so _site is root-owned.
+      run: |
+        sudo chown -R "$USER" _site
+        cp -r docs/architecture/likec4/dist _site/architecture-model
 
     - name: Upload Pages artifact
       if: github.event_name != 'pull_request'
