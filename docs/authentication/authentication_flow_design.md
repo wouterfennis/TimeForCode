@@ -139,7 +139,7 @@ Script code cannot read these cookies. Because the cookie holds JSON rather than
 
 ### 7. Using the access token
 
-A client or backend-for-frontend reads the `AccessToken` cookie and sends the `token` value as `Authorization: Bearer <jwt>` (in the Blazor Website, `CookieAuthorizationHandler` does this).
+A client or backend-for-frontend reads the `AccessToken` cookie and sends the `token` value as `Authorization: Bearer <jwt>` (`CookieAuthorizationHandler` does this).
 
 A resource server such as the Donation API validates the token locally:
 

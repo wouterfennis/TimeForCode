@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Bson;
 using Reqnroll;
@@ -45,7 +45,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
             var tokenService = scope.ServiceProvider.GetRequiredService<ITokenService>();
             var accessToken = tokenService.GenerateInternalToken(new ObjectId().ToString(), "user", "user");
 
-            var uri = new Uri("http://localhost:8083");
+            var uri = new Uri("http://localhost:8084");
             var cookieValue = HttpUtility.UrlEncode(JsonSerializer.Serialize(accessToken));
             _cookieContainer.Add(uri, new Cookie(CookieConstants.TokenKey, cookieValue));
         }

@@ -14,7 +14,7 @@ This document defines the formal coupling boundary for `TimeForCode.Shared`. It 
 
 ## What the Shared Project May Contain
 
-`TimeForCode.Shared` is limited to **cross-cutting ASP.NET Core infrastructure** that is consumed by more than one bounded context's API or Website project and that has no domain-level knowledge.
+`TimeForCode.Shared` is limited to **cross-cutting ASP.NET Core infrastructure** that is consumed by more than one bounded context's API or API client project and that has no domain-level knowledge.
 
 Permitted categories:
 
@@ -59,9 +59,9 @@ If any check fails, the type stays in the bounded context that needs it, or a ne
 
 | Type | Layer | Consumed by |
 | --- | --- | --- |
-| `CookieAuthorizationHandler` | API (delegating handler) | Donation API, Website |
-| `RefreshTokenForwardingHandler` | API (delegating handler) | Website |
-| `CookieConstants` | API (constants) | Both handlers, Website |
+| `CookieAuthorizationHandler` | API (delegating handler) | Donation API client, Authorization API client |
+| `RefreshTokenForwardingHandler` | API (delegating handler) | Authorization API client |
+| `CookieConstants` | API (constants) | Both handlers |
 | `AccessToken` model | API (model) | `CookieAuthorizationHandler` |
 | `ValidationBehaviour<,>` | Application pipeline | Authorization Application, Donation Application |
 
@@ -71,6 +71,6 @@ All current contents satisfy the domain-free and framework-only checks.
 
 ## Rationale
 
-The Shared project exists because HTTP-cookie handling for the internal JWT and refresh-token flow is structurally identical across the Website and Donation API. Duplicating the delegating handlers in every consumer would introduce maintenance risk without any isolation benefit, since these handlers have no domain knowledge and change only when the cookie protocol changes.
+The Shared project exists because HTTP-cookie handling for the internal JWT and refresh-token flow is structurally identical across the Authorization and Donation API clients. Duplicating the delegating handlers in every consumer would introduce maintenance risk without any isolation benefit, since these handlers have no domain knowledge and change only when the cookie protocol changes.
 
 This boundary is intentionally narrow. If the Shared project grows beyond cross-cutting infrastructure middleware, it risks becoming a "shared kernel" that couples bounded contexts — an anti-pattern in a context-first architecture.

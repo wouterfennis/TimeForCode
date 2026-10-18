@@ -6,7 +6,7 @@ Each entry states the purpose, data source, required states, and a low-fidelity 
 
 Every page must implement these states: **loading** (skeleton, not a spinner alone), **empty**, **error with retry**, and where relevant **unauthorized**. See [information architecture](information-architecture.md#access-rules-in-the-ui).
 
-Keep these `data-testid` values; the existing E2E specifications rely on them: `project-list`, `project-tile`, `project-link`, `user-name`, `login-handle`, `logout-link`, `new-user-welcome`, `not-logged-in-message`, `admin-nav-link`. Review the step definitions in `tst/Website/TimeForCode.Website.Specifications/Steps` for the complete set.
+Keep these `data-testid` values; the E2E tests rely on them: `project-list`, `project-tile`, `project-link`, `user-name`, `login-handle`, `logout-link`, `new-user-welcome`, `not-logged-in-message`, `admin-nav-link`.
 
 ---
 
@@ -135,7 +135,7 @@ Keep these `data-testid` values; the existing E2E specifications rely on them: `
 - Port the behaviour of `wwwroot/js/webauthn-admin-interop.js` into a typed module using the `navigator.credentials` API.
 - Requests use `credentials: "include"` so the HttpOnly cookie round-trips.
 - Registration needs the bootstrap secret; never store it, never log it.
-- See [ADR-011](../reference/adr/0011-webauthn-admin-authentication.md) for the ceremony and its accepted risks. The Relying Party domain is configured as the Website origin, so the new front-end's production origin must be configured on the backend.
+- See [ADR-011](../reference/adr/0011-webauthn-admin-authentication.md) for the ceremony and its accepted risks. The Relying Party domain is configured as the front-end origin, so its production origin must be configured on the backend.
 
 ## Error and not-found pages
 

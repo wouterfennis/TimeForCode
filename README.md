@@ -35,7 +35,7 @@ This repository contains:
 
 - **Authorization API** — OAuth 2.0 login via GitHub, JWT issuance and refresh.
 - **Donation API** — Project registration, donation management, and contribution tracking.
-- **Website** — Blazor frontend for donors, contributors, and project maintainers.
+- **Front-end** — React single-page application for donors, contributors, and project maintainers.
 - **Infrastructure** — Azure Bicep deployment templates and Docker Compose local setup.
 - **Documentation** — Architecture (Arc42), product requirements, and implementation guides.
 
@@ -64,7 +64,7 @@ See [docs/current/capability-status.md](docs/current/capability-status.md) for t
 
 | Concern | Technology |
 | --- | --- |
-| Frontend | Blazor (.NET) |
+| Frontend | React, TypeScript, Vite |
 | Backend | ASP.NET Core (.NET) |
 | Database | MongoDB |
 | Authentication | OAuth 2.0 (GitHub), JWT (RSA-signed) |
@@ -82,6 +82,7 @@ See [docs/current/capability-status.md](docs/current/capability-status.md) for t
 
 - [Podman](https://podman.io/docs/installation) 4.x or later (Docker Desktop is not used in this project)
 - [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10) (for running tests and local development outside containers)
+- [Node.js 24](https://nodejs.org/) (for the front-end; the version is pinned in `src/Frontend/TimeForCode.Frontend/.nvmrc`)
 
 ### Run locally
 
@@ -93,10 +94,11 @@ See [docs/current/capability-status.md](docs/current/capability-status.md) for t
 
 | Service | URL |
 | --- | --- |
-| Website | <http://localhost:8083> |
 | Authorization API | <http://localhost:8080> |
 | Donation API | <http://localhost:8082> |
 | Identity Provider Mock | <http://localhost:8081> |
+
+Start the front-end separately with `npm ci` and `npm run dev` in `src/Frontend/TimeForCode.Frontend`; it runs on <http://localhost:5173>. See its [README](src/Frontend/TimeForCode.Frontend/README.md).
 
 ### Verify the stack
 

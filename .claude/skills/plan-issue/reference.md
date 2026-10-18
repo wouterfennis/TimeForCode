@@ -25,7 +25,7 @@ When splitting: define the parent scope (overall outcome, complete only when eve
 
 Add `agent-phase:skip-markdown-lint` when the child touches no `.md` files or documentation. Not splitting: no phase labels; the default sequence applies.
 
-State the decision in one or two sentences before drafting, for example: "This splits into 2 pieces: a Donation API change (needs a spec) and a Website display change (needs a spec). Both ship independently. I'll draft one parent and two children."
+State the decision in one or two sentences before drafting, for example: "This splits into 2 pieces: a Donation API change (needs a spec) and a Frontend display change (needs a spec). Both ship independently. I'll draft one parent and two children."
 
 ## Step 4 — Draft rules
 

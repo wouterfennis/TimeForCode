@@ -15,14 +15,14 @@ This is the current, fully implemented authentication flow. See [authentication 
 ```mermaid
 sequenceDiagram
     participant Browser
-    participant Website
+    participant Frontend
     participant AuthAPI as Authorization API
     participant GitHub
 
-    Browser->>Website: GET / (unauthenticated)
-    Website-->>Browser: Login page
-    Browser->>Website: Click "Sign in with GitHub"
-    Website->>AuthAPI: GET /api/v1/authentication/login
+    Browser->>Frontend: GET / (unauthenticated)
+    Frontend-->>Browser: Login page
+    Browser->>Frontend: Click "Sign in with GitHub"
+    Frontend->>AuthAPI: GET /api/v1/authentication/login
     AuthAPI-->>Browser: 302 Redirect to GitHub (with state, client_id; no scope, so public profile access only)
     Browser->>GitHub: GET /login/oauth/authorize
     GitHub-->>Browser: GitHub login & consent page
@@ -34,28 +34,28 @@ sequenceDiagram
     GitHub-->>AuthAPI: User profile (id, login, email)
     AuthAPI->>AuthAPI: Discard the GitHub token; link GitHub account to internal user
     AuthAPI->>AuthAPI: Issue internal JWT + refresh token
-    AuthAPI-->>Browser: 302 Redirect to Website (set HttpOnly cookies)
-    Browser->>Website: GET / (authenticated, JWT cookie present)
+    AuthAPI-->>Browser: 302 Redirect to Frontend (set HttpOnly cookies)
+    Browser->>Frontend: GET / (authenticated, JWT cookie present)
 ```
 
 ---
 
 ## Scenario 2 — Token Refresh
 
-When the access token expires, the Website obtains a new one transparently.
+When the access token expires, the Frontend obtains a new one transparently.
 
 ```mermaid
 sequenceDiagram
-    participant Website
+    participant Frontend
     participant AuthAPI as Authorization API
 
-    Website->>AuthAPI: POST /api/v1/authentication/refresh (refresh token cookie)
+    Frontend->>AuthAPI: POST /api/v1/authentication/refresh (refresh token cookie)
     AuthAPI->>AuthAPI: Validate refresh token (expiry, hash lookup, rotated?)
     AuthAPI->>AuthAPI: Issue new access token + rotate refresh token (user or admin scope)
-    AuthAPI-->>Website: 200 OK (new HttpOnly cookies set)
+    AuthAPI-->>Frontend: 200 OK (new HttpOnly cookies set)
 ```
 
-The Website does not need to re-direct the user; the `CookieAuthorizationHandler` in the Shared layer intercepts 401 responses and triggers the refresh automatically.
+The Frontend does not need to re-direct the user; the `CookieAuthorizationHandler` in the Shared layer intercepts 401 responses and triggers the refresh automatically.
 
 ---
 
@@ -85,19 +85,19 @@ When the Donation API fails, the Authorization API answers 502 and removes nothi
 
 ```mermaid
 sequenceDiagram
-    participant Website
+    participant Frontend
     participant DonationAPI as Donation API
     participant GitHub
     participant MongoDB
 
-    Website->>DonationAPI: POST /api/v1/project { githubUrl } (JWT bearer)
+    Frontend->>DonationAPI: POST /api/v1/project { githubUrl } (JWT bearer)
     DonationAPI->>DonationAPI: Validate JWT (policy: ApiUser)
     DonationAPI->>GitHub: GET /repos/:owner/:repo
     GitHub-->>DonationAPI: Repository metadata (name, description, language, topics, ...)
     DonationAPI->>DonationAPI: Validate repository is public and not archived
     DonationAPI->>DonationAPI: Construct Project domain entity
     DonationAPI->>MongoDB: Insert Project { status: Draft }
-    DonationAPI-->>Website: 201 Created { projectId }
+    DonationAPI-->>Frontend: 201 Created { projectId }
 ```
 
 ---
@@ -114,11 +114,11 @@ A visitor calls `GET /api/v1/project` without authentication, optionally with `s
 
 ```mermaid
 sequenceDiagram
-    participant Website
+    participant Frontend
     participant DonationAPI as Donation API
     participant MongoDB
 
-    Website->>DonationAPI: POST /api/v1/donation/{id}/transaction { hours, description } (JWT bearer)
+    Frontend->>DonationAPI: POST /api/v1/donation/{id}/transaction { hours, description } (JWT bearer)
     DonationAPI->>DonationAPI: Validate JWT (role: Contributor)
     DonationAPI->>MongoDB: Fetch Donation by id
     DonationAPI->>DonationAPI: Validate donation is Active and contributor is assigned
@@ -128,5 +128,5 @@ sequenceDiagram
     alt hoursLogged >= hoursCommitted
         DonationAPI->>MongoDB: Update Donation { status: Completed }
     end
-    DonationAPI-->>Website: 201 Created { transactionId, hoursLogged, status }
+    DonationAPI-->>Frontend: 201 Created { transactionId, hoursLogged, status }
 ```

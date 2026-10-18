@@ -134,7 +134,7 @@ Key bounded contexts:
 
 - **Authorization**: `src/Authorization/`
 - **Donation**: `src/Donation/`
-- **Website**: `src/Website/`
+- **Frontend**: `src/Frontend/`
 
 ---
 

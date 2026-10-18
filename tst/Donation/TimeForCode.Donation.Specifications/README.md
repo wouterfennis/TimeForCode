@@ -52,4 +52,3 @@ No stack needs to be running. All dependencies are mocked in-process.
 | --- | --- | --- |
 | `TimeForCode.Authorization.Specifications` | OAuth token issuance, session management | HTTP via `WebApplicationFactory` |
 | `TimeForCode.Donation.Specifications` *(this project)* | Project publishing, listing, unpublishing | HTTP via `WebApplicationFactory` |
-| `TimeForCode.Website.Specifications` | User-facing browser journeys | Browser automation via Playwright |

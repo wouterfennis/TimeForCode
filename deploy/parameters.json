@@ -17,10 +17,6 @@
         "authorizationApi":{
             "appServiceName": "timeforcode-auth-api",
             "imageName": "ghcr.io/wouterfennis/timeforcode/timeforcode-authorization-api:31.1"
-        },
-        "timeForCodeWebsite":{
-            "appServiceName": "timeforcode-website",
-            "imageName": "ghcr.io/wouterfennis/timeforcode/timeforcode-website:31.1"
         }
     },
     "database":{

@@ -6,8 +6,51 @@ on:
       - main
 
 jobs:
+  frontend:
+    name: Front-end checks
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    defaults:
+      run:
+        working-directory: src/Frontend/TimeForCode.Frontend
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+      with:
+        node-version-file: src/Frontend/TimeForCode.Frontend/.nvmrc
+        cache: npm
+        cache-dependency-path: src/Frontend/TimeForCode.Frontend/package-lock.json
+
+    - name: Install dependencies
+      run: npm ci --ignore-scripts
+
+    - name: Lint
+      run: npm run lint
+
+    - name: Type-check
+      run: npm run typecheck
+
+    - name: Test
+      run: npm run test:coverage
+
+    - name: Upload coverage
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      with:
+        name: frontend-coverage
+        path: src/Frontend/TimeForCode.Frontend/coverage/lcov.info
+
+    - name: Build
+      run: npm run build
+
   build:
     name: Build and analyze
+    needs: frontend
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -58,7 +101,7 @@ jobs:
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       run: |
-          dotnet dotnet-sonarscanner begin /k:"wouterfennis_TimeForCode" /o:"wouterfennis" /d:sonar.token="$SONAR_TOKEN" /d:sonar.cs.vstest.reportsPaths=**/TestResults/**/*.trx /d:sonar.cs.vscoveragexml.reportsPaths=**/TestResults/**/*.xml /d:sonar.scanner.scanAll=true /d:sonar.exclusions="docs/**,.claude/**,scripts/**" /d:sonar.coverage.exclusions="tst/**,src/Website/TimeForCode.Website/Components/Pages/**"
+          dotnet dotnet-sonarscanner begin /k:"wouterfennis_TimeForCode" /o:"wouterfennis" /d:sonar.token="$SONAR_TOKEN" /d:sonar.cs.vstest.reportsPaths=**/TestResults/**/*.trx /d:sonar.cs.vscoveragexml.reportsPaths=**/TestResults/**/*.xml /d:sonar.scanner.scanAll=true /d:sonar.exclusions="docs/**,.claude/**,scripts/**" /d:sonar.coverage.exclusions="tst/**,src/Frontend/**/*.test.tsx,src/Frontend/TimeForCode.Frontend/tests/**,src/Frontend/TimeForCode.Frontend/src/main.tsx,src/Frontend/TimeForCode.Frontend/vite.config.ts" /d:sonar.javascript.lcov.reportPaths=src/Frontend/TimeForCode.Frontend/coverage/lcov.info
 
     - name: Build
       run: |
@@ -67,6 +110,12 @@ jobs:
     - name: Run tests
       run: |
          dotnet test ./TimeForCode.sln --no-build --verbosity normal --configuration Release --collect "Code Coverage;Format=Xml" --logger trx --results-directory TestResults --filter "TestCategory!=E2E"
+
+    - name: Download front-end coverage
+      uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+      with:
+        name: frontend-coverage
+        path: src/Frontend/TimeForCode.Frontend/coverage
 
     - name: SonarCloud Scan End
       env:
@@ -132,7 +181,7 @@ jobs:
 
   release-please:
     name: Release Please
-    needs: build
+    needs: [build, frontend]
     runs-on: ubuntu-latest
     permissions:
       contents: write

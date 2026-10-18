@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Reqnroll;
 using TimeForCode.Authorization.Api.Client;
@@ -26,7 +26,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
         [When("The user logs in at the time for code platform")]
         public async Task WhenTheUserLogsInAtTheTimeForCodePlatformAsync()
         {
-            _result = await _authClient.TryLoginAsync(IdentityProvider.Github, new Uri("http://localhost:8083"));
+            _result = await _authClient.TryLoginAsync(IdentityProvider.Github, new Uri("http://localhost:8084"));
         }
 
         [When("The user logs in at the time for code platform with an invalid redirect url")]

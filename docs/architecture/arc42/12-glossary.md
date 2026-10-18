@@ -8,12 +8,11 @@ This glossary defines the terms used throughout the TimeForCode architecture doc
 
 | Term | Definition |
 | --- | --- |
-| Access Token | A short-lived JWT issued by the Authorization API. Used by the Website and downstream services to authenticate API calls. Expires in 60 minutes by default. |
+| Access Token | A short-lived JWT issued by the Authorization API. Used by the Frontend and downstream services to authenticate API calls. Expires in 60 minutes by default. |
 | ADR | Architecture Decision Record. A document that captures the context, decision, and consequences of a significant architectural choice. |
 | Arc42 | A lightweight, practical template for software architecture documentation. See [arc42.org](https://arc42.org). |
 | Authorization API | The internal service responsible for OAuth 2.0 login flows, JWT issuance, and token refresh. The only service that signs tokens. |
-| Blazor | Microsoft's framework for building interactive web UIs using C# and .NET instead of JavaScript. |
-| Bounded Context | A DDD concept: a self-contained domain area with its own model, language, and storage. TimeForCode has Authorization, Donation, and Website contexts. |
+| Bounded Context | A DDD concept: a self-contained domain area with its own model, language, and storage. TimeForCode has Authorization and Donation contexts. |
 | Callback | The redirect target that GitHub calls after the user authorises the OAuth 2.0 login. The Authorization API processes this callback to exchange the authorization code for a token. |
 | Contributor | A developer who logs hours against an active donation. Can belong to a DonorOrganization or act independently. |
 | CQRS | Command Query Responsibility Segregation. A pattern that separates read (query) and write (command) operations. TimeForCode uses a lite variant via MediatR. |

@@ -98,7 +98,7 @@ Roles are embedded as claims in the internal JWT:
   "sub": "user-uuid",
   "roles": ["Contributor", "Maintainer"],
   "iss": "https://timeforcode-auth-api.azurewebsites.net",
-  "aud": "https://timeforcode-website.azurewebsites.net",
+  "aud": "https://timeforcode-frontend.azurewebsites.net",
   "exp": 1234567890
 }
 ```
@@ -113,16 +113,16 @@ The implemented tokens differ from this sketch: user tokens carry `scope` `user`
 
 ## Security Boundary
 
-The Authorization API is the only service that issues tokens. All other services (Donation API, Website backend) validate tokens but never issue them. This keeps the trust boundary narrow and the signing key confined to a single service.
+The Authorization API is the only service that issues tokens. All other services (Donation API, front-end BFF) validate tokens but never issue them. This keeps the trust boundary narrow and the signing key confined to a single service.
 
 ```mermaid
 graph LR
     AuthAPI["Authorization API\n(issues tokens)"]
     DonationAPI["Donation API\n(validates tokens)"]
-    Website["Website\n(passes tokens)"]
+    Frontend["Frontend\n(passes tokens)"]
 
-    Website -->|login request| AuthAPI
-    AuthAPI -->|JWT in HttpOnly cookie| Website
-    Website -->|bearer token in request| DonationAPI
+    Frontend -->|login request| AuthAPI
+    AuthAPI -->|JWT in HttpOnly cookie| Frontend
+    Frontend -->|bearer token in request| DonationAPI
     DonationAPI -->|validates via JWKS| AuthAPI
 ```

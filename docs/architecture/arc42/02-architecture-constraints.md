@@ -11,7 +11,7 @@ This section lists all constraints that are not negotiable. They must be respect
 | Constraint | Rationale |
 | --- | --- |
 | Backend must use .NET (ASP.NET Core) | Existing codebase and team expertise. |
-| Frontend must use Blazor | Existing codebase; allows sharing .NET types across client and server. |
+| Frontend must be a React + TypeScript SPA | Decided in ADR-012; better design-system, accessibility and component-testing ecosystem. |
 | Storage must use MongoDB | Existing decision; document model suits the domain's flexible schemas. |
 | Containerisation with Docker | Local development and cloud deployment both rely on container images. |
 | Infrastructure as Code using Azure Bicep | Deployment must be reproducible and auditable. |

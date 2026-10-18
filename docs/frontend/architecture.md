@@ -10,7 +10,8 @@ This document describes how the new front-end is built and how it talks to the b
 
 | Concern | Choice | Reason |
 | --- | --- | --- |
-| Language | TypeScript, `strict` mode | Type safety against the generated API types |
+| Runtime for tooling | Node 24 (LTS) | Pinned; see [Project setup](#project-setup) |
+| Language | TypeScript 7, `strict` mode | Type safety against the generated API types; the native compiler keeps the type-check fast |
 | Framework | React | Largest ecosystem for accessible component libraries and testing |
 | Build tool | Vite | Fast dev server, simple configuration |
 | Routing | React Router | Mature, supports route-level data loading |
@@ -18,8 +19,9 @@ This document describes how the new front-end is built and how it talks to the b
 | Forms | React Hook Form with Zod | Typed validation; map API `ProblemDetails` onto fields |
 | API client | Generated from the OpenAPI snapshots | No hand-written DTOs; see below |
 | Styling | CSS custom properties from [design-system.md](design-system.md), plus CSS Modules | No heavy UI framework; tokens stay the single source of truth |
+| Linting | oxlint with the React, jsx-a11y, TypeScript, import and Vitest rules | Default linter of the Vite React template; accessibility rules built in |
 | Unit and component tests | Vitest, Testing Library, axe | Fast feedback, accessibility checks included |
-| E2E tests | Existing Reqnroll + Playwright suite, extended | Reuse the journeys already specified (ADR-006) |
+| E2E tests | Playwright (planned) | Journeys against the full stack |
 
 Treat the choices as defaults. Replacing one is fine if the reason is recorded in the ADR.
 
@@ -28,7 +30,7 @@ Treat the choices as defaults. Replacing one is fine if the reason is recorded i
 ```text
 src/
 └── Frontend/
-    └── TimeForCode.Frontend/        # new SPA (package.json, vite.config.ts)
+    └── TimeForCode.Frontend/        # the SPA (package.json, vite.config.ts)
         ├── src/
         │   ├── api/                 # generated clients (do not edit by hand)
         │   ├── app/                 # shell, routing, providers
@@ -36,10 +38,28 @@ src/
         │   ├── features/            # projects/, profile/, admin/, auth/
         │   ├── lib/                 # small helpers
         │   └── messages/            # all user-facing strings
-        └── tests/
+        └── tests/                   # shared test setup and helpers (axe)
 ```
 
 Organise by feature, not by file type. A feature folder owns its pages, queries, and tests. Shared building blocks go in `components/`.
+
+## Project setup
+
+Implemented in Phase 0 (#110); commands are in the project [README](../../src/Frontend/TimeForCode.Frontend/README.md).
+
+- **Node version**: Node 24, pinned in `.nvmrc` and `package.json` `engines`. `.npmrc` sets `engine-strict`, so installing with another major version fails. CI reads `.nvmrc`.
+- **Lock file**: `package-lock.json` is committed. CI installs with `npm ci --ignore-scripts`, so no package install scripts run. Dependency versions are pinned exactly.
+- **Scripts**: `lint`, `typecheck`, `test:coverage` and `build` are the checks the pull request workflow runs. Lint warnings fail the check (`--deny-warnings`).
+- **Coverage**: `test:coverage` writes `coverage/lcov.info` with paths relative to the repository root. The `frontend` CI job uploads it, and the .NET job passes it to SonarCloud (`sonar.javascript.lcov.reportPaths`). Test files, `tests/`, `src/main.tsx` and `vite.config.ts` are excluded from coverage.
+- **Strictness**: `strict` and `noUncheckedIndexedAccess` are on. `tsc` is the native TypeScript 7 compiler; Vite and Vitest transpile without it, so only the type-check depends on it.
+- **Accessibility tests**: component tests run axe through the small `axeViolations` helper in `tests/axe.ts` (axe-core directly, no wrapper library). jsdom cannot compute colour contrast, so contrast is checked in the E2E suite or by hand.
+
+Choices that differ from the latest versions or the usual defaults, with the reason:
+
+| Default | Chosen | Reason |
+| --- | --- | --- |
+| Latest jsdom (30) | jsdom 29 | jsdom 30 needs Node 24.15 or later; 29 supports every Node 24 release |
+| ESLint | oxlint | The Vite React template ships oxlint; it has the React, hooks and jsx-a11y rules built in, while the ESLint jsx-a11y plugin does not support ESLint 10 yet |
 
 ## Authentication and the BFF
 
@@ -50,14 +70,14 @@ This is the most important design constraint. Read it before writing any code.
 - Login sets the access and refresh tokens as `HttpOnly`, `Secure`, `SameSite=Strict` cookies from the Authorization API.
 - The cookie values are JSON documents, not bare JWTs.
 - The Donation API validates only a **bearer token in the `Authorization` header**. It does not read cookies.
-- Today the Blazor Website bridges the two: server-side code reads the cookie and attaches the bearer header (`CookieAuthorizationHandler`), and forwards the refresh cookie when refreshing (`RefreshTokenForwardingHandler`).
+- Server-side code can bridge the two: `CookieAuthorizationHandler` (Shared) reads the cookie and attaches the bearer header, and `RefreshTokenForwardingHandler` forwards the refresh cookie when refreshing.
 - [ADR-005](../reference/adr/0005-http-only-cookies.md) forbids tokens in JavaScript-accessible storage.
 
 **Consequence**: a browser SPA cannot call the Donation API directly. JavaScript cannot read the HttpOnly cookie to build the bearer header, and a `SameSite=Strict` cookie will not be sent from a different site anyway.
 
 A **BFF** (backend for frontend) is a small server that exists only to serve one front-end and sits between it and the backend APIs. An **SPA** (single-page application) is a website that loads once and then updates itself with JavaScript, fetching data from APIs.
 
-**Decision (proposed)**: serve the SPA from, and call all APIs through, a thin **backend-for-frontend (BFF)** on the same origin. The BFF is the existing ASP.NET Website project, reduced to:
+**Decision (proposed)**: serve the SPA from, and call all APIs through, a thin **backend-for-frontend (BFF)** on the same origin. The BFF is a new, thin ASP.NET host that does only the following:
 
 1. Serve the built SPA static files, with a fallback to `index.html` for client routes.
 2. Reverse-proxy `/api/auth/*` to the Authorization API and `/api/donation/*` to the Donation API (for example with YARP), reusing the existing cookie-to-bearer and refresh-forwarding handlers.
@@ -66,7 +86,7 @@ A **BFF** (backend for frontend) is a small server that exists only to serve one
 ```mermaid
 graph LR
     Browser["Browser (SPA)"]
-    BFF["BFF\n(ASP.NET Website host)"]
+    BFF["BFF\n(ASP.NET host)"]
     AuthAPI["Authorization API"]
     DonationAPI["Donation API"]
 
@@ -113,10 +133,9 @@ Login starts with a browser navigation to the Authorization API login endpoint (
 
 ## Build and deployment
 
-- Add a Node build stage to `Dockerfile.website` that builds the SPA and copies it into the BFF image.
-- Add the front-end build, lint, type-check, and unit tests to the pull request workflow. The existing workflows are in `.github/workflows/`.
-- The deployment topology does not change: one Website container, now hosting the SPA. See [Deployment Status](../current/deployment-status.md).
-- Pin the Node version in `.nvmrc` or `package.json` `engines`, and commit the lock file.
+- `Dockerfile.frontend` builds the SPA and serves it with nginx (`src/Frontend/nginx.conf`). When the BFF host is added, the SPA build output is copied into the BFF image instead.
+- The front-end build, lint, type-check, and unit tests run in the `frontend` job of the pull request and main-branch workflows (`.github/workflows/`). A failing check fails the job; on `main` it also blocks Release Please.
+- Target topology: one front-end container hosting the SPA. See [Deployment Status](../current/deployment-status.md).
 
 ## Testing strategy
 
@@ -124,7 +143,7 @@ Login starts with a browser navigation to the Authorization API login endpoint (
 | --- | --- | --- |
 | Unit | Vitest | Helpers, mapping of API errors to form errors |
 | Component | Testing Library, axe | Components and pages with a mocked API layer |
-| E2E | Reqnroll + Playwright (existing) | Journeys against the full stack; keep `data-testid` values |
+| E2E | Playwright (planned) | Journeys against the full stack; keep `data-testid` values |
 
 Follow [testing-strategy](../current/testing.md) and ADR-008: E2E tests stay out of CI and run on demand.
 

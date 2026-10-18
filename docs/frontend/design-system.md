@@ -2,7 +2,7 @@
 
 Status: Draft
 
-A small, token-driven design system. The values below are a **starting proposal** derived from the colours already used in the Blazor site (`#1b6ec2` primary blue). A designer may change any value; keep the token names stable, because components refer to names, never raw values.
+A small, token-driven design system. The values below are a **starting proposal** (primary blue `#1b6ec2`). A designer may change any value; keep the token names stable, because components refer to names, never raw values.
 
 ---
 

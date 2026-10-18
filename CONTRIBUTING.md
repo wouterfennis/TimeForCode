@@ -115,9 +115,7 @@ Documentation
 
 ### 6. How to Run Tests Locally
 
-**Run all tests (including E2E / browser tests):**
-
-> Note: This runs `TimeForCode.Website.Specifications` (@E2E) and requires the full Docker Compose stack + Playwright (see below).
+**Run all tests:**
 
 ```powershell
 # From the repository root
@@ -130,29 +128,6 @@ dotnet test TimeForCode.sln
 # Replace the path with the project you want to target
 dotnet test tst/Donation/TimeForCode.Donation.Specifications/TimeForCode.Donation.Specifications.csproj
 ```
-
-**Run only non-E2E tests (as CI does):**
-
-```powershell
-dotnet test TimeForCode.sln --filter "TestCategory!=E2E"
-```
-
-**Run E2E / browser tests (Website.Specifications):**
-
-E2E tests require the full Docker Compose stack. Start it first, then run the tests:
-
-```powershell
-# 1. Start the full stack
-.\scripts\start-local.ps1
-
-# 2. Install the Playwright browser binaries (first time only)
-pwsh tst/Website/TimeForCode.Website.Specifications/bin/Debug/net10.0/playwright.ps1 install chromium
-
-# 3. Run the E2E suite
-dotnet test tst/Website/TimeForCode.Website.Specifications/
-```
-
-See `tst/Website/TimeForCode.Website.Specifications/README.md` for full setup details.
 
 ## Need Help?
 
