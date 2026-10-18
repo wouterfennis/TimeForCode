@@ -4,6 +4,8 @@ Status: Mixed
 
 This section describes the system boundary of TimeForCode and all external systems it communicates with.
 
+Published views of the [LikeC4 architecture model](../likec4/README.md): [system context](https://wouterfennis.github.io/TimeForCode/architecture-model/#/view/index/).
+
 ---
 
 ## Business Context

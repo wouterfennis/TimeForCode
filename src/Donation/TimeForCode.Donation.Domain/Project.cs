@@ -6,12 +6,12 @@ namespace TimeForCode.Donation.Domain
 {
     public class Project : DocumentEntity
     {
-        public required GithubSnapshot Snapshot { get; set; }
+        public required GithubSnapshot Snapshot { get; init; }
         public required Uri GithubRepositoryUrl { get; init; }
-        public required ProjectStatus Status { get; set; }
+        public ProjectStatus Status { get; private set; } = ProjectStatus.Draft;
         public required string PublishedByUserId { get; init; }
-        public required DateTimeOffset PublishedAt { get; set; }
-        public string? ChangeRequestReason { get; set; }
+        public required DateTimeOffset PublishedAt { get; init; }
+        public string? ChangeRequestReason { get; private set; }
 
         public static Project Create(
             GithubSnapshot snapshot,

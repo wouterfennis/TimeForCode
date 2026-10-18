@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using MongoDB.Bson;
 using TimeForCode.Authorization.Application.Interfaces;
 using TimeForCode.Authorization.Application.Options;
 using TimeForCode.Authorization.Commands;
@@ -35,13 +34,11 @@ namespace TimeForCode.Authorization.Application.Services
             _logger.LogDebug("Creating refresh token for user {UserId}", userId);
 
             var token = _randomGenerator.GenerateRandomString();
-            var refreshToken = new Domain.Entities.RefreshToken
-            {
-                Id = ObjectId.GenerateNewId(),
-                ExpiresAfter = _timeProvider.GetUtcNow().AddDays(_tokenCreationOptions.DefaultRefreshTokenExpirationAfterInDays),
-                TokenHash = RefreshTokenHasher.Hash(token),
-                UserId = userId
-            };
+            var refreshToken = Domain.Entities.RefreshToken.Issue(
+                RefreshTokenHasher.Hash(token),
+                userId,
+                _timeProvider.GetUtcNow(),
+                _tokenCreationOptions.DefaultRefreshTokenExpirationAfterInDays);
 
             await _refreshTokenRepository.CreateAsync(refreshToken);
 
@@ -64,14 +61,16 @@ namespace TimeForCode.Authorization.Application.Services
 
             DateTimeOffset now = _timeProvider.GetUtcNow();
 
-            if (existingToken.IsExpired(now))
+            var replacementCheck = existingToken.CheckReplaceable(now);
+
+            if (replacementCheck == Domain.Entities.RefreshTokenReplacementCheck.Expired)
             {
                 _logger.LogWarning("Refresh token expired for user {UserId}", existingToken.UserId);
                 return Result<RefreshTokenReplacement>.Failure("Refresh token expired");
             }
 
             // The conditional update lets exactly one of two concurrent requests win the rotation.
-            if (existingToken.IsRotated || !await _refreshTokenRepository.TryMarkRotatedAsync(existingToken.Id, now))
+            if (replacementCheck == Domain.Entities.RefreshTokenReplacementCheck.Replayed || !await _refreshTokenRepository.TryMarkRotatedAsync(existingToken.Id, now))
             {
                 _logger.LogWarning("Rotated refresh token replayed for user {UserId}; revoking all refresh tokens", existingToken.UserId);
                 await _refreshTokenRepository.DeleteByUserIdAsync(existingToken.UserId);

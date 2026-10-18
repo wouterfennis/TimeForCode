@@ -4,6 +4,8 @@ Status: Mixed
 
 This section describes the static decomposition of the system into building blocks and their responsibilities.
 
+Published views of the [LikeC4 architecture model](../likec4/README.md): [bounded contexts](https://wouterfennis.github.io/TimeForCode/architecture-model/#/view/containers/), [Authorization](https://wouterfennis.github.io/TimeForCode/architecture-model/#/view/authorization/), [Donation](https://wouterfennis.github.io/TimeForCode/architecture-model/#/view/donation/) and [Shared](https://wouterfennis.github.io/TimeForCode/architecture-model/#/view/shared/).
+
 ---
 
 ## Level 1 — System Overview

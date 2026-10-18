@@ -42,10 +42,9 @@ namespace TimeForCode.Donation.Specifications.Steps
                 Id = new ObjectId(Constants.TestProjectId),
                 Snapshot = ProjectBuilder.BuildSnapshot(),
                 GithubRepositoryUrl = new Uri(Constants.TestGithubRepositoryUrl),
-                Status = TimeForCode.Donation.Values.ProjectStatus.Active,
                 PublishedByUserId = "another-user-id",
                 PublishedAt = new DateTimeOffset(2024, 1, 1, 0, 0, 0, TimeSpan.Zero)
-            };
+            }.InStatus(TimeForCode.Donation.Values.ProjectStatus.Active);
 
             var mockProjectRepository = _provider.GetRequiredService<Mock<IProjectRepository>>();
             mockProjectRepository.Setup(x => x.GetByIdAsync(anotherUsersProject.Id.ToString()))
@@ -127,7 +126,7 @@ namespace TimeForCode.Donation.Specifications.Steps
         [Given("One of the projects has been unpublished")]
         public void GivenOneOfTheProjectsHasBeenUnpublished()
         {
-            _catalog.ForEach(p => p.Status = TimeForCode.Donation.Values.ProjectStatus.Archived);
+            _catalog.ForEach(p => p.Archive());
         }
 
         [When("The user publishes the repository on the time for code platform")]

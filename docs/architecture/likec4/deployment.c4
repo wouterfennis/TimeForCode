@@ -1,0 +1,29 @@
+deployment {
+  environment prod 'Production' {
+    azure subscription 'Azure subscription' {
+      resourceGroup infra 'rg-platform-infra' {
+        description 'deploy/applicationInfrastructure.bicep'
+        plan = appService 'ApplicationAppServicePlan' {
+          description 'Shared App Service plan, SKU F1'
+        }
+      }
+      resourceGroup app 'rg-auth-app' {
+        description 'deploy/application.bicep'
+        authSite = appService 'timeforcode-auth-api' {
+          description 'Linux container from ghcr.io, with a MongoDB sidecar container'
+          instanceOf timeforcode.authorization
+          instanceOf mongodb
+        }
+      }
+    }
+  }
+
+  environment local 'Local' {
+    developerMachine machine 'Developer machine' {
+      description 'docker-compose.yaml, started with scripts/start-local.ps1'
+      instanceOf timeforcode.authorization
+      instanceOf timeforcode.donation
+      instanceOf mongodb
+    }
+  }
+}

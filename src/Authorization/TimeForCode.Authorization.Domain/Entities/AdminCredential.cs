@@ -16,7 +16,7 @@ namespace TimeForCode.Authorization.Domain.Entities
 
         public required byte[] CredentialId { get; init; }
         public required byte[] PublicKey { get; init; }
-        public required long SignCount { get; set; }
+        public required long SignCount { get; init; }
         public required string[] Transports { get; init; }
         public required bool IsUserVerified { get; init; }
         public required bool IsBackupEligible { get; init; }

@@ -1,7 +1,6 @@
 ﻿using MediatR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using MongoDB.Bson;
 using System.Web;
 using TimeForCode.Authorization.Application.Interfaces;
 using TimeForCode.Authorization.Application.Options;
@@ -57,15 +56,12 @@ namespace TimeForCode.Authorization.Application.Handlers
 
         private async Task<StateEntry> CreateStateAsync(IdentityProvider identityProvider, Uri redirectUri)
         {
-            var stateEntry = new StateEntry
-            {
-                Id = ObjectId.GenerateNewId(),
-                Key = _randomGenerator.GenerateRandomString(),
-                IdentityProvider = identityProvider,
-                RedirectUri = redirectUri,
-                CodeVerifier = _randomGenerator.GenerateCodeVerifier(),
-                ExpiresAfter = _timeProvider.GetUtcNow().Add(StateEntry.Lifetime)
-            };
+            var stateEntry = StateEntry.Start(
+                _randomGenerator.GenerateRandomString(),
+                identityProvider,
+                redirectUri,
+                _randomGenerator.GenerateCodeVerifier(),
+                _timeProvider.GetUtcNow());
             await _stateRepository.AddAsync(stateEntry);
             return stateEntry;
         }

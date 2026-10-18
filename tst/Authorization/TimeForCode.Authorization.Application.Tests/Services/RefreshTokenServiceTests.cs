@@ -141,13 +141,22 @@ namespace TimeForCode.Authorization.Application.Tests.Services
             ExpiresAfter = Now.AddDays(1)
         };
 
-        private static Domain.Entities.RefreshToken Entity(string token, DateTimeOffset? rotatedAt, DateTimeOffset? expiresAfter = null) => new()
+        private static Domain.Entities.RefreshToken Entity(string token, DateTimeOffset? rotatedAt, DateTimeOffset? expiresAfter = null) => WithRotation(new Domain.Entities.RefreshToken
         {
             Id = ObjectId.GenerateNewId(),
             TokenHash = RefreshTokenHasher.Hash(token),
             UserId = "user-1",
-            ExpiresAfter = expiresAfter ?? Now.AddDays(1),
-            RotatedAt = rotatedAt
-        };
+            ExpiresAfter = expiresAfter ?? Now.AddDays(1)
+        }, rotatedAt);
+
+        private static Domain.Entities.RefreshToken WithRotation(Domain.Entities.RefreshToken token, DateTimeOffset? rotatedAt)
+        {
+            if (rotatedAt.HasValue)
+            {
+                token.MarkRotated(rotatedAt.Value);
+            }
+
+            return token;
+        }
     }
 }

@@ -117,3 +117,7 @@ node_modules/
 src/Frontend/**/dist/
 *.tsbuildinfo
 npm-debug.log*
+
+# LikeC4 dependencies
+docs/architecture/likec4/node_modules/
+docs/architecture/likec4/dist/

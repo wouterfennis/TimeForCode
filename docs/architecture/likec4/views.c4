@@ -1,0 +1,68 @@
+views {
+  view index {
+    title 'System context'
+    description 'TimeForCode, its users and external systems'
+    include donor, maintainer, admin, timeforcode, github, mongodb
+  }
+
+  view containers of timeforcode {
+    title 'Bounded contexts'
+    include *
+  }
+
+  view authorization of timeforcode.authorization {
+    title 'Authorization bounded context'
+    include *
+    include github, mongodb, timeforcode.donation.donationApi
+  }
+
+  view donation of timeforcode.donation {
+    title 'Donation bounded context'
+    include *
+    include github, mongodb
+  }
+
+  view shared of timeforcode.shared {
+    title 'Shared library'
+    include *
+    include timeforcode.authorization.authApi, timeforcode.donation.donationApi
+  }
+
+  dynamic view githubLogin {
+    title 'GitHub login'
+    description 'Runtime scenario 1 in 06-runtime-view.md'
+
+    donor -> timeforcode.authorization.authApi 'GET /api/v1/authentication/login'
+    timeforcode.authorization.authApi -> donor '302 redirect to GitHub (state, client_id)'
+    donor -> github 'authorizes the application'
+    github -> timeforcode.authorization.authApi 'GET /callback?code&state'
+    timeforcode.authorization.authApi -> timeforcode.authorization.authApplication 'handles callback'
+    timeforcode.authorization.authApplication -> timeforcode.authorization.authInfrastructure 'exchange code, fetch profile'
+    timeforcode.authorization.authInfrastructure -> github 'POST /login/oauth/access_token, GET /user'
+    timeforcode.authorization.authInfrastructure -> mongodb 'link GitHub account, store refresh token'
+    timeforcode.authorization.authApi -> donor '302 to client, HttpOnly JWT and refresh cookies'
+  }
+
+  dynamic view logContribution {
+    title 'Log a time contribution'
+    description 'Logging time on an Active project'
+
+    donor -> timeforcode.donation.donationApi 'POST contribution (JWT bearer)'
+    timeforcode.donation.donationApi -> timeforcode.shared.authorizeFilter 'validate JWT, policy ApiUser'
+    timeforcode.donation.donationApi -> timeforcode.donation.donationApplication 'dispatch log-contribution command'
+    timeforcode.donation.donationApplication -> timeforcode.donation.donationDomain 'check project is Active'
+    timeforcode.donation.donationApplication -> timeforcode.donation.donationInfrastructure 'upsert contributor, insert contribution'
+    timeforcode.donation.donationInfrastructure -> mongodb 'persist'
+    timeforcode.donation.donationApi -> donor '201 Created'
+  }
+
+  deployment view production {
+    title 'Production deployment (Azure)'
+    include prod.**
+  }
+
+  deployment view local {
+    title 'Local development (podman compose)'
+    include local.**
+  }
+}

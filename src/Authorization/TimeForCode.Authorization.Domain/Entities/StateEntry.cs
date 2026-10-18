@@ -26,6 +26,19 @@ namespace TimeForCode.Authorization.Domain.Entities
         [BsonRepresentation(BsonType.DateTime)]
         public required DateTimeOffset ExpiresAfter { get; init; }
 
+        public static StateEntry Start(string key, IdentityProvider identityProvider, Uri redirectUri, string codeVerifier, DateTimeOffset now)
+        {
+            return new StateEntry
+            {
+                Id = ObjectId.GenerateNewId(),
+                Key = key,
+                IdentityProvider = identityProvider,
+                RedirectUri = redirectUri,
+                CodeVerifier = codeVerifier,
+                ExpiresAfter = now.Add(Lifetime)
+            };
+        }
+
         public bool IsExpired(DateTimeOffset referenceDateTime) => referenceDateTime > ExpiresAfter;
     }
 }

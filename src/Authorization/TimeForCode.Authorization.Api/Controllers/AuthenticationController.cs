@@ -170,15 +170,15 @@ namespace TimeForCode.Authorization.Api.Controllers
 
         private CallbackResponseModel ProcessTokenResult(Result<TokenResult> tokenResult)
         {
-            var result = tokenResult.Value!;
+            var result = tokenResult.Value;
 
             SetTokenResponseCookies(result);
 
             var response = new CallbackResponseModel
             {
-                AccessToken = tokenResult.Value!.InternalAccessToken,
-                RefreshToken = tokenResult.Value!.RefreshToken,
-                IsNewUser = tokenResult.Value!.IsNewUser
+                AccessToken = result.InternalAccessToken,
+                RefreshToken = result.RefreshToken,
+                IsNewUser = result.IsNewUser
             };
 
             return response;
