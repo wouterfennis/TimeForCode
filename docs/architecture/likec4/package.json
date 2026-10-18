@@ -5,7 +5,7 @@
   "scripts": {
     "validate": "likec4 validate .",
     "serve": "likec4 start .",
-    "build": "likec4 build . -o dist --base /TimeForCode/architecture-model/ --use-hash-history --title TimeForCode"
+    "build": "likec4 build . -o dist --use-hash-history --title TimeForCode"
   },
   "devDependencies": {
     "likec4": "1.60.0"

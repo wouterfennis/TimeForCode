@@ -223,6 +223,10 @@ A single `dotnet test --filter "TestCategory!=E2E"` command is sufficient for th
 
 Should a need arise to isolate failures by type (e.g. slow infrastructure tests blocking fast unit feedback), apply `[TestCategory("Integration")]` / `[TestCategory("Architecture")]` attributes and extend the `--filter` expression. No changes to the CI workflow files are required to support this.
 
+### Documentation site build
+
+The `Documentation Site` workflow (`.github/workflows/docs-site.yaml`) runs on pull requests that touch `docs/`. It runs `likec4 validate` on the architecture model in `docs/architecture/likec4/` and builds the Jekyll docs and the model. The pull request run does not deploy; the Pages artifact upload and the deploy happen only on push to `main`.
+
 ### E2E tests
 
 Website Specifications (`TimeForCode.Website.Specifications`) are categorised as E2E tests because they require the full Docker Compose stack (`podman compose up --build`). They are excluded from the standard CI filter. The recommended approach is a dedicated scheduled pipeline or a separate Docker Compose job that boots the stack before running `dotnet test --filter "TestCategory=E2E"`. This is tracked as a future improvement.

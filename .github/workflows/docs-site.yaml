@@ -60,7 +60,7 @@ jobs:
 
     - name: Build architecture model
       working-directory: docs/architecture/likec4
-      run: npm run build
+      run: npm run build -- --base "/${{ github.event.repository.name }}/architecture-model/"
 
     - name: Add architecture model to site
       run: cp -r docs/architecture/likec4/dist _site/architecture-model
