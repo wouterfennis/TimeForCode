@@ -48,10 +48,9 @@ namespace TimeForCode.Donation.Specifications.TestBuilder
                 Id = objectId,
                 Snapshot = snapshot ?? BuildSnapshot(),
                 GithubRepositoryUrl = new Uri(Constants.TestGithubRepositoryUrl),
-                Status = status,
                 PublishedByUserId = ownerId,
                 PublishedAt = publishedAt ?? new DateTimeOffset(2024, 1, 1, 0, 0, 0, TimeSpan.Zero)
-            };
+            }.InStatus(status);
         }
 
         internal static GithubSnapshot BuildSnapshot()

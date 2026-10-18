@@ -1,4 +1,7 @@
 using FluentAssertions;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
+using TimeForCode.Donation.Application.Tests.Handlers;
 using TimeForCode.Donation.Domain;
 using TimeForCode.Donation.Values;
 
@@ -181,6 +184,32 @@ namespace TimeForCode.Donation.Application.Tests.Domain
             BuildProject(status).EnsureCanReceiveDonations().IsSuccess.Should().BeFalse();
         }
 
+        [TestMethod]
+        [DataRow(nameof(Project.Status))]
+        [DataRow(nameof(Project.ChangeRequestReason))]
+        [DataRow(nameof(Project.Snapshot))]
+        [DataRow(nameof(Project.PublishedAt))]
+        public void LifecycleProperty_FromOutsideTheAggregate_CannotBeAssigned(string propertyName)
+        {
+            var setter = typeof(Project).GetProperty(propertyName)!.SetMethod;
+
+            (setter == null || !setter.IsPublic || setter.ReturnParameter.GetRequiredCustomModifiers().Length > 0)
+                .Should().BeTrue($"{propertyName} may only change through the aggregate's own methods");
+        }
+
+        [TestMethod]
+        public void BsonRoundTrip_ProjectAfterTransitions_KeepsStatusAndChangeRequestReason()
+        {
+            var project = BuildProject(ProjectStatus.Draft);
+            project.SubmitForReview();
+            project.RequestChanges("Add a README");
+
+            var restored = BsonSerializer.Deserialize<Project>(project.ToBson());
+
+            restored.Status.Should().Be(ProjectStatus.Draft);
+            restored.ChangeRequestReason.Should().Be("Add a README");
+        }
+
         private static Project BuildProject(ProjectStatus status)
         {
             return new Project
@@ -200,10 +229,9 @@ namespace TimeForCode.Donation.Application.Tests.Domain
                     PushedAt = DateTimeOffset.UtcNow
                 },
                 GithubRepositoryUrl = new Uri("https://github.com/owner/test-repo"),
-                Status = status,
                 PublishedByUserId = "user-1",
                 PublishedAt = DateTimeOffset.UtcNow
-            };
+            }.InStatus(status);
         }
     }
 }

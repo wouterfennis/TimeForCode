@@ -75,7 +75,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
         [Given("The user has already refreshed with that refresh token")]
         public void GivenTheUserHasAlreadyRefreshedWithThatRefreshToken()
         {
-            _storedRefreshToken!.RotatedAt = DateTimeOffset.UtcNow.AddMinutes(-1);
+            _storedRefreshToken!.MarkRotated(DateTimeOffset.UtcNow.AddMinutes(-1));
         }
 
         [Then("The refresh token is revoked")]

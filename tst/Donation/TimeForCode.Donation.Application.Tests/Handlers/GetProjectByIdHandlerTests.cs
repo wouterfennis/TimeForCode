@@ -54,7 +54,7 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
         public async Task Handle_ArchivedProject_ReturnsFailure()
         {
             var project = BuildPublishedProject("5f43a0e74b12c84f1b000001");
-            project.Status = ProjectStatus.Archived;
+            project.Archive();
             _mockRepository.Setup(r => r.GetByIdAsync(project.Id.ToString()))
                 .ReturnsAsync(project);
 
@@ -109,10 +109,9 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
                     PushedAt = DateTimeOffset.UtcNow
                 },
                 GithubRepositoryUrl = new Uri("https://github.com/owner/test-repo"),
-                Status = ProjectStatus.Active,
                 PublishedByUserId = "user-123",
                 PublishedAt = DateTimeOffset.UtcNow
-            };
+            }.InStatus(ProjectStatus.Active);
         }
     }
 }
