@@ -9,7 +9,7 @@ namespace TimeForCode.Authorization.Infrastructure.Services.Admin
     /// Only the members actually exercised by the passkey ceremony are meaningfully implemented; the rest
     /// are no-ops since no real user store exists behind this.
     /// </summary>
-    internal class AdminUserStore : IUserStore<AdminPasskeyUser>, IUserPasskeyStore<AdminPasskeyUser>
+    internal sealed class AdminUserStore : IUserPasskeyStore<AdminPasskeyUser>
     {
         private readonly IAdminCredentialRepository _adminCredentialRepository;
 
