@@ -266,6 +266,468 @@
         }
       }
     },
+    "/api/v1/project/{id}/donation": {
+      "post": {
+        "tags": [
+          "Donation"
+        ],
+        "summary": "Pledges hours to an active project, as an individual or for a donor organization (never both). The donation starts as Pending.",
+        "operationId": "PledgeDonation",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The project identifier.",
+            "required": true,
+            "schema": {
+              "pattern": "^[0-9a-fA-F]{24}$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "The hours and the donor.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PledgeDonationRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PledgeDonationRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/PledgeDonationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DonationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. Retry after the number of seconds given in the Retry-After header.",
+            "headers": {
+              "Retry-After": {
+                "description": "Number of seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Donation"
+        ],
+        "summary": "Returns the donations pledged to an active project (anonymous), oldest first, with their progress.",
+        "operationId": "GetProjectDonations",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The project identifier.",
+            "required": true,
+            "schema": {
+              "pattern": "^[0-9a-fA-F]{24}$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetDonationsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. Retry after the number of seconds given in the Retry-After header.",
+            "headers": {
+              "Retry-After": {
+                "description": "Number of seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/donation": {
+      "get": {
+        "tags": [
+          "Donation"
+        ],
+        "summary": "Returns the donations the caller pledged, oldest first, with their progress.",
+        "operationId": "GetMyDonations",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetDonationsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. Retry after the number of seconds given in the Retry-After header.",
+            "headers": {
+              "Retry-After": {
+                "description": "Number of seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/donation/{id}/activate": {
+      "post": {
+        "tags": [
+          "Donation"
+        ],
+        "summary": "Activates a pending donation. Allowed for the donor who pledged it and for administrators.",
+        "operationId": "ActivateDonation",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The donation identifier.",
+            "required": true,
+            "schema": {
+              "pattern": "^[0-9a-fA-F]{24}$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DonationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. Retry after the number of seconds given in the Retry-After header.",
+            "headers": {
+              "Retry-After": {
+                "description": "Number of seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/donation/{id}/cancel": {
+      "post": {
+        "tags": [
+          "Donation"
+        ],
+        "summary": "Cancels a pending or active donation. Allowed for the donor who pledged it and for administrators.",
+        "operationId": "CancelDonation",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The donation identifier.",
+            "required": true,
+            "schema": {
+              "pattern": "^[0-9a-fA-F]{24}$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DonationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. Retry after the number of seconds given in the Retry-After header.",
+            "headers": {
+              "Retry-After": {
+                "description": "Number of seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/DonorOrganization": {
       "post": {
         "tags": [
@@ -1632,11 +2094,95 @@
         },
         "description": "Represents a request to create a donor organization."
       },
+      "DonationResponse": {
+        "required": [
+          "id",
+          "projectId",
+          "status",
+          "hoursCommitted",
+          "hoursLogged",
+          "progressPercentage",
+          "createdAt"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The donation identifier."
+          },
+          "projectId": {
+            "type": "string",
+            "description": "The identifier of the project the hours are pledged to."
+          },
+          "donorOrganizationId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "The donor organization of the pledge; absent when pledged as an individual."
+          },
+          "status": {
+            "description": "The lifecycle state: Pending, Active, Completed or Cancelled.",
+            "$ref": "#/components/schemas/DonationStatus"
+          },
+          "hoursCommitted": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The number of hours pledged.",
+            "format": "int32"
+          },
+          "hoursLogged": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The number of pledged hours that were logged on the project while the donation was active.",
+            "format": "int32"
+          },
+          "progressPercentage": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The share of committed hours that is logged, in whole percent (0 to 100).",
+            "format": "int32"
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "The moment the pledge was made.",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "The moment the pledge last changed.",
+            "format": "date-time"
+          }
+        },
+        "description": "Represents a donation pledge and its progress."
+      },
+      "DonationStatus": {
+        "enum": [
+          "Pending",
+          "Active",
+          "Completed",
+          "Cancelled"
+        ]
+      },
       "DonorOrganizationResponse": {
         "required": [
           "id",
           "name",
-          "createdAt"
+          "createdAt",
+          "hoursAvailable",
+          "hoursSpent"
         ],
         "type": "object",
         "properties": {
@@ -1674,6 +2220,24 @@
             ],
             "description": "When the donor organization was last updated.",
             "format": "date-time"
+          },
+          "hoursAvailable": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "Pledged hours of the organization's active donations that are not logged yet.",
+            "format": "int32"
+          },
+          "hoursSpent": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "Hours logged on all donations of the organization.",
+            "format": "int32"
           }
         },
         "description": "Represents a donor organization response."
@@ -1693,6 +2257,22 @@
           }
         },
         "description": "Represents the contributions logged on a project."
+      },
+      "GetDonationsResponse": {
+        "required": [
+          "donations"
+        ],
+        "type": "object",
+        "properties": {
+          "donations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DonationResponse"
+            },
+            "description": "The donations, oldest pledge first."
+          }
+        },
+        "description": "Represents a list of donations."
       },
       "GetDonorOrganizationsResponse": {
         "required": [
@@ -1802,6 +2382,38 @@
           }
         },
         "description": "Represents a paginated list of published projects."
+      },
+      "PledgeDonationRequest": {
+        "required": [
+          "hours"
+        ],
+        "type": "object",
+        "properties": {
+          "hours": {
+            "maximum": 10000,
+            "minimum": 1,
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The whole number of hours pledged.",
+            "format": "int32"
+          },
+          "asIndividual": {
+            "type": "boolean",
+            "description": "Pledge as an individual. Exclusive with string? PledgeDonationRequest.DonorOrganizationId."
+          },
+          "donorOrganizationId": {
+            "pattern": "^[0-9a-fA-F]{24}$",
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "The donor organization the hours are pledged for. Exclusive with bool PledgeDonationRequest.AsIndividual."
+          }
+        },
+        "description": "Represents a pledge of developer hours to a project. Exactly one donor must be given: an individual or a donor organization."
       },
       "ProblemDetails": {
         "type": "object",
@@ -2276,6 +2888,9 @@
     },
     {
       "name": "Contributor"
+    },
+    {
+      "name": "Donation"
     },
     {
       "name": "DonorOrganization"
