@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.Extensions.Logging;
+using TimeForCode.Donation.Application.Exceptions;
 using TimeForCode.Donation.Application.Interfaces;
 using TimeForCode.Donation.Commands;
 
@@ -39,7 +40,15 @@ namespace TimeForCode.Donation.Application.Handlers
                 return Result<DonationResult>.Conflict(transition.ErrorMessage);
             }
 
-            await _donationRepository.UpdateAsync(donation);
+            try
+            {
+                await _donationRepository.UpdateAsync(donation);
+            }
+            catch (RepositoryConflictException)
+            {
+                _logger.LogWarning("Donation {DonationId} was changed concurrently", request.DonationId);
+                return Result<DonationResult>.Conflict("The donation was changed by someone else; reload it and try again.");
+            }
 
             return Result<DonationResult>.Success(new DonationResult { Donation = donation.ToDto() });
         }

@@ -100,13 +100,16 @@ A pledge of a specific number of developer hours from a donor to a project.
 | --- | --- | --- |
 | id | UUID | Internal identifier |
 | donorOrganizationId | UUID? | Linked organization (null for individual donations) |
-| individualDonorId | UUID? | Linked individual donor (null for organization donations) |
+| pledgedByUserId | string | Platform user who made the pledge (implemented); the individual donor when no organization is linked, and the only non-administrator allowed to activate or cancel |
+| version | int | Optimistic concurrency counter (implemented) |
 | projectId | UUID | Target project |
 | hoursCommitted | decimal | Total hours pledged |
-| hoursLogged | decimal | Hours logged so far via transactions |
+| hoursLogged | int | Hours logged so far; implemented as Contribution hours allocated to the Active donation, see below |
 | status | enum | Pending, Active, Completed, Cancelled |
 | createdAt | DateTime | When the pledge was made |
 | completedAt | DateTime? | When all hours were logged |
+
+Implemented in issue 78: donations are their own collection, and logged hours (contributions) are counted toward the project's `Active` donations, oldest first, instead of through `DonationTransaction` entries. The transaction entity below remains a planned design.
 
 The donation lifecycle is: `Pending` (pledge made, awaiting start) → `Active` (contributors are logging hours) → `Completed` (all hours logged) or `Cancelled` (withdrawn before completion).
 

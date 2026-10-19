@@ -2,6 +2,7 @@ using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 using MongoDB.Bson;
 using Moq;
+using TimeForCode.Donation.Application.Exceptions;
 using TimeForCode.Donation.Application.Handlers;
 using TimeForCode.Donation.Application.Interfaces;
 using TimeForCode.Donation.Commands;
@@ -29,7 +30,7 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
             _contributorRepository = new Mock<IContributorRepository>();
             _contributionRepository = new Mock<IContributionRepository>();
             _donationRepository = new Mock<IDonationRepository>();
-            _donationRepository.Setup(r => r.GetByProjectIdAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync([]);
+            _donationRepository.Setup(r => r.GetActiveByProjectIdAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync([]);
             _contributorRepository.Setup(r => r.UpsertAsync(It.IsAny<Contributor>()))
                 .ReturnsAsync((Contributor c) => new Contributor
                 {
@@ -115,7 +116,7 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
         {
             GivenProject(ProjectStatus.Active);
             var donation = DonationTestData.Build(DonationStatus.Active, committed: 5);
-            _donationRepository.Setup(r => r.GetByProjectIdAsync(ProjectId.ToString(), It.IsAny<CancellationToken>()))
+            _donationRepository.Setup(r => r.GetActiveByProjectIdAsync(ProjectId.ToString(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync([donation]);
 
             await _sut.Handle(Valid(), CancellationToken.None);
@@ -130,7 +131,7 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
         {
             GivenProject(ProjectStatus.Active);
             var donation = DonationTestData.Build(DonationStatus.Active, committed: 3);
-            _donationRepository.Setup(r => r.GetByProjectIdAsync(ProjectId.ToString(), It.IsAny<CancellationToken>()))
+            _donationRepository.Setup(r => r.GetActiveByProjectIdAsync(ProjectId.ToString(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync([donation]);
 
             await _sut.Handle(Valid(), CancellationToken.None);
@@ -144,7 +145,7 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
             GivenProject(ProjectStatus.Active);
             var first = DonationTestData.Build(DonationStatus.Active, committed: 2);
             var second = DonationTestData.Build(DonationStatus.Active, committed: 5);
-            _donationRepository.Setup(r => r.GetByProjectIdAsync(ProjectId.ToString(), It.IsAny<CancellationToken>()))
+            _donationRepository.Setup(r => r.GetActiveByProjectIdAsync(ProjectId.ToString(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync([first, second]);
 
             await _sut.Handle(Valid(), CancellationToken.None);
@@ -158,13 +159,59 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
         {
             GivenProject(ProjectStatus.Active);
             var donation = DonationTestData.Build(DonationStatus.Pending, committed: 5);
-            _donationRepository.Setup(r => r.GetByProjectIdAsync(ProjectId.ToString(), It.IsAny<CancellationToken>()))
+            _donationRepository.Setup(r => r.GetActiveByProjectIdAsync(ProjectId.ToString(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync([donation]);
 
             await _sut.Handle(Valid(), CancellationToken.None);
 
             donation.HoursLogged.Should().Be(0);
             _donationRepository.Verify(r => r.UpdateAsync(It.IsAny<TimeForCode.Donation.Domain.Donation>()), Times.Never);
+        }
+
+        [TestMethod]
+        public async Task Handle_ConcurrentChangeOfDonation_ReloadsAndCountsTheHours()
+        {
+            GivenProject(ProjectStatus.Active);
+            var stale = DonationTestData.Build(DonationStatus.Active, committed: 5);
+            var fresh = DonationTestData.Build(DonationStatus.Active, committed: 5);
+            _donationRepository.SetupSequence(r => r.GetActiveByProjectIdAsync(ProjectId.ToString(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync([stale])
+                .ReturnsAsync([fresh]);
+            _donationRepository.SetupSequence(r => r.UpdateAsync(It.IsAny<TimeForCode.Donation.Domain.Donation>()))
+                .ThrowsAsync(new RepositoryConflictException("changed"))
+                .Returns(Task.CompletedTask);
+
+            var result = await _sut.Handle(Valid(), CancellationToken.None);
+
+            result.IsSuccess.Should().BeTrue();
+            fresh.HoursLogged.Should().Be(3);
+            _donationRepository.Verify(r => r.UpdateAsync(fresh), Times.Once);
+        }
+
+        [TestMethod]
+        public async Task Handle_DonationKeepsChanging_StillRecordsTheContribution()
+        {
+            GivenProject(ProjectStatus.Active);
+            _donationRepository.Setup(r => r.GetActiveByProjectIdAsync(ProjectId.ToString(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(() => [DonationTestData.Build(DonationStatus.Active, committed: 5)]);
+            _donationRepository.Setup(r => r.UpdateAsync(It.IsAny<TimeForCode.Donation.Domain.Donation>()))
+                .ThrowsAsync(new RepositoryConflictException("changed"));
+
+            var result = await _sut.Handle(Valid(), CancellationToken.None);
+
+            result.IsSuccess.Should().BeTrue();
+            _contributionRepository.Verify(r => r.CreateAsync(It.IsAny<Contribution>()), Times.Once);
+            _donationRepository.Verify(r => r.UpdateAsync(It.IsAny<TimeForCode.Donation.Domain.Donation>()), Times.Exactly(3));
+        }
+
+        [TestMethod]
+        public async Task Handle_ProjectNotFound_ReturnsNotFound()
+        {
+            _projectRepository.Setup(r => r.GetByIdAsync(It.IsAny<string>())).ReturnsAsync((Project?)null);
+
+            var result = await _sut.Handle(Valid(), CancellationToken.None);
+
+            result.FailureStatusCode.Should().Be(System.Net.HttpStatusCode.NotFound);
         }
 
         [TestMethod]

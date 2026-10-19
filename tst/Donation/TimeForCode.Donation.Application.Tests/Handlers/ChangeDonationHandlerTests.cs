@@ -2,6 +2,7 @@ using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using System.Net;
+using TimeForCode.Donation.Application.Exceptions;
 using TimeForCode.Donation.Application.Handlers;
 using TimeForCode.Donation.Application.Interfaces;
 using TimeForCode.Donation.Commands;
@@ -77,6 +78,28 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
 
             result.FailureStatusCode.Should().Be(HttpStatusCode.Conflict);
             _donationRepository.Verify(r => r.UpdateAsync(It.IsAny<DonationEntity>()), Times.Never);
+        }
+
+        [TestMethod]
+        public async Task Activate_DonationChangedConcurrently_ReturnsConflict()
+        {
+            var donation = GivenDonation(DonationStatus.Pending);
+            _donationRepository.Setup(r => r.UpdateAsync(donation)).ThrowsAsync(new RepositoryConflictException("changed"));
+
+            var result = await _activate.Handle(new ActivateDonationCommand { DonationId = donation.Id.ToString(), UserId = "user-1" }, CancellationToken.None);
+
+            result.FailureStatusCode.Should().Be(HttpStatusCode.Conflict);
+        }
+
+        [TestMethod]
+        public async Task Cancel_DonationChangedConcurrently_ReturnsConflict()
+        {
+            var donation = GivenDonation(DonationStatus.Active);
+            _donationRepository.Setup(r => r.UpdateAsync(donation)).ThrowsAsync(new RepositoryConflictException("changed"));
+
+            var result = await _cancel.Handle(new CancelDonationCommand { DonationId = donation.Id.ToString(), UserId = "user-1" }, CancellationToken.None);
+
+            result.FailureStatusCode.Should().Be(HttpStatusCode.Conflict);
         }
 
         [TestMethod]

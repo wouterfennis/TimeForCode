@@ -131,7 +131,7 @@ namespace TimeForCode.Donation.Specifications.Steps
         [When("A donor donates to the project")]
         public void WhenADonorDonatesToTheProject()
         {
-            // TODO(review): no donation endpoint exists yet; the rule is exercised directly on the domain.
+            // The API path is covered by PledgeDonation.feature; this scenario checks the domain rule directly.
             _donationCheck = _lifecycleProject!.EnsureCanReceiveDonations();
         }
 

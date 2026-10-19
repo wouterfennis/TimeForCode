@@ -28,6 +28,11 @@ namespace TimeForCode.Donation.Domain
         public required DateTimeOffset CreatedAt { get; init; }
         public DateTimeOffset? UpdatedAt { get; private set; }
 
+        /// <summary>
+        /// Counts the saves of the donation; the repository only saves a change made on the version it loaded (optimistic concurrency).
+        /// </summary>
+        public int Version { get; private set; }
+
         public int ProgressPercentage => HoursLogged * 100 / HoursCommitted;
 
         public static Donation Create(ObjectId projectId, ObjectId? donorOrganizationId, string pledgedByUserId, int hoursCommitted)

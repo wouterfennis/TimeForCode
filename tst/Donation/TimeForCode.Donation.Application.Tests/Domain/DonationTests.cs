@@ -175,6 +175,7 @@ namespace TimeForCode.Donation.Application.Tests.Domain
         [DataRow(nameof(DonationEntity.Status))]
         [DataRow(nameof(DonationEntity.HoursLogged))]
         [DataRow(nameof(DonationEntity.UpdatedAt))]
+        [DataRow(nameof(DonationEntity.Version))]
         public void LifecycleProperty_FromOutsideTheAggregate_CannotBeAssigned(string propertyName)
         {
             var setter = typeof(DonationEntity).GetProperty(propertyName)!.SetMethod;

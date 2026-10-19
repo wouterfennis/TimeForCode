@@ -1,5 +1,6 @@
 using MongoDB.Bson;
 using TimeForCode.Donation.Application.Interfaces;
+using TimeForCode.Donation.Values;
 using DonationEntity = TimeForCode.Donation.Domain.Donation;
 
 namespace TimeForCode.Donation.Specifications.Mocking
@@ -37,6 +38,11 @@ namespace TimeForCode.Donation.Specifications.Mocking
         public Task<IReadOnlyList<DonationEntity>> GetByProjectIdAsync(string projectId, CancellationToken cancellationToken)
         {
             return OldestFirst(d => d.ProjectId.ToString() == projectId);
+        }
+
+        public Task<IReadOnlyList<DonationEntity>> GetActiveByProjectIdAsync(string projectId, CancellationToken cancellationToken)
+        {
+            return OldestFirst(d => d.ProjectId.ToString() == projectId && d.Status == DonationStatus.Active);
         }
 
         public Task<IReadOnlyList<DonationEntity>> GetByDonorOrganizationIdsAsync(IReadOnlyCollection<string> organizationIds, CancellationToken cancellationToken)

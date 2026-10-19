@@ -131,6 +131,8 @@ GET /api/v1/project?searchText=rocket&language=C%23&tag=gaming&pageNumber=1&page
 | `POST` | `/api/v1/donation/{id}/activate` | ✅ | Pending -> Active; allowed for the donor who pledged it and for administrators (scope `user` or `admin`); returns `200` with the donation; `403` for other users, `404` unknown donation, `409` when not `Pending` |
 | `POST` | `/api/v1/donation/{id}/cancel` | ✅ | Pending or Active -> Cancelled; same permissions as activate; `409` when `Completed` or `Cancelled` |
 
+Activate and cancel answer `409` when the donation was changed concurrently (optimistic `version` check); reload and retry. Data reset (ADR-014): donations are stored in their own `Donation` collection with a `version` field, and `DonorOrganization.Donations` no longer exists; drop old `Donation` documents and organization `Donations` arrays before deploying.
+
 A donation completes automatically (Active -> Completed) when the hours logged through `POST /api/v1/project/{id}/contribution` reach `hoursCommitted`. Logged hours count toward the project's `Active` donations only, oldest pledge first, and spill over to the next donation. Donor organization responses carry `hoursSpent` (hours logged on all its donations) and `hoursAvailable` (committed minus logged on its `Active` donations).
 
 ### Organization Endpoints

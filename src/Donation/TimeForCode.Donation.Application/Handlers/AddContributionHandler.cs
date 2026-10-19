@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.Extensions.Logging;
+using TimeForCode.Donation.Application.Exceptions;
 using TimeForCode.Donation.Application.Interfaces;
 using TimeForCode.Donation.Commands;
 using TimeForCode.Donation.Domain;
@@ -9,6 +10,8 @@ namespace TimeForCode.Donation.Application.Handlers
 {
     internal class AddContributionHandler : IRequestHandler<AddContributionCommand, Result<AddContributionResult>>
     {
+        private const int MaxAllocationAttempts = 3;
+
         private readonly IProjectRepository _projectRepository;
         private readonly IContributorRepository _contributorRepository;
         private readonly IContributionRepository _contributionRepository;
@@ -37,7 +40,7 @@ namespace TimeForCode.Donation.Application.Handlers
             if (project == null || project.Status != ProjectStatus.Active)
             {
                 _logger.LogWarning("Project {ProjectId} not found or not published", request.ProjectId);
-                return Result<AddContributionResult>.Failure("Project not found.");
+                return Result<AddContributionResult>.NotFound("Project not found.");
             }
 
             var contributor = await _contributorRepository.UpsertAsync(
@@ -51,7 +54,7 @@ namespace TimeForCode.Donation.Application.Handlers
                 DateTimeOffset.UtcNow);
 
             await _contributionRepository.CreateAsync(contribution);
-            await CountTowardsDonationsAsync(project.Id.ToString(), request.Hours, cancellationToken);
+            await CountTowardsDonationsAsync(project.Id.ToString(), contribution.Id.ToString(), request.Hours, cancellationToken);
 
             _logger.LogInformation("Contribution {ContributionId} logged on project {ProjectId}", contribution.Id, request.ProjectId);
 
@@ -59,27 +62,43 @@ namespace TimeForCode.Donation.Application.Handlers
         }
 
         // Logged hours count toward the project's Active donations, oldest pledge first; what one donation cannot absorb spills over to the next.
-        private async Task CountTowardsDonationsAsync(string projectId, int hours, CancellationToken cancellationToken)
+        // A donation changed by someone else in the meantime is reloaded and the remaining hours are counted again; the contribution itself is already saved.
+        private async Task CountTowardsDonationsAsync(string projectId, string contributionId, int hours, CancellationToken cancellationToken)
         {
             var remaining = hours;
-            var donations = await _donationRepository.GetByProjectIdAsync(projectId, cancellationToken);
 
-            foreach (var donation in donations)
+            for (var attempt = 1; attempt <= MaxAllocationAttempts && remaining > 0; attempt++)
             {
-                if (remaining == 0)
-                {
-                    break;
-                }
+                var donations = await _donationRepository.GetActiveByProjectIdAsync(projectId, cancellationToken);
 
-                var applied = donation.LogHours(remaining);
-                if (applied == 0)
+                try
                 {
-                    continue;
-                }
+                    foreach (var donation in donations)
+                    {
+                        if (remaining == 0)
+                        {
+                            break;
+                        }
 
-                remaining -= applied;
-                await _donationRepository.UpdateAsync(donation);
+                        var applied = donation.LogHours(remaining);
+                        if (applied == 0)
+                        {
+                            continue;
+                        }
+
+                        await _donationRepository.UpdateAsync(donation);
+                        remaining -= applied;
+                    }
+
+                    return;
+                }
+                catch (RepositoryConflictException)
+                {
+                    _logger.LogWarning("Donation of project {ProjectId} changed while counting contribution {ContributionId}, attempt {Attempt}", projectId, contributionId, attempt);
+                }
             }
+
+            _logger.LogError("{Remaining} hours of contribution {ContributionId} on project {ProjectId} could not be counted toward donations", remaining, contributionId, projectId);
         }
     }
 }

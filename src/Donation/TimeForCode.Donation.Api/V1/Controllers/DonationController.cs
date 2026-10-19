@@ -48,15 +48,9 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         [Authorize(Policy = "ApiUser")]
         public async Task<IActionResult> PledgeDonation([ObjectId] string id, PledgeDonationRequest request)
         {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userId))
+            if (!TryGetUserId(out var userId))
             {
-                return BadRequest(new ProblemDetails
-                {
-                    Title = "User identity could not be determined",
-                    Detail = "The token does not contain a valid user identifier.",
-                    Status = StatusCodes.Status400BadRequest
-                });
+                return MissingIdentity();
             }
 
             var result = await _mediator.Send(new PledgeDonationCommand
@@ -111,15 +105,9 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         [Authorize(Policy = "ApiUser")]
         public async Task<IActionResult> GetMyDonations()
         {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userId))
+            if (!TryGetUserId(out var userId))
             {
-                return BadRequest(new ProblemDetails
-                {
-                    Title = "User identity could not be determined",
-                    Detail = "The token does not contain a valid user identifier.",
-                    Status = StatusCodes.Status400BadRequest
-                });
+                return MissingIdentity();
             }
 
             var result = await _mediator.Send(new GetMyDonationsQuery { UserId = userId });
@@ -143,10 +131,15 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         [Authorize(Policy = "ApiUserOrAdmin")]
         public async Task<IActionResult> ActivateDonation([ObjectId] string id)
         {
+            if (!TryGetUserId(out var userId))
+            {
+                return MissingIdentity();
+            }
+
             var result = await _mediator.Send(new ActivateDonationCommand
             {
                 DonationId = id,
-                UserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty,
+                UserId = userId,
                 IsAdministrator = User.HasClaim("scope", AdminScope)
             });
 
@@ -171,16 +164,37 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         [Authorize(Policy = "ApiUserOrAdmin")]
         public async Task<IActionResult> CancelDonation([ObjectId] string id)
         {
+            if (!TryGetUserId(out var userId))
+            {
+                return MissingIdentity();
+            }
+
             var result = await _mediator.Send(new CancelDonationCommand
             {
                 DonationId = id,
-                UserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty,
+                UserId = userId,
                 IsAdministrator = User.HasClaim("scope", AdminScope)
             });
 
             return result.IsFailure
                 ? ToProblem(result.FailureStatusCode, "Cannot cancel donation", result.ErrorMessage)
                 : Ok(ToResponse(result.Value.Donation));
+        }
+
+        private bool TryGetUserId(out string userId)
+        {
+            userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
+            return userId.Length > 0;
+        }
+
+        private BadRequestObjectResult MissingIdentity()
+        {
+            return BadRequest(new ProblemDetails
+            {
+                Title = "User identity could not be determined",
+                Detail = "The token does not contain a valid user identifier.",
+                Status = StatusCodes.Status400BadRequest
+            });
         }
 
         private ObjectResult ToProblem(HttpStatusCode? statusCode, string title, string detail)

@@ -1,7 +1,9 @@
 using MongoDB.Bson;
 using MongoDB.Driver;
 using System.Diagnostics.CodeAnalysis;
+using TimeForCode.Donation.Application.Exceptions;
 using TimeForCode.Donation.Application.Interfaces;
+using TimeForCode.Donation.Values;
 
 namespace TimeForCode.Donation.Infrastructure.Persistence.Database
 {
@@ -74,9 +76,37 @@ namespace TimeForCode.Donation.Infrastructure.Persistence.Database
             var update = Builders<Domain.Donation>.Update
                 .Set(d => d.Status, donation.Status)
                 .Set(d => d.HoursLogged, donation.HoursLogged)
-                .Set(d => d.UpdatedAt, donation.UpdatedAt);
+                .Set(d => d.UpdatedAt, donation.UpdatedAt)
+                .Inc(d => d.Version, 1);
 
-            await _collection.UpdateOneAsync(Builders<Domain.Donation>.Filter.Eq(d => d.Id, donation.Id), update);
+            // Only the version the caller loaded may be changed, so a stale write cannot undo a newer cancel or lose logged hours.
+            var filter = Builders<Domain.Donation>.Filter.And(
+                Builders<Domain.Donation>.Filter.Eq(d => d.Id, donation.Id),
+                Builders<Domain.Donation>.Filter.Eq(d => d.Version, donation.Version));
+
+            var result = await _collection.UpdateOneAsync(filter, update);
+            if (result.MatchedCount == 0)
+            {
+                throw new RepositoryConflictException($"Donation {donation.Id} was changed by someone else.");
+            }
+        }
+
+        public async Task<IReadOnlyList<Domain.Donation>> GetActiveByProjectIdAsync(string projectId, CancellationToken cancellationToken)
+        {
+            if (!ObjectId.TryParse(projectId, out var objectId))
+            {
+                return [];
+            }
+
+            var filter = Builders<Domain.Donation>.Filter.And(
+                Builders<Domain.Donation>.Filter.Eq(d => d.ProjectId, objectId),
+                Builders<Domain.Donation>.Filter.Eq(d => d.Status, DonationStatus.Active));
+
+            return await _collection
+                .Find(filter)
+                .SortBy(d => d.CreatedAt)
+                .ThenBy(d => d.Id)
+                .ToListAsync(cancellationToken);
         }
 
         public async Task<IReadOnlyList<Domain.Donation>> GetByPledgedByUserIdAsync(string userId, CancellationToken cancellationToken)
