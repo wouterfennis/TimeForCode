@@ -12,17 +12,20 @@ namespace TimeForCode.Donation.Application.Handlers
         private readonly IProjectRepository _projectRepository;
         private readonly IContributorRepository _contributorRepository;
         private readonly IContributionRepository _contributionRepository;
+        private readonly IDonationRepository _donationRepository;
         private readonly ILogger<AddContributionHandler> _logger;
 
         public AddContributionHandler(
             IProjectRepository projectRepository,
             IContributorRepository contributorRepository,
             IContributionRepository contributionRepository,
+            IDonationRepository donationRepository,
             ILogger<AddContributionHandler> logger)
         {
             _projectRepository = projectRepository;
             _contributorRepository = contributorRepository;
             _contributionRepository = contributionRepository;
+            _donationRepository = donationRepository;
             _logger = logger;
         }
 
@@ -48,10 +51,35 @@ namespace TimeForCode.Donation.Application.Handlers
                 DateTimeOffset.UtcNow);
 
             await _contributionRepository.CreateAsync(contribution);
+            await CountTowardsDonationsAsync(project.Id.ToString(), request.Hours, cancellationToken);
 
             _logger.LogInformation("Contribution {ContributionId} logged on project {ProjectId}", contribution.Id, request.ProjectId);
 
             return Result<AddContributionResult>.Success(new AddContributionResult { Contribution = contribution.ToDto() });
+        }
+
+        // Logged hours count toward the project's Active donations, oldest pledge first; what one donation cannot absorb spills over to the next.
+        private async Task CountTowardsDonationsAsync(string projectId, int hours, CancellationToken cancellationToken)
+        {
+            var remaining = hours;
+            var donations = await _donationRepository.GetByProjectIdAsync(projectId, cancellationToken);
+
+            foreach (var donation in donations)
+            {
+                if (remaining == 0)
+                {
+                    break;
+                }
+
+                var applied = donation.LogHours(remaining);
+                if (applied == 0)
+                {
+                    continue;
+                }
+
+                remaining -= applied;
+                await _donationRepository.UpdateAsync(donation);
+            }
         }
     }
 }

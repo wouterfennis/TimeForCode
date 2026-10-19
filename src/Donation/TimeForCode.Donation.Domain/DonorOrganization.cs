@@ -11,7 +11,6 @@ namespace TimeForCode.Donation.Domain
         public required DateTimeOffset CreatedAt { get; init; }
         public DateTimeOffset? UpdatedAt { get; set; }
         public List<Contributor> EmployeeContributors { get; init; } = [];
-        public List<Donation> Donations { get; set; } = [];
 
         public static DonorOrganization Create(string name, string? contactEmail, string? website)
         {

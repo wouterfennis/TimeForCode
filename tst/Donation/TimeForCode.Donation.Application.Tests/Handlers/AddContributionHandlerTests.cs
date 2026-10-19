@@ -19,6 +19,7 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
         private Mock<IProjectRepository> _projectRepository = default!;
         private Mock<IContributorRepository> _contributorRepository = default!;
         private Mock<IContributionRepository> _contributionRepository = default!;
+        private Mock<IDonationRepository> _donationRepository = default!;
         private AddContributionHandler _sut = default!;
 
         [TestInitialize]
@@ -27,6 +28,8 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
             _projectRepository = new Mock<IProjectRepository>();
             _contributorRepository = new Mock<IContributorRepository>();
             _contributionRepository = new Mock<IContributionRepository>();
+            _donationRepository = new Mock<IDonationRepository>();
+            _donationRepository.Setup(r => r.GetByProjectIdAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync([]);
             _contributorRepository.Setup(r => r.UpsertAsync(It.IsAny<Contributor>()))
                 .ReturnsAsync((Contributor c) => new Contributor
                 {
@@ -40,6 +43,7 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
                 _projectRepository.Object,
                 _contributorRepository.Object,
                 _contributionRepository.Object,
+                _donationRepository.Object,
                 NullLogger<AddContributionHandler>.Instance);
         }
 
@@ -104,6 +108,63 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
 
             result.Value.Contribution.GithubReference.Should().Be("https://github.com/owner/repo/pull/12");
             _contributionRepository.Verify(r => r.CreateAsync(It.Is<Contribution>(c => c.GithubReference == reference)), Times.Once);
+        }
+
+        [TestMethod]
+        public async Task Handle_ActiveDonation_CountsLoggedHoursAndSavesIt()
+        {
+            GivenProject(ProjectStatus.Active);
+            var donation = DonationTestData.Build(DonationStatus.Active, committed: 5);
+            _donationRepository.Setup(r => r.GetByProjectIdAsync(ProjectId.ToString(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync([donation]);
+
+            await _sut.Handle(Valid(), CancellationToken.None);
+
+            donation.HoursLogged.Should().Be(3);
+            donation.Status.Should().Be(DonationStatus.Active);
+            _donationRepository.Verify(r => r.UpdateAsync(donation), Times.Once);
+        }
+
+        [TestMethod]
+        public async Task Handle_HoursReachCommitment_CompletesDonation()
+        {
+            GivenProject(ProjectStatus.Active);
+            var donation = DonationTestData.Build(DonationStatus.Active, committed: 3);
+            _donationRepository.Setup(r => r.GetByProjectIdAsync(ProjectId.ToString(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync([donation]);
+
+            await _sut.Handle(Valid(), CancellationToken.None);
+
+            donation.Status.Should().Be(DonationStatus.Completed);
+        }
+
+        [TestMethod]
+        public async Task Handle_MoreHoursThanOneDonationNeeds_SpillsOverToTheNextActiveDonation()
+        {
+            GivenProject(ProjectStatus.Active);
+            var first = DonationTestData.Build(DonationStatus.Active, committed: 2);
+            var second = DonationTestData.Build(DonationStatus.Active, committed: 5);
+            _donationRepository.Setup(r => r.GetByProjectIdAsync(ProjectId.ToString(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync([first, second]);
+
+            await _sut.Handle(Valid(), CancellationToken.None);
+
+            first.Status.Should().Be(DonationStatus.Completed);
+            second.HoursLogged.Should().Be(1);
+        }
+
+        [TestMethod]
+        public async Task Handle_PendingDonation_IsLeftUntouched()
+        {
+            GivenProject(ProjectStatus.Active);
+            var donation = DonationTestData.Build(DonationStatus.Pending, committed: 5);
+            _donationRepository.Setup(r => r.GetByProjectIdAsync(ProjectId.ToString(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync([donation]);
+
+            await _sut.Handle(Valid(), CancellationToken.None);
+
+            donation.HoursLogged.Should().Be(0);
+            _donationRepository.Verify(r => r.UpdateAsync(It.IsAny<TimeForCode.Donation.Domain.Donation>()), Times.Never);
         }
 
         [TestMethod]

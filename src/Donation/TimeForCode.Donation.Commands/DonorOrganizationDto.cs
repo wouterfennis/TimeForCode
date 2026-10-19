@@ -8,5 +8,15 @@ namespace TimeForCode.Donation.Commands
         public string? Website { get; init; }
         public required DateTimeOffset CreatedAt { get; init; }
         public DateTimeOffset? UpdatedAt { get; init; }
+
+        /// <summary>
+        /// Pledged hours of the organization's active donations that are not logged yet.
+        /// </summary>
+        public int HoursAvailable { get; init; }
+
+        /// <summary>
+        /// Hours logged on all donations of the organization.
+        /// </summary>
+        public int HoursSpent { get; init; }
     }
 }
