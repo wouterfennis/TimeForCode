@@ -35,7 +35,7 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
 
             result.IsSuccess.Should().BeTrue();
             var dto = result.Value.Donations.Should().ContainSingle().Subject;
-            dto.Status.Should().Be("Active");
+            dto.Status.Should().Be(DonationStatus.Active);
             dto.HoursCommitted.Should().Be(10);
             dto.HoursLogged.Should().Be(4);
             dto.ProgressPercentage.Should().Be(40);

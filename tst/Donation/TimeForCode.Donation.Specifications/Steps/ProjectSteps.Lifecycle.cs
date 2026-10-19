@@ -177,6 +177,12 @@ namespace TimeForCode.Donation.Specifications.Steps
         [Then("The user is informed the project cannot receive donations")]
         public void ThenTheUserIsInformedTheProjectCannotReceiveDonations()
         {
+            if (_exception != null)
+            {
+                _exception.StatusCode.Should().Be(StatusCodes.Status409Conflict);
+                return;
+            }
+
             _donationCheck.Should().NotBeNull();
             _donationCheck!.IsSuccess.Should().BeFalse();
         }

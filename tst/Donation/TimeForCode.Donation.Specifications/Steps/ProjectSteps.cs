@@ -25,6 +25,9 @@ namespace TimeForCode.Donation.Specifications.Steps
         private GetProjectsResponse? _getProjectsResult;
         private ProjectResponse? _getProjectByIdResult;
         private ApiException? _exception;
+
+        /// <summary>The failed API response of the last call, shared with step classes that assert on pledges.</summary>
+        internal ApiException? LastException => _exception;
         private string? _registeredProjectId;
 
         public ProjectSteps(IDonationClient donationClient, IServiceProvider provider, BearerTokenHandler bearerTokenHandler)

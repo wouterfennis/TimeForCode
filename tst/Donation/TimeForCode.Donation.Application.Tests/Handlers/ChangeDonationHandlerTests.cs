@@ -41,7 +41,7 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
 
             result.IsSuccess.Should().BeTrue();
             donation.Status.Should().Be(DonationStatus.Active);
-            result.Value.Donation.Status.Should().Be(DonationStatus.Active.ToString());
+            result.Value.Donation.Status.Should().Be(DonationStatus.Active);
             _donationRepository.Verify(r => r.UpdateAsync(donation), Times.Once);
         }
 

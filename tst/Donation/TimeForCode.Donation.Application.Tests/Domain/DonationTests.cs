@@ -137,11 +137,12 @@ namespace TimeForCode.Donation.Application.Tests.Domain
         public void LogHours_NotActive_CountsNothing(DonationStatus status)
         {
             var donation = Build(status, committed: 5);
+            var loggedBefore = donation.HoursLogged;
 
             var applied = donation.LogHours(5);
 
             applied.Should().Be(0);
-            donation.HoursLogged.Should().Be(0);
+            donation.HoursLogged.Should().Be(loggedBefore);
             donation.Status.Should().Be(status);
         }
 

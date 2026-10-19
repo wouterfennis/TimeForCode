@@ -27,6 +27,7 @@ namespace TimeForCode.Donation.Specifications.Mocking
                     typeof(IDonorOrganizationRepository),
                     typeof(IContributorRepository),
                     typeof(IContributionRepository),
+                    typeof(IDonationRepository),
                     typeof(IGithubRepositoryApiService),
                     typeof(RestClient)
                 };
@@ -84,6 +85,10 @@ namespace TimeForCode.Donation.Specifications.Mocking
             var contributionRepository = new InMemoryContributionRepository();
             services.TryAddSingleton(contributionRepository);
             services.TryAddSingleton<IContributionRepository>(contributionRepository);
+
+            var donationRepository = new InMemoryDonationRepository();
+            services.TryAddSingleton(donationRepository);
+            services.TryAddSingleton<IDonationRepository>(donationRepository);
 
             var mockGithubService = new Mock<IGithubRepositoryApiService>();
             services.TryAddSingleton(mockGithubService);

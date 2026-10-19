@@ -34,5 +34,15 @@ namespace TimeForCode.Donation.Api.V1.Models
         /// When the donor organization was last updated.
         /// </summary>
         public DateTimeOffset? UpdatedAt { get; init; }
+
+        /// <summary>
+        /// Pledged hours of the organization's active donations that are not logged yet.
+        /// </summary>
+        public required int HoursAvailable { get; init; }
+
+        /// <summary>
+        /// Hours logged on all donations of the organization.
+        /// </summary>
+        public required int HoursSpent { get; init; }
     }
 }

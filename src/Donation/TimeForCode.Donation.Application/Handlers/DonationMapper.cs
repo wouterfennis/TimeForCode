@@ -11,7 +11,7 @@ namespace TimeForCode.Donation.Application.Handlers
                 Id = donation.Id.ToString(),
                 ProjectId = donation.ProjectId.ToString(),
                 DonorOrganizationId = donation.DonorOrganizationId?.ToString(),
-                Status = donation.Status.ToString(),
+                Status = donation.Status,
                 HoursCommitted = donation.HoursCommitted,
                 HoursLogged = donation.HoursLogged,
                 ProgressPercentage = donation.ProgressPercentage,
