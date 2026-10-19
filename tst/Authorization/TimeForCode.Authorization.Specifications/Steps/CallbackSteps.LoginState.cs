@@ -36,7 +36,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
             _infrastructure.Time.Advance(TimeSpan.FromMinutes(10) + TimeSpan.FromSeconds(1));
         }
 
-        private static IAuthClient StartOtherInstanceClient(ScenarioInfrastructure infrastructure, CookieContainer cookieContainer)
+        private static AuthClient StartOtherInstanceClient(ScenarioInfrastructure infrastructure, CookieContainer cookieContainer)
         {
             var httpClient = infrastructure.StartOtherInstance()
                 .CreateDefaultClient(new BearerTokenFromCookieHandler(cookieContainer), new CookieContainerHandler(cookieContainer));
