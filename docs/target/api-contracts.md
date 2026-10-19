@@ -94,6 +94,8 @@ Implemented as `POST /api/v1/project/{id}/submit`, `/approve`, `/request-changes
 
 ### Donations
 
+Implemented (replaces the first four designs below): `POST` and `GET /api/v1/project/{id}/donation`, `GET /api/v1/donation`, `POST /api/v1/donation/{id}/activate` and `/cancel`. See [docs/current/api-surface.md](../current/api-surface.md#donation-endpoints). The transaction endpoints remain planned.
+
 #### POST /api/v1/donation ❌
 
 Create a donation pledge.

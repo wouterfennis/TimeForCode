@@ -43,12 +43,12 @@ This document provides an explicit, feature-level view of what is implemented, p
 
 | Capability | Status | Notes |
 | --- | --- | --- |
-| Create a donation pledge | ❌ | Domain model exists; no API |
-| List donations for a project | ❌ | No endpoint |
-| Donation state transitions (Pending → Active → Completed) | ❌ | State machine not implemented |
-| Hour allocation per contributor | ❌ | Not implemented |
-| Hour completion tracking | ❌ | Not implemented |
-| Cancel or withdraw a donation | ❌ | Not implemented |
+| Create a donation pledge | ✅ | `POST /api/v1/project/{id}/donation`, back-end only; `Active` projects only; donor organization XOR individual |
+| List donations for a project | ✅ | `GET /api/v1/project/{id}/donation` (anonymous) and `GET /api/v1/donation` (own donations), with hours committed, hours logged and progress |
+| Donation state transitions (Pending → Active → Completed) | ✅ | Activate and cancel by the donor or an administrator; completion is automatic when logged hours reach the commitment |
+| Hour allocation per contributor | ❌ | Logged hours count toward the project's Active donations (oldest first), not per contributor |
+| Hour completion tracking | ✅ | `hoursLogged` and `progressPercentage` per donation; donor organizations show `hoursSpent` and `hoursAvailable` |
+| Cancel or withdraw a donation | ✅ | `POST /api/v1/donation/{id}/cancel` while Pending or Active |
 
 ---
 

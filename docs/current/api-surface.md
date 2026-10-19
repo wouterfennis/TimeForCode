@@ -125,10 +125,13 @@ GET /api/v1/project?searchText=rocket&language=C%23&tag=gaming&pageNumber=1&page
 
 | Method | Path | Status | Description |
 | --- | --- | --- | --- |
-| `POST` | `/api/v1/donation` | ❌ | Create a donation pledge |
-| `GET` | `/api/v1/donation` | ❌ | List donations |
-| `GET` | `/api/v1/donation/{id}` | ❌ | Get donation details |
-| `PATCH` | `/api/v1/donation/{id}/state` | ❌ | Transition donation state |
+| `POST` | `/api/v1/project/{id}/donation` | ✅ | Pledges hours to an `Active` project (user JWT); body `{ "hours": 1-10000, "asIndividual": true }` or `{ "hours": 20, "donorOrganizationId": "<id>" }`, exactly one donor; returns `201` with the donation (id, project id, donor organization id when given, `status` `Pending`, `hoursCommitted`, `hoursLogged` 0, `progressPercentage`, `createdAt`, `updatedAt`); `400` for invalid hours, no donor or both donors, `401` without a token, `404` for an unknown project or donor organization, `409` when the project is not `Active` |
+| `GET` | `/api/v1/project/{id}/donation` | ✅ | Lists the donations of an `Active` project, oldest first, as `{ "donations": [...] }` (at most 1000); no authentication required; `404` for an unknown or non-`Active` project |
+| `GET` | `/api/v1/donation` | ✅ | Lists the caller's own donations, oldest first, as `{ "donations": [...] }` (user JWT); `401` without a token |
+| `POST` | `/api/v1/donation/{id}/activate` | ✅ | Pending -> Active; allowed for the donor who pledged it and for administrators (scope `user` or `admin`); returns `200` with the donation; `403` for other users, `404` unknown donation, `409` when not `Pending` |
+| `POST` | `/api/v1/donation/{id}/cancel` | ✅ | Pending or Active -> Cancelled; same permissions as activate; `409` when `Completed` or `Cancelled` |
+
+A donation completes automatically (Active -> Completed) when the hours logged through `POST /api/v1/project/{id}/contribution` reach `hoursCommitted`. Logged hours count toward the project's `Active` donations only, oldest pledge first, and spill over to the next donation. Donor organization responses carry `hoursSpent` (hours logged on all its donations) and `hoursAvailable` (committed minus logged on its `Active` donations).
 
 ### Organization Endpoints
 

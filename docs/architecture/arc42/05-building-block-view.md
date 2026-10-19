@@ -105,12 +105,12 @@ graph LR
 
 | Component | Responsibility |
 | --- | --- |
-| `TimeForCode.Donation.Api` | REST endpoints for project registration, search and listing, detail, and the review lifecycle (submit, approve, request changes, archive, re-activate; policies `ApiUser` and `ApiAdmin`); donor-organization creation, listing, detail, update, and deletion; logging and listing project contributions |
+| `TimeForCode.Donation.Api` | REST endpoints for project registration, search and listing, detail, and the review lifecycle (submit, approve, request changes, archive, re-activate; policies `ApiUser` and `ApiAdmin`); donor-organization creation, listing, detail, update, and deletion; logging and listing project contributions; pledging hours to a project, listing donations and activating or cancelling them (policies `ApiUser` and `ApiUserOrAdmin`) |
 | `TimeForCode.Donation.Application` | MediatR command handlers; GitHub metadata fetch interface |
 | `TimeForCode.Donation.Domain` | Project entity with lifecycle state machine (Draft, PendingApproval, Active, Archived); GithubSnapshot record; DocumentEntity base class |
 | `TimeForCode.Donation.Infrastructure` | MongoDB project repository (including `ProjectSearchDefinitions`: the active-project search filter and the status, language and topic indexes created at startup); GitHub public REST API client |
 | `TimeForCode.Donation.Commands` | MediatR command, query, and result types |
-| `TimeForCode.Donation.Values` | Shared value objects (ProjectStatus enum) |
+| `TimeForCode.Donation.Values` | Shared value objects (ProjectStatus and DonationStatus enums) |
 | `TimeForCode.Donation.Api.Client` | Typed HTTP client for the Donation API, generated from its OpenAPI document; used by the specification tests |
 
 ### Domain Entities
@@ -118,8 +118,7 @@ graph LR
 | Entity | Responsibility |
 | --- | --- |
 | `Project` | Registered open-source project; linked to a GitHub repository |
-| `Donation` | Hours pledged by an organisation or individual to a project |
-| `DonationTransaction` | Single hour-log entry against an active donation |
+| `Donation` | Own MongoDB document: hours pledged to a project by a donor organization or an individual (never both) with the lifecycle Pending, Active, Completed, Cancelled; counts hours logged on its project while Active and completes itself when they reach the commitment |
 | `DonorOrganization` | Company registered as a donor |
 | `Contributor` | Developer who logs hours; own MongoDB document, upserted by platform user id (unique index) on every logged contribution |
 | `Contribution` | Time-log entry of a contributor on an `Active` project; stores the `ContributorId` plus a snapshot of the GitHub login and avatar (extended reference, like `GithubSnapshot` on `Project`) |
