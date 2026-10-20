@@ -114,6 +114,10 @@ A visitor calls `GET /api/v1/project` without authentication, optionally with `s
 
 A signed-in user calls `POST /api/v1/project/{id}/donation` with the hours and exactly one donor (individual or donor organization). `PledgeDonationHandler` loads the project, rejects it with `409` unless it is `Active`, checks the donor organization (`404` when unknown) and stores a `Pending` donation. The donor or an administrator calls `POST /api/v1/donation/{id}/activate` or `/cancel`; the entity enforces the transitions (`409` otherwise). When anyone logs hours via `POST /api/v1/project/{id}/contribution`, `AddContributionHandler` also counts them toward the project's `Active` donations, oldest first; a donation that reaches its committed hours becomes `Completed`. Contract: [api-surface.md](../../current/api-surface.md#donation-endpoints).
 
+## Scenario 3e — Maintain a contributor profile
+
+A signed-in user calls `PUT /api/v1/contributor/me` with role, skills, hours available and an optional donor organization. The API enforces the size limits as validation attributes (`400`); `UpdateContributorProfileHandler` loads the caller's contributor, or registers one from the token claims when logging hours never created it, checks that a linked donor organization exists (`404` otherwise), lets `Contributor.UpdateProfile` normalise the skills and saves only the profile fields, so the identity snapshot and the logged hours stay untouched. `GET` and `PUT /api/v1/contributor/{id}` apply the same rules to a profile by id and answer `403` unless the caller owns it or is an administrator; administrators list a donor organization's contributors with `GET /api/v1/donororganization/{id}/contributor`. Contract: [api-surface.md](../../current/api-surface.md#contributor-endpoints).
+
 ## Scenario 4 — Log Hours Against a Donation (Target)
 
 ```mermaid

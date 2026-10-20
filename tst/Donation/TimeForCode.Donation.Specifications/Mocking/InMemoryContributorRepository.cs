@@ -31,11 +31,41 @@ namespace TimeForCode.Donation.Specifications.Mocking
                 Id = existing?.Id ?? contributor.Id,
                 PlatformUserId = contributor.PlatformUserId,
                 GithubLogin = contributor.GithubLogin,
-                AvatarUrl = contributor.AvatarUrl
+                AvatarUrl = contributor.AvatarUrl,
+                Role = existing?.Role,
+                Skills = existing?.Skills ?? [],
+                HoursAvailable = existing?.HoursAvailable,
+                DonorOrganizationId = existing?.DonorOrganizationId
             };
             _contributors.Add(persisted);
 
             return Task.FromResult(persisted);
+        }
+
+        public Task<Contributor?> GetByIdAsync(ObjectId contributorId)
+        {
+            return Task.FromResult(_contributors.SingleOrDefault(c => c.Id == contributorId));
+        }
+
+        public Task<IReadOnlyList<Contributor>> GetByDonorOrganizationIdAsync(ObjectId donorOrganizationId, CancellationToken cancellationToken)
+        {
+            IReadOnlyList<Contributor> affiliated = _contributors
+                .Where(c => c.DonorOrganizationId == donorOrganizationId)
+                .OrderBy(c => c.GithubLogin)
+                .ToList();
+
+            return Task.FromResult(affiliated);
+        }
+
+        public Task UpdateProfileAsync(Contributor contributor, CancellationToken cancellationToken)
+        {
+            var existing = _contributors.Single(c => c.Id == contributor.Id);
+            existing.Role = contributor.Role;
+            existing.Skills = [.. contributor.Skills];
+            existing.HoursAvailable = contributor.HoursAvailable;
+            existing.DonorOrganizationId = contributor.DonorOrganizationId;
+
+            return Task.CompletedTask;
         }
 
         public Task<Contributor?> GetByPlatformUserIdAsync(string platformUserId)

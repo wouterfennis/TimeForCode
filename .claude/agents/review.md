@@ -26,7 +26,9 @@ Senior reviewer for **TimeForCode**. Step back after implementation: does the co
 
 Use the `gh-compact-view` forms (no raw comments). Extract the acceptance criteria (body), the latest `## Implementation Run Log` comment (Completed, TDD evidence, Loose Ends, Open Questions) and the latest ` ```gherkin ` comment. If any is missing, report what is absent and stop.
 
-### 2. Build and test (final check, solution-wide)
+### 2. Build and test (only if stale)
+
+Skip this step when `.agent-state/last-dotnet-run` exists and is newer than every uncommitted `.cs` file (`git status --short`, then compare timestamps) and the run log records a green solution-wide run; cite the log instead. Otherwise:
 
 ```powershell
 dotnet build TimeForCode.sln

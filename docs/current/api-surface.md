@@ -159,8 +159,11 @@ The user JWT issued by the Authorization API carries the `login` and `avatar_url
 | Method | Path | Status | Description |
 | --- | --- | --- | --- |
 | `POST` | `/api/v1/contributor/{userId}/anonymise` | ✅ | Service call from the Authorization API at account deletion (token scope `service` only; `403` for user and admin tokens): replaces the contributor and the login and avatar snapshot on their contributions with a generic deleted user and keeps the hours; `204`, also when the user has no contributions or was already anonymised; `400` for a malformed id |
-| `POST` | `/api/v1/contributor` | ❌ | Register as a contributor |
-| `GET` | `/api/v1/contributor/{id}` | ❌ | Get contributor details |
+| `GET` | `/api/v1/contributor/me` | ✅ | Returns the caller's profile (user JWT): `{ id, githubLogin, avatarUrl, role, skills, hoursAvailable, donorOrganizationId }` (`role`, `hoursAvailable` and `donorOrganizationId` absent when not set, `skills` empty when none); `404` when the caller never became a contributor, `401` without a token |
+| `PUT` | `/api/v1/contributor/me` | ✅ | Replaces the caller's profile and registers the caller as a contributor when needed, reusing the contributor that logging hours created (user JWT); body `{ "role": "Backend developer", "skills": ["C#", "MongoDB"], "hoursAvailable": 10, "donorOrganizationId": "<id>" }`, every field optional and left-out fields are cleared; skills are trimmed, blank ones dropped and duplicates merged ignoring case (first spelling wins); returns `200` with the profile; `400` for a role over 100 characters, more than 50 skills, a skill over 100 characters, `hoursAvailable` outside 0-10000 or a malformed organization id, `404` for an unknown donor organization, `401` without a token |
+| `GET` | `/api/v1/contributor/{id}` | ✅ | Returns a profile by contributor id; only the contributor themselves (user JWT) and administrators; `200` with the profile, `403` for another user's profile, `404` for an unknown contributor, `400` for a malformed id, `401` without a token |
+| `PUT` | `/api/v1/contributor/{id}` | ✅ | Replaces a profile by contributor id, same body and responses as `PUT /contributor/me` plus `403` for another user's profile; allowed for the contributor themselves and administrators |
+| `GET` | `/api/v1/donororganization/{id}/contributor` | ✅ | Lists the contributors affiliated with a donor organization, ordered by GitHub login (admin JWT only; `403` for user tokens); `200` with `{ "contributors": [ ...profiles ] }`, empty when there are none; `404` for an unknown organization, `400` for a malformed id, `401` without a token |
 
 ---
 

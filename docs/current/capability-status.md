@@ -58,7 +58,8 @@ This document provides an explicit, feature-level view of what is implemented, p
 | --- | --- | --- |
 | Register a donor organization | ❌ | Domain model exists; no API |
 | Manage organization employees | ❌ | Not implemented |
-| Register as an individual contributor | ❌ | Not implemented |
+| Register as an individual contributor | ✅ | `PUT /api/v1/contributor/me` creates the contributor on first use; logging hours creates it too, and both reuse the single contributor per platform user |
+| Contributor skill profile | ✅ | Role, normalised skills, hours available and optional donor organization link; own profile or administrators only; administrators list the contributors of a donor organization. Matchmaking does not use it yet |
 | View available donated hours | ❌ | Not implemented |
 
 ---

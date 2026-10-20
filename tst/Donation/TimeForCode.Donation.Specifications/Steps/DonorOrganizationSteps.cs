@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
+using MongoDB.Bson;
 using Moq;
 using Reqnroll;
 using System.Net.Http.Json;
@@ -54,6 +55,7 @@ namespace TimeForCode.Donation.Specifications.Steps
                 .ReturnsAsync(((IReadOnlyList<DonorOrganization>)new List<DonorOrganization> { org }, 1));
 
             _registeredOrganizationId = org.Id.ToString();
+            _projectSteps.ScenarioDonorOrganizationId = _registeredOrganizationId;
         }
 
         [Given("There is no donor organization with the given identifier")]
@@ -62,6 +64,7 @@ namespace TimeForCode.Donation.Specifications.Steps
             var mockRepo = _provider.GetRequiredService<Mock<IDonorOrganizationRepository>>();
             mockRepo.Setup(x => x.GetByIdAsync(It.IsAny<string>()))
                 .ReturnsAsync((DonorOrganization?)null);
+            _projectSteps.ScenarioDonorOrganizationId = ObjectId.GenerateNewId().ToString();
         }
 
         [Given("There is already a donor organization with the same name on the time for code platform")]
