@@ -16,7 +16,9 @@ namespace TimeForCode.Authorization.Infrastructure.Services.Github
         public required string AvatarUrl { get; init; }
         public required string Name { get; init; }
         public required string? Company { get; init; }
-        // GitHub returns null when the email is not public; without the user:email scope that is the normal case.
+        /// <summary>
+        /// GitHub returns null when the email is not public; without the user:email scope that is the normal case.
+        /// </summary>
         public string? Email { get; init; }
         public string? Bio { get; init; }
         public string? Location { get; init; }

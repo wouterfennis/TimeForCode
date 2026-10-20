@@ -41,7 +41,7 @@ namespace TimeForCode.Donation.Application.Handlers
             _logger.LogInformation("Logging {Hours} hours on project {ProjectId} for user {UserId}", request.Hours, request.ProjectId, request.UserId);
 
             var project = await _projectRepository.GetByIdAsync(request.ProjectId);
-            if (project == null || project.Status != ProjectStatus.Active)
+            if (project == null || !project.IsPublished)
             {
                 _logger.LogWarning("Project {ProjectId} not found or not published", request.ProjectId);
                 return Result<AddContributionResult>.NotFound("Project not found.");
@@ -81,24 +81,13 @@ namespace TimeForCode.Donation.Application.Handlers
 
                 try
                 {
-                    foreach (var donation in donations)
+                    foreach (var counted in Domain.Donation.CountHours(donations, remaining))
                     {
-                        if (remaining == 0)
-                        {
-                            break;
-                        }
-
-                        var applied = donation.LogHours(remaining);
-                        if (applied == 0)
-                        {
-                            continue;
-                        }
-
-                        unconfirmed = DonationAllocation.Create(contributionId, donation.Id, applied);
+                        unconfirmed = DonationAllocation.Create(contributionId, counted.Donation.Id, counted.Hours);
                         await _allocationRepository.CreateAsync(unconfirmed, cancellationToken);
-                        await _donationRepository.UpdateAsync(donation);
+                        await _donationRepository.UpdateAsync(counted.Donation);
                         unconfirmed = null;
-                        remaining -= applied;
+                        remaining -= counted.Hours;
                     }
 
                     return;

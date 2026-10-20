@@ -10,7 +10,9 @@ namespace TimeForCode.Donation.Infrastructure.Persistence.Database
     [ExcludeFromCodeCoverage(Justification = "Repository implementation")]
     internal class DonationRepository : IDonationRepository
     {
-        // Upper bound for one listing; keeps the unpaged endpoints from reading an unbounded collection. The oldest pledges win.
+        /// <summary>
+        /// Upper bound for one listing; keeps the unpaged endpoints from reading an unbounded collection. The oldest pledges win.
+        /// </summary>
         private const int MaxDonationsPerQuery = 1000;
 
         private static readonly object IndexCreationLock = new();

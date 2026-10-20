@@ -102,7 +102,9 @@ namespace TimeForCode.Donation.Application.Handlers
             });
         }
 
-        // GitHub allows alphanumeric characters, hyphens, underscores, and dots in owner/repo names.
+        /// <summary>
+        /// GitHub allows alphanumeric characters, hyphens, underscores, and dots in owner/repo names.
+        /// </summary>
         private static bool IsValidGithubSegment(string segment)
         {
             return !string.IsNullOrEmpty(segment) &&

@@ -172,6 +172,41 @@ namespace TimeForCode.Donation.Application.Tests.Domain
         }
 
         [TestMethod]
+        public void CountHours_MoreThanFirstDonationAbsorbs_SpillsOverInGivenOrder()
+        {
+            var first = Build(DonationStatus.Active, committed: 10, logged: 7);
+            var second = Build(DonationStatus.Active, committed: 10);
+
+            var counted = DonationEntity.CountHours([first, second], 8).ToList();
+
+            counted.Select(c => (c.Donation, c.Hours)).Should().Equal((first, 3), (second, 5));
+            first.Status.Should().Be(DonationStatus.Completed);
+            second.HoursLogged.Should().Be(5);
+        }
+
+        [TestMethod]
+        public void CountHours_DonationsThatCannotTakeHours_AreSkipped()
+        {
+            var pending = Build(DonationStatus.Pending);
+            var active = Build(DonationStatus.Active);
+
+            var counted = DonationEntity.CountHours([pending, active], 4).ToList();
+
+            counted.Select(c => c.Donation).Should().Equal(active);
+        }
+
+        [TestMethod]
+        public void CountHours_IsLazy_CountsOnlyWhatIsEnumerated()
+        {
+            var first = Build(DonationStatus.Active, committed: 10);
+            var second = Build(DonationStatus.Active, committed: 10);
+
+            DonationEntity.CountHours([first, second], 15).First();
+
+            second.HoursLogged.Should().Be(0);
+        }
+
+        [TestMethod]
         [DataRow(nameof(DonationEntity.Status))]
         [DataRow(nameof(DonationEntity.HoursLogged))]
         [DataRow(nameof(DonationEntity.UpdatedAt))]

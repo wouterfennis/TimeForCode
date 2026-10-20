@@ -16,7 +16,9 @@ namespace TimeForCode.Donation.Api.V1
         internal const int MaxDonationHours = Commands.PledgeDonationCommand.MaxHours;
         internal const string ObjectIdPattern = "^[0-9a-fA-F]{24}$";
 
-        // Names and reasons must contain at least one non-whitespace character; the match must span the whole value.
+        /// <summary>
+        /// Names and reasons must contain at least one non-whitespace character; the match must span the whole value.
+        /// </summary>
         internal const string NotBlankPattern = @"[\s\S]*\S[\s\S]*";
     }
 }

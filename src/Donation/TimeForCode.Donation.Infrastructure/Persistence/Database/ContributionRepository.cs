@@ -9,7 +9,9 @@ namespace TimeForCode.Donation.Infrastructure.Persistence.Database
     [ExcludeFromCodeCoverage(Justification = "Repository implementation")]
     internal class ContributionRepository : IContributionRepository
     {
-        // Upper bound for one project listing; keeps the unpaged endpoint from reading an unbounded collection. The newest contributions win.
+        /// <summary>
+        /// Upper bound for one project listing; keeps the unpaged endpoint from reading an unbounded collection. The newest contributions win.
+        /// </summary>
         private const int MaxContributionsPerProject = 1000;
 
         private static readonly object IndexCreationLock = new();

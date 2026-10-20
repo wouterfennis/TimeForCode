@@ -27,7 +27,7 @@ namespace TimeForCode.Donation.Application.Handlers
             _logger.LogInformation("Getting contributions of project {ProjectId}", request.ProjectId);
 
             var project = await _projectRepository.GetByIdAsync(request.ProjectId);
-            if (project == null || project.Status != ProjectStatus.Active)
+            if (project == null || !project.IsPublished)
             {
                 _logger.LogWarning("Project {ProjectId} not found or not published", request.ProjectId);
                 return Result<GetContributionsResult>.Failure("Project not found.");

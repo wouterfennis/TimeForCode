@@ -83,6 +83,33 @@ namespace TimeForCode.Donation.Domain
         }
 
         /// <summary>
+        /// Counts hours toward the given donations in the given order; what one donation cannot absorb spills over to the next.
+        /// Lazy: a donation only takes its hours when the sequence reaches it, so the caller can save each one before the next is touched.
+        /// </summary>
+        /// <returns>The donations that took hours, with the number of hours each took.</returns>
+        public static IEnumerable<CountedHours> CountHours(IEnumerable<Donation> donations, int hours)
+        {
+            var remaining = hours;
+
+            foreach (var donation in donations)
+            {
+                if (remaining == 0)
+                {
+                    yield break;
+                }
+
+                var applied = donation.LogHours(remaining);
+                if (applied == 0)
+                {
+                    continue;
+                }
+
+                remaining -= applied;
+                yield return new CountedHours(donation, applied);
+            }
+        }
+
+        /// <summary>
         /// Counts logged hours toward the commitment of an Active donation and completes it once all pledged hours are logged.
         /// </summary>
         /// <returns>The number of hours that were counted; the rest is left for other donations.</returns>
