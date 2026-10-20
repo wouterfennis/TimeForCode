@@ -94,53 +94,7 @@ Implemented as `POST /api/v1/project/{id}/submit`, `/approve`, `/request-changes
 
 ### Donations
 
-#### POST /api/v1/donation ❌
-
-Create a donation pledge.
-
-**Request**:
-
-```json
-{
-  "projectId": "uuid",
-  "donorOrganizationId": "uuid",
-  "hoursCommitted": 40
-}
-
-```
-
-**Response** (201 Created):
-
-```json
-{
-  "id": "uuid",
-  "projectId": "uuid",
-  "hoursCommitted": 40,
-  "hoursLogged": 0,
-  "status": "Pending",
-  "createdAt": "2026-04-22T10:00:00Z"
-}
-
-```
-
-#### GET /api/v1/donation ❌
-
-List donations for the authenticated user's organization or as an individual.
-
-#### GET /api/v1/donation/{id} ❌
-
-Get full donation details including all transactions.
-
-#### PATCH /api/v1/donation/{id}/status ❌
-
-Transition donation status (Pending → Active, Active → Cancelled, etc.).
-
-**Request**:
-
-```json
-{ "status": "Active" }
-
-```
+Implemented (replaces the earlier donation create, list, get and status designs): `POST` and `GET /api/v1/project/{id}/donation`, `GET /api/v1/donation`, `POST /api/v1/donation/{id}/activate` and `/cancel`. See [docs/current/api-surface.md](../current/api-surface.md#donation-endpoints). The transaction endpoints remain planned.
 
 #### POST /api/v1/donation/{id}/transaction ❌
 

@@ -1,5 +1,7 @@
 using MediatR;
 using Microsoft.Extensions.Logging;
+using MongoDB.Bson;
+using TimeForCode.Donation.Application.Exceptions;
 using TimeForCode.Donation.Application.Interfaces;
 using TimeForCode.Donation.Commands;
 using TimeForCode.Donation.Domain;
@@ -9,20 +11,28 @@ namespace TimeForCode.Donation.Application.Handlers
 {
     internal class AddContributionHandler : IRequestHandler<AddContributionCommand, Result<AddContributionResult>>
     {
+        private const int MaxAllocationAttempts = 3;
+
         private readonly IProjectRepository _projectRepository;
         private readonly IContributorRepository _contributorRepository;
         private readonly IContributionRepository _contributionRepository;
+        private readonly IDonationRepository _donationRepository;
+        private readonly IDonationAllocationRepository _allocationRepository;
         private readonly ILogger<AddContributionHandler> _logger;
 
         public AddContributionHandler(
             IProjectRepository projectRepository,
             IContributorRepository contributorRepository,
             IContributionRepository contributionRepository,
+            IDonationRepository donationRepository,
+            IDonationAllocationRepository allocationRepository,
             ILogger<AddContributionHandler> logger)
         {
             _projectRepository = projectRepository;
             _contributorRepository = contributorRepository;
             _contributionRepository = contributionRepository;
+            _donationRepository = donationRepository;
+            _allocationRepository = allocationRepository;
             _logger = logger;
         }
 
@@ -31,10 +41,10 @@ namespace TimeForCode.Donation.Application.Handlers
             _logger.LogInformation("Logging {Hours} hours on project {ProjectId} for user {UserId}", request.Hours, request.ProjectId, request.UserId);
 
             var project = await _projectRepository.GetByIdAsync(request.ProjectId);
-            if (project == null || project.Status != ProjectStatus.Active)
+            if (project == null || !project.IsPublished)
             {
                 _logger.LogWarning("Project {ProjectId} not found or not published", request.ProjectId);
-                return Result<AddContributionResult>.Failure("Project not found.");
+                return Result<AddContributionResult>.NotFound("Project not found.");
             }
 
             var contributor = await _contributorRepository.UpsertAsync(
@@ -48,10 +58,52 @@ namespace TimeForCode.Donation.Application.Handlers
                 DateTimeOffset.UtcNow);
 
             await _contributionRepository.CreateAsync(contribution);
+            await CountTowardsDonationsAsync(project.Id.ToString(), contribution.Id, request.Hours, cancellationToken);
 
             _logger.LogInformation("Contribution {ContributionId} logged on project {ProjectId}", contribution.Id, request.ProjectId);
 
             return Result<AddContributionResult>.Success(new AddContributionResult { Contribution = contribution.ToDto() });
+        }
+
+        /// <summary>
+        /// Counts logged hours toward the project's Active donations, oldest pledge first; what one donation cannot absorb spills over to the next.
+        /// A donation changed by someone else in the meantime is reloaded and the remaining hours are counted again; the contribution itself is already saved.
+        /// Each allocation is saved before its donation is updated, so a counted hour always has an allocation; the allocation of an update that conflicted is removed again.
+        /// </summary>
+        private async Task CountTowardsDonationsAsync(string projectId, ObjectId contributionId, int hours, CancellationToken cancellationToken)
+        {
+            var remaining = hours;
+
+            for (var attempt = 1; attempt <= MaxAllocationAttempts && remaining > 0; attempt++)
+            {
+                var donations = await _donationRepository.GetActiveByProjectIdAsync(projectId, cancellationToken);
+                DonationAllocation? unconfirmed = null;
+
+                try
+                {
+                    foreach (var counted in Domain.Donation.CountHours(donations, remaining))
+                    {
+                        unconfirmed = DonationAllocation.Create(contributionId, counted.Donation.Id, counted.Hours);
+                        await _allocationRepository.CreateAsync(unconfirmed, cancellationToken);
+                        await _donationRepository.UpdateAsync(counted.Donation);
+                        unconfirmed = null;
+                        remaining -= counted.Hours;
+                    }
+
+                    return;
+                }
+                catch (RepositoryConflictException ex)
+                {
+                    if (unconfirmed != null)
+                    {
+                        await _allocationRepository.DeleteAsync(unconfirmed.Id, cancellationToken);
+                    }
+
+                    _logger.LogWarning(ex, "Donation of project {ProjectId} changed while counting contribution {ContributionId}, attempt {Attempt}", projectId, contributionId, attempt);
+                }
+            }
+
+            _logger.LogError("{Remaining} hours of contribution {ContributionId} on project {ProjectId} could not be counted toward donations", remaining, contributionId, projectId);
         }
     }
 }

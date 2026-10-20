@@ -110,6 +110,10 @@ A maintainer submits a `Draft` project for review (`POST /api/v1/project/{id}/su
 
 A visitor calls `GET /api/v1/project` without authentication, optionally with `searchText`, `language`, `tag`, `pageNumber` and `pageSize`. The controller rejects a `pageNumber` below 1 or a `pageSize` outside 1 to 100 with `400` problem details. Otherwise `GetProjectsHandler` trims the criteria, treats blank values as absent, lower-cases the tag and calls `IProjectRepository.SearchActiveAsync`. The MongoDB repository builds one filter (`Active` status AND the supplied criteria), counts the matches and returns the requested page sorted by `PublishedAt` descending, then `_id` descending. The response carries the page and the total match count. Contract: [api-surface.md](../../current/api-surface.md#project-search).
 
+## Scenario 3d — Pledge hours and track a donation
+
+A signed-in user calls `POST /api/v1/project/{id}/donation` with the hours and exactly one donor (individual or donor organization). `PledgeDonationHandler` loads the project, rejects it with `409` unless it is `Active`, checks the donor organization (`404` when unknown) and stores a `Pending` donation. The donor or an administrator calls `POST /api/v1/donation/{id}/activate` or `/cancel`; the entity enforces the transitions (`409` otherwise). When anyone logs hours via `POST /api/v1/project/{id}/contribution`, `AddContributionHandler` also counts them toward the project's `Active` donations, oldest first; a donation that reaches its committed hours becomes `Completed`. Contract: [api-surface.md](../../current/api-surface.md#donation-endpoints).
+
 ## Scenario 4 — Log Hours Against a Donation (Target)
 
 ```mermaid

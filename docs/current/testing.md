@@ -100,7 +100,7 @@ The mock implements:
 
 **Path**: `tst/Donation/TimeForCode.Donation.Specifications`
 
-BDD-style acceptance tests for the Donation API. Covers the full project lifecycle: publishing a repository, browsing the project listing, and unpublishing a project. Uses a `WebApplicationFactory` with Moq and `MockHttp` to stub the MongoDB repositories and the GitHub API service.
+BDD-style acceptance tests for the Donation API. Covers the full project lifecycle: publishing a repository, browsing the project listing, and unpublishing a project, plus pledging hours, the donation lifecycle (activate, cancel, automatic completion) and browsing donations with their progress (`Features/Donations`). Uses an in-memory donation repository next to a `WebApplicationFactory` with Moq and `MockHttp` to stub the MongoDB repositories and the GitHub API service.
 
 ### Donation — Api.Tests
 

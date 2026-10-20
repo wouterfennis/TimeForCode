@@ -17,6 +17,7 @@ namespace TimeForCode.Donation.Specifications.Steps
         private readonly IDonationClient _donationClient;
         private readonly IServiceProvider _provider;
         private readonly HttpClient _httpClient;
+        private readonly ProjectSteps _projectSteps;
 
         private GetDonorOrganizationsResponse? _getOrganizationsResult;
         private DonorOrganizationResponse? _getOrganizationByIdResult;
@@ -25,11 +26,12 @@ namespace TimeForCode.Donation.Specifications.Steps
         private ApiException? _exception;
         private string? _registeredOrganizationId;
 
-        public DonorOrganizationSteps(IDonationClient donationClient, IServiceProvider provider, HttpClient httpClient)
+        public DonorOrganizationSteps(IDonationClient donationClient, IServiceProvider provider, HttpClient httpClient, ProjectSteps projectSteps)
         {
             _donationClient = donationClient;
             _provider = provider;
             _httpClient = httpClient;
+            _projectSteps = projectSteps;
         }
 
         [Given("There are donor organizations on the time for code platform")]
@@ -360,9 +362,10 @@ namespace TimeForCode.Donation.Specifications.Steps
         [Then("The user is informed the donor organization was not found")]
         public void ThenTheUserIsInformedTheDonorOrganizationWasNotFound()
         {
-            _exception.Should().NotBeNull();
-            _exception.Should().BeOfType<ApiException<ProblemDetails>>();
-            ((ApiException<ProblemDetails>)_exception!).StatusCode.Should().Be(404);
+            var exception = _exception ?? _projectSteps.LastException;
+            exception.Should().NotBeNull();
+            exception.Should().BeOfType<ApiException<ProblemDetails>>();
+            ((ApiException<ProblemDetails>)exception!).StatusCode.Should().Be(404);
         }
 
         [Then("The user is informed the donor organization name is already in use")]

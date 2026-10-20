@@ -8,11 +8,13 @@ namespace TimeForCode.Donation.Application.Handlers
     internal class GetDonorOrganizationsHandler : IRequestHandler<GetDonorOrganizationsQuery, Result<GetDonorOrganizationsResult>>
     {
         private readonly IDonorOrganizationRepository _repository;
+        private readonly IDonationRepository _donationRepository;
         private readonly ILogger<GetDonorOrganizationsHandler> _logger;
 
-        public GetDonorOrganizationsHandler(IDonorOrganizationRepository repository, ILogger<GetDonorOrganizationsHandler> logger)
+        public GetDonorOrganizationsHandler(IDonorOrganizationRepository repository, IDonationRepository donationRepository, ILogger<GetDonorOrganizationsHandler> logger)
         {
             _repository = repository;
+            _donationRepository = donationRepository;
             _logger = logger;
         }
 
@@ -24,15 +26,8 @@ namespace TimeForCode.Donation.Application.Handlers
 
             _logger.LogDebug("Retrieved {Count} donor organizations out of {TotalCount} total", organizations.Count, totalCount);
 
-            var dtos = organizations.Select(o => new DonorOrganizationDto
-            {
-                Id = o.Id.ToString(),
-                Name = o.Name,
-                ContactEmail = o.ContactEmail,
-                Website = o.Website,
-                CreatedAt = o.CreatedAt,
-                UpdatedAt = o.UpdatedAt
-            }).ToList();
+            var donations = await _donationRepository.GetDonationsAsync(organizations, cancellationToken);
+            var dtos = organizations.Select(o => o.ToDto(donations)).ToList();
 
             return Result<GetDonorOrganizationsResult>.Success(new GetDonorOrganizationsResult
             {

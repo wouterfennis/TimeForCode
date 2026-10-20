@@ -15,6 +15,8 @@ namespace TimeForCode.Donation.Api
     [ExcludeFromCodeCoverage(Justification = "Application startup wiring")]
     public class Startup
     {
+        private const string ScopeClaim = "scope";
+
         private IConfiguration _configuration { get; }
 
         /// <summary>
@@ -56,9 +58,10 @@ namespace TimeForCode.Donation.Api
                 });
 
             services.AddAuthorizationBuilder()
-                    .AddPolicy("ApiUser", policy => policy.RequireClaim("scope", "user"))
-                    .AddPolicy("ApiAdmin", policy => policy.RequireClaim("scope", "admin"))
-                    .AddPolicy("ApiService", policy => policy.RequireClaim("scope", "service"));
+                    .AddPolicy("ApiUser", policy => policy.RequireClaim(ScopeClaim, "user"))
+                    .AddPolicy("ApiAdmin", policy => policy.RequireClaim(ScopeClaim, "admin"))
+                    .AddPolicy("ApiUserOrAdmin", policy => policy.RequireClaim(ScopeClaim, "user", "admin"))
+                    .AddPolicy("ApiService", policy => policy.RequireClaim(ScopeClaim, "service"));
 
             services.AddApplicationLayer();
             services.AddInfrastructureLayer(_configuration);

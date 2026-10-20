@@ -28,6 +28,8 @@ namespace TimeForCode.Donation.Infrastructure.Extensions
             services.AddScoped<IDonorOrganizationRepository, DonorOrganizationRepository>();
             services.AddScoped<IContributorRepository, ContributorRepository>();
             services.AddScoped<IContributionRepository, ContributionRepository>();
+            services.AddScoped<IDonationRepository, DonationRepository>();
+            services.AddScoped<IDonationAllocationRepository, DonationAllocationRepository>();
             services.AddScoped<IGithubRepositoryApiService, GithubRepositoryApiService>();
 
             return services;

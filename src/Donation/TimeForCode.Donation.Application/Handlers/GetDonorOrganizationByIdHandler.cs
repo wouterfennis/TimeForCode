@@ -8,11 +8,13 @@ namespace TimeForCode.Donation.Application.Handlers
     internal class GetDonorOrganizationByIdHandler : IRequestHandler<GetDonorOrganizationByIdQuery, Result<GetDonorOrganizationByIdResult>>
     {
         private readonly IDonorOrganizationRepository _repository;
+        private readonly IDonationRepository _donationRepository;
         private readonly ILogger<GetDonorOrganizationByIdHandler> _logger;
 
-        public GetDonorOrganizationByIdHandler(IDonorOrganizationRepository repository, ILogger<GetDonorOrganizationByIdHandler> logger)
+        public GetDonorOrganizationByIdHandler(IDonorOrganizationRepository repository, IDonationRepository donationRepository, ILogger<GetDonorOrganizationByIdHandler> logger)
         {
             _repository = repository;
+            _donationRepository = donationRepository;
             _logger = logger;
         }
 
@@ -27,17 +29,11 @@ namespace TimeForCode.Donation.Application.Handlers
                 return Result<GetDonorOrganizationByIdResult>.Failure($"Donor organization with id '{request.Id}' was not found.");
             }
 
+            var donations = await _donationRepository.GetDonationsAsync([organization], cancellationToken);
+
             return Result<GetDonorOrganizationByIdResult>.Success(new GetDonorOrganizationByIdResult
             {
-                Organization = new DonorOrganizationDto
-                {
-                    Id = organization.Id.ToString(),
-                    Name = organization.Name,
-                    ContactEmail = organization.ContactEmail,
-                    Website = organization.Website,
-                    CreatedAt = organization.CreatedAt,
-                    UpdatedAt = organization.UpdatedAt
-                }
+                Organization = organization.ToDto(donations)
             });
         }
     }

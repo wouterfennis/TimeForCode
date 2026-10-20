@@ -219,7 +219,9 @@ namespace TimeForCode.Donation.Api.V1.Controllers
                 ContactEmail = dto.ContactEmail,
                 Website = dto.Website,
                 CreatedAt = dto.CreatedAt,
-                UpdatedAt = dto.UpdatedAt
+                UpdatedAt = dto.UpdatedAt,
+                HoursAvailable = dto.HoursAvailable,
+                HoursSpent = dto.HoursSpent
             };
         }
     }

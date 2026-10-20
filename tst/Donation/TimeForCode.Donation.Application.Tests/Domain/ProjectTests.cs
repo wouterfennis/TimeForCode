@@ -185,6 +185,21 @@ namespace TimeForCode.Donation.Application.Tests.Domain
         }
 
         [TestMethod]
+        public void IsPublished_Active_IsTrue()
+        {
+            BuildProject(ProjectStatus.Active).IsPublished.Should().BeTrue();
+        }
+
+        [TestMethod]
+        [DataRow(ProjectStatus.Draft)]
+        [DataRow(ProjectStatus.PendingApproval)]
+        [DataRow(ProjectStatus.Archived)]
+        public void IsPublished_NotActive_IsFalse(ProjectStatus status)
+        {
+            BuildProject(status).IsPublished.Should().BeFalse();
+        }
+
+        [TestMethod]
         [DataRow(nameof(Project.Status))]
         [DataRow(nameof(Project.ChangeRequestReason))]
         [DataRow(nameof(Project.Snapshot))]

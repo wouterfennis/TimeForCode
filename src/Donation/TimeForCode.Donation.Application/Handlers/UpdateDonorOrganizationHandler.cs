@@ -8,11 +8,13 @@ namespace TimeForCode.Donation.Application.Handlers
     internal class UpdateDonorOrganizationHandler : IRequestHandler<UpdateDonorOrganizationCommand, Result<UpdateDonorOrganizationResult>>
     {
         private readonly IDonorOrganizationRepository _repository;
+        private readonly IDonationRepository _donationRepository;
         private readonly ILogger<UpdateDonorOrganizationHandler> _logger;
 
-        public UpdateDonorOrganizationHandler(IDonorOrganizationRepository repository, ILogger<UpdateDonorOrganizationHandler> logger)
+        public UpdateDonorOrganizationHandler(IDonorOrganizationRepository repository, IDonationRepository donationRepository, ILogger<UpdateDonorOrganizationHandler> logger)
         {
             _repository = repository;
+            _donationRepository = donationRepository;
             _logger = logger;
         }
 
@@ -46,17 +48,11 @@ namespace TimeForCode.Donation.Application.Handlers
 
             _logger.LogInformation("Donor organization {Id} updated successfully", organization.Id);
 
+            var donations = await _donationRepository.GetDonationsAsync([organization], cancellationToken);
+
             return Result<UpdateDonorOrganizationResult>.Success(new UpdateDonorOrganizationResult
             {
-                Organization = new DonorOrganizationDto
-                {
-                    Id = organization.Id.ToString(),
-                    Name = organization.Name,
-                    ContactEmail = organization.ContactEmail,
-                    Website = organization.Website,
-                    CreatedAt = organization.CreatedAt,
-                    UpdatedAt = organization.UpdatedAt
-                }
+                Organization = organization.ToDto(donations)
             });
         }
     }

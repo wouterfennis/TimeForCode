@@ -13,6 +13,11 @@ namespace TimeForCode.Donation.Domain
         public required DateTimeOffset PublishedAt { get; init; }
         public string? ChangeRequestReason { get; private set; }
 
+        /// <summary>
+        /// Whether the project is visible to the public, which only Active projects are.
+        /// </summary>
+        public bool IsPublished => Status == ProjectStatus.Active;
+
         public static Project Create(
             GithubSnapshot snapshot,
             Uri githubRepositoryUrl,

@@ -12,13 +12,16 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
     public class UpdateDonorOrganizationHandlerTests
     {
         private Mock<IDonorOrganizationRepository> _mockRepository = default!;
+        private Mock<IDonationRepository> _mockDonationRepository = default!;
         private UpdateDonorOrganizationHandler _sut = default!;
 
         [TestInitialize]
         public void Setup()
         {
             _mockRepository = new Mock<IDonorOrganizationRepository>();
-            _sut = new UpdateDonorOrganizationHandler(_mockRepository.Object, NullLogger<UpdateDonorOrganizationHandler>.Instance);
+            _mockDonationRepository = new Mock<IDonationRepository>();
+            _mockDonationRepository.Setup(r => r.GetByDonorOrganizationIdsAsync(It.IsAny<IReadOnlyCollection<string>>(), It.IsAny<CancellationToken>())).ReturnsAsync([]);
+            _sut = new UpdateDonorOrganizationHandler(_mockRepository.Object, _mockDonationRepository.Object, NullLogger<UpdateDonorOrganizationHandler>.Instance);
         }
 
         [TestMethod]
