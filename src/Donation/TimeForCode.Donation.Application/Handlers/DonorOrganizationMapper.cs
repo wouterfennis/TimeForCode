@@ -9,8 +9,6 @@ namespace TimeForCode.Donation.Application.Handlers
     {
         internal static DonorOrganizationDto ToDto(this DonorOrganization organization, IEnumerable<Domain.Donation> donations)
         {
-            var own = donations.Where(d => d.DonorOrganizationId == organization.Id).ToList();
-
             return new DonorOrganizationDto
             {
                 Id = organization.Id.ToString(),
@@ -19,10 +17,8 @@ namespace TimeForCode.Donation.Application.Handlers
                 Website = organization.Website,
                 CreatedAt = organization.CreatedAt,
                 UpdatedAt = organization.UpdatedAt,
-                HoursSpent = own.Sum(d => d.HoursLogged),
-                HoursAvailable = own
-                    .Where(d => d.Status == DonationStatus.Active)
-                    .Sum(d => d.HoursCommitted - d.HoursLogged)
+                HoursSpent = organization.HoursSpent(donations),
+                HoursAvailable = organization.HoursAvailable(donations)
             };
         }
 

@@ -65,9 +65,11 @@ namespace TimeForCode.Donation.Application.Handlers
             return Result<AddContributionResult>.Success(new AddContributionResult { Contribution = contribution.ToDto() });
         }
 
-        // Logged hours count toward the project's Active donations, oldest pledge first; what one donation cannot absorb spills over to the next.
-        // A donation changed by someone else in the meantime is reloaded and the remaining hours are counted again; the contribution itself is already saved.
-        // Each allocation is saved before its donation is updated, so a counted hour always has an allocation; the allocation of an update that conflicted is removed again.
+        /// <summary>
+        /// Counts logged hours toward the project's Active donations, oldest pledge first; what one donation cannot absorb spills over to the next.
+        /// A donation changed by someone else in the meantime is reloaded and the remaining hours are counted again; the contribution itself is already saved.
+        /// Each allocation is saved before its donation is updated, so a counted hour always has an allocation; the allocation of an update that conflicted is removed again.
+        /// </summary>
         private async Task CountTowardsDonationsAsync(string projectId, ObjectId contributionId, int hours, CancellationToken cancellationToken)
         {
             var remaining = hours;
