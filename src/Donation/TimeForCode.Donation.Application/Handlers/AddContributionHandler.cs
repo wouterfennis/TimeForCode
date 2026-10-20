@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.Extensions.Logging;
+using MongoDB.Bson;
 using TimeForCode.Donation.Application.Exceptions;
 using TimeForCode.Donation.Application.Interfaces;
 using TimeForCode.Donation.Commands;
@@ -16,6 +17,7 @@ namespace TimeForCode.Donation.Application.Handlers
         private readonly IContributorRepository _contributorRepository;
         private readonly IContributionRepository _contributionRepository;
         private readonly IDonationRepository _donationRepository;
+        private readonly IDonationAllocationRepository _allocationRepository;
         private readonly ILogger<AddContributionHandler> _logger;
 
         public AddContributionHandler(
@@ -23,12 +25,14 @@ namespace TimeForCode.Donation.Application.Handlers
             IContributorRepository contributorRepository,
             IContributionRepository contributionRepository,
             IDonationRepository donationRepository,
+            IDonationAllocationRepository allocationRepository,
             ILogger<AddContributionHandler> logger)
         {
             _projectRepository = projectRepository;
             _contributorRepository = contributorRepository;
             _contributionRepository = contributionRepository;
             _donationRepository = donationRepository;
+            _allocationRepository = allocationRepository;
             _logger = logger;
         }
 
@@ -54,7 +58,7 @@ namespace TimeForCode.Donation.Application.Handlers
                 DateTimeOffset.UtcNow);
 
             await _contributionRepository.CreateAsync(contribution);
-            await CountTowardsDonationsAsync(project.Id.ToString(), contribution.Id.ToString(), request.Hours, cancellationToken);
+            await CountTowardsDonationsAsync(project.Id.ToString(), contribution.Id, request.Hours, cancellationToken);
 
             _logger.LogInformation("Contribution {ContributionId} logged on project {ProjectId}", contribution.Id, request.ProjectId);
 
@@ -63,13 +67,15 @@ namespace TimeForCode.Donation.Application.Handlers
 
         // Logged hours count toward the project's Active donations, oldest pledge first; what one donation cannot absorb spills over to the next.
         // A donation changed by someone else in the meantime is reloaded and the remaining hours are counted again; the contribution itself is already saved.
-        private async Task CountTowardsDonationsAsync(string projectId, string contributionId, int hours, CancellationToken cancellationToken)
+        // Each allocation is saved before its donation is updated, so a counted hour always has an allocation; the allocation of an update that conflicted is removed again.
+        private async Task CountTowardsDonationsAsync(string projectId, ObjectId contributionId, int hours, CancellationToken cancellationToken)
         {
             var remaining = hours;
 
             for (var attempt = 1; attempt <= MaxAllocationAttempts && remaining > 0; attempt++)
             {
                 var donations = await _donationRepository.GetActiveByProjectIdAsync(projectId, cancellationToken);
+                DonationAllocation? unconfirmed = null;
 
                 try
                 {
@@ -86,7 +92,10 @@ namespace TimeForCode.Donation.Application.Handlers
                             continue;
                         }
 
+                        unconfirmed = DonationAllocation.Create(contributionId, donation.Id, applied);
+                        await _allocationRepository.CreateAsync(unconfirmed, cancellationToken);
                         await _donationRepository.UpdateAsync(donation);
+                        unconfirmed = null;
                         remaining -= applied;
                     }
 
@@ -94,6 +103,11 @@ namespace TimeForCode.Donation.Application.Handlers
                 }
                 catch (RepositoryConflictException ex)
                 {
+                    if (unconfirmed != null)
+                    {
+                        await _allocationRepository.DeleteAsync(unconfirmed.Id, cancellationToken);
+                    }
+
                     _logger.LogWarning(ex, "Donation of project {ProjectId} changed while counting contribution {ContributionId}, attempt {Attempt}", projectId, contributionId, attempt);
                 }
             }
