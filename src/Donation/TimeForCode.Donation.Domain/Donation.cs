@@ -31,7 +31,7 @@ namespace TimeForCode.Donation.Domain
         /// <summary>
         /// Counts the saves of the donation; the repository only saves a change made on the version it loaded (optimistic concurrency).
         /// </summary>
-        public int Version { get; private set; }
+        public int Version { get; init; }
 
         public int ProgressPercentage => HoursLogged * 100 / HoursCommitted;
 

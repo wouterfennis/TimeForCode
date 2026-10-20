@@ -4,6 +4,8 @@ namespace TimeForCode.Donation.Commands
 {
     public class Result
     {
+        internal const string MissingErrorMessage = "The result does not contain any error message.";
+
         private string? _errorMessage { get; init; }
         public bool IsSuccess { get; init; }
         public bool IsFailure => !IsSuccess;
@@ -19,7 +21,7 @@ namespace TimeForCode.Donation.Commands
         {
             if (string.IsNullOrEmpty(errorMessage))
             {
-                throw new InvalidOperationException("The result does not contain any error message.");
+                throw new InvalidOperationException(MissingErrorMessage);
             }
 
             return new Result { IsSuccess = false, _errorMessage = errorMessage };
@@ -50,7 +52,7 @@ namespace TimeForCode.Donation.Commands
         {
             if (string.IsNullOrEmpty(errorMessage))
             {
-                throw new InvalidOperationException("The result does not contain any error message.");
+                throw new InvalidOperationException(Result.MissingErrorMessage);
             }
 
             return new Result<T> { IsSuccess = false, _errorMessage = errorMessage };
@@ -60,7 +62,7 @@ namespace TimeForCode.Donation.Commands
         {
             if (string.IsNullOrEmpty(errorMessage))
             {
-                throw new InvalidOperationException("The result does not contain any error message.");
+                throw new InvalidOperationException(Result.MissingErrorMessage);
             }
 
             return new Result<T> { IsSuccess = false, _errorMessage = errorMessage, FailureStatusCode = HttpStatusCode.Conflict };
@@ -70,7 +72,7 @@ namespace TimeForCode.Donation.Commands
         {
             if (string.IsNullOrEmpty(errorMessage))
             {
-                throw new InvalidOperationException("The result does not contain any error message.");
+                throw new InvalidOperationException(Result.MissingErrorMessage);
             }
 
             return new Result<T> { IsSuccess = false, _errorMessage = errorMessage, FailureStatusCode = HttpStatusCode.NotFound };
@@ -80,7 +82,7 @@ namespace TimeForCode.Donation.Commands
         {
             if (string.IsNullOrEmpty(errorMessage))
             {
-                throw new InvalidOperationException("The result does not contain any error message.");
+                throw new InvalidOperationException(Result.MissingErrorMessage);
             }
 
             return new Result<T> { IsSuccess = false, _errorMessage = errorMessage, FailureStatusCode = HttpStatusCode.Forbidden };

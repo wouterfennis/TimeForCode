@@ -44,9 +44,9 @@ namespace TimeForCode.Donation.Application.Handlers
             {
                 await _donationRepository.UpdateAsync(donation);
             }
-            catch (RepositoryConflictException)
+            catch (RepositoryConflictException ex)
             {
-                _logger.LogWarning("Donation {DonationId} was changed concurrently", request.DonationId);
+                _logger.LogWarning(ex, "Donation {DonationId} was changed concurrently", request.DonationId);
                 return Result<DonationResult>.Conflict("The donation was changed by someone else; reload it and try again.");
             }
 

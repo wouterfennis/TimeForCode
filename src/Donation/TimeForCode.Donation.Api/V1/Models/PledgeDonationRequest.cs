@@ -16,7 +16,7 @@ namespace TimeForCode.Donation.Api.V1.Models
         /// <summary>
         /// Pledge as an individual. Exclusive with <see cref="DonorOrganizationId"/>.
         /// </summary>
-        public bool AsIndividual { get; init; }
+        public required bool AsIndividual { get; init; }
 
         /// <summary>
         /// The donor organization the hours are pledged for. Exclusive with <see cref="AsIndividual"/>.

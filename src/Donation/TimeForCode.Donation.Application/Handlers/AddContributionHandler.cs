@@ -92,9 +92,9 @@ namespace TimeForCode.Donation.Application.Handlers
 
                     return;
                 }
-                catch (RepositoryConflictException)
+                catch (RepositoryConflictException ex)
                 {
-                    _logger.LogWarning("Donation of project {ProjectId} changed while counting contribution {ContributionId}, attempt {Attempt}", projectId, contributionId, attempt);
+                    _logger.LogWarning(ex, "Donation of project {ProjectId} changed while counting contribution {ContributionId}, attempt {Attempt}", projectId, contributionId, attempt);
                 }
             }
 
