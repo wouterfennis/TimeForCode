@@ -18,7 +18,7 @@ namespace TimeForCode.Donation.Application.Validators
                 .WithMessage($"A profile can hold at most {ContributorProfileLimits.MaxSkills} skills.");
 
             RuleForEach(x => x.Skills)
-                .Must(skill => skill.Trim().Length <= ContributorProfileLimits.MaxSkillLength)
+                .Must(skill => skill is null || skill.Trim().Length <= ContributorProfileLimits.MaxSkillLength)
                 .WithMessage($"A skill must not exceed {ContributorProfileLimits.MaxSkillLength} characters.");
 
             RuleFor(x => x.HoursAvailable)

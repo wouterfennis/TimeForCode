@@ -70,6 +70,16 @@ namespace TimeForCode.Donation.Application.Tests.Domain
         }
 
         [TestMethod]
+        public void UpdateProfile_NullSkill_DropsIt()
+        {
+            var contributor = Contributor.Create("user-1", "octocat", "https://avatars.githubusercontent.com/u/1");
+
+            contributor.UpdateProfile(null, [null!, "C#"], null, null);
+
+            contributor.Skills.Should().Equal("C#");
+        }
+
+        [TestMethod]
         public void UpdateProfile_SkillsWithBlanksAndDuplicates_NormalisesThem()
         {
             var contributor = NewContributor();

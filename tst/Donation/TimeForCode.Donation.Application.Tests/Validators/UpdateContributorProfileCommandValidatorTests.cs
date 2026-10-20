@@ -52,6 +52,16 @@ namespace TimeForCode.Donation.Application.Tests.Validators
         }
 
         [TestMethod]
+        public void Validate_NullSkill_DoesNotThrow()
+        {
+            var skills = new List<string> { null!, "C#" };
+
+            var act = () => _sut.Validate(Command(skills: skills));
+
+            act.Should().NotThrow();
+        }
+
+        [TestMethod]
         public void Validate_TooLongSkill_IsInvalid()
         {
             var skills = new List<string> { new('a', ContributorProfileLimits.MaxSkillLength + 1) };

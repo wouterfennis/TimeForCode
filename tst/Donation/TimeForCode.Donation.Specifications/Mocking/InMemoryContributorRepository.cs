@@ -31,12 +31,12 @@ namespace TimeForCode.Donation.Specifications.Mocking
                 Id = existing?.Id ?? contributor.Id,
                 PlatformUserId = contributor.PlatformUserId,
                 GithubLogin = contributor.GithubLogin,
-                AvatarUrl = contributor.AvatarUrl,
-                Role = existing?.Role,
-                Skills = existing?.Skills ?? [],
-                HoursAvailable = existing?.HoursAvailable,
-                DonorOrganizationId = existing?.DonorOrganizationId
+                AvatarUrl = contributor.AvatarUrl
             };
+            if (existing != null)
+            {
+                persisted.UpdateProfile(existing.Role, existing.Skills, existing.HoursAvailable, existing.DonorOrganizationId);
+            }
             _contributors.Add(persisted);
 
             return Task.FromResult(persisted);
@@ -60,10 +60,7 @@ namespace TimeForCode.Donation.Specifications.Mocking
         public Task UpdateProfileAsync(Contributor contributor, CancellationToken cancellationToken)
         {
             var existing = _contributors.Single(c => c.Id == contributor.Id);
-            existing.Role = contributor.Role;
-            existing.Skills = [.. contributor.Skills];
-            existing.HoursAvailable = contributor.HoursAvailable;
-            existing.DonorOrganizationId = contributor.DonorOrganizationId;
+            existing.UpdateProfile(contributor.Role, contributor.Skills, contributor.HoursAvailable, contributor.DonorOrganizationId);
 
             return Task.CompletedTask;
         }

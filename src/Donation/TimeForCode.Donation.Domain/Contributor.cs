@@ -17,10 +17,10 @@ namespace TimeForCode.Donation.Domain
         public required string PlatformUserId { get; init; }
         public required string GithubLogin { get; init; }
         public required string AvatarUrl { get; init; }
-        public string? Role { get; set; }
-        public List<string> Skills { get; set; } = [];
-        public int? HoursAvailable { get; set; }
-        public ObjectId? DonorOrganizationId { get; set; }
+        public string? Role { get; private set; }
+        public List<string> Skills { get; private set; } = [];
+        public int? HoursAvailable { get; private set; }
+        public ObjectId? DonorOrganizationId { get; private set; }
 
         /// <summary>
         /// Replaces the profile; skills are trimmed and deduplicated (case-insensitive, first spelling wins) and blank values are dropped.
@@ -58,7 +58,7 @@ namespace TimeForCode.Donation.Domain
         private static List<string> NormaliseSkills(IEnumerable<string>? skills)
         {
             return (skills ?? [])
-                .Select(s => s.Trim())
+                .Select(s => s?.Trim() ?? string.Empty)
                 .Where(s => s.Length > 0)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToList();
