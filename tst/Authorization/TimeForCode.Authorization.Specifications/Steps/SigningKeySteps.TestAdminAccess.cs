@@ -14,6 +14,8 @@ namespace TimeForCode.Authorization.Specifications.Steps
         private const string TestAdminSecret = "test-admin-secret-for-specs";
         private const string TestAdminTokenPath = "/api/v1/test-admin-access/token";
 
+        private static readonly JsonSerializerOptions WebJsonOptions = new(JsonSerializerDefaults.Web);
+
         private TestSigningKey? _testAdminSigningKey;
         private HttpResponseMessage? _testAdminResponse;
         private string? _testAdminBody;
@@ -102,7 +104,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
 
         private JwtSecurityToken ReadTestAdminToken()
         {
-            var accessToken = JsonSerializer.Deserialize<AccessToken>(_testAdminBody!, new JsonSerializerOptions(JsonSerializerDefaults.Web));
+            var accessToken = JsonSerializer.Deserialize<AccessToken>(_testAdminBody!, WebJsonOptions);
             return new JwtSecurityTokenHandler().ReadJwtToken(accessToken!.Token);
         }
 
