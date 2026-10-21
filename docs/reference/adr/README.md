@@ -24,6 +24,7 @@ ADRs are referenced from [Arc42 Section 09 — Architecture Decisions](../archit
 | [ADR-014](0014-no-backwards-compatibility-before-release.md) | No backwards compatibility before the first production release | Accepted |
 | [ADR-015](0015-durable-single-use-login-state.md) | Keep OAuth login state in MongoDB with a TTL index, single-use and PKCE-protected | Accepted |
 | [ADR-016](0016-mongodb-bson-in-domain-and-application.md) | Allow MongoDB.Bson types in Domain and Application, forbid the driver | Accepted |
+| [ADR-017](0017-test-only-admin-access.md) | Test-only admin access on the local stack | Accepted |
 
 ---
 

@@ -31,7 +31,8 @@ namespace TimeForCode.Authorization.Application.Options
             var section = configuration.GetSection(SectionName);
             return new TestAdminAccessOptions
             {
-                Enabled = section.GetValue<bool>(nameof(Enabled)),
+                // Empty or unparseable counts as disabled, so a compose file can leave the variable unset.
+                Enabled = bool.TryParse(section[nameof(Enabled)], out var enabled) && enabled,
                 Secret = section.GetValue<string>(nameof(Secret)) ?? string.Empty
             };
         }

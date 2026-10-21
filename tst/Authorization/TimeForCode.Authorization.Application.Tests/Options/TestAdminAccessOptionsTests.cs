@@ -24,6 +24,22 @@ namespace TimeForCode.Authorization.Application.Tests.Options
         }
 
         [TestMethod]
+        public void Bind_EmptyValues_IsDisabled()
+        {
+            var configuration = new ConfigurationBuilder()
+                .AddInMemoryCollection(new Dictionary<string, string?>
+                {
+                    ["TestAdminAccess:Enabled"] = "",
+                    ["TestAdminAccess:Secret"] = ""
+                })
+                .Build();
+
+            var result = TestAdminAccessOptions.Bind(configuration);
+
+            result.Enabled.Should().BeFalse();
+        }
+
+        [TestMethod]
         public void Bind_EnabledSection_ReadsValues()
         {
             var configuration = new ConfigurationBuilder()

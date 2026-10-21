@@ -47,9 +47,7 @@ namespace TimeForCode.Authorization.Application.Extensions
                 .Configure<AdminPasskeyOptions>(options => configuration.GetSection(AdminPasskeyOptions.SectionName)
                 .Bind(options));
 
-            services
-                .Configure<TestAdminAccessOptions>(options => configuration.GetSection(TestAdminAccessOptions.SectionName)
-                .Bind(options));
+            services.AddSingleton(Microsoft.Extensions.Options.Options.Create(TestAdminAccessOptions.Bind(configuration)));
 
             ConfigureSigningCertificate(services, configuration, allowEphemeralSigningKey);
 

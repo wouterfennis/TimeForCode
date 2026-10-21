@@ -90,6 +90,8 @@ See [docs/current/capability-status.md](docs/current/capability-status.md) for t
 .\scripts\start-local.ps1
 ```
 
+The script sets a random `TEST_ADMIN_ACCESS_SECRET`, which enables the test-only admin token endpoint on the local stack (see [testing](docs/current/testing.md#admin-actions-on-a-running-stack)). A plain `podman compose up` leaves it unset and the endpoint disabled.
+
 > On Windows this script automatically starts the Podman machine if it is not already running, so you do not need to run `podman machine start` manually. On Linux and macOS it calls `podman compose up --build` directly.
 
 | Service | URL |
