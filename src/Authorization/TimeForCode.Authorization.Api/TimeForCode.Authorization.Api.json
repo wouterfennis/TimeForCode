@@ -497,6 +497,79 @@
         }
       }
     },
+    "/api/v1/test-admin-access/token": {
+      "post": {
+        "tags": [
+          "TestAdminAccess"
+        ],
+        "summary": "Issues an admin token for live tests. Only available while test-only admin access is enabled.",
+        "operationId": "TestAdminToken",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TestAdminTokenRequestModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TestAdminTokenRequestModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/TestAdminTokenRequestModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CallbackResponseModel"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. Retry after the number of seconds given in the Retry-After header.",
+            "headers": {
+              "Retry-After": {
+                "description": "Number of seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/User": {
       "get": {
         "tags": [
@@ -976,6 +1049,20 @@
         },
         "description": "Repository response model"
       },
+      "TestAdminTokenRequestModel": {
+        "required": [
+          "secret"
+        ],
+        "type": "object",
+        "properties": {
+          "secret": {
+            "maxLength": 256,
+            "type": "string",
+            "description": "Shared secret configured for the test-only admin access."
+          }
+        },
+        "description": "Request for a test-only admin token."
+      },
       "UserResponse": {
         "required": [
           "id",
@@ -1050,6 +1137,9 @@
     },
     {
       "name": "OpenIdConfiguration"
+    },
+    {
+      "name": "TestAdminAccess"
     },
     {
       "name": "User"

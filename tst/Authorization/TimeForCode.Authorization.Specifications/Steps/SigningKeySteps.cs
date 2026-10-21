@@ -14,7 +14,7 @@ using TimeForCode.Shared.Api.Authentication.Models;
 namespace TimeForCode.Authorization.Specifications.Steps
 {
     [Binding]
-    internal sealed class SigningKeySteps : IDisposable
+    internal sealed partial class SigningKeySteps : IDisposable
     {
         private const string JwksPath = "/.well-known/jwks.json";
         private const string Issuer = "http://localhost:8080";
@@ -51,10 +51,10 @@ namespace TimeForCode.Authorization.Specifications.Steps
             _environment = "Production";
         }
 
-        [Given("The time for code platform runs in the Development environment")]
-        public void GivenTheTimeForCodePlatformRunsInTheDevelopmentEnvironment()
+        [Given("The time for code platform runs in the {word} environment")]
+        public void GivenTheTimeForCodePlatformRunsInTheEnvironment(string environment)
         {
-            _environment = "Development";
+            _environment = environment;
         }
 
         [Given("The time for code platform has a current and a previous signing key")]
@@ -174,6 +174,8 @@ namespace TimeForCode.Authorization.Specifications.Steps
             _factory?.Dispose();
             _currentKey?.Dispose();
             _previousKey?.Dispose();
+            _testAdminSigningKey?.Dispose();
+            _testAdminResponse?.Dispose();
         }
 
         private HttpClient Client => _rotationClient ?? _defaultClient;

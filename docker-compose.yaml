@@ -37,6 +37,8 @@ services:
       - RsaOptions__PreviousBase64Certificate=${RSA_PREVIOUS_BASE64_CERTIFICATE:-}
       - DbOptions__ConnectionString=mongodb://root:example@mongo:27017/?authSource=admin
       - DbOptions__DatabaseName=AuthorizationServer
+      - TestAdminAccess__Enabled=true
+      - TestAdminAccess__Secret=${TEST_ADMIN_ACCESS_SECRET:-local-test-admin-secret}
     depends_on:
       - mongo
     networks:
