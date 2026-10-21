@@ -24,9 +24,10 @@ Each phase is independently shippable and ends with working, tested software, in
 
 - Scaffold the SPA project, tooling, linting, and CI as described in [architecture](architecture.md).
 - Implement design tokens, the app shell, and the core components from the [design system](design-system.md).
-- Stand up the BFF: static hosting and reverse proxy for both APIs.
+- Serve the SPA with nginx: static hosting with security headers (#111), then forwarding `/api/donation/*` for the public project list (#112).
+- Introduce the BFF with sign-in (#113): it forwards both APIs and turns the token cookie into a bearer header ([ADR-012 amendment](../reference/adr/0012-react-spa-frontend.md#amendment-2026-10-21-nginx-first-the-bff-with-sign-in)).
 - Generate the API clients from the OpenAPI snapshots.
-- Done when: a "hello" page is served through the BFF in Docker Compose, and CI builds and tests the SPA.
+- Done when: the SPA is served in Docker Compose, a signed-in API call works through the BFF, and CI builds and tests the SPA and its image.
 
 ### Phase 1 — Public pages
 

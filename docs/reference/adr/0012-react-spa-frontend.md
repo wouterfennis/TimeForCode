@@ -2,6 +2,7 @@
 
 **Date**: 2026-10-06
 **Status**: Proposed
+**Amended**: 2026-10-21 (nginx serves the SPA until the BFF arrives with sign-in, see [Amendment](#amendment-2026-10-21-nginx-first-the-bff-with-sign-in))
 
 ## Context
 
@@ -39,6 +40,21 @@ Details are in [docs/frontend/architecture.md](../../frontend/architecture.md).
 - A second technology stack (Node tooling) to build, test, and maintain.
 - The BFF is a new moving part and needs CSRF protection (custom header) and a CSP.
 - Public pages need a meta-tag or prerendering story for sharing and search.
+
+## Amendment (2026-10-21): nginx first, the BFF with sign-in
+
+Decided in [#111](https://github.com/wouterfennis/TimeForCode/issues/111): the BFF arrives when the first feature needs it, not at the start of Phase 0.
+
+- **Until sign-in**: nginx serves the SPA (`Dockerfile.frontend`, `src/Frontend/nginx.conf`) and sets the security headers, including the Content Security Policy. Serving the files and the public project list (#112) need no sign-in, so nothing needs the cookie-to-bearer bridge yet.
+- **From sign-in (#113) on**: the BFF is introduced. Authenticated calls need the token cookie turned into a bearer header. The cookie holds a JSON document, so nginx cannot do that, and that logic belongs in tested code rather than in nginx configuration. CSRF protection arrives with the BFF too: before #113 the SPA sends no authenticated, state-changing requests.
+- **What keeps the switch cheap**: the SPA only calls relative paths on its own origin. Until #113 nginx forwards them (#112 adds `/api/donation/*`); from #113 on the BFF handles them, or nginx forwards them to the BFF. The SPA does not change.
+
+| SPA path | Forwarded to |
+| --- | --- |
+| `/api/auth/*` | Authorization API `/api/*` |
+| `/api/donation/*` | Donation API `/api/*` |
+
+For example, `/api/donation/v1/Project` goes to the Donation API's `/api/v1/Project`.
 
 ## Follow-up when accepted
 

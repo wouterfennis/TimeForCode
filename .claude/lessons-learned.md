@@ -37,6 +37,26 @@ Non-obvious knowledge from past sessions. Read and update through skill `lessons
 - **Date / issue:** 2026-10-15 / #110
 - **Lesson:** The read-guard hook blocks Bash reads (`grep`, `cat`, `ls`...) of `node_modules` and lockfiles, except a dependency's own `package.json`; append `# allow-excluded` when a wider read is intended. Local Node is 24.12, so packages needing 24.15 or later fail with `engine-strict`; pick a release that supports every Node 24.
 
+### The Podman guard also matches the compose file name
+
+- **Date / issue:** 2026-10-21 / #111
+- **Lesson:** `guard-bash.ps1` denies any shell command with an unquoted `docker-compose` word, so `git diff -- docker-compose*` or `Get-Content docker-compose.yaml` is refused too.
+- **How to apply:** read the compose file with Read or Grep, or quote the path; `podman build -f Dockerfile.frontend` is fine.
+
+### The local Mongo volume keeps old data shapes
+
+- **Date / issue:** 2026-10-21 / #111
+- **Lesson:** After a breaking data change (ADR-014), old documents stay in the local `mongo` volume; the smoke test then fails with a 500 (here: `ux_refresh_token_hash` could not be built because old `RefreshToken` documents had no `TokenHash`).
+- **How to apply:** read the API container log (`podman logs timeforcode-authorization-api`), then delete only the old-shape documents with `podman exec mongo mongosh ...` and rerun.
+
+## Front-end
+
+### `nginx -t` runs at image build time, without the compose network
+
+- **Date / issue:** 2026-10-21 / #111
+- **Lesson:** `Dockerfile.frontend` runs `nginx -t`, which resolves a literal `proxy_pass` host such as `donation-api` and fails with "host not found in upstream" during the build. Server-level `add_header` relies on `add_header_inherit merge` (nginx 1.29.3 or later).
+- **How to apply:** for the first proxy location (#112), use an `upstream` with `server donation-api:8080 resolve;` plus a `resolver`, or a variable in `proxy_pass`, and keep the smoke test's header checks green.
+
 ## Donation module
 
 ### Project status values are persisted as integers
