@@ -16,6 +16,9 @@ Scenario: Test admin token is issued when enabled
 	When The time for code platform starts
 	And The user requests a test admin token with the test admin secret
 	Then The test admin token grants the admin scope
+	And The test admin token is marked as a test session
+	And The test admin token expires within 15 minutes
+	And No refresh token is issued with the test admin token
 
 Scenario: Test admin token is refused with a wrong secret
 	Given The time for code platform runs in the Development environment

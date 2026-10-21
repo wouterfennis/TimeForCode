@@ -57,5 +57,11 @@ if ($IsWindows) {
 # Start the stack
 # ---------------------------------------------------------------------------
 
+if (-not $env:TEST_ADMIN_ACCESS_SECRET) {
+    # Secret for the test-only admin token endpoint (enabled on the local stack only); random per run.
+    $env:TEST_ADMIN_ACCESS_SECRET = [Convert]::ToBase64String([System.Security.Cryptography.RandomNumberGenerator]::GetBytes(32))
+    Write-Info "Generated a random TEST_ADMIN_ACCESS_SECRET for this run."
+}
+
 Write-Info "Starting the TimeForCode stack..."
 podman compose up --build

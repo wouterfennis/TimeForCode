@@ -3,6 +3,7 @@ using Reqnroll;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json;
 using TimeForCode.Authorization.Specifications.TestBuilder;
 using TimeForCode.Shared.Api.Authentication.Models;
 
@@ -15,6 +16,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
 
         private TestSigningKey? _testAdminSigningKey;
         private HttpResponseMessage? _testAdminResponse;
+        private string? _testAdminBody;
 
         [Given("The time for code platform has test admin access disabled")]
         public void GivenTheTimeForCodePlatformHasTestAdminAccessDisabled()
@@ -60,13 +62,30 @@ namespace TimeForCode.Authorization.Specifications.Steps
         }
 
         [Then("The test admin token grants the admin scope")]
-        public async Task ThenTheTestAdminTokenGrantsTheAdminScopeAsync()
+        public void ThenTheTestAdminTokenGrantsTheAdminScope()
         {
             _testAdminResponse!.StatusCode.Should().Be(HttpStatusCode.OK);
 
-            var body = await _testAdminResponse.Content.ReadFromJsonAsync<Api.Models.CallbackResponseModel>();
-            var token = new JwtSecurityTokenHandler().ReadJwtToken(body!.AccessToken.Token);
-            token.Claims.Should().Contain(c => c.Type == "scope" && c.Value == "admin");
+            ReadTestAdminToken().Claims.Should().Contain(c => c.Type == "scope" && c.Value == "admin");
+        }
+
+        [Then("The test admin token is marked as a test session")]
+        public void ThenTheTestAdminTokenIsMarkedAsATestSession()
+        {
+            ReadTestAdminToken().Claims.Should().Contain(c => c.Type == "amr" && c.Value == "test");
+        }
+
+        [Then("The test admin token expires within 15 minutes")]
+        public void ThenTheTestAdminTokenExpiresWithin15Minutes()
+        {
+            ReadTestAdminToken().ValidTo.Should().BeBefore(DateTime.UtcNow.AddMinutes(16));
+        }
+
+        [Then("No refresh token is issued with the test admin token")]
+        public void ThenNoRefreshTokenIsIssuedWithTheTestAdminToken()
+        {
+            _testAdminBody.Should().NotContainEquivalentOf("refresh");
+            _testAdminResponse!.Headers.Contains("Set-Cookie").Should().BeFalse();
         }
 
         [Then("The startup failure states that test admin access is not allowed")]
@@ -81,6 +100,12 @@ namespace TimeForCode.Authorization.Specifications.Steps
             _startupFailure!.Message.Should().Contain("TestAdminAccess:Secret must be at least");
         }
 
+        private JwtSecurityToken ReadTestAdminToken()
+        {
+            var accessToken = JsonSerializer.Deserialize<AccessToken>(_testAdminBody!, new JsonSerializerOptions(JsonSerializerDefaults.Web));
+            return new JwtSecurityTokenHandler().ReadJwtToken(accessToken!.Token);
+        }
+
         private void EnableTestAdminAccess(string secret)
         {
             _testAdminSigningKey = new TestSigningKey();
@@ -93,6 +118,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
         {
             using var client = _factory!.CreateClient();
             _testAdminResponse = await client.PostAsJsonAsync(TestAdminTokenPath, new { Secret = secret });
+            _testAdminBody = await _testAdminResponse.Content.ReadAsStringAsync();
         }
     }
 }
