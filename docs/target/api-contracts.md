@@ -186,24 +186,9 @@ Add a contributor to the organization.
 
 ### Contributors
 
-#### POST /api/v1/contributor ❌
+#### Contributor profile ✅
 
-Register the current user as an independent contributor.
-
-**Request**:
-
-```json
-{
-  "role": "Backend Developer",
-  "skills": ["C#", ".NET", "MongoDB"],
-  "hoursAvailable": 8
-}
-
-```
-
-#### GET /api/v1/contributor/{id} ❌
-
-Get contributor profile.
+Implemented as `GET` and `PUT /api/v1/contributor/me`, `GET` and `PUT /api/v1/contributor/{id}` and `GET /api/v1/donororganization/{id}/contributor`; replaces the earlier `POST /api/v1/contributor` design, because the profile is created on first update. See [docs/current/api-surface.md](../current/api-surface.md#contributor-endpoints) for payloads and status codes.
 
 ---
 

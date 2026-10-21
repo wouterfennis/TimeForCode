@@ -21,8 +21,8 @@ Data comes from `scripts/sonar-issues.ps1` (read-only SonarCloud API, compact ou
    - *Mechanical, behaviour-preserving* (unused usings, naming, redundant code): fix directly; existing tests are the safety net.
    - *Behaviour could change* (null handling, exception paths, logic, security): red test first, then minimal fix (TDD rules in `.claude/rules/testing-strategy.md`).
    - *False positive or accepted risk*: do **not** suppress in code or silently skip. List it with a one-line justification for the user, who decides on a Sonar status change or a documented `TODO(review)` / arc42 chapter 11 entry. Hotspots are only ever reviewed by the user.
-6. **Verify**: `dotnet build TimeForCode.sln`, then `dotnet test` on the touched projects, one full-solution test run at the end (skill `quiet-dotnet`). Architecture tests must stay green. A `SwaggerTests` diff follows `swagger-snapshot-review`.
-7. **Format**: `dotnet format ./TimeForCode.sln` (see `lessons-learned` about unrelated churn; revert files you did not touch).
+6. **Verify**: `dotnet build TimeForCode.sln`, then one `dotnet test TimeForCode.sln --no-build` run (skill `quiet-dotnet`). Architecture tests must stay green. A `SwaggerTests` diff follows `swagger-snapshot-review`.
+7. **Format**: `pwsh -NoProfile -File .claude/hooks/format-solution.ps1` (see `lessons-learned` about unrelated churn; revert files you did not touch).
 8. **Report and ship**: summarise per rule: fixed N, skipped M (with reasons), tests added. Then the `review` agent and `/ship-pr`. The PR body links the rule keys; do not claim the gate passes, because Sonar only re-analyses in CI. After CI, re-run `-Mode gate -PullRequest <n>` and `-Mode list -PullRequest <n>` to confirm no new findings.
 
 ## Stop conditions

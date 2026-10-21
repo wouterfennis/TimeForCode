@@ -120,7 +120,7 @@ graph LR
 | `Project` | Registered open-source project; linked to a GitHub repository |
 | `Donation` | Own MongoDB document: hours pledged to a project by a donor organization or an individual (never both) with the lifecycle Pending, Active, Completed, Cancelled; counts hours logged on its project while Active and completes itself when they reach the commitment |
 | `DonorOrganization` | Company registered as a donor |
-| `Contributor` | Developer who logs hours; own MongoDB document, upserted by platform user id (unique index) on every logged contribution |
+| `Contributor` | Developer who logs hours; own MongoDB document, upserted by platform user id (unique index) on every logged contribution; also holds the profile (role, normalised skills, hours available, optional `DonorOrganizationId`, indexed), changed only through `UpdateProfile` and the profile endpoints |
 | `Contribution` | Time-log entry of a contributor on an `Active` project; stores the `ContributorId` plus a snapshot of the GitHub login and avatar (extended reference, like `GithubSnapshot` on `Project`) |
 | `Maintainer` | Developer who owns a project |
 | `Milestone` | Phase within a project, synced from GitHub milestones |

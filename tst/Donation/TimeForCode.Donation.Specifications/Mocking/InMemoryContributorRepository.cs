@@ -33,9 +33,36 @@ namespace TimeForCode.Donation.Specifications.Mocking
                 GithubLogin = contributor.GithubLogin,
                 AvatarUrl = contributor.AvatarUrl
             };
+            if (existing != null)
+            {
+                persisted.UpdateProfile(existing.Role, existing.Skills, existing.HoursAvailable, existing.DonorOrganizationId);
+            }
             _contributors.Add(persisted);
 
             return Task.FromResult(persisted);
+        }
+
+        public Task<Contributor?> GetByIdAsync(ObjectId contributorId)
+        {
+            return Task.FromResult(_contributors.SingleOrDefault(c => c.Id == contributorId));
+        }
+
+        public Task<IReadOnlyList<Contributor>> GetByDonorOrganizationIdAsync(ObjectId donorOrganizationId, CancellationToken cancellationToken)
+        {
+            IReadOnlyList<Contributor> affiliated = _contributors
+                .Where(c => c.DonorOrganizationId == donorOrganizationId)
+                .OrderBy(c => c.GithubLogin)
+                .ToList();
+
+            return Task.FromResult(affiliated);
+        }
+
+        public Task UpdateProfileAsync(Contributor contributor, CancellationToken cancellationToken)
+        {
+            var existing = _contributors.Single(c => c.Id == contributor.Id);
+            existing.UpdateProfile(contributor.Role, contributor.Skills, contributor.HoursAvailable, contributor.DonorOrganizationId);
+
+            return Task.CompletedTask;
         }
 
         public Task<Contributor?> GetByPlatformUserIdAsync(string platformUserId)

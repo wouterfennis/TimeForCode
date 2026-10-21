@@ -17,6 +17,21 @@ namespace TimeForCode.Donation.Application.Interfaces
         Task<Contributor?> GetByPlatformUserIdAsync(string platformUserId);
 
         /// <summary>
+        /// Returns the contributor with the identifier, or <c>null</c> when there is none.
+        /// </summary>
+        Task<Contributor?> GetByIdAsync(ObjectId contributorId);
+
+        /// <summary>
+        /// Returns the contributors affiliated with the donor organization, in a stable order.
+        /// </summary>
+        Task<IReadOnlyList<Contributor>> GetByDonorOrganizationIdAsync(ObjectId donorOrganizationId, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Saves the profile fields (role, skills, hours available, donor organization) of the contributor; the identity fields are left alone.
+        /// </summary>
+        Task UpdateProfileAsync(Contributor contributor, CancellationToken cancellationToken);
+
+        /// <summary>
         /// Replaces the platform user id, GitHub login and avatar of the contributor with those of a deleted user.
         /// </summary>
         Task AnonymiseAsync(ObjectId contributorId, CancellationToken cancellationToken);

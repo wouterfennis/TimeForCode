@@ -154,8 +154,8 @@ A developer who logs hours against a donation. Can belong to an organisation or 
 | githubUsername | string | GitHub username |
 | role | string | Job role or title |
 | skills | string[] | Self-declared skills and technologies |
-| organizationId | UUID? | Affiliated donor organisation (null for independents) |
-| hoursAvailable | decimal | Hours available to donate per period |
+| organizationId | ObjectId? | Affiliated donor organisation (null for independents) |
+| hoursAvailable | int? | Whole hours available to donate per period (0 to 10000) |
 | hoursSpent | decimal | Total hours logged |
 
 ### Maintainer

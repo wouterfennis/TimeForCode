@@ -41,7 +41,11 @@ namespace TimeForCode.Donation.Infrastructure.Persistence.Database
                         Unique = true
                     });
 
-                collection.Indexes.CreateOne(indexModel);
+                var organizationIndexModel = new CreateIndexModel<Contributor>(
+                    Builders<Contributor>.IndexKeys.Ascending(c => c.DonorOrganizationId),
+                    new CreateIndexOptions<Contributor> { Name = "ix_contributors_donor_organization_id" });
+
+                collection.Indexes.CreateMany([indexModel, organizationIndexModel]);
                 _indexesCreated = true;
             }
         }
@@ -71,6 +75,33 @@ namespace TimeForCode.Donation.Infrastructure.Persistence.Database
             return await _collection
                 .Find(Builders<Contributor>.Filter.Eq(c => c.PlatformUserId, platformUserId))
                 .FirstOrDefaultAsync();
+        }
+
+        public async Task<Contributor?> GetByIdAsync(ObjectId contributorId)
+        {
+            return await _collection
+                .Find(Builders<Contributor>.Filter.Eq(c => c.Id, contributorId))
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task<IReadOnlyList<Contributor>> GetByDonorOrganizationIdAsync(ObjectId donorOrganizationId, CancellationToken cancellationToken)
+        {
+            return await _collection
+                .Find(Builders<Contributor>.Filter.Eq(c => c.DonorOrganizationId, donorOrganizationId))
+                .SortBy(c => c.GithubLogin)
+                .ThenBy(c => c.Id)
+                .ToListAsync(cancellationToken);
+        }
+
+        public async Task UpdateProfileAsync(Contributor contributor, CancellationToken cancellationToken)
+        {
+            var update = Builders<Contributor>.Update
+                .Set(c => c.Role, contributor.Role)
+                .Set(c => c.Skills, contributor.Skills)
+                .Set(c => c.HoursAvailable, contributor.HoursAvailable)
+                .Set(c => c.DonorOrganizationId, contributor.DonorOrganizationId);
+
+            await _collection.UpdateOneAsync(Builders<Contributor>.Filter.Eq(c => c.Id, contributor.Id), update, cancellationToken: cancellationToken);
         }
 
         public async Task AnonymiseAsync(ObjectId contributorId, CancellationToken cancellationToken)
