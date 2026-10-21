@@ -89,7 +89,7 @@ Install the following tools before starting:
 .\scripts\smoke-test.ps1
 ```
 
-Expected output: `Result: PASSED (28/28)`
+Expected output: `Result: PASSED (10/10)`. The script only proves the stack is up and wired; feature-level behaviour belongs in the Reqnroll specifications.
 
 ### 5. Development Guidelines
 
