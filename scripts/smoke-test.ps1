@@ -4,7 +4,7 @@
     Smoke test for the TimeForCode local stack.
 
 .DESCRIPTION
-    Proves the stack is up and wired, in about ten checks. Feature-level
+    Proves the stack is up and wired, in about a dozen checks. Feature-level
     behaviour (GitHub token handling, project lifecycle, role checks) is
     covered by the Reqnroll specifications, not here.
 
