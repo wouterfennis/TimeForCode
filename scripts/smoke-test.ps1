@@ -4,11 +4,18 @@
     Smoke test for the TimeForCode local stack.
 
 .DESCRIPTION
-    Verifies that all services are reachable and that the full OAuth2
-    authentication flow works end-to-end:
+    Proves the stack is up and wired, in about ten checks. Feature-level
+    behaviour (GitHub token handling, project lifecycle, role checks) is
+    covered by the Reqnroll specifications, not here.
 
-        Browser -> Auth API -> IdP Mock -> Auth API callback
-                           -> JWT issued -> /api/v1/user returns user profile
+        1. Auth API, IdP Mock and Donation API respond
+        2. Auth API OIDC discovery publishes issuer and JWKS
+        3. Login round trip issues access and refresh cookies
+        4. The JWT audiences include the Donation API
+        5. The Auth API accepts its own JWT
+        6. The Donation API accepts the Auth API JWT and stores a project (Mongo write)
+        7. The stored project is read back (Mongo read)
+        8. The data protection key ring is stored in the database (needs podman)
 
 .PARAMETER AuthApiBaseUrl
     Base URL of the Authorization API. Default: http://localhost:8080
@@ -63,13 +70,6 @@ function Write-Section([string] $title) {
     Write-Output ("-" * $title.Length)
 }
 
-function Invoke-Step([string] $url, [hashtable] $curlArgs = @{}) {
-    # Returns the raw response headers + body as an array of strings
-    $curlParameters = @("-si", "--max-redirs", "0") + ($curlArgs.GetEnumerator() |
-        ForEach-Object { $_.Key; if ($null -ne $_.Value) { $_.Value } })
-    return curl @curlParameters $url 2>&1
-}
-
 function Get-StatusCode([string[]] $response) {
     $line = $response | Select-String "^HTTP/\d" | Select-Object -Last 1
     if ($line -match "HTTP/\S+\s+(\d+)") { return [int]$Matches[1] }
@@ -97,7 +97,7 @@ function Decode-JwtPayload([string] $token) {
 }
 
 # ---------------------------------------------------------------------------
-# Section 1: Service availability
+# 1. Service availability
 # ---------------------------------------------------------------------------
 
 Write-Section "1. Service availability"
@@ -123,269 +123,126 @@ foreach ($check in $checks) {
 }
 
 # ---------------------------------------------------------------------------
-# Section 2: Auth API OIDC discovery content
+# 2. Auth API OIDC discovery
 # ---------------------------------------------------------------------------
 
-Write-Section "2. OIDC discovery documents"
+Write-Section "2. OIDC discovery"
 
 $discoveredAuthIssuer = ""
 try {
     $authOidc = curl -s "$AuthApiBaseUrl/.well-known/openid-configuration" 2>&1 | ConvertFrom-Json
-    if ($authOidc.issuer) {
+    if ($authOidc.issuer -and $authOidc.jwks_uri) {
+        # The docker-compose configures the issuer with the internal Docker service
+        # hostname, so it may legitimately differ from the external base URL.
         $discoveredAuthIssuer = $authOidc.issuer
-        if ($authOidc.issuer -eq $AuthApiBaseUrl) {
-            Write-Pass "Auth API issuer matches ($($authOidc.issuer))"
-        } else {
-            # The docker-compose configures TokenCreationOptions__Issuer with the
-            # internal Docker service hostname. This is expected in a local stack.
-            Write-Pass "Auth API issuer present ($($authOidc.issuer)) [NOTE: differs from external base URL '$AuthApiBaseUrl']"
-        }
+        Write-Pass "Auth API publishes issuer ($($authOidc.issuer)) and jwks_uri"
     } else {
-        Write-Fail "Auth API issuer missing from OIDC document"
-    }
-    if ($authOidc.jwks_uri) {
-        Write-Pass "Auth API jwks_uri present ($($authOidc.jwks_uri))"
-    } else {
-        Write-Fail "Auth API jwks_uri missing"
+        Write-Fail "Auth API OIDC document lacks issuer or jwks_uri"
     }
 } catch {
     Write-Fail "Auth API OIDC document could not be parsed: $_"
 }
 
-try {
-    $idpOidc = curl -s "$IdpMockBaseUrl/.well-known/openid-configuration" 2>&1 | ConvertFrom-Json
-    if ($idpOidc.issuer -eq $IdpMockBaseUrl) {
-        Write-Pass "IdP Mock issuer matches ($($idpOidc.issuer))"
-    } else {
-        Write-Fail "IdP Mock issuer mismatch" "Expected '$IdpMockBaseUrl', got '$($idpOidc.issuer)'"
-    }
-} catch {
-    Write-Fail "IdP Mock OIDC document could not be parsed: $_"
-}
-
 # ---------------------------------------------------------------------------
-# Section 3: Full authentication flow
+# 3. Login round trip and cross-service JWT wiring
 # ---------------------------------------------------------------------------
 
-Write-Section "3. Authentication flow"
+Write-Section "3. Login round trip and JWT wiring"
 
 $cookieJar = [System.IO.Path]::GetTempFileName()
 try {
-    # -- Step 3.1: Login endpoint -> redirect to IdP Mock ------------------
+    # Auth API login -> IdP Mock authorize form -> confirm -> Auth API callback
     $redirectUri = [System.Uri]::EscapeDataString($ClientRedirectUri)
-    $loginUrl    = "$AuthApiBaseUrl/api/v1/authentication/login?IdentityProvider=Github&RedirectUri=$redirectUri"
-
-    $r1 = curl -si --max-redirs 0 -c $cookieJar $loginUrl 2>&1
-    $s1 = Get-StatusCode $r1
+    $r1 = curl -si --max-redirs 0 -c $cookieJar "$AuthApiBaseUrl/api/v1/authentication/login?IdentityProvider=Github&RedirectUri=$redirectUri" 2>&1
     $idpRedirect = Get-HeaderValue $r1 "Location"
-
-    if ($s1 -eq 302 -and $idpRedirect -match [regex]::Escape($IdpMockBaseUrl)) {
-        Write-Pass "Step 3.1: Auth API login -> 302 to IdP Mock"
-    } else {
-        Write-Fail "Step 3.1: Auth API login" "Status=$s1, Location=$idpRedirect"
+    if ((Get-StatusCode $r1) -ne 302 -or $idpRedirect -notmatch [regex]::Escape($IdpMockBaseUrl)) {
+        throw "login did not redirect to the IdP Mock (status $(Get-StatusCode $r1), location '$idpRedirect')"
     }
 
-    # -- Step 3.2: IdP Mock authorize page -> 200 HTML login form ----------
     $r2 = curl -si --max-redirs 0 $idpRedirect 2>&1
-    $s2 = Get-StatusCode $r2
     $htmlBody = ($r2 -join "`n")
-
-    if ($s2 -eq 200 -and $htmlBody -match 'action="/login/oauth/confirm"') {
-        Write-Pass "Step 3.2: IdP Mock authorize -> 200 HTML form"
-    } else {
-        Write-Fail "Step 3.2: IdP Mock authorize" "Status=$s2 (expected 200 with confirm form)"
+    if ((Get-StatusCode $r2) -ne 200 -or $htmlBody -notmatch 'action="/login/oauth/confirm"') {
+        throw "IdP Mock authorize did not return the confirm form (status $(Get-StatusCode $r2))"
     }
-
-    # -- Step 3.2b: Submit the authorize form -> 302 with auth code --------
-    $formState       = Get-HtmlInputValue $htmlBody "state"
-    $formRedirectUri = Get-HtmlInputValue $htmlBody "redirect_uri"
-    $formClientId    = Get-HtmlInputValue $htmlBody "client_id"
-    $formScope       = Get-HtmlInputValue $htmlBody "scope"
 
     $r2b = curl -si --max-redirs 0 `
-        --data-urlencode "state=$formState" `
-        --data-urlencode "redirect_uri=$formRedirectUri" `
-        --data-urlencode "client_id=$formClientId" `
-        --data-urlencode "scope=$formScope" `
+        --data-urlencode "state=$(Get-HtmlInputValue $htmlBody 'state')" `
+        --data-urlencode "redirect_uri=$(Get-HtmlInputValue $htmlBody 'redirect_uri')" `
+        --data-urlencode "client_id=$(Get-HtmlInputValue $htmlBody 'client_id')" `
+        --data-urlencode "scope=$(Get-HtmlInputValue $htmlBody 'scope')" `
         "$IdpMockBaseUrl/login/oauth/confirm" 2>&1
-    $s2b = Get-StatusCode $r2b
     $callbackRedirect = Get-HeaderValue $r2b "Location"
-
-    if ($s2b -eq 302 -and $callbackRedirect -match "callback" -and $callbackRedirect -match "code=") {
-        Write-Pass "Step 3.2b: IdP Mock confirm -> 302 to Auth API callback with code"
-    } else {
-        Write-Fail "Step 3.2b: IdP Mock confirm" "Status=$s2b, Location=$callbackRedirect"
+    if ((Get-StatusCode $r2b) -ne 302 -or $callbackRedirect -notmatch "callback" -or $callbackRedirect -notmatch "code=") {
+        throw "IdP Mock confirm did not redirect to the callback with a code (status $(Get-StatusCode $r2b))"
     }
 
-    # -- Step 3.3: Auth API callback -> JWT cookies + redirect to front-end --
     $r3 = curl -si --max-redirs 0 -c $cookieJar -b $cookieJar $callbackRedirect 2>&1
-    $s3 = Get-StatusCode $r3
     $frontendRedirect = Get-HeaderValue $r3 "Location"
     $hasAccessToken  = $null -ne ($r3 | Select-String "Set-Cookie:.*AccessToken")
     $hasRefreshToken = $null -ne ($r3 | Select-String "Set-Cookie:.*RefreshToken")
-
-    if ($s3 -eq 302 -and $frontendRedirect -match [regex]::Escape($ClientRedirectUri)) {
-        Write-Pass "Step 3.3: Auth API callback -> 302 to the client redirect URI"
+    if ((Get-StatusCode $r3) -eq 302 -and $frontendRedirect -match [regex]::Escape($ClientRedirectUri) -and $hasAccessToken -and $hasRefreshToken) {
+        Write-Pass "Login round trip -> 302 to the client redirect URI with access and refresh cookies"
     } else {
-        Write-Fail "Step 3.3: Auth API callback redirect" "Status=$s3, Location=$frontendRedirect"
-    }
-    if ($hasAccessToken)  { Write-Pass "Step 3.3: AccessToken cookie set" }
-    else                  { Write-Fail "Step 3.3: AccessToken cookie missing" }
-    if ($hasRefreshToken) { Write-Pass "Step 3.3: RefreshToken cookie set" }
-    else                  { Write-Fail "Step 3.3: RefreshToken cookie missing" }
-
-    # -- Step 3.4: Validate JWT claims ------------------------------------
-    $cookieHeader = ($r3 | Select-String "Set-Cookie:\s*AccessToken=([^;]+)").Matches
-    if ($cookieHeader.Count -gt 0) {
-        try {
-            $rawCookie  = $cookieHeader[0].Groups[1].Value
-            $tokenJson  = [System.Uri]::UnescapeDataString($rawCookie) | ConvertFrom-Json
-            $claims     = Decode-JwtPayload $tokenJson.Token
-
-            if ($discoveredAuthIssuer -and $claims.iss -eq $discoveredAuthIssuer) {
-                Write-Pass "Step 3.4: JWT issuer matches OIDC discovery ($($claims.iss))"
-            } elseif (-not $discoveredAuthIssuer -and $claims.iss) {
-                Write-Pass "Step 3.4: JWT issuer present ($($claims.iss)) [OIDC discovery issuer unavailable for comparison]"
-            } else {
-                Write-Fail "Step 3.4: JWT issuer wrong" "Got '$($claims.iss)', OIDC discovery says '$discoveredAuthIssuer'"
-            }
-
-            $audList = @($claims.aud)
-            # Audience uses the discovered internal issuer for the Auth API and the
-            # external base URL for the Donation API (as configured in docker-compose).
-            $expectedAuthAud = if ($discoveredAuthIssuer) { $discoveredAuthIssuer } else { $AuthApiBaseUrl }
-            if ($audList -contains $expectedAuthAud -and $audList -contains $DonationApiBaseUrl) {
-                Write-Pass "Step 3.4: JWT audiences include Auth API and Donation API"
-            } else {
-                Write-Fail "Step 3.4: JWT audiences incorrect" "Got: $($audList -join ', '), expected '$expectedAuthAud' and '$DonationApiBaseUrl'"
-            }
-
-            if ($claims.sub) { Write-Pass "Step 3.4: JWT subject (user id) present ($($claims.sub))" }
-            else              { Write-Fail "Step 3.4: JWT subject missing" }
-
-            # -- Step 3.5: Call protected /api/v1/user with JWT ---------------
-            $bearer  = $tokenJson.Token
-            $r5      = curl -si -H "Authorization: Bearer $bearer" "$AuthApiBaseUrl/api/v1/user" 2>&1
-            $s5      = Get-StatusCode $r5
-            $userBody = $r5 | Select-String '^\{' | Select-Object -First 1
-
-            if ($s5 -eq 200) {
-                Write-Pass "Step 3.5: GET /api/v1/user -> 200 OK"
-            } else {
-                Write-Fail "Step 3.5: GET /api/v1/user" "Status=$s5"
-            }
-
-            if ($userBody -match '"login"') {
-                $user = ($userBody.ToString()) | ConvertFrom-Json
-                Write-Pass "Step 3.5: User profile returned (login='$($user.login)')"
-            } else {
-                Write-Fail "Step 3.5: User profile body unexpected" "$userBody"
-            }
-
-            # -- Section 3b: GitHub token handling (no user token kept, app credentials) --
-            Write-Section "3b. GitHub token handling"
-
-            if ($idpRedirect -notmatch "[?&]scope=") {
-                Write-Pass "Step 3b.1: authorize redirect requests no GitHub scope"
-            } else {
-                Write-Fail "Step 3b.1: authorize redirect still requests a scope" "$idpRedirect"
-            }
-
-            $userUrl = "$AuthApiBaseUrl/api/v1/user"
-            $authHeaderUser = "Authorization: Bearer $bearer"
-
-            $rRepos = curl -si -H $authHeaderUser "$userUrl/repositories" 2>&1
-            $sRepos = Get-StatusCode $rRepos
-            $reposJson = $rRepos | Select-String '^\[' | Select-Object -First 1
-            if ($sRepos -eq 200 -and $reposJson) {
-                $repos = @($reposJson.ToString() | ConvertFrom-Json)
-                Write-Pass "Step 3b.2: GET /user/repositories -> 200 without a stored token ($($repos.Count) repositories)"
-                $firstRepo = $repos | Select-Object -First 1
-            } else {
-                Write-Fail "Step 3b.2: GET /user/repositories" "Status=$sRepos"
-                $firstRepo = $null
-            }
-
-            $singleName = if ($firstRepo) { $firstRepo.name } else { "mock-repo-one" }
-            $sSingle = Get-StatusCode (curl -si -H $authHeaderUser "$userUrl/repositories/johndoe/$singleName" 2>&1)
-            if ($sSingle -eq 200) { Write-Pass "Step 3b.3: GET /user/repositories/johndoe/$singleName -> 200" }
-            else                  { Write-Fail "Step 3b.3: GET /user/repositories/johndoe/$singleName" "Status=$sSingle" }
-
-            $sBad = Get-StatusCode (curl -si -H $authHeaderUser "$userUrl/repositories/bad_owner/repo" 2>&1)
-            if ($sBad -eq 400) { Write-Pass "Step 3b.4: invalid owner -> 400" }
-            else               { Write-Fail "Step 3b.4: invalid owner" "Status=$sBad" }
-
-            # -- Section 3c: Admin ceremony state (real encryption, shared key ring) --
-            Write-Section "3c. Admin ceremony state"
-
-            $adminAuthUrl = "$AuthApiBaseUrl/api/v1/admin-authentication/authentication"
-            $sUnreadable = [int](curl -s -o /dev/null -w "%{http_code}" -X POST -H "Content-Type: application/json" `
-                -b "AdminAssertionState=not-a-valid-ceremony-state" --data-raw '{"credentialJson":"{}"}' $adminAuthUrl 2>&1 | Select-Object -Last 1)
-            if ($sUnreadable -eq 400) { Write-Pass "Step 3c.1: unreadable ceremony state -> 400 (not 500)" }
-            else                      { Write-Fail "Step 3c.1: unreadable ceremony state" "Status=$sUnreadable" }
-
-            if (Get-Command podman -ErrorAction SilentlyContinue) {
-                $keys = podman exec mongo mongosh -u root -p example --authenticationDatabase admin AuthorizationServer --quiet --eval 'db.DataProtectionKeyDocument.countDocuments({})' 2>&1 | Select-Object -Last 1
-                if ([int]"$keys".Trim() -ge 1) { Write-Pass "Step 3c.2: data protection key ring is stored in the database ($keys key(s))" }
-                else                           { Write-Fail "Step 3c.2: no data protection key in the database" "mongosh said: $keys" }
-            } else {
-                Write-Output "  [SKIP] Step 3c.2: podman not available, database not inspected"
-            }
-
-            # -- Section 4: Project lifecycle (maintainer path, role checks) ---
-            # The admin happy path (approve, request-changes) needs a WebAuthn passkey
-            # and cannot be scripted; it is covered by the Donation specifications.
-            Write-Section "4. Project lifecycle"
-
-            $projectUrl = "$DonationApiBaseUrl/api/v1/project"
-            $authHeader = "Authorization: Bearer $bearer"
-            $repoName   = "smoke-" + [guid]::NewGuid().ToString("N").Substring(0, 12)
-            $registerBody = @{ githubRepositoryUrl = "https://github.com/smoke-owner/$repoName" } | ConvertTo-Json -Compress
-
-            $r6 = curl -si -H $authHeader -H "Content-Type: application/json" --data-raw $registerBody $projectUrl 2>&1
-            $s6 = Get-StatusCode $r6
-            $registered = $null
-            $json6 = $r6 | Select-String '^\{' | Select-Object -First 1
-            if ($json6) { $registered = $json6.ToString() | ConvertFrom-Json }
-
-            if ($s6 -eq 201 -and $registered.projectId) {
-                $projectId = $registered.projectId
-                Write-Pass "Step 4.1: POST /project registers a project -> 201 ($projectId)"
-
-                $lifecycleChecks = @(
-                    @{ Label = "Step 4.2: GET /project/{id} of a Draft project -> 404"; Method = "GET";  Path = "";                 Auth = $false; Expected = 404 }
-                    @{ Label = "Step 4.3: submit without token -> 401";                 Method = "POST"; Path = "/submit";          Auth = $false; Expected = 401 }
-                    @{ Label = "Step 4.4: approve without token -> 401";                Method = "POST"; Path = "/approve";         Auth = $false; Expected = 401 }
-                    @{ Label = "Step 4.5: approve with user token -> 403";              Method = "POST"; Path = "/approve";         Auth = $true;  Expected = 403 }
-                    @{ Label = "Step 4.6: request-changes with user token -> 403";      Method = "POST"; Path = "/request-changes"; Auth = $true;  Expected = 403 }
-                    @{ Label = "Step 4.7: archive a Draft project -> 409";              Method = "POST"; Path = "/archive";         Auth = $true;  Expected = 409 }
-                    @{ Label = "Step 4.8: submit as owner -> 200";                      Method = "POST"; Path = "/submit";          Auth = $true;  Expected = 200 }
-                    @{ Label = "Step 4.9: submit again (PendingApproval) -> 409";       Method = "POST"; Path = "/submit";          Auth = $true;  Expected = 409 }
-                    @{ Label = "Step 4.10: GET /project/{id} of a PendingApproval project -> 404"; Method = "GET"; Path = ""; Auth = $false; Expected = 404 }
-                )
-
-                foreach ($check in $lifecycleChecks) {
-                    $curlCall = @("-s", "-o", "/dev/null", "-w", "%{http_code}", "-X", $check.Method)
-                    if ($check.Auth) { $curlCall += @("-H", $authHeader) }
-                    $code = [int](curl @curlCall "$projectUrl/$projectId$($check.Path)" 2>&1 | Select-Object -Last 1)
-                    if ($code -eq $check.Expected) { Write-Pass $check.Label }
-                    else                           { Write-Fail $check.Label "Status=$code" }
-                }
-            } else {
-                Write-Fail "Step 4.1: POST /project" "Status=$s6"
-            }
-
-        } catch {
-            Write-Fail "Step 3.4: JWT decode/validation failed: $_"
-        }
-    } else {
-        Write-Fail "Step 3.4: Cannot validate JWT — AccessToken cookie not found"
+        Write-Fail "Login round trip callback" "Status=$(Get-StatusCode $r3), Location=$frontendRedirect, access=$hasAccessToken, refresh=$hasRefreshToken"
     }
 
+    $accessCookie = ($r3 | Select-String "Set-Cookie:\s*AccessToken=([^;]+)").Matches
+    if ($accessCookie.Count -eq 0) { throw "AccessToken cookie not found, cannot continue" }
+    $tokenJson  = [System.Uri]::UnescapeDataString($accessCookie[0].Groups[1].Value) | ConvertFrom-Json
+    $bearer     = $tokenJson.Token
+    $claims     = Decode-JwtPayload $bearer
+    $authHeader = "Authorization: Bearer $bearer"
+
+    # The Donation API validates tokens issued by the Auth API, so its audience must be in the JWT.
+    $audList         = @($claims.aud)
+    $expectedAuthAud = if ($discoveredAuthIssuer) { $discoveredAuthIssuer } else { $AuthApiBaseUrl }
+    if ($audList -contains $expectedAuthAud -and $audList -contains $DonationApiBaseUrl -and $claims.sub) {
+        Write-Pass "JWT audiences include Auth API and Donation API, subject present"
+    } else {
+        Write-Fail "JWT audiences or subject incorrect" "Got: $($audList -join ', '), expected '$expectedAuthAud' and '$DonationApiBaseUrl'"
+    }
+
+    $r5 = curl -si -H $authHeader "$AuthApiBaseUrl/api/v1/user" 2>&1
+    if ((Get-StatusCode $r5) -eq 200 -and ($r5 | Select-String '"login"')) {
+        Write-Pass "Auth API accepts its JWT: GET /api/v1/user -> 200 with profile"
+    } else {
+        Write-Fail "Auth API GET /api/v1/user" "Status=$(Get-StatusCode $r5)"
+    }
+
+    # Donation API accepts the Auth JWT: one Mongo-backed write, then read it back.
+    $projectUrl   = "$DonationApiBaseUrl/api/v1/project"
+    $repoName     = "smoke-" + [guid]::NewGuid().ToString("N").Substring(0, 12)
+    $registerBody = @{ githubRepositoryUrl = "https://github.com/smoke-owner/$repoName" } | ConvertTo-Json -Compress
+    $r6    = curl -si -H $authHeader -H "Content-Type: application/json" --data-raw $registerBody $projectUrl 2>&1
+    $json6 = $r6 | Select-String '^\{' | Select-Object -First 1
+    $projectId = if ($json6) { ($json6.ToString() | ConvertFrom-Json).projectId } else { $null }
+
+    if ((Get-StatusCode $r6) -eq 201 -and $projectId) {
+        Write-Pass "Donation API accepts the Auth JWT and stores a project: POST /project -> 201 ($projectId)"
+        $sRead = [int](curl -s -o /dev/null -w "%{http_code}" -H $authHeader "$projectUrl/$projectId/manage" 2>&1 | Select-Object -Last 1)
+        if ($sRead -eq 200) { Write-Pass "Stored project is read back: GET /project/{id}/manage -> 200" }
+        else                { Write-Fail "Stored project read back" "Status=$sRead" }
+    } else {
+        Write-Fail "Donation API POST /project with the Auth JWT" "Status=$(Get-StatusCode $r6)"
+    }
 } catch {
     Write-Fail "Authentication flow aborted: $_"
 } finally {
     Remove-Item $cookieJar -ErrorAction SilentlyContinue
+}
+
+# ---------------------------------------------------------------------------
+# 4. Data protection key ring
+# ---------------------------------------------------------------------------
+
+Write-Section "4. Data protection key ring"
+
+if (Get-Command podman -ErrorAction SilentlyContinue) {
+    $keys = podman exec mongo mongosh -u root -p example --authenticationDatabase admin AuthorizationServer --quiet --eval 'db.DataProtectionKeyDocument.countDocuments({})' 2>&1 | Select-Object -Last 1
+    if ([int]"$keys".Trim() -ge 1) { Write-Pass "Data protection key ring is stored in the database ($keys key(s))" }
+    else                           { Write-Fail "No data protection key in the database" "mongosh said: $keys" }
+} else {
+    Write-Output "  [SKIP] podman not available, database not inspected"
 }
 
 # ---------------------------------------------------------------------------

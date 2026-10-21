@@ -3,6 +3,7 @@
 #  2. destructive git/file ops: force push and `reset --hard` on main are denied; recursive deletes ask.
 #  3. build/test gate: `git push` / `gh pr create` are denied while C# files are newer than the last successful dotnet run.
 #  4. podman only: `docker compose` / `docker-compose` is denied.
+#  5. no Python: python/py/pip/pipx/uv/poetry/conda invocations are denied.
 # Fails closed: any internal error blocks the tool call (exit 2).
 $ErrorActionPreference = 'Stop'
 
@@ -35,6 +36,11 @@ try {
     # --- 4. podman only ---
     if ($unquoted -match "(?i)${verb}docker(-|\s+)compose\b") {
         Send-Decision 'deny' 'This project uses Podman, not Docker. Use `podman compose ...` (see scripts/start-local.ps1).'
+    }
+
+    # --- 5. no Python ---
+    if ($unquoted -match "(?i)${verb}(python[\d.]*|pythonw|py|pip[\d.]*|pipx|uv|uvx|poetry|conda|ipython)(\.exe)?(\s|$)") {
+        Send-Decision 'deny' 'Python is not allowed in this project. Use PowerShell, Bash, Node or dotnet instead, or the Read/Grep/Glob/Edit tools.'
     }
 
     # --- 2. destructive operations ---

@@ -102,13 +102,13 @@ Start the front-end separately with `npm ci` and `npm run dev` in `src/Frontend/
 
 ### Verify the stack
 
-A smoke-test script checks every service, walks through the full authentication flow and exercises the project lifecycle (register, submit, role and state checks):
+The smoke-test script is a true smoke tier: about ten checks that prove the stack is up and wired (service availability, OIDC discovery, login round trip, the Auth API JWT accepted by the Donation API, one Mongo-backed write and read, and the data protection key ring in the database). It finishes well within a minute. Feature-level behaviour is covered by the Reqnroll specifications, not by this script:
 
 ```powershell
 .\scripts\smoke-test.ps1
 ```
 
-All 28 checks should report `[PASS]`. Each run registers one new `Draft`/`PendingApproval` project in the local database. The administrator approve and request-changes happy paths need a WebAuthn passkey and are not part of the script. The script exits with code `0` on success.
+All checks should report `[PASS]`. Each run registers one new `Draft` project in the local database. The script exits with code `0` on success.
 
 See [docs/current/deployment-status.md](docs/current/deployment-status.md) for environment details and configuration.
 

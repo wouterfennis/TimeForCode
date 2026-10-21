@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Hosting;
 using Scalar.AspNetCore;
 
@@ -65,9 +66,19 @@ namespace TimeForCode.Shared.Api.Extensions
                 endpoints.MapControllers();
                 endpoints.MapOpenApi();
                 endpoints.MapScalarApiReference();
+                endpoints.MapRootRedirectToApiReference();
             });
 
             return app;
+        }
+
+        /// <summary>
+        /// Redirects the root address to the Scalar API reference so browsing to an API lands on its documentation.
+        /// </summary>
+        public static IEndpointRouteBuilder MapRootRedirectToApiReference(this IEndpointRouteBuilder endpoints)
+        {
+            endpoints.MapGet("/", () => Results.Redirect("/scalar/v1")).ExcludeFromDescription();
+            return endpoints;
         }
     }
 }
