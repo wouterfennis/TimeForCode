@@ -174,6 +174,21 @@ Commit the updated `.verified.txt` alongside the code change that caused it, so 
 
 ---
 
+## Admin Actions on a Running Stack
+
+Admin actions (approve, request changes) need an admin token, and the real admin login requires a WebAuthn passkey. On the local stack, `scripts/start-local.ps1` sets a random `TEST_ADMIN_ACCESS_SECRET` (or uses the one already in your environment, which must be at least 16 characters), and the compose file then enables the test-only admin endpoint:
+
+```powershell
+$env:TEST_ADMIN_ACCESS_SECRET = "my-local-admin-secret"
+.\scripts\start-local.ps1
+Invoke-RestMethod -Method Post -Uri http://localhost:8080/api/v1/test-admin-access/token `
+  -ContentType application/json -Body '{"secret":"my-local-admin-secret"}'
+```
+
+Use the returned `token` as a bearer token on the Donation API. A plain `podman compose up` leaves the variable unset, so the endpoint stays disabled (`404`) and only the passkey flow exists. The token is marked `amr=test`, lasts at most 15 minutes and has no refresh token. The Specifications cover the endpoint and the startup guard in `Features/TestAdminAccess`; an automated live scenario that approves and requests changes is planned under #141.
+
+---
+
 ## Running Tests
 
 ```powershell

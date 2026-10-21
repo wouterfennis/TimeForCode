@@ -33,6 +33,8 @@ namespace TimeForCode.Authorization.Api
         /// </summary>
         public void ConfigureServices(IServiceCollection services)
         {
+            TestAdminAccessOptions.Bind(_configuration).EnsureSafeFor(_environment.EnvironmentName);
+
             var authenticationOptions = AuthenticationOptions.Bind(_configuration);
 
             services.AddCors(options =>

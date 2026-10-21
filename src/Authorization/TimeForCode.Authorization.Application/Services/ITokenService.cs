@@ -23,6 +23,11 @@ namespace TimeForCode.Authorization.Application.Services
         AccessToken GenerateInternalToken(string userId, string role, string scope);
 
         /// <summary>
+        /// Generates a short-lived admin token for live tests, marked with the <c>amr=test</c> claim so it can be told apart from a passkey session.
+        /// </summary>
+        AccessToken GenerateTestAdminToken();
+
+        /// <summary>
         /// Issues the access token for an already validated session: the admin session gets the admin role and scope, other users get a user token built from their account (fails when the account no longer exists).
         /// </summary>
         Task<Result<AccessToken>> GenerateInternalTokenForSessionAsync(string userId);

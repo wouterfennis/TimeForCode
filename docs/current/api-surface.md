@@ -22,6 +22,14 @@ The Authorization API exposes OAuth 2.0 endpoints and an OpenID Connect discover
 | `POST` | `/api/v1/authentication/refresh` | ✅ | Issues a new access token using the refresh token (POST only; GET returns 405) |
 | `POST` | `/api/v1/authentication/logout` | ✅ | Clears access and refresh token cookies |
 
+### Test-only admin endpoint
+
+Not part of the published contract: hidden from the OpenAPI document and absent from the Swagger snapshot. It exists so live tests can act as the admin without a WebAuthn passkey, and is off unless `TestAdminAccess:Enabled` is `true` (see [ADR-017](../reference/adr/0017-test-only-admin-access.md)).
+
+| Method | Path | Status | Description |
+| --- | --- | --- | --- |
+| `POST` | `/api/v1/test-admin-access/token` | ✅ | Body `{ "secret": "..." }`. `200` with `{ "token", "expiresAfter" }`: an admin access token (scope and role `admin`, claim `amr=test`, at most 15 minutes, no refresh token, no cookies). `401` for a wrong secret, `404` when the endpoint is disabled (the default) |
+
 ### User Endpoints
 
 | Method | Path | Status | Description |

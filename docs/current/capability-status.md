@@ -21,6 +21,7 @@ This document provides an explicit, feature-level view of what is implemented, p
 | Delete account and personal data | ✅ | `DELETE /api/v1/user` removes the profile and refresh tokens and anonymises the contributor in the Donation module; stored data is listed in [personal data](../reference/personal-data.md). No data export yet |
 | Multiple identity providers (e.g. Google) | ❌ | Architecture supports it; not configured |
 | Admin identity management | ❌ | No admin account management |
+| Test-only admin token (local and CI stack) | ✅ | `POST /api/v1/test-admin-access/token`; off by default, startup fails if enabled outside Development and Test; enabled by the compose file only when `TEST_ADMIN_ACCESS_SECRET` is set, which `scripts/start-local.ps1` does; not available in `deploy/`. See [ADR-017](../reference/adr/0017-test-only-admin-access.md) |
 
 ---
 

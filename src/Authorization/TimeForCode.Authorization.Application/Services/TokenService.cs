@@ -15,6 +15,8 @@ namespace TimeForCode.Authorization.Application.Services
 {
     public class TokenService : ITokenService
     {
+        private const int TestSessionLifetimeInMinutes = 15;
+
         private readonly SigningKeySet _signingKeys;
         private readonly IIdentityProviderServiceFactory _identityProviderServiceFactory;
         private readonly TimeProvider _timeProvider;
@@ -78,12 +80,20 @@ namespace TimeForCode.Authorization.Application.Services
             return BuildInternalToken(userId, role, scope);
         }
 
-        private AccessToken BuildInternalToken(string userId, string? role, string scope, string? login = null, string? avatarUrl = null)
+        public AccessToken GenerateTestAdminToken()
+        {
+            return BuildInternalToken(AdminSession.UserId, AdminSession.Role, AdminSession.Scope, testSession: true);
+        }
+
+        private AccessToken BuildInternalToken(string userId, string? role, string scope, string? login = null, string? avatarUrl = null, bool testSession = false)
         {
             _logger.LogDebug("Generating internal token for user {UserId}", userId);
 
+            var lifetimeInMinutes = testSession
+                ? Math.Min(_tokenCreationOptions.TokenExpiresInMinutes, TestSessionLifetimeInMinutes)
+                : _tokenCreationOptions.TokenExpiresInMinutes;
             var expiresAfter = _timeProvider.GetUtcNow()
-                .AddMinutes(_tokenCreationOptions.TokenExpiresInMinutes);
+                .AddMinutes(lifetimeInMinutes);
 
             var tokenHandler = new JwtSecurityTokenHandler();
 
@@ -97,6 +107,11 @@ namespace TimeForCode.Authorization.Application.Services
             if (role != null)
             {
                 claims["role"] = role;
+            }
+
+            if (testSession)
+            {
+                claims["amr"] = "test";
             }
 
             if (login != null)

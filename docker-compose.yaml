@@ -6,7 +6,7 @@ services:
     image: timeforcode-authorization-api:latest
     container_name: timeforcode-authorization-api
     ports:
-      - "8080:8080"
+      - "127.0.0.1:8080:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:8080
@@ -37,6 +37,8 @@ services:
       - RsaOptions__PreviousBase64Certificate=${RSA_PREVIOUS_BASE64_CERTIFICATE:-}
       - DbOptions__ConnectionString=mongodb://root:example@mongo:27017/?authSource=admin
       - DbOptions__DatabaseName=AuthorizationServer
+      - TestAdminAccess__Enabled=${TEST_ADMIN_ACCESS_SECRET:+true}
+      - TestAdminAccess__Secret=${TEST_ADMIN_ACCESS_SECRET:-}
     depends_on:
       - mongo
     networks:

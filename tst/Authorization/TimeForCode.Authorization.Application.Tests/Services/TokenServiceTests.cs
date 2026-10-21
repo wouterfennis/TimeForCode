@@ -81,6 +81,34 @@ namespace TimeForCode.Authorization.Application.Tests.Services
         }
 
         [TestMethod]
+        public void GenerateTestAdminToken_ContainsAdminClaimsAndTestMarker()
+        {
+            var token = _sut.GenerateTestAdminToken();
+
+            var jwt = new JwtSecurityTokenHandler().ReadJwtToken(token.Token);
+            jwt.Subject.Should().Be("admin");
+            jwt.Claims.Single(c => c.Type == "scope").Value.Should().Be("admin");
+            jwt.Claims.Single(c => c.Type == "role").Value.Should().Be("admin");
+            jwt.Claims.Single(c => c.Type == "amr").Value.Should().Be("test");
+        }
+
+        [TestMethod]
+        public void GenerateTestAdminToken_ExpiresSoonerThanARegularToken()
+        {
+            var token = _sut.GenerateTestAdminToken();
+
+            token.ExpiresAfter.Should().BeBefore(DateTimeOffset.UtcNow.AddMinutes(16));
+        }
+
+        [TestMethod]
+        public void GenerateInternalToken_ForAdminSession_HasNoTestMarker()
+        {
+            var token = _sut.GenerateInternalToken("admin", "admin", "admin");
+
+            new JwtSecurityTokenHandler().ReadJwtToken(token.Token).Claims.Should().NotContain(c => c.Type == "amr");
+        }
+
+        [TestMethod]
         public async Task GetAccessTokenFromExternalProviderAsync_ValidState_SendsTheStoredCodeVerifier()
         {
             var providerMock = new Mock<IIdentityProviderService>();

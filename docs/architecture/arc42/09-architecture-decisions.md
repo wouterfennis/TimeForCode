@@ -27,6 +27,7 @@ ADR documents live in [docs/reference/adr/](../../reference/adr/README.md).
 | [ADR-014](../../reference/adr/0014-no-backwards-compatibility-before-release.md) | No backwards compatibility before the first production release | Accepted | 2026-10-16 |
 | [ADR-015](../../reference/adr/0015-durable-single-use-login-state.md) | Keep OAuth login state in MongoDB with a TTL index, single-use and PKCE-protected | Accepted | 2026-10-16 |
 | [ADR-016](../../reference/adr/0016-mongodb-bson-in-domain-and-application.md) | Allow MongoDB.Bson types in Domain and Application, forbid the driver | Accepted | 2026-10-18 |
+| [ADR-017](../../reference/adr/0017-test-only-admin-access.md) | Test-only admin access on the local stack, disabled by default and refused outside Development and Test | Accepted | 2026-10-21 |
 
 ---
 
