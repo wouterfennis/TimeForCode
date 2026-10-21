@@ -22,6 +22,7 @@ Scenario: Donor does not see donations of other users
 	When The user requests their donations
 	Then An empty list of donations is returned
 
+@live
 Scenario: Requesting donations without being logged in is rejected
 	Given The user does not have an access token
 	When The user requests their donations
