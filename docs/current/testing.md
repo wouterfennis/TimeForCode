@@ -204,6 +204,49 @@ A single `dotnet test --filter "TestCategory!=E2E"` command is sufficient for th
 
 Should a need arise to isolate failures by type (e.g. slow infrastructure tests blocking fast unit feedback), apply `[TestCategory("Integration")]` / `[TestCategory("Architecture")]` attributes and extend the `--filter` expression. No changes to the CI workflow files are required to support this.
 
+### Live tier (`@live` scenarios)
+
+A Reqnroll scenario tagged `@live` runs unchanged in two hosts. By default it runs in-process on `TimeForCodeWebApplicationFactory`, so the default `dotnet test` run behaves as before. When the module's base-URL environment variable is set, the `[BeforeScenario]` hook in `Steps/Hooks.cs` instead builds an `HttpClient` against that URL (`Mocking/LiveHost.cs`) and skips the factory.
+
+| Module | Environment variable | Local compose URL |
+| --- | --- | --- |
+| Authorization | `TIMEFORCODE_LIVE_AUTHORIZATION_URL` | `http://localhost:8080` |
+| Donation | `TIMEFORCODE_LIVE_DONATION_URL` | `http://localhost:8082` |
+
+```powershell
+podman compose up -d
+$env:TIMEFORCODE_LIVE_AUTHORIZATION_URL = 'http://localhost:8080'
+dotnet test tst/Authorization/TimeForCode.Authorization.Specifications --filter "TestCategory=live"
+```
+
+Reqnroll turns the `@live` tag into the MSTest category `live`, so `--filter "TestCategory=live"` selects exactly these scenarios. Only tag a scenario `@live` when its steps need nothing from the in-process host: steps that resolve a mock or in-memory repository from `IServiceProvider` fail on a live host with a message naming the missing service. Signing JWTs with the test key does not work live either; use the test-only admin token (see above) instead.
+
+#### Donation live scenarios
+
+The Donation Specifications run real scenarios against the compose stack with real Mongo. `Given The user has an access token` and `Given The user has an administrator access token` switch to real tokens on a live host (`Mocking/LiveAuthentication.cs`):
+
+- **User token:** a login round trip through the Authorization API and the mock identity provider, the same path as the smoke test. It proves a JWT issued by the Authorization API is accepted by the Donation API. The mock always signs in the same user.
+- **Administrator token:** the test-only admin endpoint (see above), which needs the stack's secret.
+
+| Environment variable | Purpose |
+| --- | --- |
+| `TIMEFORCODE_LIVE_AUTHORIZATION_URL` | Authorization API base URL, needed by every scenario that signs in |
+| `TIMEFORCODE_LIVE_TEST_ADMIN_SECRET` | The `TEST_ADMIN_ACCESS_SECRET` the stack was started with, needed to approve projects |
+| `TIMEFORCODE_LIVE_CLIENT_REDIRECT_URI` | Optional redirect URI of the login, default `http://localhost:8084` |
+
+```powershell
+$env:TEST_ADMIN_ACCESS_SECRET = 'choose-a-secret'
+podman compose up -d
+$env:TIMEFORCODE_LIVE_DONATION_URL = 'http://localhost:8082'
+$env:TIMEFORCODE_LIVE_AUTHORIZATION_URL = 'http://localhost:8080'
+$env:TIMEFORCODE_LIVE_TEST_ADMIN_SECRET = $env:TEST_ADMIN_ACCESS_SECRET
+dotnet test tst/Donation/TimeForCode.Donation.Specifications --filter "TestCategory=live"
+```
+
+A scenario that needs real persistence carries `@liveonly` next to `@live`: the in-process run reports it as skipped (the mocks cannot store data), the live run executes it. The live steps live in `Steps/ProjectSteps.Live.cs` and `Steps/LiveDonorOrganizationSteps.cs` and use only the API. Reruns pass because every scenario registers a project or donor organization with a unique name, and an `@liveonly` clean-up archives the active project and deletes the donor organization.
+
+Covered live: contributor profile (including the Auth-issued JWT), project publishing, project search (an approved project is found, a draft is not), contributions, donation pledges and donor organizations, plus the unauthenticated rejections.
+
 ### Front-end tests
 
 The React SPA (`src/Frontend/TimeForCode.Frontend`) is tested with Vitest, Testing Library and axe (accessibility assertions) in a jsdom environment. Run from that directory: `npm run lint`, `npm run typecheck`, `npm run test:coverage` and `npm run build`. Coverage is written as `coverage/lcov.info` (v8 provider); `src/main.tsx` and the test files are excluded.

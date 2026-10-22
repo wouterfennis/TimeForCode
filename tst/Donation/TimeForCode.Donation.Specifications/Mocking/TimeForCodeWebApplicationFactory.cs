@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Moq;
 using RestSharp;
@@ -11,6 +13,7 @@ using System.Text;
 using TimeForCode.Donation.Api;
 using TimeForCode.Donation.Application.Interfaces;
 using TimeForCode.Donation.Infrastructure.Persistence.Database;
+using TimeForCode.Shared.Api.Extensions;
 
 namespace TimeForCode.Donation.Specifications.Mocking
 {
@@ -44,6 +47,10 @@ namespace TimeForCode.Donation.Specifications.Mocking
 
                 MockDataAccess(services);
 
+                // One host serves every scenario of a run, so the production limit of 60 requests a minute would reject later scenarios.
+                services.RemoveAll<IConfigureOptions<RateLimiterOptions>>();
+                services.Configure<RateLimiterOptions>(options => options.AddDefaultSlidingWindowPolicy("api", int.MaxValue));
+
                 var mockHttp = new MockHttpMessageHandler();
                 services.TryAddSingleton(mockHttp);
 
@@ -67,6 +74,23 @@ namespace TimeForCode.Donation.Specifications.Mocking
                     };
                 });
             });
+        }
+
+        /// <summary>Returns the shared host to its initial state, so one host can serve every scenario of a test run.</summary>
+        public void ResetState()
+        {
+            Services.GetRequiredService<InMemoryContributorRepository>().Clear();
+            Services.GetRequiredService<InMemoryContributionRepository>().Clear();
+            Services.GetRequiredService<InMemoryDonationRepository>().Clear();
+            Services.GetRequiredService<InMemoryDonationAllocationRepository>().Clear();
+
+            Services.GetRequiredService<Mock<IProjectRepository>>().Reset();
+            Services.GetRequiredService<Mock<IDonorOrganizationRepository>>().Reset();
+            Services.GetRequiredService<Mock<IGithubRepositoryApiService>>().Reset();
+
+            var mockHttp = Services.GetRequiredService<MockHttpMessageHandler>();
+            mockHttp.ResetExpectations();
+            mockHttp.ResetBackendDefinitions();
         }
 
         private static void MockDataAccess(IServiceCollection services)

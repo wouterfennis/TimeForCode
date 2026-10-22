@@ -121,12 +121,23 @@ Scenario: Requesting a contributor profile that does not exist
 	When The user requests the contributor profile of the other user
 	Then The user is informed the contributor was not found
 
+@live
 Scenario: Viewing a contributor profile requires authentication
 	Given The user does not have an access token
 	When The user requests their own contributor profile
 	Then The user is informed they must be logged in
 
+@live
 Scenario: Updating a contributor profile requires authentication
 	Given The user does not have an access token
 	When The user updates their contributor profile with the role "Backend developer"
 	Then The user is informed they must be logged in
+
+
+@live
+@liveonly
+Scenario: An access token issued by the authorization service is accepted
+	Given The user has an access token
+	When The user updates their contributor profile with the role "Live tester"
+	And The user requests their own contributor profile
+	Then The contributor profile shows the role "Live tester"

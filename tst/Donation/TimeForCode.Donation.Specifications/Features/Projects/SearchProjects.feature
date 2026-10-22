@@ -91,3 +91,20 @@ Scenario Outline: User searches with criteria that are too long
 		| text      |
 		| language  |
 		| tag       |
+
+
+@live
+@liveonly
+Scenario: An approved project is found by searching for its name
+	Given The user has an access token
+	And The user has an active project registered on the live platform
+	When The user searches the projects for the name of the project
+	Then Only the project of the user is included in the results on the live platform
+
+@live
+@liveonly
+Scenario: A project in draft is not found by searching for its name
+	Given The user has an access token
+	And The user has published a new repository on the live platform
+	When The user searches the projects for the name of the project
+	Then An empty list of projects is returned

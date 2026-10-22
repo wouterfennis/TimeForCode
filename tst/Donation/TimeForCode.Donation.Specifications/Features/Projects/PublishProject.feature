@@ -60,3 +60,20 @@ Scenario: User attempts to publish a repository that does not exist on the exter
 	And The external platform does not have the repository
 	When The user publishes the repository on the time for code platform
 	Then The user is informed the repository cannot be published
+
+
+@live
+@liveonly
+Scenario: A new repository is published with an access token issued by the authorization service
+	Given The user has an access token
+	When The user publishes a new repository on the live platform
+	Then The project is registered on the time for code platform
+	And The project is in draft on the live platform
+
+@live
+@liveonly
+Scenario: Publishing the same repository twice is rejected
+	Given The user has an access token
+	And The user has published a new repository on the live platform
+	When The user publishes the same repository on the live platform again
+	Then The user is informed the repository is already published

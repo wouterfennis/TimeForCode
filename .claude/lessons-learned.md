@@ -101,6 +101,13 @@ Non-obvious knowledge from past sessions. Read and update through skill `lessons
 - **Why:** a second step class would not see the first one's captured API error.
 - **How to apply:** extend the existing partial class rather than adding a new binding class for the same feature area.
 
+### Live scenarios sign in through the real login and need the stack's admin secret
+
+- **Date / issue:** 2026-10-22 / #137
+- **Lesson:** a `@live` Donation scenario gets a user token by replaying the smoke-test login (Auth login, mock IdP confirm form, callback) and reads the `AccessToken` cookie, whose JSON is PascalCase (`Token`). Admin steps need `TIMEFORCODE_LIVE_TEST_ADMIN_SECRET`; `start-local.ps1` makes a random secret per run unless `TEST_ADMIN_ACCESS_SECRET` is exported first.
+- **Why:** a camelCase assumption failed only against the real stack, and the running stack's secret cannot be recovered afterwards.
+- **How to apply:** export `TEST_ADMIN_ACCESS_SECRET` before `podman compose up`, tag persistence scenarios `@live` plus `@liveonly` (skipped in-process), and give each scenario unique data.
+
 ## Authorization module
 
 ### Reqnroll steps share errors through `SessionContext`, and logout-style calls expire the client cookies

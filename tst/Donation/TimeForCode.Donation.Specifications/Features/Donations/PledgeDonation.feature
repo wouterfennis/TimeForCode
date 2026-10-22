@@ -67,3 +67,22 @@ Scenario: Pledge without being logged in is rejected
 	And There is a published project on the time for code platform
 	When The user pledges 20 hours to the project as an individual
 	Then The user is informed they must be logged in
+
+
+@live
+@liveonly
+Scenario: A pledge is stored and listed among the donations of the project
+	Given The user has an access token
+	And The user has an active project registered on the live platform
+	When The user pledges 5 hours to the project as an individual
+	And The user requests the donations of the project
+	Then The donations of the project add up to 5 hours committed on the live platform
+
+@live
+@liveonly
+Scenario: Pledging to a registered project requires authentication
+	Given The user has an access token
+	And The user has an active project registered on the live platform
+	And The user does not have an access token
+	When The user pledges 5 hours to the project as an individual
+	Then The user is informed they must be logged in

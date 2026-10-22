@@ -13,6 +13,11 @@ namespace TimeForCode.Donation.Specifications.Mocking
 
         internal IReadOnlyList<Contributor> Contributors => _contributors;
 
+        internal void Clear()
+        {
+            _contributors.Clear();
+        }
+
         internal void Add(Contributor contributor)
         {
             _contributors.Add(contributor);

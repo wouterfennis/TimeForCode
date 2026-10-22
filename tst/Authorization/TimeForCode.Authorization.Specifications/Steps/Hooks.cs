@@ -11,10 +11,12 @@ namespace TimeForCode.Authorization.Specifications.Steps
     public class Hooks
     {
         private readonly IObjectContainer _objectContainer;
+        private readonly ScenarioContext _scenarioContext;
 
-        public Hooks(IObjectContainer objectContainer)
+        public Hooks(IObjectContainer objectContainer, ScenarioContext scenarioContext)
         {
             _objectContainer = objectContainer;
+            _scenarioContext = scenarioContext;
         }
 
         [BeforeScenario]
@@ -24,14 +26,25 @@ namespace TimeForCode.Authorization.Specifications.Steps
             var cookieHandler = new CookieContainerHandler(cookieContainer);
             var bearerTokenHandler = new BearerTokenFromCookieHandler(cookieContainer);
 
-            var httpClient = _objectContainer.Resolve<TimeForCodeWebApplicationFactory>()
-                .CreateDefaultClient(bearerTokenHandler, cookieHandler);
+            Uri? liveAddress = LiveHost.ConfiguredBaseAddress;
+            bool isLive = LiveHost.IsLive(_scenarioContext.ScenarioInfo.Tags, liveAddress);
+
+            var httpClient = isLive
+                ? LiveHost.CreateClient(liveAddress!, bearerTokenHandler, cookieHandler)
+                : _objectContainer.Resolve<TimeForCodeWebApplicationFactory>()
+                    .CreateDefaultClient(bearerTokenHandler, cookieHandler);
 
             _objectContainer.RegisterInstanceAs(cookieContainer);
 
             var authClient = new AuthClient(httpClient);
             _objectContainer.RegisterInstanceAs<IAuthClient>(authClient);
             _objectContainer.RegisterInstanceAs(httpClient);
+
+            if (isLive)
+            {
+                _objectContainer.RegisterInstanceAs(LiveHost.UnavailableServices);
+                return;
+            }
 
             var provider = _objectContainer.Resolve<TimeForCodeWebApplicationFactory>().Services;
             _objectContainer.RegisterInstanceAs(provider);
