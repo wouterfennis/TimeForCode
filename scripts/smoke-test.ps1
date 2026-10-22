@@ -4,7 +4,7 @@
     Smoke test for the TimeForCode local stack.
 
 .DESCRIPTION
-    Proves the stack is up and wired, in about ten checks. Feature-level
+    Proves the stack is up and wired, in about a dozen checks. Feature-level
     behaviour (GitHub token handling, project lifecycle, role checks) is
     covered by the Reqnroll specifications, not here.
 
@@ -16,6 +16,9 @@
         6. The Donation API accepts the Auth API JWT and stores a project (Mongo write)
         7. The stored project is read back (Mongo read)
         8. The data protection key ring is stored in the database (needs podman)
+        9. The front-end serves the SPA on / and on a deep link, and its built script
+       10. A missing front-end asset returns 404 instead of the SPA
+       11. Every front-end response carries the security headers
 
 .PARAMETER AuthApiBaseUrl
     Base URL of the Authorization API. Default: http://localhost:8080
@@ -29,6 +32,9 @@
 .PARAMETER ClientRedirectUri
     Front-end origin the login redirects back to (must be a configured valid redirect URI). No front-end needs to run. Default: http://localhost:8084
 
+.PARAMETER FrontendBaseUrl
+    Base URL of the front-end (the SPA served by nginx). Default: http://localhost:8084
+
 .EXAMPLE
     .\scripts\smoke-test.ps1
 
@@ -40,7 +46,8 @@ param(
     [string] $AuthApiBaseUrl    = "http://localhost:8080",
     [string] $IdpMockBaseUrl    = "http://localhost:8081",
     [string] $DonationApiBaseUrl = "http://localhost:8082",
-    [string] $ClientRedirectUri    = "http://localhost:8084"
+    [string] $ClientRedirectUri    = "http://localhost:8084",
+    [string] $FrontendBaseUrl      = "http://localhost:8084"
 )
 
 Set-StrictMode -Version Latest
@@ -94,6 +101,32 @@ function Decode-JwtPayload([string] $token) {
     $padded  = $segment + ('=' * ((4 - $segment.Length % 4) % 4))
     $bytes   = [System.Convert]::FromBase64String($padded)
     return [System.Text.Encoding]::UTF8.GetString($bytes) | ConvertFrom-Json
+}
+
+function Test-SpaPage([string[]] $response) {
+    return (Get-StatusCode $response) -eq 200 -and ($response -join "`n").Contains('<div id="root">')
+}
+
+function Test-SameOriginCsp([string] $policy) {
+    # Same origin only: default-src 'self', no framing, and no source other than 'self' or 'none'
+    $directives = @($policy -split ';' | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+    $sources    = @($directives | ForEach-Object { $_ -split '\s+' | Select-Object -Skip 1 })
+    return ($directives -contains "default-src 'self'") -and
+           ($directives -contains "frame-ancestors 'none'") -and
+           -not ($sources | Where-Object { $_ -notin "'self'", "'none'" })
+}
+
+function Get-SecurityHeaderProblems([string[]] $response) {
+    $problems = @()
+    $csp = Get-HeaderValue $response "Content-Security-Policy"
+    if (-not (Test-SameOriginCsp $csp)) { $problems += "Content-Security-Policy='$csp'" }
+    $nosniff = Get-HeaderValue $response "X-Content-Type-Options"
+    if ($nosniff -ne "nosniff") { $problems += "X-Content-Type-Options='$nosniff'" }
+    $referrer = Get-HeaderValue $response "Referrer-Policy"
+    if ($referrer -notin "no-referrer", "same-origin", "strict-origin", "strict-origin-when-cross-origin") {
+        $problems += "Referrer-Policy='$referrer'"
+    }
+    return $problems
 }
 
 # ---------------------------------------------------------------------------
@@ -243,6 +276,42 @@ if (Get-Command podman -ErrorAction SilentlyContinue) {
     else                           { Write-Fail "No data protection key in the database" "mongosh said: $keys" }
 } else {
     Write-Output "  [SKIP] podman not available, database not inspected"
+}
+
+# ---------------------------------------------------------------------------
+# 5. Front-end (SPA served by nginx)
+# ---------------------------------------------------------------------------
+
+Write-Section "5. Front-end"
+
+$rootPage = curl -si "$FrontendBaseUrl/" 2>&1
+
+if ((Get-StatusCode $rootPage) -eq 0) {
+    Write-Fail "Front-end reachable" "No response from $FrontendBaseUrl (is the front-end container running?)"
+} else {
+    $deepLink     = curl -si "$FrontendBaseUrl/projects/123" 2>&1
+    $missingAsset = curl -si "$FrontendBaseUrl/assets/missing.js" 2>&1
+    $assetPath    = if (($rootPage -join "`n") -match 'src="(/assets/[^"]+\.js)"') { $Matches[1] } else { $null }
+    $builtAsset   = if ($assetPath) { curl -si "$FrontendBaseUrl$assetPath" 2>&1 } else { @() }
+
+    if (-not $assetPath) {
+        Write-Fail "Front-end SPA" "No script src=""/assets/*.js"" found in / (did the Vite output change?)"
+    } elseif ((Test-SpaPage $rootPage) -and (Test-SpaPage $deepLink) -and ((Get-StatusCode $builtAsset) -eq 200)) {
+        Write-Pass "Front-end serves the SPA on / and /projects/123, and its script $assetPath"
+    } else {
+        Write-Fail "Front-end SPA" "/=$(Get-StatusCode $rootPage), /projects/123=$(Get-StatusCode $deepLink), script '$assetPath'=$(Get-StatusCode $builtAsset)"
+    }
+
+    $sMissing = Get-StatusCode $missingAsset
+    if ($sMissing -eq 404) { Write-Pass "Missing asset /assets/missing.js -> 404, no SPA fallback" }
+    else                   { Write-Fail "Missing asset /assets/missing.js" "Status=$sMissing (expected 404)" }
+
+    $frontendResponses = [ordered]@{ "/" = $rootPage; "/projects/123" = $deepLink; "script" = $builtAsset; "/assets/missing.js" = $missingAsset }
+    $headerProblems = @(foreach ($entry in $frontendResponses.GetEnumerator()) {
+        Get-SecurityHeaderProblems $entry.Value | ForEach-Object { "$($entry.Key) $_" }
+    })
+    if ($headerProblems.Count -eq 0) { Write-Pass "Security headers (CSP, nosniff, Referrer-Policy) on all $($frontendResponses.Count) front-end responses" }
+    else                             { Write-Fail "Front-end security headers" ($headerProblems -join "; ") }
 }
 
 # ---------------------------------------------------------------------------
