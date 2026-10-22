@@ -18,14 +18,26 @@ namespace TimeForCode.Donation.Specifications.Steps
             _scenarioContext = scenarioContext;
         }
 
-        [BeforeScenario]
+        /// <summary>Runs after the clients are registered, so the AfterScenario hooks of a skipped scenario can still resolve their dependencies.</summary>
+        [BeforeScenario(Order = 1)]
+        public void SkipWhenLiveStackIsRequired()
+        {
+            if (LiveHost.RequiresLiveHost(_scenarioContext.ScenarioInfo.Tags, LiveHost.ConfiguredBaseAddress))
+            {
+                Assert.Inconclusive($"Needs a live stack: set {LiveHost.BaseUrlVariable} to run this @{LiveHost.LiveOnlyTag} scenario.");
+            }
+        }
+
+        [BeforeScenario(Order = 0)]
         public void BeforeScenario()
         {
+            Uri? liveAddress = LiveHost.ConfiguredBaseAddress;
+
             var bearerTokenHandler = new BearerTokenHandler();
             _objectContainer.RegisterInstanceAs(bearerTokenHandler);
 
-            Uri? liveAddress = LiveHost.ConfiguredBaseAddress;
             bool isLive = LiveHost.IsLive(_scenarioContext.ScenarioInfo.Tags, liveAddress);
+            _objectContainer.RegisterInstanceAs(new LiveScenario(isLive));
 
             var httpClient = isLive
                 ? LiveHost.CreateClient(liveAddress!, bearerTokenHandler)
@@ -45,6 +57,15 @@ namespace TimeForCode.Donation.Specifications.Steps
 
             var provider = _objectContainer.Resolve<TimeForCodeWebApplicationFactory>().Services;
             _objectContainer.RegisterInstanceAs(provider);
+        }
+
+        [AfterScenario(Order = 100)]
+        public void DisposeLiveClient()
+        {
+            if (_objectContainer.IsRegistered<LiveScenario>() && _objectContainer.Resolve<LiveScenario>().IsLive)
+            {
+                _objectContainer.Resolve<HttpClient>().Dispose();
+            }
         }
     }
 }

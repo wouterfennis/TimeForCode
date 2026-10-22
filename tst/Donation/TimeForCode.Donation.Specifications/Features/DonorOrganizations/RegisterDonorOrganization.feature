@@ -12,6 +12,7 @@ Scenario: Registering a donor organization with a duplicate name is rejected
 	When The user registers a donor organization with a valid name
 	Then The user is informed the donor organization name is already in use
 
+@live
 Scenario: Registering a donor organization without a name is rejected
 	When The user registers a donor organization without a name
 	Then The user is informed the donor organization cannot be created
@@ -37,3 +38,10 @@ Scenario Outline: Registering a donor organization with invalid contact details 
 		| open-source@acme.example | javascript:alert(1)      |
 		| open-source@acme.example | not a url                |
 		| open-source@acme.example |                          |
+
+
+@live
+@liveonly
+Scenario: A registered donor organization can be retrieved
+	When The user registers a donor organization with a unique name
+	Then The donor organization can be retrieved on the live platform
