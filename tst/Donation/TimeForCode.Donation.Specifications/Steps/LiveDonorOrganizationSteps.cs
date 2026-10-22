@@ -34,12 +34,22 @@ namespace TimeForCode.Donation.Specifications.Steps
             retrieved.Name.Should().Be(_registered.Name);
         }
 
-        [AfterScenario(LiveHost.LiveOnlyTag)]
+        [AfterScenario(LiveHost.Tag)]
         public async Task DeleteRegisteredDonorOrganizationAsync()
         {
-            if (_registered is not null)
+            if (_registered is null)
+            {
+                return;
+            }
+
+            try
             {
                 await _donationClient.DeleteDonorOrganizationAsync(_registered.Id);
+            }
+            catch (Exception exception) when (exception is ApiException or HttpRequestException)
+            {
+                // Best-effort clean-up: the organization may already be deleted, and a failure here must not hide the scenario result.
+                Console.WriteLine($"Could not delete live donor organization {_registered.Id}: {exception.Message}");
             }
         }
     }

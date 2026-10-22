@@ -2,7 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 
 namespace TimeForCode.Donation.Specifications.Mocking
 {
-    /// <summary>Keeps a JWT until shortly before it expires and never keeps a failed acquisition.</summary>
+    /// <summary>Keeps a JWT until shortly before it expires and never keeps a failed or unreadable acquisition.</summary>
     internal sealed class LiveTokenCache
     {
         private static readonly TimeSpan ExpiryMargin = TimeSpan.FromMinutes(1);
@@ -11,6 +11,7 @@ namespace TimeForCode.Donation.Specifications.Mocking
         private readonly Func<DateTime> _utcNow;
         private readonly object _gate = new();
         private Task<string>? _token;
+        private DateTime _validTo;
 
         public LiveTokenCache(Func<Task<string>> acquire, Func<DateTime>? utcNow = null)
         {
@@ -22,21 +23,26 @@ namespace TimeForCode.Donation.Specifications.Mocking
         {
             lock (_gate)
             {
-                if (_token is null || IsFailed(_token) || IsExpiring(_token))
+                if (_token is null || _token.IsFaulted || _token.IsCanceled || IsExpiring(_token))
                 {
-                    _token = _acquire();
+                    _token = AcquireAsync();
                 }
 
                 return _token;
             }
         }
 
-        private static bool IsFailed(Task<string> token) => token.IsFaulted || token.IsCanceled;
+        // The expiry is read once, so a token that is not a readable JWT faults the task and is not kept.
+        private async Task<string> AcquireAsync()
+        {
+            string token = await _acquire();
+            _validTo = new JwtSecurityTokenHandler().ReadJwtToken(token).ValidTo;
+            return token;
+        }
 
         private bool IsExpiring(Task<string> token)
         {
-            return token.IsCompletedSuccessfully
-                && new JwtSecurityTokenHandler().ReadJwtToken(token.Result).ValidTo - _utcNow() < ExpiryMargin;
+            return token.IsCompletedSuccessfully && _validTo - _utcNow() < ExpiryMargin;
         }
     }
 }

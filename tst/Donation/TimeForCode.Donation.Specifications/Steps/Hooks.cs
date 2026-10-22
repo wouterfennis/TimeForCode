@@ -8,6 +8,8 @@ namespace TimeForCode.Donation.Specifications.Steps
     [Binding]
     public class Hooks
     {
+        private static readonly Lazy<TimeForCodeWebApplicationFactory> SharedHost = new(() => new TimeForCodeWebApplicationFactory());
+
         private readonly IObjectContainer _objectContainer;
 
         private readonly ScenarioContext _scenarioContext;
@@ -41,8 +43,7 @@ namespace TimeForCode.Donation.Specifications.Steps
 
             var httpClient = isLive
                 ? LiveHost.CreateClient(liveAddress!, bearerTokenHandler)
-                : _objectContainer.Resolve<TimeForCodeWebApplicationFactory>()
-                    .CreateDefaultClient(bearerTokenHandler);
+                : SharedFactory().CreateDefaultClient(bearerTokenHandler);
 
             _objectContainer.RegisterInstanceAs(httpClient);
 
@@ -55,14 +56,33 @@ namespace TimeForCode.Donation.Specifications.Steps
                 return;
             }
 
-            var provider = _objectContainer.Resolve<TimeForCodeWebApplicationFactory>().Services;
-            _objectContainer.RegisterInstanceAs(provider);
+            _objectContainer.RegisterInstanceAs(SharedFactory().Services);
         }
 
-        [AfterScenario(Order = 100)]
+        [AfterTestRun]
+        public static void DisposeSharedFactory()
+        {
+            if (SharedHost.IsValueCreated)
+            {
+                SharedHost.Value.Dispose();
+            }
+        }
+
+        // Starting the host is the expensive part of a scenario, so every in-process scenario reuses one host that is reset first.
+        private static TimeForCodeWebApplicationFactory SharedFactory()
+        {
+            TimeForCodeWebApplicationFactory factory = SharedHost.Value;
+            factory.ResetState();
+            return factory;
+        }
+
+        // Hooks without an order run at 10000, so this must be higher to dispose the client after the clean-up hooks used it.
+        [AfterScenario(Order = 20000)]
         public void DisposeLiveClient()
         {
-            if (_objectContainer.IsRegistered<LiveScenario>() && _objectContainer.Resolve<LiveScenario>().IsLive)
+            if (_objectContainer.IsRegistered<LiveScenario>()
+                && _objectContainer.Resolve<LiveScenario>().IsLive
+                && _objectContainer.IsRegistered<HttpClient>())
             {
                 _objectContainer.Resolve<HttpClient>().Dispose();
             }

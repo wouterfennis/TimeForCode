@@ -50,6 +50,20 @@ namespace TimeForCode.Donation.Specifications.Mocking
             (await cache.GetAsync()).Should().NotBeEmpty();
         }
 
+        [TestMethod]
+        public async Task GetAsync_UnreadableToken_IsNotKept()
+        {
+            int acquired = 0;
+            var cache = new LiveTokenCache(
+                () => Task.FromResult(++acquired == 1 ? "not-a-jwt" : TokenExpiringAt(Now.AddMinutes(30), acquired)),
+                () => Now);
+
+            Func<Task> first = () => cache.GetAsync();
+            await first.Should().ThrowAsync<Exception>();
+
+            (await cache.GetAsync()).Should().NotBe("not-a-jwt");
+        }
+
         private static string TokenExpiringAt(DateTime expires, int sequence)
         {
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("a-signing-key-of-at-least-32-bytes!!"));

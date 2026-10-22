@@ -69,6 +69,23 @@ namespace TimeForCode.Donation.Specifications.Mocking
             });
         }
 
+        /// <summary>Returns the shared host to its initial state, so one host can serve every scenario of a test run.</summary>
+        public void ResetState()
+        {
+            Services.GetRequiredService<InMemoryContributorRepository>().Clear();
+            Services.GetRequiredService<InMemoryContributionRepository>().Clear();
+            Services.GetRequiredService<InMemoryDonationRepository>().Clear();
+            Services.GetRequiredService<InMemoryDonationAllocationRepository>().Clear();
+
+            Services.GetRequiredService<Mock<IProjectRepository>>().Reset();
+            Services.GetRequiredService<Mock<IDonorOrganizationRepository>>().Reset();
+            Services.GetRequiredService<Mock<IGithubRepositoryApiService>>().Reset();
+
+            var mockHttp = Services.GetRequiredService<MockHttpMessageHandler>();
+            mockHttp.ResetExpectations();
+            mockHttp.ResetBackendDefinitions();
+        }
+
         private static void MockDataAccess(IServiceCollection services)
         {
             var mockProjectRepository = new Mock<IProjectRepository>();

@@ -18,6 +18,8 @@ namespace TimeForCode.Donation.Specifications.Mocking
         private const string DefaultClientRedirectUri = "http://localhost:8084";
         private const string AccessTokenCookie = "AccessToken";
 
+        private static readonly TimeSpan RequestTimeout = TimeSpan.FromSeconds(30);
+
         private static readonly JsonSerializerOptions WebJsonOptions = new(JsonSerializerDefaults.Web);
 
         private static readonly LiveTokenCache UserToken = new(SignInFromEnvironmentAsync);
@@ -74,14 +76,16 @@ namespace TimeForCode.Donation.Specifications.Mocking
         public static string ReadAccessToken(IEnumerable<string> setCookieHeaders)
         {
             string prefix = AccessTokenCookie + "=";
-            string? cookie = setCookieHeaders.FirstOrDefault(h => h.StartsWith(prefix, StringComparison.Ordinal));
+            string? value = setCookieHeaders
+                .Where(h => h.StartsWith(prefix, StringComparison.Ordinal))
+                .Select(h => h[prefix.Length..].Split(';')[0])
+                .FirstOrDefault(v => !string.IsNullOrWhiteSpace(v));
 
-            if (cookie is null)
+            if (value is null)
             {
-                throw new InvalidOperationException($"The sign-in callback did not set an {AccessTokenCookie} cookie.");
+                throw new InvalidOperationException($"The sign-in callback did not set an {AccessTokenCookie} cookie with a value.");
             }
 
-            string value = cookie[prefix.Length..].Split(';')[0];
             return JsonSerializer.Deserialize<AccessToken>(Uri.UnescapeDataString(value), WebJsonOptions)!.Token;
         }
 
@@ -89,7 +93,7 @@ namespace TimeForCode.Donation.Specifications.Mocking
         public static async Task<string> SignInAsync(Uri authorizationAddress, Uri clientRedirectUri)
         {
             using var handler = new HttpClientHandler { AllowAutoRedirect = false, UseCookies = true };
-            using var client = new HttpClient(handler);
+            using var client = new HttpClient(handler) { Timeout = RequestTimeout };
 
             string loginUrl = new Uri(authorizationAddress, "api/v1/authentication/login").AbsoluteUri
                 + $"?IdentityProvider=Github&RedirectUri={Uri.EscapeDataString(clientRedirectUri.AbsoluteUri)}";
@@ -117,7 +121,7 @@ namespace TimeForCode.Donation.Specifications.Mocking
 
         public static async Task<string> RequestTestAdminTokenAsync(Uri authorizationAddress, string secret)
         {
-            using var client = new HttpClient();
+            using var client = new HttpClient { Timeout = RequestTimeout };
             using HttpResponseMessage response = await client.PostAsJsonAsync(
                 new Uri(authorizationAddress, "api/v1/test-admin-access/token"), new { Secret = secret });
 
@@ -164,7 +168,7 @@ namespace TimeForCode.Donation.Specifications.Mocking
         [GeneratedRegex("""<input\b[^>]*>""", RegexOptions.IgnoreCase)]
         private static partial Regex InputTagRegex();
 
-        [GeneratedRegex("""\b(?<attribute>name|value)\s*=\s*(?:"(?<text>[^"]*)"|'(?<text>[^']*)')""", RegexOptions.IgnoreCase)]
+        [GeneratedRegex("""(?<![\w-])(?<attribute>name|value)\s*=\s*(?:"(?<text>[^"]*)"|'(?<text>[^']*)')""", RegexOptions.IgnoreCase)]
         private static partial Regex AttributeRegex();
     }
 }

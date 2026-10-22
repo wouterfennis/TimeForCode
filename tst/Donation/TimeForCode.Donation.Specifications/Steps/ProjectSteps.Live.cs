@@ -33,7 +33,7 @@ namespace TimeForCode.Donation.Specifications.Steps
             await _donationClient.SubmitProjectForReviewAsync(_registeredProjectId!);
 
             using HttpClient administratorHttpClient = LiveHost.CreateClient(
-                LiveHost.ConfiguredBaseAddress!,
+                LiveHost.RequiredBaseAddress,
                 new BearerTokenHandler { Token = await LiveAuthentication.GetAdminTokenAsync() });
             await new DonationClient(administratorHttpClient).ApproveProjectAsync(_registeredProjectId!);
         }
@@ -75,25 +75,20 @@ namespace TimeForCode.Donation.Specifications.Steps
             _getDonationsResult!.Donations.Sum(d => d.HoursCommitted).Should().Be(hours);
         }
 
-        [AfterScenario(LiveHost.LiveOnlyTag)]
+        [AfterScenario(LiveHost.Tag)]
         public async Task ArchiveLiveProjectsAsync()
         {
-            if (_liveProjectIds.Count == 0)
-            {
-                return;
-            }
-
-            _bearerTokenHandler.Token = await LiveAuthentication.GetUserTokenAsync();
-
             foreach (string projectId in _liveProjectIds)
             {
                 try
                 {
+                    _bearerTokenHandler.Token = await LiveAuthentication.GetUserTokenAsync();
                     await _donationClient.ArchiveProjectAsync(projectId);
                 }
-                catch (ApiException)
+                catch (Exception exception) when (exception is ApiException or HttpRequestException or InvalidOperationException)
                 {
-                    // Best-effort cleanup: the project may already be archived, and must not hide the scenario result.
+                    // Best-effort clean-up: a project in draft cannot be archived, and a failure here must not hide the scenario result.
+                    Console.WriteLine($"Could not archive live project {projectId}: {exception.Message}");
                 }
             }
         }

@@ -16,6 +16,9 @@ namespace TimeForCode.Donation.Specifications.Mocking
         public static Uri? ConfiguredBaseAddress =>
             ResolveBaseAddress(Environment.GetEnvironmentVariable(BaseUrlVariable));
 
+        public static Uri RequiredBaseAddress =>
+            ConfiguredBaseAddress ?? throw new InvalidOperationException($"{BaseUrlVariable} must be set for live steps.");
+
         public static Uri? ResolveBaseAddress(string? configured)
         {
             if (string.IsNullOrWhiteSpace(configured))
@@ -39,7 +42,9 @@ namespace TimeForCode.Donation.Specifications.Mocking
 
         public static bool RequiresLiveHost(IEnumerable<string> scenarioTags, Uri? baseAddress)
         {
-            return baseAddress is null && scenarioTags.Contains(LiveOnlyTag, StringComparer.OrdinalIgnoreCase);
+            IReadOnlyCollection<string> tags = scenarioTags.ToList();
+
+            return tags.Contains(LiveOnlyTag, StringComparer.OrdinalIgnoreCase) && !IsLive(tags, baseAddress);
         }
 
         public static HttpClient CreateClient(Uri baseAddress, params DelegatingHandler[] handlers)

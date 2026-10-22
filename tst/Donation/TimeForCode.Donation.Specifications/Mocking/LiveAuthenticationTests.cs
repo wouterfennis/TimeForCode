@@ -54,6 +54,18 @@ namespace TimeForCode.Donation.Specifications.Mocking
         }
 
         [TestMethod]
+        public void ReadAccessToken_EmptyCookieBeforeRealOne_SkipsTheEmptyCookie()
+        {
+            string[] cookies =
+            [
+                "AccessToken=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/",
+                "AccessToken=%7B%22Token%22%3A%22jwt-value%22%2C%22ExpiresAfter%22%3A%222099-01-01T00%3A00%3A00Z%22%7D; path=/"
+            ];
+
+            LiveAuthentication.ReadAccessToken(cookies).Should().Be("jwt-value");
+        }
+
+        [TestMethod]
         public void ReadAccessToken_NoAccessTokenCookie_Throws()
         {
             Action act = () => LiveAuthentication.ReadAccessToken(["RefreshToken=x; path=/"]);
