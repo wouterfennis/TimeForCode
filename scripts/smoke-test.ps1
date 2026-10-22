@@ -284,28 +284,35 @@ if (Get-Command podman -ErrorAction SilentlyContinue) {
 
 Write-Section "5. Front-end"
 
-$rootPage     = curl -si "$FrontendBaseUrl/" 2>&1
-$deepLink     = curl -si "$FrontendBaseUrl/projects/123" 2>&1
-$missingAsset = curl -si "$FrontendBaseUrl/assets/missing.js" 2>&1
-$assetPath    = if (($rootPage -join "`n") -match 'src="(/assets/[^"]+\.js)"') { $Matches[1] } else { $null }
-$builtAsset   = if ($assetPath) { curl -si "$FrontendBaseUrl$assetPath" 2>&1 } else { @() }
+$rootPage = curl -si "$FrontendBaseUrl/" 2>&1
 
-if ((Test-SpaPage $rootPage) -and (Test-SpaPage $deepLink) -and ((Get-StatusCode $builtAsset) -eq 200)) {
-    Write-Pass "Front-end serves the SPA on / and /projects/123, and its script $assetPath"
+if ((Get-StatusCode $rootPage) -eq 0) {
+    Write-Fail "Front-end reachable" "No response from $FrontendBaseUrl (is the front-end container running?)"
 } else {
-    Write-Fail "Front-end SPA" "/=$(Get-StatusCode $rootPage), /projects/123=$(Get-StatusCode $deepLink), script '$assetPath'=$(Get-StatusCode $builtAsset)"
+    $deepLink     = curl -si "$FrontendBaseUrl/projects/123" 2>&1
+    $missingAsset = curl -si "$FrontendBaseUrl/assets/missing.js" 2>&1
+    $assetPath    = if (($rootPage -join "`n") -match 'src="(/assets/[^"]+\.js)"') { $Matches[1] } else { $null }
+    $builtAsset   = if ($assetPath) { curl -si "$FrontendBaseUrl$assetPath" 2>&1 } else { @() }
+
+    if (-not $assetPath) {
+        Write-Fail "Front-end SPA" "No script src=""/assets/*.js"" found in / (did the Vite output change?)"
+    } elseif ((Test-SpaPage $rootPage) -and (Test-SpaPage $deepLink) -and ((Get-StatusCode $builtAsset) -eq 200)) {
+        Write-Pass "Front-end serves the SPA on / and /projects/123, and its script $assetPath"
+    } else {
+        Write-Fail "Front-end SPA" "/=$(Get-StatusCode $rootPage), /projects/123=$(Get-StatusCode $deepLink), script '$assetPath'=$(Get-StatusCode $builtAsset)"
+    }
+
+    $sMissing = Get-StatusCode $missingAsset
+    if ($sMissing -eq 404) { Write-Pass "Missing asset /assets/missing.js -> 404, no SPA fallback" }
+    else                   { Write-Fail "Missing asset /assets/missing.js" "Status=$sMissing (expected 404)" }
+
+    $frontendResponses = [ordered]@{ "/" = $rootPage; "/projects/123" = $deepLink; "script" = $builtAsset; "/assets/missing.js" = $missingAsset }
+    $headerProblems = @(foreach ($entry in $frontendResponses.GetEnumerator()) {
+        Get-SecurityHeaderProblems $entry.Value | ForEach-Object { "$($entry.Key) $_" }
+    })
+    if ($headerProblems.Count -eq 0) { Write-Pass "Security headers (CSP, nosniff, Referrer-Policy) on all $($frontendResponses.Count) front-end responses" }
+    else                             { Write-Fail "Front-end security headers" ($headerProblems -join "; ") }
 }
-
-$sMissing = Get-StatusCode $missingAsset
-if ($sMissing -eq 404) { Write-Pass "Missing asset /assets/missing.js -> 404, no SPA fallback" }
-else                   { Write-Fail "Missing asset /assets/missing.js" "Status=$sMissing (expected 404)" }
-
-$frontendResponses = [ordered]@{ "/" = $rootPage; "/projects/123" = $deepLink; "script" = $builtAsset; "/assets/missing.js" = $missingAsset }
-$headerProblems = @(foreach ($entry in $frontendResponses.GetEnumerator()) {
-    Get-SecurityHeaderProblems $entry.Value | ForEach-Object { "$($entry.Key) $_" }
-})
-if ($headerProblems.Count -eq 0) { Write-Pass "Security headers (CSP, nosniff, Referrer-Policy) on all four front-end responses" }
-else                             { Write-Fail "Front-end security headers" ($headerProblems -join "; ") }
 
 # ---------------------------------------------------------------------------
 # Summary
