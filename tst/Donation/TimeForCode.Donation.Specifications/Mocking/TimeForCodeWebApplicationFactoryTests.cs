@@ -9,6 +9,8 @@ namespace TimeForCode.Donation.Specifications.Mocking
     [TestClass]
     public class TimeForCodeWebApplicationFactoryTests
     {
+        public TestContext TestContext { get; set; } = null!;
+
         [TestMethod]
         public void ResetState_ContributorStored_RemovesIt()
         {
@@ -30,7 +32,7 @@ namespace TimeForCode.Donation.Specifications.Mocking
 
             for (int i = 0; i < 70; i++)
             {
-                using HttpResponseMessage response = await client.GetAsync("api/v1/project/507f1f77bcf86cd799439011/contribution");
+                using HttpResponseMessage response = await client.GetAsync("api/v1/project/507f1f77bcf86cd799439011/contribution", TestContext.CancellationToken);
                 statusCodes.Add(response.StatusCode);
             }
 
