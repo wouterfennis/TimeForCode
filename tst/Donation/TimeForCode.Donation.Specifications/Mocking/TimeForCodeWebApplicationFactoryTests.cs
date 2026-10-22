@@ -22,6 +22,22 @@ namespace TimeForCode.Donation.Specifications.Mocking
         }
 
         [TestMethod]
+        public async Task CreateClient_ManyRequestsInOneRun_AreNeverRateLimited()
+        {
+            using var factory = new TimeForCodeWebApplicationFactory();
+            using HttpClient client = factory.CreateClient();
+            var statusCodes = new List<System.Net.HttpStatusCode>();
+
+            for (int i = 0; i < 70; i++)
+            {
+                using HttpResponseMessage response = await client.GetAsync("api/v1/project/507f1f77bcf86cd799439011/contribution");
+                statusCodes.Add(response.StatusCode);
+            }
+
+            statusCodes.Should().NotContain(System.Net.HttpStatusCode.TooManyRequests);
+        }
+
+        [TestMethod]
         public void ResetState_MockInvoked_ForgetsTheInvocation()
         {
             using var factory = new TimeForCodeWebApplicationFactory();
