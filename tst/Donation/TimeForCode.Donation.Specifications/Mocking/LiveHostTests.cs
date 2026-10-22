@@ -49,6 +49,30 @@ namespace TimeForCode.Donation.Specifications.Mocking
         }
 
         [TestMethod]
+        public void RequiresLiveHost_TaggedLiveOnlyWithoutLiveHost_ReturnsTrue()
+        {
+            LiveHost.RequiresLiveHost(["live", "liveonly"], null).Should().BeTrue();
+        }
+
+        [TestMethod]
+        public void RequiresLiveHost_TaggedLiveOnlyWithLiveHost_ReturnsFalse()
+        {
+            LiveHost.RequiresLiveHost(["live", "liveonly"], new Uri("http://localhost:8080")).Should().BeFalse();
+        }
+
+        [TestMethod]
+        public void RequiresLiveHost_LiveOnlyWithoutLiveTagWithLiveHostConfigured_ReturnsTrue()
+        {
+            LiveHost.RequiresLiveHost(["liveonly"], new Uri("http://localhost:8080")).Should().BeTrue();
+        }
+
+        [TestMethod]
+        public void RequiresLiveHost_OnlyLiveTagged_ReturnsFalse()
+        {
+            LiveHost.RequiresLiveHost(["live"], null).Should().BeFalse();
+        }
+
+        [TestMethod]
         public void IsLive_ConfiguredButNotTagged_ReturnsFalse()
         {
             LiveHost.IsLive(["wip"], new Uri("http://localhost:8080")).Should().BeFalse();

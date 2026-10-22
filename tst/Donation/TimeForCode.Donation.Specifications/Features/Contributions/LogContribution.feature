@@ -73,3 +73,22 @@ Scenario Outline: User attempts to log an amount of hours that is not positive
 		| hours |
 		| 0     |
 		| -2    |
+
+
+@live
+@liveonly
+Scenario: Logged hours are stored and listed for the project
+	Given The user has an access token
+	And The user has an active project registered on the live platform
+	When The user logs 3 hours on the project
+	And The user requests the contributions of the project
+	Then The contributions of the project add up to 3 hours on the live platform
+
+@live
+@liveonly
+Scenario: Logging hours on a registered project requires authentication
+	Given The user has an access token
+	And The user has an active project registered on the live platform
+	And The user does not have an access token
+	When The user logs 3 hours on the project
+	Then The user is informed they must be logged in

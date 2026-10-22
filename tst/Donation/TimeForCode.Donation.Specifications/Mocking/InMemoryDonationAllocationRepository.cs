@@ -11,6 +11,11 @@ namespace TimeForCode.Donation.Specifications.Mocking
     {
         private readonly List<DonationAllocation> _allocations = [];
 
+        internal void Clear()
+        {
+            _allocations.Clear();
+        }
+
         internal IReadOnlyList<DonationAllocation> Allocations => _allocations;
 
         public Task CreateAsync(DonationAllocation allocation, CancellationToken cancellationToken)
