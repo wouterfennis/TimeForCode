@@ -25,6 +25,7 @@ Scenario: Issued access token identifies its signing key
 	Then The issued access token names a signing key
 	And The published signing keys contain the key named by the access token
 
+@live
 Scenario: Published signing keys describe their purpose and algorithm
 	When The user requests the published signing keys
 	Then Each published signing key has a key identifier
