@@ -133,13 +133,6 @@ namespace TimeForCode.Donation.Specifications.Steps
                 null);
         }
 
-        [Then("The user is informed the search criteria are invalid")]
-        public void ThenTheUserIsInformedTheSearchCriteriaAreInvalid()
-        {
-            _exception.Should().NotBeNull();
-            _exception!.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
-        }
-
         [Then("The total number of matching projects is included")]
         public void ThenTheTotalNumberOfMatchingProjectsIsIncluded()
         {
@@ -238,13 +231,6 @@ namespace TimeForCode.Donation.Specifications.Steps
         {
             _firstSearchOrder.Should().NotBeNullOrEmpty();
             _secondSearchOrder.Should().Equal(_firstSearchOrder);
-        }
-
-        [Then("The user is informed the paging request is invalid")]
-        public void ThenTheUserIsInformedThePagingRequestIsInvalid()
-        {
-            _exception.Should().NotBeNull();
-            _exception!.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
         }
 
         private List<string> ResultIds()

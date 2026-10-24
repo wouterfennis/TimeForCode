@@ -26,7 +26,7 @@ Scenario: Donor does not see donations of other users
 Scenario: Requesting donations without being logged in is rejected
 	Given The user does not have an access token
 	When The user requests their donations
-	Then The user is informed they must be logged in
+	Then The request is rejected as unauthorized
 
 Scenario: Visitor sees the donations received by a project
 	Given There is a published project with 2 donations
@@ -42,4 +42,4 @@ Scenario: Project without donations returns an empty list
 Scenario: Donations of an unknown project are rejected
 	Given There is no project with the given identifier
 	When The user requests the donations of the project
-	Then The user is informed the project was not found
+	Then The request is rejected as not found

@@ -45,7 +45,7 @@ Scenario Outline: Invalid lifecycle transitions are rejected
 	Given The user has an administrator access token
 	And There is a project that is <state>
 	When The administrator approves the project
-	Then The user is informed the transition is not allowed
+	Then The request is rejected as a conflict
 
 	Examples:
 		| state    |
@@ -57,24 +57,24 @@ Scenario: Non-administrator cannot approve a project
 	Given The user has an access token
 	And There is a project pending approval
 	When The user approves the project
-	Then The user is informed they do not have permission
+	Then The request is rejected as forbidden
 
 Scenario: Non-administrator cannot request changes
 	Given The user has an access token
 	And There is a project pending approval
 	When The user requests changes with the reason "Please add a description"
-	Then The user is informed they do not have permission
+	Then The request is rejected as forbidden
 
 Scenario: Anonymous caller cannot approve a project
 	Given The user does not have an access token
 	When The user approves the project
-	Then The user is informed they must be logged in
+	Then The request is rejected as unauthorized
 
 Scenario Outline: Only the maintainer can change their project
 	Given The user has an access token
 	And There is a project published by another user
 	When The user <action> the project
-	Then The user is informed they do not have permission
+	Then The request is rejected as forbidden
 
 	Examples:
 		| action             |

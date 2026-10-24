@@ -24,26 +24,26 @@ Scenario: Pledge for both an organization and an individual is rejected
 	And There is a published project on the time for code platform
 	And There is a donor organization on the time for code platform
 	When The user pledges 20 hours to the project as an individual and for the donor organization
-	Then The user is informed the donor is invalid
+	Then The request is rejected as invalid
 
 Scenario: Pledge without a donor is rejected
 	Given The user has an access token
 	And There is a published project on the time for code platform
 	When The user pledges 20 hours to the project without a donor
-	Then The user is informed the donor is invalid
+	Then The request is rejected as invalid
 
 Scenario: Pledge for an unknown donor organization is rejected
 	Given The user has an access token
 	And There is a published project on the time for code platform
 	And There is no donor organization with the given identifier
 	When The user pledges 20 hours to the project for the donor organization
-	Then The user is informed the donor organization was not found
+	Then The request is rejected as not found
 
 Scenario Outline: Pledge with invalid hours is rejected
 	Given The user has an access token
 	And There is a published project on the time for code platform
 	When The user pledges <hours> hours to the project as an individual
-	Then The user is informed the hours are invalid
+	Then The request is rejected as invalid
 
 	Examples:
 		| hours |
@@ -60,13 +60,13 @@ Scenario: Pledge for a project that does not exist is rejected
 	Given The user has an access token
 	And There is no project with the given identifier
 	When The user pledges 20 hours to the project as an individual
-	Then The user is informed the project was not found
+	Then The request is rejected as not found
 
 Scenario: Pledge without being logged in is rejected
 	Given The user does not have an access token
 	And There is a published project on the time for code platform
 	When The user pledges 20 hours to the project as an individual
-	Then The user is informed they must be logged in
+	Then The request is rejected as unauthorized
 
 
 @live
@@ -85,4 +85,4 @@ Scenario: Pledging to a registered project requires authentication
 	And The user has an active project registered on the live platform
 	And The user does not have an access token
 	When The user pledges 5 hours to the project as an individual
-	Then The user is informed they must be logged in
+	Then The request is rejected as unauthorized

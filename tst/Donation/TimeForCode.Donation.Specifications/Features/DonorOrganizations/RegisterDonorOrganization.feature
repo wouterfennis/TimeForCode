@@ -10,17 +10,17 @@ Scenario: User registers a new donor organization
 Scenario: Registering a donor organization with a duplicate name is rejected
 	Given There is already a donor organization with the same name on the time for code platform
 	When The user registers a donor organization with a valid name
-	Then The user is informed the donor organization name is already in use
+	Then The request is rejected as a conflict
 
 @live
 Scenario: Registering a donor organization without a name is rejected
 	When The user registers a donor organization without a name
-	Then The user is informed the donor organization cannot be created
+	Then The request is rejected as invalid
 
 
 Scenario: Registering a donor organization with a blank name is rejected
 	When The user registers a donor organization with the name "   "
-	Then The user is informed the donor organization cannot be created
+	Then The request is rejected as invalid
 
 Scenario: User registers a donor organization with contact details
 	When The user registers a donor organization with the contact email "open-source@acme.example" and the website "https://acme.example"
@@ -28,7 +28,7 @@ Scenario: User registers a donor organization with contact details
 
 Scenario Outline: Registering a donor organization with invalid contact details is rejected
 	When The user registers a donor organization with the contact email "<email>" and the website "<website>"
-	Then The user is informed the donor organization cannot be created
+	Then The request is rejected as invalid
 
 	Examples:
 		| email                    | website                  |

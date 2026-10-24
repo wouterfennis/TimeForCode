@@ -11,10 +11,10 @@ Scenario: User updates an existing donor organization
 Scenario: Updating a non-existent donor organization returns not found
 	Given There is no donor organization with the given identifier
 	When The user updates the donor organization with a new name
-	Then The user is informed the donor organization was not found
+	Then The request is rejected as not found
 
 Scenario: Updating a donor organization to a name already in use is rejected
 	Given There is a donor organization on the time for code platform
 	And There is already a donor organization with the same name on the time for code platform
 	When The user updates the donor organization with a name already in use
-	Then The user is informed the donor organization name is already in use
+	Then The request is rejected as a conflict

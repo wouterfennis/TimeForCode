@@ -46,8 +46,8 @@ Scenario: Project without contributions returns an empty list
 Scenario: User requests the contributions of a project that does not exist
 	Given There is no project with the given identifier
 	When The user requests the contributions of the project
-	Then The user is informed the project was not found
+	Then The request is rejected as not found
 
 Scenario: Requesting contributions with a malformed project identifier is rejected
 	When The user requests the contributions of the project with the identifier "not-an-identifier"
-	Then The user is informed the project identifier is invalid
+	Then The request is rejected as invalid

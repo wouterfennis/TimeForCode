@@ -40,4 +40,4 @@ Scenario: A private repository cannot be requested
 	Given The user has an access token
 	And The user owns a private repository at the external platform
 	When The user requests repository "johndoe/secret-repo" from the time for code platform
-	Then The user is informed the repository was not found
+	Then The request is rejected as not found

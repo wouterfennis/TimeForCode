@@ -62,12 +62,5 @@ namespace TimeForCode.Authorization.Specifications.Steps
             _response!.Bio.Should().NotBeNull();
             _response!.Location.Should().NotBeNull();
         }
-
-        [Then("The user is informed their profile was not found")]
-        public void ThenTheUserIsInformedTheirProfileWasNotFound()
-        {
-            _session.LastException.Should().NotBeNull();
-            _session.LastException!.StatusCode.Should().Be(StatusCodes.Status404NotFound);
-        }
     }
 }

@@ -11,4 +11,4 @@ Scenario: User deletes an existing donor organization
 Scenario: Deleting a non-existent donor organization returns not found
 	Given There is no donor organization with the given identifier
 	When The user deletes the donor organization
-	Then The user is informed the donor organization was not found
+	Then The request is rejected as not found

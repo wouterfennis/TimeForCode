@@ -18,14 +18,16 @@ namespace TimeForCode.Authorization.Specifications.Steps
         private readonly IAuthClient _authClient;
         private readonly HttpClient _httpClient;
         private readonly IServiceProvider _provider;
+        private readonly SessionContext _session;
         private TryResponse<ICollection<RepositoryResponse>?, ApiException?>? _listResult = null;
         private HttpResponseMessage? _singleRepoResponse = null;
 
-        public RepositorySteps(IAuthClient authClient, HttpClient httpClient, IServiceProvider provider)
+        public RepositorySteps(IAuthClient authClient, HttpClient httpClient, IServiceProvider provider, SessionContext session)
         {
             _authClient = authClient;
             _httpClient = httpClient;
             _provider = provider;
+            _session = session;
         }
 
         [Given("The user has no stored access token of the external platform")]
@@ -51,6 +53,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
         public async Task WhenTheUserRequestsRepositoryFromTheTimeForCodePlatform(string ownerSlashRepo)
         {
             _singleRepoResponse = await _httpClient.GetAsync($"api/v1/user/repositories/{ownerSlashRepo}");
+            _session.LastResponse = _singleRepoResponse;
         }
 
         [Then("A list of public repositories is returned with name, description, star count, language, and URL")]
@@ -78,24 +81,12 @@ namespace TimeForCode.Authorization.Specifications.Steps
             repo.Url.Should().NotBeNullOrEmpty();
         }
 
-        [Then("The user is informed the repository request is invalid")]
-        public void ThenTheUserIsInformedTheRepositoryRequestIsInvalid()
-        {
-            _singleRepoResponse!.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-        }
-
         [Then("The private repository is not in the returned list")]
         public void ThenThePrivateRepositoryIsNotInTheReturnedList()
         {
             _listResult!.Exception.Should().BeNull();
             _listResult!.Response.Should().NotBeEmpty();
             _listResult!.Response!.Select(r => r.Name).Should().NotContain(ExternalPlatformMocks.PrivateRepository.Name);
-        }
-
-        [Then("The user is informed the repository was not found")]
-        public void ThenTheUserIsInformedTheRepositoryWasNotFound()
-        {
-            _singleRepoResponse!.StatusCode.Should().Be(HttpStatusCode.NotFound);
         }
     }
 }

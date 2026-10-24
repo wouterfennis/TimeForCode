@@ -201,34 +201,6 @@ namespace TimeForCode.Donation.Specifications.Steps
                 .Which.Id.Should().Be(_otherContributorId);
         }
 
-        [Then("The user is informed the contributor profile is invalid")]
-        public void ThenTheUserIsInformedTheContributorProfileIsInvalid()
-        {
-            _exception.Should().NotBeNull();
-            _exception!.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
-        }
-
-        [Then("The user is informed they are not allowed to access this contributor profile")]
-        public void ThenTheUserIsInformedTheyAreNotAllowedToAccessThisContributorProfile()
-        {
-            _exception.Should().NotBeNull();
-            _exception!.StatusCode.Should().Be(StatusCodes.Status403Forbidden);
-        }
-
-        [Then("The user is informed they are not allowed to view the contributors of a donor organization")]
-        public void ThenTheUserIsInformedTheyAreNotAllowedToViewTheContributorsOfADonorOrganization()
-        {
-            _exception.Should().NotBeNull();
-            _exception!.StatusCode.Should().Be(StatusCodes.Status403Forbidden);
-        }
-
-        [Then("The user is informed the contributor was not found")]
-        public void ThenTheUserIsInformedTheContributorWasNotFound()
-        {
-            _exception.Should().NotBeNull();
-            _exception!.StatusCode.Should().Be(StatusCodes.Status404NotFound);
-        }
-
         private Task UpdateOwnProfileAsync(UpdateContributorProfileRequest request)
         {
             return CaptureAsync(async () => _profileResult = await _donationClient.UpdateMyContributorProfileAsync(request));

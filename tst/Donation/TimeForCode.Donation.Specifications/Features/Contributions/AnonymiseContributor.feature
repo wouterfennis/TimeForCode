@@ -38,4 +38,4 @@ Scenario: Anonymising the same contributor twice is accepted
 Scenario: A regular user cannot anonymise a contributor
 	Given The user has an access token
 	When The user asks to anonymise a contributor
-	Then The user is informed they are not allowed to anonymise a contributor
+	Then The request is rejected as forbidden

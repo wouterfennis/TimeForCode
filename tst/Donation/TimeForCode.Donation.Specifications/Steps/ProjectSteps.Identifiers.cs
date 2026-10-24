@@ -15,15 +15,6 @@ namespace TimeForCode.Donation.Specifications.Steps
                 : GetContributionsAsync(identifier);
         }
 
-        [Then("The user is informed the project identifier is invalid")]
-        [Then("The user is informed the GitHub reference is invalid")]
-        [Then("The user is informed the hours are invalid")]
-        public void ThenTheUserIsInformedTheRequestIsInvalid()
-        {
-            _exception.Should().NotBeNull();
-            _exception!.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
-        }
-
         /// <summary>
         /// Runs an API call and keeps a failed response in <c>_exception</c> for the Then-steps.
         /// </summary>
