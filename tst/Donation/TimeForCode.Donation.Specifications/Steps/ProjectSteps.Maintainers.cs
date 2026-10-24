@@ -85,13 +85,6 @@ namespace TimeForCode.Donation.Specifications.Steps
             _maintainerProfile.AvatarUrl.Should().Be(Constants.TestUserAvatarUrl);
         }
 
-        [Then("The user is informed the maintainer was not found")]
-        public void ThenTheUserIsInformedTheMaintainerWasNotFound()
-        {
-            _exception.Should().NotBeNull();
-            _exception!.StatusCode.Should().Be(StatusCodes.Status404NotFound);
-        }
-
         [Then("The projects of the user are returned")]
         public void ThenTheProjectsOfTheUserAreReturned()
         {

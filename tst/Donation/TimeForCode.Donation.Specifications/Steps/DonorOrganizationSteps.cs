@@ -25,6 +25,9 @@ namespace TimeForCode.Donation.Specifications.Steps
         private DonorOrganizationResponse? _createResult;
         private DonorOrganizationResponse? _updateResult;
         private ApiException? _exception;
+
+        /// <summary>The failed API response of the last call, shared with the rejection steps.</summary>
+        internal ApiException? LastException => _exception;
         private string? _registeredOrganizationId;
 
         public DonorOrganizationSteps(IDonationClient donationClient, IServiceProvider provider, HttpClient httpClient, ProjectSteps projectSteps)
@@ -126,14 +129,6 @@ namespace TimeForCode.Donation.Specifications.Steps
             {
                 _exception = ex;
             }
-        }
-
-        [Then("The user is informed the donor organization listing request is invalid")]
-        [Then("The user is informed the donor organization identifier is invalid")]
-        public void ThenTheUserIsInformedTheDonorOrganizationRequestIsInvalid()
-        {
-            _exception.Should().NotBeNull();
-            _exception!.StatusCode.Should().Be(400);
         }
 
         [When("The user requests the donor organization details")]
@@ -360,30 +355,6 @@ namespace TimeForCode.Donation.Specifications.Steps
         public void ThenTheDonorOrganizationIsDeletedFromTheTimeForCodePlatform()
         {
             _exception.Should().BeNull();
-        }
-
-        [Then("The user is informed the donor organization was not found")]
-        public void ThenTheUserIsInformedTheDonorOrganizationWasNotFound()
-        {
-            var exception = _exception ?? _projectSteps.LastException;
-            exception.Should().NotBeNull();
-            exception.Should().BeOfType<ApiException<ProblemDetails>>();
-            ((ApiException<ProblemDetails>)exception!).StatusCode.Should().Be(404);
-        }
-
-        [Then("The user is informed the donor organization name is already in use")]
-        public void ThenTheUserIsInformedTheDonorOrganizationNameIsAlreadyInUse()
-        {
-            _exception.Should().NotBeNull();
-            _exception.Should().BeOfType<ApiException<ProblemDetails>>();
-            ((ApiException<ProblemDetails>)_exception!).StatusCode.Should().Be(409);
-        }
-
-        [Then("The user is informed the donor organization cannot be created")]
-        public void ThenTheUserIsInformedTheDonorOrganizationCannotBeCreated()
-        {
-            _exception.Should().NotBeNull();
-            _exception!.StatusCode.Should().Be(400);
         }
     }
 }

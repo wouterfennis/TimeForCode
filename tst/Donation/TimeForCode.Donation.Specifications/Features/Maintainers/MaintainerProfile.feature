@@ -27,7 +27,7 @@ Scenario: User without a maintainer profile requests it
 	Given The user has an access token
 	And The user is not yet a maintainer on the time for code platform
 	When The user requests their own maintainer profile
-	Then The user is informed the maintainer was not found
+	Then The request is rejected as not found
 
 Scenario: Maintainer lists their own projects with status and received donations
 	Given The user has an access token
@@ -55,7 +55,7 @@ Scenario Outline: Only the owning maintainer can change a project
 	Given The user has an access token
 	And There is a project published by another user
 	When The user <action> the project
-	Then The user is informed they do not have permission
+	Then The request is rejected as forbidden
 
 	Examples:
 		| action             |
@@ -66,9 +66,9 @@ Scenario Outline: Only the owning maintainer can change a project
 Scenario: Viewing the maintainer profile requires authentication
 	Given The user does not have an access token
 	When The user requests their own maintainer profile
-	Then The user is informed they must be logged in
+	Then The request is rejected as unauthorized
 
 Scenario: Listing own projects requires authentication
 	Given The user does not have an access token
 	When The user requests their own projects
-	Then The user is informed they must be logged in
+	Then The request is rejected as unauthorized

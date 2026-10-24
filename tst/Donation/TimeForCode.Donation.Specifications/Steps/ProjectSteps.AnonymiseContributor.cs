@@ -93,13 +93,6 @@ namespace TimeForCode.Donation.Specifications.Steps
             _exception.Should().BeNull();
         }
 
-        [Then("The user is informed they are not allowed to anonymise a contributor")]
-        public void ThenTheUserIsInformedTheyAreNotAllowedToAnonymiseAContributor()
-        {
-            _exception.Should().NotBeNull();
-            _exception!.StatusCode.Should().Be(StatusCodes.Status403Forbidden);
-        }
-
         private async Task AnonymiseAsServiceAsync(string userId)
         {
             _bearerTokenHandler.Token = AuthenticationSteps.GenerateTestToken("authorization-service", "service");

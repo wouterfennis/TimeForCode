@@ -230,34 +230,6 @@ namespace TimeForCode.Donation.Specifications.Steps
             )), Times.Once);
         }
 
-        [Then("The user is informed the repository cannot be published")]
-        public void ThenTheUserIsInformedTheRepositoryCannotBePublished()
-        {
-            _exception.Should().NotBeNull();
-            _exception!.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
-        }
-
-        [Then("The user is informed the repository is already published")]
-        public void ThenTheUserIsInformedTheRepositoryIsAlreadyPublished()
-        {
-            _exception.Should().NotBeNull();
-            _exception!.StatusCode.Should().Be(StatusCodes.Status409Conflict);
-        }
-
-        [Then("The user is informed they do not have permission")]
-        public void ThenTheUserIsInformedTheyDoNotHavePermission()
-        {
-            _exception.Should().NotBeNull();
-            _exception!.StatusCode.Should().Be(StatusCodes.Status403Forbidden);
-        }
-
-        [Then("The user is informed they must be logged in")]
-        public void ThenTheUserIsInformedTheyMustBeLoggedIn()
-        {
-            _exception.Should().NotBeNull();
-            _exception!.StatusCode.Should().Be(StatusCodes.Status401Unauthorized);
-        }
-
         [Then("A paginated list of projects is returned")]
         public void ThenAPaginatedListOfProjectsIsReturned()
         {

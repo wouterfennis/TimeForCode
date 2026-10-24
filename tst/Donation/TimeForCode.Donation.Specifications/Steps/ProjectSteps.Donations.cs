@@ -199,20 +199,6 @@ namespace TimeForCode.Donation.Specifications.Steps
             _getDonationsResult!.Donations.Should().OnlyContain(d => d.HoursCommitted > 0 && d.HoursLogged >= 0 && d.ProgressPercentage >= 0);
         }
 
-        [Then("The user is informed the donor is invalid")]
-        public void ThenTheUserIsInformedTheDonorIsInvalid()
-        {
-            _exception.Should().NotBeNull();
-            _exception!.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
-        }
-
-        [Then("The user is informed the donation was not found")]
-        public void ThenTheUserIsInformedTheDonationWasNotFound()
-        {
-            _exception.Should().NotBeNull();
-            _exception!.StatusCode.Should().Be(StatusCodes.Status404NotFound);
-        }
-
         private Task PledgeAsync(int hours, bool asIndividual, string? organizationId)
         {
             return CaptureAsync(async () => _donationResult = await _donationClient.PledgeDonationAsync(

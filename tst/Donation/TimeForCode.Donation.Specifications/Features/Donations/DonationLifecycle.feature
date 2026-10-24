@@ -37,7 +37,7 @@ Scenario Outline: Other users cannot change a donation
 	Given The user has an access token
 	And There is a <state> donation of another user
 	When The user <action> the donation
-	Then The user is informed they do not have permission
+	Then The request is rejected as forbidden
 
 	Examples:
 		| state   | action    |
@@ -49,7 +49,7 @@ Scenario Outline: Transitions that are not allowed are rejected
 	Given The user has an access token
 	And The user has a <state> donation
 	When The user <action> the donation
-	Then The user is informed the transition is not allowed
+	Then The request is rejected as a conflict
 
 	Examples:
 		| state     | action    |
@@ -84,7 +84,7 @@ Scenario: Activating or cancelling an unknown donation is rejected
 	Given The user has an access token
 	And There is no donation with the given identifier
 	When The user activates the donation
-	Then The user is informed the donation was not found
+	Then The request is rejected as not found
 
 Scenario: Donor organization hours stay consistent with its donations
 	Given The user has an access token

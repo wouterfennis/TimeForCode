@@ -167,13 +167,6 @@ namespace TimeForCode.Donation.Specifications.Steps
             Contributions.Contributions.Should().OnlyContain(c => c.ContributorId == contributor.Id);
         }
 
-        [Then("The user is informed the project was not found")]
-        public void ThenTheUserIsInformedTheProjectWasNotFound()
-        {
-            _exception.Should().NotBeNull();
-            _exception!.StatusCode.Should().Be(StatusCodes.Status404NotFound);
-        }
-
         [Then("The contributions of the project are returned")]
         public void ThenTheContributionsOfTheProjectAreReturned()
         {

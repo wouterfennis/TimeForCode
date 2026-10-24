@@ -17,7 +17,7 @@ Scenario: Deleted user can no longer retrieve their profile
 	And The user has a profile on the time for code platform
 	And The user has deleted their account
 	When The user requests their profile from the time for code platform
-	Then The user is informed their profile was not found
+	Then The request is rejected as not found
 
 Scenario: Deleted user can no longer refresh their token
 	Given The user has a refresh token
@@ -37,7 +37,7 @@ Scenario: Account is kept when the donation module cannot anonymise the contribu
 	And The user has a profile on the time for code platform
 	And The donation module cannot anonymise the contributor of the user
 	When The user deletes their account
-	Then The user is informed the account could not be deleted
+	Then The request is rejected as a bad gateway
 	And The profile of the user is kept
 
 Scenario: Deleting an account does not affect other users
@@ -51,9 +51,9 @@ Scenario: User without a profile deletes their account
 	Given The user has an access token
 	And The user does not have a profile on the time for code platform
 	When The user deletes their account
-	Then The user is informed their profile was not found
+	Then The request is rejected as not found
 
 Scenario: Deleting an account requires authentication
 	Given The user has not logged in at the time for code platform
 	When The user deletes their account
-	Then The user is informed the account deletion requires authentication
+	Then The request is rejected as unauthorized

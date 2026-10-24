@@ -173,13 +173,6 @@ namespace TimeForCode.Donation.Specifications.Steps
             _lifecycleProject!.ChangeRequestReason.Should().Be(reason);
         }
 
-        [Then("The user is informed the transition is not allowed")]
-        public void ThenTheUserIsInformedTheTransitionIsNotAllowed()
-        {
-            _exception.Should().NotBeNull();
-            _exception!.StatusCode.Should().Be(StatusCodes.Status409Conflict);
-        }
-
         [Then("The user is informed the project cannot receive donations")]
         public void ThenTheUserIsInformedTheProjectCannotReceiveDonations()
         {
