@@ -15,7 +15,7 @@
         5. The Auth API accepts its own JWT
         6. The Donation API accepts the Auth API JWT and stores a project (Mongo write)
         7. The stored project is read back (Mongo read)
-        8. The data protection key ring is stored in the database (needs podman)
+        8. The data protection key ring is stored in the database (needs podman or, with -ContainerCli, docker)
 
 .PARAMETER AuthApiBaseUrl
     Base URL of the Authorization API. Default: http://localhost:8080
@@ -242,9 +242,10 @@ try {
 Write-Section "4. Data protection key ring"
 
 if (Get-Command $ContainerCli -ErrorAction SilentlyContinue) {
-    $keys = & $ContainerCli exec mongo mongosh -u root -p example --authenticationDatabase admin AuthorizationServer --quiet --eval 'db.DataProtectionKeyDocument.countDocuments({})' 2>&1 | Select-Object -Last 1
-    if ([int]"$keys".Trim() -ge 1) { Write-Pass "Data protection key ring is stored in the database ($keys key(s))" }
-    else                           { Write-Fail "No data protection key in the database" "mongosh said: $keys" }
+    $output = & $ContainerCli exec mongo mongosh -u root -p example --authenticationDatabase admin AuthorizationServer --quiet --eval 'db.DataProtectionKeyDocument.countDocuments({})' 2>&1
+    $keys = ($output | ForEach-Object { "$_".Trim() } | Where-Object { $_ -match '^\d+$' } | Select-Object -Last 1)
+    if ($keys -and [int]$keys -ge 1) { Write-Pass "Data protection key ring is stored in the database ($keys key(s))" }
+    else                           { Write-Fail "No data protection key in the database" "mongosh said: $($output | Select-Object -Last 1)" }
 } else {
     Write-Output "  [SKIP] $ContainerCli not available, database not inspected"
 }
