@@ -234,6 +234,14 @@ The Donation Specifications run real scenarios against the compose stack with re
 | `TIMEFORCODE_LIVE_TEST_ADMIN_SECRET` | The `TEST_ADMIN_ACCESS_SECRET` the stack was started with, needed to approve projects |
 | `TIMEFORCODE_LIVE_CLIENT_REDIRECT_URI` | Optional redirect URI of the login, default `http://localhost:8084` |
 
+#### CI job
+
+The `live` job in `.github/workflows/pullRequest.yaml` runs on every pull request to `main`, in parallel with `build`. It builds and starts the compose stack in the background, polls the Authorization API, identity provider mock and Donation API until they answer (three minutes at most), then runs `scripts/smoke-test.ps1 -ContainerCli docker` and `dotnet test` on the Donation Specifications with `TestCategory=live`. A failing smoke check or live scenario fails the job. The stack's admin secret is derived from the run id and attempt, so no repository secret is needed.
+
+On failure the job uploads the artifact `live-tier-diagnostics` with the container logs (`compose-logs.txt`) and the `.trx` results. The stack is always torn down, volumes included.
+
+Duration: not yet measured. Read it from the first pull request runs and record it here; if it exceeds roughly ten minutes, move the trigger from `pull_request` to a nightly `schedule` instead. The job has a 30 minute timeout.
+
 ```powershell
 $env:TEST_ADMIN_ACCESS_SECRET = 'choose-a-secret'
 podman compose up -d

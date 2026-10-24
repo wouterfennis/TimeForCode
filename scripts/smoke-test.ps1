@@ -29,6 +29,9 @@
 .PARAMETER ClientRedirectUri
     Front-end origin the login redirects back to (must be a configured valid redirect URI). No front-end needs to run. Default: http://localhost:8084
 
+.PARAMETER ContainerCli
+    Container CLI used to inspect the Mongo container (check 8). Default: podman. CI passes docker.
+
 .EXAMPLE
     .\scripts\smoke-test.ps1
 
@@ -40,7 +43,8 @@ param(
     [string] $AuthApiBaseUrl    = "http://localhost:8080",
     [string] $IdpMockBaseUrl    = "http://localhost:8081",
     [string] $DonationApiBaseUrl = "http://localhost:8082",
-    [string] $ClientRedirectUri    = "http://localhost:8084"
+    [string] $ClientRedirectUri    = "http://localhost:8084",
+    [string] $ContainerCli         = "podman"
 )
 
 Set-StrictMode -Version Latest
@@ -237,12 +241,12 @@ try {
 
 Write-Section "4. Data protection key ring"
 
-if (Get-Command podman -ErrorAction SilentlyContinue) {
-    $keys = podman exec mongo mongosh -u root -p example --authenticationDatabase admin AuthorizationServer --quiet --eval 'db.DataProtectionKeyDocument.countDocuments({})' 2>&1 | Select-Object -Last 1
+if (Get-Command $ContainerCli -ErrorAction SilentlyContinue) {
+    $keys = & $ContainerCli exec mongo mongosh -u root -p example --authenticationDatabase admin AuthorizationServer --quiet --eval 'db.DataProtectionKeyDocument.countDocuments({})' 2>&1 | Select-Object -Last 1
     if ([int]"$keys".Trim() -ge 1) { Write-Pass "Data protection key ring is stored in the database ($keys key(s))" }
     else                           { Write-Fail "No data protection key in the database" "mongosh said: $keys" }
 } else {
-    Write-Output "  [SKIP] podman not available, database not inspected"
+    Write-Output "  [SKIP] $ContainerCli not available, database not inspected"
 }
 
 # ---------------------------------------------------------------------------
