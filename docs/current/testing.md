@@ -240,7 +240,9 @@ The `live` job in `.github/workflows/pullRequest.yaml` runs on every pull reques
 
 On failure the job uploads the artifact `live-tier-diagnostics` with the container logs (`compose-logs.txt`) and the `.trx` results. The stack is always torn down, volumes included.
 
-Duration: not yet measured. Read it from the first pull request runs and record it here; if it exceeds roughly ten minutes, move the trigger from `pull_request` to a nightly `schedule` instead. The job has a 30 minute timeout.
+Duration: about 2.5 minutes in the first pull request run (2026-10-24: 2m28s, with a cold image build, a 10/10 smoke test and 14 live scenarios). That is well under the ten minute budget, so the job stays on every pull request; if later runs exceed roughly ten minutes, move the trigger from `pull_request` to a nightly `schedule` instead. The job has a 30 minute timeout.
+
+The image build logs `warn`/`fail` lines about the data protection key ring (no encryptor, and for the Authorization API a 30 second Mongo timeout). They come from the build-time OpenAPI document generation, which starts the app without a database, and are not failures of the job.
 
 ```powershell
 $env:TEST_ADMIN_ACCESS_SECRET = 'choose-a-secret'
