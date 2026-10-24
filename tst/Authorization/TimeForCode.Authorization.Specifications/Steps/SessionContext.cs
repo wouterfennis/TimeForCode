@@ -23,5 +23,10 @@ namespace TimeForCode.Authorization.Specifications.Steps
         /// The status code of the last failed call or raw response, whichever the scenario produced.
         /// </summary>
         public int? LastStatusCode => LastException?.StatusCode ?? (int?)LastResponse?.StatusCode;
+
+        /// <summary>
+        /// Whether both a failed client call and a raw response are captured, which makes the status ambiguous.
+        /// </summary>
+        public bool HasAmbiguousStatus => LastException is not null && LastResponse is not null;
     }
 }

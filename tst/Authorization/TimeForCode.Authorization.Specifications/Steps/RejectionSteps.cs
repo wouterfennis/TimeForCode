@@ -29,6 +29,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
 
         private void AssertRejectedWith(int expectedStatusCode)
         {
+            _session.HasAmbiguousStatus.Should().BeFalse("a failed client call and a raw response are both captured, so it is unclear which one is asserted");
             _session.LastStatusCode.Should().NotBeNull($"the request should be rejected with status {expectedStatusCode}, but no failed call was captured");
             _session.LastStatusCode.Should().Be(expectedStatusCode, "the request should be rejected with status {0}", expectedStatusCode);
         }

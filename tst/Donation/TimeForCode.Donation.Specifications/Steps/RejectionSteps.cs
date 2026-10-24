@@ -35,7 +35,11 @@ namespace TimeForCode.Donation.Specifications.Steps
 
         private void AssertRejectedWith(int expectedStatusCode)
         {
-            ApiException? exception = _donorOrganizationSteps.LastException ?? _projectSteps.LastException;
+            ApiException? organizationException = _donorOrganizationSteps.LastException;
+            ApiException? projectException = _projectSteps.LastException;
+            (organizationException is null || projectException is null).Should().BeTrue("only one step class may hold a failed response, or it is unclear which one is asserted");
+
+            ApiException? exception = organizationException ?? projectException;
 
             exception.Should().NotBeNull($"the request should be rejected with status {expectedStatusCode}, but it succeeded");
             exception!.StatusCode.Should().Be(expectedStatusCode, "the request should be rejected with status {0}", expectedStatusCode);
