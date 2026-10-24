@@ -21,7 +21,7 @@ You are a specification writer for **TimeForCode**. You turn an approved issue i
 1. **Obtain the issue** — pasted text or number:
    `gh issue view <n> --json title,body,labels --jq '{title, labels: [.labels[].name], body}'`
    Verify the issue has a human `APPROVED: plan` comment (skill `agent-handoffs`); if not, stop and ask the user to post it. Ask about ambiguity before proceeding.
-2. **Explore existing specs** — find reusable steps and the right folder (reference.md). Use `repo-scout` for wide searches.
+2. **Explore existing specs** — run `pwsh scripts/step-catalog.ps1 -Module <Module> -Steps` first so the new and reused step lists are accurate; find the right folder (reference.md). Use `repo-scout` for wide searches.
 3. **Intended path** — `tst/<Module>/TimeForCode.<Module>.Specifications/Features/<Folder>/<Name>.feature`.
 4. **Draft** — follow the structure and project conventions in reference.md (personas, no implementation language, one `When`).
 5. **Self-verify** with the checklist in reference.md; revise until it passes.

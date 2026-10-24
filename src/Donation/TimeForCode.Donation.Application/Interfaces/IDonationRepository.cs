@@ -29,6 +29,11 @@ namespace TimeForCode.Donation.Application.Interfaces
         Task<IReadOnlyList<Domain.Donation>> GetActiveByProjectIdAsync(string projectId, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Returns the Active and Completed donations pledged to any of the projects, without the listing cap so totals stay correct.
+        /// </summary>
+        Task<IReadOnlyList<Domain.Donation>> GetReceivedByProjectIdsAsync(IReadOnlyCollection<string> projectIds, CancellationToken cancellationToken);
+
+        /// <summary>
         /// Returns the donations pledged for any of the donor organizations.
         /// </summary>
         Task<IReadOnlyList<Domain.Donation>> GetByDonorOrganizationIdsAsync(IReadOnlyCollection<string> organizationIds, CancellationToken cancellationToken);

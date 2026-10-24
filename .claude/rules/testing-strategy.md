@@ -45,6 +45,16 @@ Not every module has every kind (for example `Shared.Tests`); check `repo-map` i
 - Test data inline or in `TestData/`; deterministic (fixed GUIDs); no shared mutable state between tests.
 - `[Ignore]` is allowed only with `// TODO(review): flaky - <reason>` and an entry under Loose Ends.
 
+## Step style (Reqnroll)
+
+Run `pwsh scripts/step-catalog.ps1 -Steps` before adding a step: it lists every step with its usage count and definition file, and reports unused definitions. Baseline numbers: `docs/current/reqnroll-baseline.md`.
+
+- **One rejection vocabulary.** Express a rejected request with the existing generic rejection steps, not one step per endpoint; add a status-only rejection step only when no generic one fits.
+- **Parameterize, do not copy.** A step that differs from an existing one in a value or a word becomes one step with a `{string}`/`{int}`/`{word}` parameter (or an alternation in a regex), not a second step.
+- **Tables for optional fields.** Three or more optional fields in a Given or When go in a data table, not in a chain of `And` steps or a step per combination.
+- **`Background` for shared preambles.** Steps repeated at the start of every scenario in a feature move to `Background`.
+- **Delete what the catalog reports unused**, and keep the step count per feature no higher than the scenarios need.
+
 ## Running tests
 
 Follow skill `quiet-dotnet`: scope to one project while iterating (`dotnet test tst/<Module>/<Project> --filter "FullyQualifiedName~<Name>"`), full solution once at the end. The trimming hook prints only failures. Delegate big runs to the `test-runner` subagent.

@@ -74,6 +74,7 @@ API controllers map `Result<T>` to HTTP responses. Failures map to `BadRequest(P
 - New mock setups for external HTTP calls go in the step definition file using the `MockHttpMessageHandler` resolved from `IServiceProvider`
 - New repository mocks are registered inside `TimeForCodeWebApplicationFactory.ConfigureWebHost`
 - Step text must follow the established persona conventions (see below)
+- Step style (rejection vocabulary, parameterized steps, tables, `Background`) and the step catalog: `.claude/rules/testing-strategy.md`, "Step style"
 
 ### Step Text Personas
 

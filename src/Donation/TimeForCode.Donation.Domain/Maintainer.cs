@@ -1,26 +1,39 @@
-﻿namespace TimeForCode.Donation.Domain
+﻿using MongoDB.Bson;
+using TimeForCode.Donation.Domain.Entities;
+
+namespace TimeForCode.Donation.Domain
 {
-    public class Maintainer : User
+    /// <summary>
+    /// A platform user who owns projects; persisted as its own document and upserted by <see cref="PlatformUserId"/>.
+    /// </summary>
+    public class Maintainer : DocumentEntity
     {
-        public string? Email { get; private init; }
-        public string? AvatarUrl { get; private init; }
-        private Maintainer(string name, Uri githubReference, string? email, string? avatarUrl)
-            : base(name, githubReference)
+        public required string PlatformUserId { get; init; }
+        public required string GithubLogin { get; init; }
+        public required string AvatarUrl { get; init; }
+
+        public static Maintainer Create(string platformUserId, string githubLogin, string avatarUrl)
         {
-            Email = email;
-            AvatarUrl = avatarUrl;
-        }
-        public static Maintainer Create(string name, Uri githubReference, string? email = null, string? avatarUrl = null)
-        {
-            if (string.IsNullOrWhiteSpace(name))
+            if (string.IsNullOrWhiteSpace(platformUserId))
             {
-                throw new ArgumentException("Maintainer name cannot be null or empty.", nameof(name));
+                throw new ArgumentException("Platform user id cannot be null or empty.", nameof(platformUserId));
             }
-            if (githubReference == null)
+            if (string.IsNullOrWhiteSpace(githubLogin))
             {
-                throw new ArgumentNullException(nameof(githubReference), "GitHub reference cannot be null.");
+                throw new ArgumentException("GitHub login cannot be null or empty.", nameof(githubLogin));
             }
-            return new Maintainer(name, githubReference, email, avatarUrl);
+            if (string.IsNullOrWhiteSpace(avatarUrl))
+            {
+                throw new ArgumentException("Avatar URL cannot be null or empty.", nameof(avatarUrl));
+            }
+
+            return new Maintainer
+            {
+                Id = ObjectId.GenerateNewId(),
+                PlatformUserId = platformUserId,
+                GithubLogin = githubLogin,
+                AvatarUrl = avatarUrl
+            };
         }
     }
 }

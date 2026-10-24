@@ -117,6 +117,12 @@ namespace TimeForCode.Donation.Specifications.Steps
         public void ThenTheUserSeesTheProjectInDraft()
         {
             _exception.Should().BeNull();
+            if (_myProjects != null)
+            {
+                _myProjects.Projects.Should().Contain(p => p.Project.Status.ToString() == ProjectStatus.Draft.ToString());
+                return;
+            }
+
             _maintainedProject.Should().NotBeNull();
             _maintainedProject!.Project.Status.ToString().Should().Be(ProjectStatus.Draft.ToString());
         }
@@ -189,7 +195,12 @@ namespace TimeForCode.Donation.Specifications.Steps
 
         private void SetupLifecycleProject(ProjectStatus status)
         {
-            _lifecycleProject = ProjectBuilder.Build(status, Constants.TestUserId);
+            // A second project of the user needs its own id, or it replaces the first one in the catalog
+            var id = _knownProjects.Any(p => p.PublishedByUserId == Constants.TestUserId)
+                ? ProjectBuilder.IdFor(200 + _knownProjects.Count)
+                : null;
+            _lifecycleProject = ProjectBuilder.Build(status, Constants.TestUserId, id);
+            TrackProject(_lifecycleProject);
 
             var mockProjectRepository = _provider.GetRequiredService<Mock<IProjectRepository>>();
             mockProjectRepository.Setup(x => x.GetByIdAsync(_lifecycleProject.Id.ToString()))

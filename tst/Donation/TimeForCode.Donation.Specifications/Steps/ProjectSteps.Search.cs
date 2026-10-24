@@ -206,6 +206,12 @@ namespace TimeForCode.Donation.Specifications.Steps
         public void ThenAnEmptyListOfProjectsIsReturned()
         {
             _exception.Should().BeNull();
+            if (_myProjects != null)
+            {
+                _myProjects.Projects.Should().BeEmpty();
+                return;
+            }
+
             _getProjectsResult.Should().NotBeNull();
             _getProjectsResult!.Projects.Should().BeEmpty();
         }

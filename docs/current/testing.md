@@ -269,6 +269,10 @@ The `Documentation Site` workflow (`.github/workflows/docs-site.yaml`) runs on p
 
 The `frontend` job ("Front-end checks") in `pullRequest.yaml` and `build.yaml` runs `npm ci --ignore-scripts`, lint, typecheck, tests with coverage and the build. It uploads the lcov file as the `frontend-coverage` artifact, which the `build` job (`needs: frontend`) downloads before the SonarCloud scan end. On `main`, `release-please` also depends on this job.
 
+### Specification baseline
+
+Scenario, step and line counts of the Reqnroll projects, and how to regenerate them with `scripts/step-catalog.ps1`: [reqnroll-baseline.md](reqnroll-baseline.md).
+
 ---
 
 ## Known Gaps

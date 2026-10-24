@@ -1544,6 +1544,142 @@
         }
       }
     },
+    "/api/v1/maintainer/me": {
+      "get": {
+        "tags": [
+          "Maintainer"
+        ],
+        "summary": "Returns the maintainer profile of the caller. The profile is created when the caller publishes their first project.",
+        "operationId": "GetMyMaintainerProfile",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MaintainerProfileResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. Retry after the number of seconds given in the Retry-After header.",
+            "headers": {
+              "Retry-After": {
+                "description": "Number of seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/maintainer/me/projects": {
+      "get": {
+        "tags": [
+          "Maintainer"
+        ],
+        "summary": "Lists the projects published by the caller in any lifecycle state, oldest first, with the hours donated to each.\nHours donated add up the hours committed by Active and Completed donations.",
+        "operationId": "GetMyProjects",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetMyProjectsResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. Retry after the number of seconds given in the Retry-After header.",
+            "headers": {
+              "Retry-After": {
+                "description": "Number of seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/Project": {
       "post": {
         "tags": [
@@ -2877,6 +3013,20 @@
           }
         }
       },
+      "GetMyProjectsResult": {
+        "required": [
+          "projects"
+        ],
+        "type": "object",
+        "properties": {
+          "projects": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MaintainedProjectDto"
+            }
+          }
+        }
+      },
       "GetProjectsResponse": {
         "required": [
           "projects",
@@ -2922,6 +3072,49 @@
           }
         },
         "description": "Represents a paginated list of published projects."
+      },
+      "MaintainedProjectDto": {
+        "required": [
+          "project",
+          "hoursDonated"
+        ],
+        "type": "object",
+        "properties": {
+          "project": {
+            "$ref": "#/components/schemas/ProjectDto"
+          },
+          "hoursDonated": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "MaintainerProfileResponse": {
+        "required": [
+          "id",
+          "githubLogin",
+          "avatarUrl"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The maintainer identifier."
+          },
+          "githubLogin": {
+            "type": "string",
+            "description": "The GitHub login of the maintainer."
+          },
+          "avatarUrl": {
+            "type": "string",
+            "description": "The avatar URL of the maintainer."
+          }
+        },
+        "description": "Represents the profile of a maintainer, the owner of one or more projects."
       },
       "PledgeDonationRequest": {
         "required": [
@@ -3487,6 +3680,9 @@
     },
     {
       "name": "DonorOrganization"
+    },
+    {
+      "name": "Maintainer"
     },
     {
       "name": "Project"

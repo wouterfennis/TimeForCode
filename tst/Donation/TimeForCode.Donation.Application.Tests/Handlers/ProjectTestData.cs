@@ -5,11 +5,11 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
 {
     internal static class ProjectTestData
     {
-        internal static Project Build(ProjectStatus status, string ownerId)
+        internal static Project Build(ProjectStatus status, string ownerId, string id = "5f43a0e74b12c84f1b000001")
         {
             return new Project
             {
-                Id = new MongoDB.Bson.ObjectId("5f43a0e74b12c84f1b000001"),
+                Id = new MongoDB.Bson.ObjectId(id),
                 Snapshot = new GithubSnapshot
                 {
                     Name = "test-repo",
