@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using RestSharp;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using TimeForCode.Authorization.Application.Interfaces;
 using TimeForCode.Authorization.Application.Interfaces.Admin;
 using TimeForCode.Authorization.Application.Options;
@@ -51,13 +52,14 @@ namespace TimeForCode.Authorization.Infrastructure.Extensions
 
             // Without a database (OpenAPI document generation at build time, specifications) the keys cannot be shared;
             // the framework then falls back to its default, local key ring.
-            if (string.IsNullOrWhiteSpace(configuration.GetSection(DbOptions.SectionName).GetValue<string>(nameof(DbOptions.ConnectionString))))
+            string? connectionString = configuration.GetSection(DbOptions.SectionName).GetValue<string>(nameof(DbOptions.ConnectionString));
+            if (DataProtectionExtensions.UseSharedKeyRing(connectionString, Assembly.GetEntryAssembly()?.GetName().Name))
             {
-                services.AddDataProtection();
+                services.AddSharedKeyRingDataProtection();
             }
             else
             {
-                services.AddSharedKeyRingDataProtection();
+                services.AddDataProtection();
             }
             services.AddScoped<IEncryptionService, DataProtectionEncryptionService>();
 
