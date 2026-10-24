@@ -87,6 +87,9 @@ namespace TimeForCode.Donation.Application.Handlers
                 request.UserId,
                 DateTimeOffset.UtcNow);
 
+            // Upserted before the project is stored: the upsert is idempotent, so a retry after a failure still ends with both documents.
+            await _maintainerRepository.UpsertAsync(Maintainer.Create(request.UserId, request.GithubLogin, request.AvatarUrl));
+
             try
             {
                 await _projectRepository.CreateAsync(project);
@@ -96,8 +99,6 @@ namespace TimeForCode.Donation.Application.Handlers
                 _logger.LogWarning(exception, "Conflict while creating project for URL {NormalizedUrl}", normalizedUrl);
                 return Result<RegisterProjectResult>.Conflict("Repository is already registered.");
             }
-
-            await _maintainerRepository.UpsertAsync(Maintainer.Create(request.UserId, request.GithubLogin, request.AvatarUrl));
 
             _logger.LogInformation("Project {ProjectId} registered successfully for URL {NormalizedUrl}", project.Id, normalizedUrl);
 

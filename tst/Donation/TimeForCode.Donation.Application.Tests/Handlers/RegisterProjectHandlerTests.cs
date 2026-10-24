@@ -75,6 +75,27 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
         }
 
         [TestMethod]
+        public async Task Handle_MaintainerUpsertFails_DoesNotStoreTheProject()
+        {
+            SetupGithubServiceSuccess(isPrivate: false, isArchived: false);
+            _mockRepository.Setup(r => r.GetByGithubUrlAsync(It.IsAny<Uri>())).ReturnsAsync((Project?)null);
+            _mockMaintainerRepository.Setup(r => r.UpsertAsync(It.IsAny<Maintainer>())).ThrowsAsync(new InvalidOperationException("database down"));
+
+            var command = new RegisterProjectCommand
+            {
+                GithubRepositoryUrl = new Uri("https://github.com/owner/repo"),
+                UserId = "user-123",
+                GithubLogin = "octocat",
+                AvatarUrl = "https://avatars.githubusercontent.com/u/1"
+            };
+
+            Func<Task> act = () => _sut.Handle(command, CancellationToken.None);
+
+            await act.Should().ThrowAsync<InvalidOperationException>();
+            _mockRepository.Verify(r => r.CreateAsync(It.IsAny<Project>()), Times.Never);
+        }
+
+        [TestMethod]
         public async Task Handle_PrivateRepository_DoesNotCreateAMaintainer()
         {
             SetupGithubServiceSuccess(isPrivate: true, isArchived: false);
