@@ -242,7 +242,7 @@ On failure the job uploads the artifact `live-tier-diagnostics` with the contain
 
 Duration: about 2.5 minutes in the first pull request run (2026-10-24: 2m28s, with a cold image build, a 10/10 smoke test and 14 live scenarios). That is well under the ten minute budget, so the job stays on every pull request; if later runs exceed roughly ten minutes, move the trigger from `pull_request` to a nightly `schedule` instead. The job has a 30 minute timeout.
 
-The image build logs `warn`/`fail` lines about the data protection key ring (no encryptor, and for the Authorization API a 30 second Mongo timeout). They come from the build-time OpenAPI document generation, which starts the app without a database, and are not failures of the job.
+The image build logs `warn` lines about the data protection key ring (no encryptor, keys stored in the container). They come from the build-time OpenAPI document generation, which starts the app without a database, and are not failures of the job. The Authorization API skips its database-backed key ring during that generation (entry assembly `GetDocument.Insider`), so the build no longer waits 30 seconds for a Mongo that is not there.
 
 ```powershell
 $env:TEST_ADMIN_ACCESS_SECRET = 'choose-a-secret'
