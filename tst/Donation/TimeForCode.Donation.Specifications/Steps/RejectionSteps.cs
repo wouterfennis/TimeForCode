@@ -9,13 +9,11 @@ namespace TimeForCode.Donation.Specifications.Steps
     [Binding]
     internal class RejectionSteps
     {
-        private readonly DonorOrganizationSteps _donorOrganizationSteps;
-        private readonly ProjectSteps _projectSteps;
+        private readonly DonationContext _context;
 
-        public RejectionSteps(DonorOrganizationSteps donorOrganizationSteps, ProjectSteps projectSteps)
+        public RejectionSteps(DonationContext context)
         {
-            _donorOrganizationSteps = donorOrganizationSteps;
-            _projectSteps = projectSteps;
+            _context = context;
         }
 
         [Then("The request is rejected as invalid")]
@@ -35,11 +33,7 @@ namespace TimeForCode.Donation.Specifications.Steps
 
         private void AssertRejectedWith(int expectedStatusCode)
         {
-            ApiException? organizationException = _donorOrganizationSteps.LastException;
-            ApiException? projectException = _projectSteps.LastException;
-            (organizationException is null || projectException is null).Should().BeTrue("only one step class may hold a failed response, or it is unclear which one is asserted");
-
-            ApiException? exception = organizationException ?? projectException;
+            ApiException? exception = _context.LastException;
 
             exception.Should().NotBeNull($"the request should be rejected with status {expectedStatusCode}, but it succeeded");
             exception!.StatusCode.Should().Be(expectedStatusCode, "the request should be rejected with status {0}", expectedStatusCode);

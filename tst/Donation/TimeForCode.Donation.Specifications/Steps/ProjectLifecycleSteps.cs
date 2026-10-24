@@ -1,46 +1,55 @@
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Reqnroll;
 using TimeForCode.Donation.Api.Client;
-using TimeForCode.Donation.Application.Interfaces;
 using TimeForCode.Donation.Domain;
-using TimeForCode.Donation.Specifications.TestBuilder;
 using ProjectLifecycleResponse = TimeForCode.Donation.Api.Client.ProjectLifecycleResult;
 using ProjectStatus = TimeForCode.Donation.Values.ProjectStatus;
 
 namespace TimeForCode.Donation.Specifications.Steps
 {
-    internal partial class ProjectSteps
+    /// <summary>Moving a project through draft, review, active and archived, and the maintainer's view of it.</summary>
+    [Binding]
+    internal class ProjectLifecycleSteps
     {
+        private readonly IDonationClient _donationClient;
+        private readonly DonationContext _context;
+        private readonly DonationFixtures _fixtures;
+
         private ProjectLifecycleResponse? _lifecycleResult;
         private GetMaintainedProjectResult? _maintainedProject;
-        private Project? _lifecycleProject;
         private ProjectTransitionResult? _donationCheck;
+
+        public ProjectLifecycleSteps(IDonationClient donationClient, DonationContext context, DonationFixtures fixtures)
+        {
+            _donationClient = donationClient;
+            _context = context;
+            _fixtures = fixtures;
+        }
 
         [Given("The user has a project in draft")]
         public void GivenTheUserHasAProjectInDraft()
         {
-            SetupLifecycleProject(ProjectStatus.Draft);
+            _fixtures.SetupLifecycleProject(ProjectStatus.Draft);
         }
 
         [Given("The user has an active project")]
         public void GivenTheUserHasAnActiveProject()
         {
-            SetupLifecycleProject(ProjectStatus.Active);
+            _fixtures.SetupLifecycleProject(ProjectStatus.Active);
         }
 
         [Given("The user has an archived project")]
         public void GivenTheUserHasAnArchivedProject()
         {
-            SetupLifecycleProject(ProjectStatus.Archived);
+            _fixtures.SetupLifecycleProject(ProjectStatus.Archived);
         }
 
         [Given("There is a project pending approval")]
         public void GivenThereIsAProjectPendingApproval()
         {
-            SetupLifecycleProject(ProjectStatus.PendingApproval);
+            _fixtures.SetupLifecycleProject(ProjectStatus.PendingApproval);
         }
 
         [Given("^There is a project that is (in draft|pending approval|active|archived)$")]
@@ -53,7 +62,14 @@ namespace TimeForCode.Donation.Specifications.Steps
                 "active" => ProjectStatus.Active,
                 _ => ProjectStatus.Archived
             };
-            SetupLifecycleProject(status);
+            _fixtures.SetupLifecycleProject(status);
+        }
+
+        [Given("The user has a project in draft with the reviewer reason {string}")]
+        public void GivenTheUserHasAProjectInDraftWithTheReviewerReason(string reason)
+        {
+            _fixtures.SetupLifecycleProject(ProjectStatus.PendingApproval);
+            _context.LifecycleProject!.RequestChanges(reason);
         }
 
         [When("The user submits the project for review")]
@@ -89,37 +105,26 @@ namespace TimeForCode.Donation.Specifications.Steps
             return RunLifecycleActionAsync(id => _donationClient.ReactivateProjectAsync(id));
         }
 
-        [Given("The user has a project in draft with the reviewer reason {string}")]
-        public void GivenTheUserHasAProjectInDraftWithTheReviewerReason(string reason)
+        [When("The user views their project")]
+        public Task WhenTheUserViewsTheirProjectAsync()
         {
-            SetupLifecycleProject(ProjectStatus.PendingApproval);
-            _lifecycleProject!.RequestChanges(reason);
+            return _context.CaptureAsync(async () => _maintainedProject = await _donationClient.GetMaintainedProjectAsync(_context.LifecycleProject!.Id.ToString()));
         }
 
-        [When("The user views their project")]
-        public async Task WhenTheUserViewsTheirProjectAsync()
+        [When("A donor donates to the project")]
+        public void WhenADonorDonatesToTheProject()
         {
-            try
-            {
-                _maintainedProject = await _donationClient.GetMaintainedProjectAsync(_lifecycleProject!.Id.ToString());
-            }
-            catch (ApiException<ProblemDetails> exception)
-            {
-                _exception = exception;
-            }
-            catch (ApiException exception)
-            {
-                _exception = exception;
-            }
+            // The API path is covered by PledgeDonation.feature; this scenario checks the domain rule directly.
+            _donationCheck = _context.LifecycleProject!.EnsureCanReceiveDonations();
         }
 
         [Then("The user sees the project in draft")]
         public void ThenTheUserSeesTheProjectInDraft()
         {
-            _exception.Should().BeNull();
-            if (_myProjects != null)
+            _context.LastException.Should().BeNull();
+            if (_context.MyProjects != null)
             {
-                _myProjects.Projects.Should().Contain(p => p.Project.Status.ToString() == ProjectStatus.Draft.ToString());
+                _context.MyProjects.Projects.Should().Contain(p => p.Project.Status.ToString() == ProjectStatus.Draft.ToString());
                 return;
             }
 
@@ -132,13 +137,6 @@ namespace TimeForCode.Donation.Specifications.Steps
         {
             _maintainedProject.Should().NotBeNull();
             _maintainedProject!.ReviewerReason.Should().Be(reason);
-        }
-
-        [When("A donor donates to the project")]
-        public void WhenADonorDonatesToTheProject()
-        {
-            // The API path is covered by PledgeDonation.feature; this scenario checks the domain rule directly.
-            _donationCheck = _lifecycleProject!.EnsureCanReceiveDonations();
         }
 
         [Then("The project is pending approval")]
@@ -170,15 +168,15 @@ namespace TimeForCode.Donation.Specifications.Steps
         {
             _lifecycleResult.Should().NotBeNull();
             _lifecycleResult!.ReviewerReason.Should().Be(reason);
-            _lifecycleProject!.ChangeRequestReason.Should().Be(reason);
+            _context.LifecycleProject!.ChangeRequestReason.Should().Be(reason);
         }
 
         [Then("The user is informed the project cannot receive donations")]
         public void ThenTheUserIsInformedTheProjectCannotReceiveDonations()
         {
-            if (_exception != null)
+            if (_context.LastException != null)
             {
-                _exception.StatusCode.Should().Be(StatusCodes.Status409Conflict);
+                _context.LastException.StatusCode.Should().Be(StatusCodes.Status409Conflict);
                 return;
             }
 
@@ -186,52 +184,23 @@ namespace TimeForCode.Donation.Specifications.Steps
             _donationCheck!.IsSuccess.Should().BeFalse();
         }
 
-        private void SetupLifecycleProject(ProjectStatus status)
-        {
-            // A second project of the user needs its own id, or it replaces the first one in the catalog
-            var id = _knownProjects.Any(p => p.PublishedByUserId == Constants.TestUserId)
-                ? ProjectBuilder.IdFor(200 + _knownProjects.Count)
-                : null;
-            _lifecycleProject = ProjectBuilder.Build(status, Constants.TestUserId, id);
-            TrackProject(_lifecycleProject);
-
-            var mockProjectRepository = _provider.GetRequiredService<Mock<IProjectRepository>>();
-            mockProjectRepository.Setup(x => x.GetByIdAsync(_lifecycleProject.Id.ToString()))
-                .ReturnsAsync(_lifecycleProject);
-            mockProjectRepository.Setup(x => x.UpdateAsync(It.IsAny<Project>()))
-                .Returns(Task.CompletedTask);
-        }
-
         private async Task RunLifecycleActionAsync(Func<string, Task<ProjectLifecycleResponse>> action)
         {
-            var projectId = _registeredProjectId ?? Constants.TestProjectId;
+            string projectId = _context.RegisteredProjectId ?? Constants.TestProjectId;
 
-            var mockProjectRepository = _provider.GetRequiredService<Mock<IProjectRepository>>();
-            mockProjectRepository.Setup(x => x.UpdateAsync(It.IsAny<Project>()))
+            _fixtures.ProjectRepository.Setup(x => x.UpdateAsync(It.IsAny<Project>()))
                 .Returns(Task.CompletedTask);
 
-            try
-            {
-                _lifecycleResult = await action(projectId);
-            }
-            catch (ApiException<ProblemDetails> exception)
-            {
-                _exception = exception;
-            }
-            catch (ApiException exception)
-            {
-                _exception = exception;
-            }
+            await _context.CaptureAsync(async () => _lifecycleResult = await action(projectId));
         }
 
         private void AssertLifecycleStatus(ProjectStatus expected)
         {
-            _exception.Should().BeNull();
+            _context.LastException.Should().BeNull();
             _lifecycleResult.Should().NotBeNull();
             _lifecycleResult!.Status.ToString().Should().Be(expected.ToString());
 
-            var mockProjectRepository = _provider.GetRequiredService<Mock<IProjectRepository>>();
-            mockProjectRepository.Verify(x => x.UpdateAsync(It.Is<Project>(p => p.Status == expected)), Times.Once);
+            _fixtures.ProjectRepository.Verify(x => x.UpdateAsync(It.Is<Project>(p => p.Status == expected)), Times.Once);
         }
     }
 }

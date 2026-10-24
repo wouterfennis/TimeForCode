@@ -253,7 +253,7 @@ $env:TIMEFORCODE_LIVE_TEST_ADMIN_SECRET = $env:TEST_ADMIN_ACCESS_SECRET
 dotnet test tst/Donation/TimeForCode.Donation.Specifications --filter "TestCategory=live"
 ```
 
-A scenario that needs real persistence carries `@liveonly` next to `@live`: the in-process run reports it as skipped (the mocks cannot store data), the live run executes it. The live steps live in `Steps/ProjectSteps.Live.cs` and `Steps/LiveDonorOrganizationSteps.cs` and use only the API. Reruns pass because every scenario registers a project or donor organization with a unique name, and an `@liveonly` clean-up archives the active project and deletes the donor organization.
+A scenario that needs real persistence carries `@liveonly` next to `@live`: the in-process run reports it as skipped (the mocks cannot store data), the live run executes it. The live steps live in `Steps/LiveProjectSteps.cs` and `Steps/LiveDonorOrganizationSteps.cs` and use only the API. Reruns pass because every scenario registers a project or donor organization with a unique name, and an `@liveonly` clean-up archives the active project and deletes the donor organization.
 
 Covered live: contributor profile (including the Auth-issued JWT), project publishing, project search (an approved project is found, a draft is not), contributions, donation pledges and donor organizations, plus the unauthenticated rejections.
 

@@ -18,24 +18,20 @@ namespace TimeForCode.Donation.Specifications.Steps
         private readonly IDonationClient _donationClient;
         private readonly IServiceProvider _provider;
         private readonly HttpClient _httpClient;
-        private readonly ProjectSteps _projectSteps;
+        private readonly DonationContext _context;
 
         private GetDonorOrganizationsResponse? _getOrganizationsResult;
         private DonorOrganizationResponse? _getOrganizationByIdResult;
         private DonorOrganizationResponse? _createResult;
         private DonorOrganizationResponse? _updateResult;
-        private ApiException? _exception;
-
-        /// <summary>The failed API response of the last call, shared with the rejection steps.</summary>
-        internal ApiException? LastException => _exception;
         private string? _registeredOrganizationId;
 
-        public DonorOrganizationSteps(IDonationClient donationClient, IServiceProvider provider, HttpClient httpClient, ProjectSteps projectSteps)
+        public DonorOrganizationSteps(IDonationClient donationClient, IServiceProvider provider, HttpClient httpClient, DonationContext context)
         {
             _donationClient = donationClient;
             _provider = provider;
             _httpClient = httpClient;
-            _projectSteps = projectSteps;
+            _context = context;
         }
 
         [Given("There are donor organizations on the time for code platform")]
@@ -58,7 +54,7 @@ namespace TimeForCode.Donation.Specifications.Steps
                 .ReturnsAsync(((IReadOnlyList<DonorOrganization>)new List<DonorOrganization> { org }, 1));
 
             _registeredOrganizationId = org.Id.ToString();
-            _projectSteps.ScenarioDonorOrganizationId = _registeredOrganizationId;
+            _context.DonorOrganizationId = _registeredOrganizationId;
         }
 
         [Given("There is no donor organization with the given identifier")]
@@ -67,7 +63,7 @@ namespace TimeForCode.Donation.Specifications.Steps
             var mockRepo = _provider.GetRequiredService<Mock<IDonorOrganizationRepository>>();
             mockRepo.Setup(x => x.GetByIdAsync(It.IsAny<string>()))
                 .ReturnsAsync((DonorOrganization?)null);
-            _projectSteps.ScenarioDonorOrganizationId = ObjectId.GenerateNewId().ToString();
+            _context.DonorOrganizationId = ObjectId.GenerateNewId().ToString();
         }
 
         [Given("There is already a donor organization with the same name on the time for code platform")]
@@ -89,11 +85,11 @@ namespace TimeForCode.Donation.Specifications.Steps
             }
             catch (ApiException<ProblemDetails> ex)
             {
-                _exception = ex;
+                _context.LastException = ex;
             }
             catch (ApiException ex)
             {
-                _exception = ex;
+                _context.LastException = ex;
             }
         }
 
@@ -106,11 +102,11 @@ namespace TimeForCode.Donation.Specifications.Steps
             }
             catch (ApiException<ProblemDetails> ex)
             {
-                _exception = ex;
+                _context.LastException = ex;
             }
             catch (ApiException ex)
             {
-                _exception = ex;
+                _context.LastException = ex;
             }
         }
 
@@ -123,11 +119,11 @@ namespace TimeForCode.Donation.Specifications.Steps
             }
             catch (ApiException<ProblemDetails> ex)
             {
-                _exception = ex;
+                _context.LastException = ex;
             }
             catch (ApiException ex)
             {
-                _exception = ex;
+                _context.LastException = ex;
             }
         }
 
@@ -141,11 +137,11 @@ namespace TimeForCode.Donation.Specifications.Steps
             }
             catch (ApiException<ProblemDetails> ex)
             {
-                _exception = ex;
+                _context.LastException = ex;
             }
             catch (ApiException ex)
             {
-                _exception = ex;
+                _context.LastException = ex;
             }
         }
 
@@ -165,11 +161,11 @@ namespace TimeForCode.Donation.Specifications.Steps
             }
             catch (ApiException<ProblemDetails> ex)
             {
-                _exception = ex;
+                _context.LastException = ex;
             }
             catch (ApiException ex)
             {
-                _exception = ex;
+                _context.LastException = ex;
             }
         }
 
@@ -198,7 +194,7 @@ namespace TimeForCode.Donation.Specifications.Steps
                 return;
             }
 
-            _exception = new ApiException(
+            _context.LastException = new ApiException(
                 "The donor organization request was rejected.",
                 (int)response.StatusCode,
                 body,
@@ -218,11 +214,11 @@ namespace TimeForCode.Donation.Specifications.Steps
             }
             catch (ApiException<ProblemDetails> ex)
             {
-                _exception = ex;
+                _context.LastException = ex;
             }
             catch (ApiException ex)
             {
-                _exception = ex;
+                _context.LastException = ex;
             }
         }
 
@@ -238,11 +234,11 @@ namespace TimeForCode.Donation.Specifications.Steps
             }
             catch (ApiException<ProblemDetails> ex)
             {
-                _exception = ex;
+                _context.LastException = ex;
             }
             catch (ApiException ex)
             {
-                _exception = ex;
+                _context.LastException = ex;
             }
         }
 
@@ -265,11 +261,11 @@ namespace TimeForCode.Donation.Specifications.Steps
             }
             catch (ApiException<ProblemDetails> ex)
             {
-                _exception = ex;
+                _context.LastException = ex;
             }
             catch (ApiException ex)
             {
-                _exception = ex;
+                _context.LastException = ex;
             }
         }
 
@@ -287,11 +283,11 @@ namespace TimeForCode.Donation.Specifications.Steps
             }
             catch (ApiException<ProblemDetails> ex)
             {
-                _exception = ex;
+                _context.LastException = ex;
             }
             catch (ApiException ex)
             {
-                _exception = ex;
+                _context.LastException = ex;
             }
         }
 
@@ -309,18 +305,18 @@ namespace TimeForCode.Donation.Specifications.Steps
             }
             catch (ApiException<ProblemDetails> ex)
             {
-                _exception = ex;
+                _context.LastException = ex;
             }
             catch (ApiException ex)
             {
-                _exception = ex;
+                _context.LastException = ex;
             }
         }
 
         [Then("A paginated list of donor organizations is returned")]
         public void ThenAPaginatedListOfDonorOrganizationsIsReturned()
         {
-            _exception.Should().BeNull();
+            _context.LastException.Should().BeNull();
             _getOrganizationsResult.Should().NotBeNull();
             _getOrganizationsResult!.Organizations.Should().NotBeEmpty();
         }
@@ -328,7 +324,7 @@ namespace TimeForCode.Donation.Specifications.Steps
         [Then("The donor organization details are returned")]
         public void ThenTheDonorOrganizationDetailsAreReturned()
         {
-            _exception.Should().BeNull();
+            _context.LastException.Should().BeNull();
             _getOrganizationByIdResult.Should().NotBeNull();
             _getOrganizationByIdResult!.Id.Should().NotBeNullOrEmpty();
             _getOrganizationByIdResult.Name.Should().NotBeNullOrEmpty();
@@ -337,7 +333,7 @@ namespace TimeForCode.Donation.Specifications.Steps
         [Then("The donor organization is registered on the time for code platform")]
         public void ThenTheDonorOrganizationIsRegisteredOnTheTimeForCodePlatform()
         {
-            _exception.Should().BeNull();
+            _context.LastException.Should().BeNull();
             _createResult.Should().NotBeNull();
             _createResult!.Id.Should().NotBeNullOrEmpty();
             _createResult.Name.Should().Be("Acme Corp");
@@ -346,7 +342,7 @@ namespace TimeForCode.Donation.Specifications.Steps
         [Then("The donor organization is updated on the time for code platform")]
         public void ThenTheDonorOrganizationIsUpdatedOnTheTimeForCodePlatform()
         {
-            _exception.Should().BeNull();
+            _context.LastException.Should().BeNull();
             _updateResult.Should().NotBeNull();
             _updateResult!.Name.Should().Be("Updated Corp");
         }
@@ -354,7 +350,7 @@ namespace TimeForCode.Donation.Specifications.Steps
         [Then("The donor organization is deleted from the time for code platform")]
         public void ThenTheDonorOrganizationIsDeletedFromTheTimeForCodePlatform()
         {
-            _exception.Should().BeNull();
+            _context.LastException.Should().BeNull();
         }
     }
 }

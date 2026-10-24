@@ -74,12 +74,12 @@ Non-obvious knowledge from past sessions. Read and update through skill `lessons
 - **Why:** manual `if (pageNumber < 1)` checks left the schema silent, and the donor-organization list answered 500 for huge page numbers.
 - **How to apply:** put shared limits in the module's `ApiConstraints`, change the Swagger snapshot only after reading the diff, and give a spec scenario to every behaviour change (for example malformed ids now 400, not 404).
 
-### Spec step classes can be split with `partial`
+### Donation step classes share state through `DonationContext`
 
-- **Date / issue:** 2026-10-08 / #75
-- **Lesson:** Reqnroll step classes keep state in private fields (for example `_exception`), so shared Then-steps only see state in the same class. Split large step classes as `partial class` files (`ProjectSteps.Lifecycle.cs`).
-- **Why:** a second step class would not see the first one's captured API error.
-- **How to apply:** extend the existing partial class rather than adding a new binding class for the same feature area.
+- **Date / issue:** 2026-10-24 / #151 (replaces the earlier `partial` advice from #75)
+- **Lesson:** Donation step classes are one per aggregate (`ProjectSteps`, `ProjectLifecycleSteps`, `ContributionSteps`, `DonationSteps`, ...). State several classes need (`LastException`, list results, ids) lives in `DonationContext`; arrange helpers they share live in `DonationFixtures`. Both are injected per scenario.
+- **Why:** private fields per step class hid duplicates and forced step classes to reach into each other.
+- **How to apply:** put a failed response through `_context.CaptureAsync`, never in a private field; add a new aggregate as its own `[Binding]` class taking the context.
 
 ### Live scenarios sign in through the real login and need the stack's admin secret
 
