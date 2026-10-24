@@ -30,7 +30,7 @@
     Front-end origin the login redirects back to (must be a configured valid redirect URI). No front-end needs to run. Default: http://localhost:8084
 
 .PARAMETER ContainerCli
-    Container CLI used to inspect the Mongo container (check 8). Default: podman. CI passes docker.
+    Container CLI used to inspect the Mongo container (check 8). Default: podman, and the check is skipped when it is missing. CI passes docker explicitly, and then a missing CLI fails the check.
 
 .EXAMPLE
     .\scripts\smoke-test.ps1
@@ -242,10 +242,18 @@ try {
 Write-Section "4. Data protection key ring"
 
 if (Get-Command $ContainerCli -ErrorAction SilentlyContinue) {
-    $output = & $ContainerCli exec mongo mongosh -u root -p example --authenticationDatabase admin AuthorizationServer --quiet --eval 'db.DataProtectionKeyDocument.countDocuments({})' 2>&1
+    $previousPreference = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
+    try {
+        $output = & $ContainerCli exec mongo mongosh -u root -p example --authenticationDatabase admin AuthorizationServer --quiet --eval 'db.DataProtectionKeyDocument.countDocuments({})' 2>&1
+    } finally {
+        $ErrorActionPreference = $previousPreference
+    }
     $keys = ($output | ForEach-Object { "$_".Trim() } | Where-Object { $_ -match '^\d+$' } | Select-Object -Last 1)
     if ($keys -and [int]$keys -ge 1) { Write-Pass "Data protection key ring is stored in the database ($keys key(s))" }
     else                           { Write-Fail "No data protection key in the database" "mongosh said: $($output | Select-Object -Last 1)" }
+} elseif ($PSBoundParameters.ContainsKey("ContainerCli")) {
+    Write-Fail "Container CLI '$ContainerCli' was requested but is not available"
 } else {
     Write-Output "  [SKIP] $ContainerCli not available, database not inspected"
 }
