@@ -122,7 +122,7 @@ graph LR
 | `DonorOrganization` | Company registered as a donor |
 | `Contributor` | Developer who logs hours; own MongoDB document, upserted by platform user id (unique index) on every logged contribution; also holds the profile (role, normalised skills, hours available, optional `DonorOrganizationId`, indexed), changed only through `UpdateProfile` and the profile endpoints |
 | `Contribution` | Time-log entry of a contributor on an `Active` project; stores the `ContributorId` plus a snapshot of the GitHub login and avatar (extended reference, like `GithubSnapshot` on `Project`) |
-| `Maintainer` | Developer who owns a project |
+| `Maintainer` | Developer who owns projects; own MongoDB document, upserted by platform user id (unique index) when a project is registered, with a snapshot of the GitHub login and avatar. Projects link to it through `PublishedByUserId` (indexed) |
 | `Milestone` | Phase within a project, synced from GitHub milestones |
 
 ---

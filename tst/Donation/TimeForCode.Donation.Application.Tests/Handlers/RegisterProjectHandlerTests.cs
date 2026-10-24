@@ -15,6 +15,7 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
     {
         private Mock<IGithubRepositoryApiService> _mockGithubService = default!;
         private Mock<IProjectRepository> _mockRepository = default!;
+        private Mock<IMaintainerRepository> _mockMaintainerRepository = default!;
         private RegisterProjectHandler _sut = default!;
 
         [TestInitialize]
@@ -22,9 +23,11 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
         {
             _mockGithubService = new Mock<IGithubRepositoryApiService>();
             _mockRepository = new Mock<IProjectRepository>();
+            _mockMaintainerRepository = new Mock<IMaintainerRepository>();
             _sut = new RegisterProjectHandler(
                 _mockGithubService.Object,
                 _mockRepository.Object,
+                _mockMaintainerRepository.Object,
                 NullLogger<RegisterProjectHandler>.Instance);
         }
 
@@ -38,7 +41,9 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
             var command = new RegisterProjectCommand
             {
                 GithubRepositoryUrl = new Uri("https://github.com/owner/repo"),
-                UserId = "user-123"
+                UserId = "user-123",
+                GithubLogin = "octocat",
+                AvatarUrl = "https://avatars.githubusercontent.com/u/1"
             };
 
             var result = await _sut.Handle(command, CancellationToken.None);
@@ -48,12 +53,54 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
         }
 
         [TestMethod]
+        public async Task Handle_ValidPublicRepository_UpsertsTheMaintainerOfTheUser()
+        {
+            SetupGithubServiceSuccess(isPrivate: false, isArchived: false);
+            _mockRepository.Setup(r => r.GetByGithubUrlAsync(It.IsAny<Uri>())).ReturnsAsync((Project?)null);
+            _mockRepository.Setup(r => r.CreateAsync(It.IsAny<Project>())).Returns(Task.CompletedTask);
+
+            var command = new RegisterProjectCommand
+            {
+                GithubRepositoryUrl = new Uri("https://github.com/owner/repo"),
+                UserId = "user-123",
+                GithubLogin = "octocat",
+                AvatarUrl = "https://avatars.githubusercontent.com/u/1"
+            };
+
+            await _sut.Handle(command, CancellationToken.None);
+
+            _mockMaintainerRepository.Verify(
+                r => r.UpsertAsync(It.Is<Maintainer>(m => m.PlatformUserId == "user-123" && m.GithubLogin == "octocat" && m.AvatarUrl == "https://avatars.githubusercontent.com/u/1")),
+                Times.Once);
+        }
+
+        [TestMethod]
+        public async Task Handle_PrivateRepository_DoesNotCreateAMaintainer()
+        {
+            SetupGithubServiceSuccess(isPrivate: true, isArchived: false);
+
+            var command = new RegisterProjectCommand
+            {
+                GithubRepositoryUrl = new Uri("https://github.com/owner/repo"),
+                UserId = "user-123",
+                GithubLogin = "octocat",
+                AvatarUrl = "https://avatars.githubusercontent.com/u/1"
+            };
+
+            await _sut.Handle(command, CancellationToken.None);
+
+            _mockMaintainerRepository.Verify(r => r.UpsertAsync(It.IsAny<Maintainer>()), Times.Never);
+        }
+
+        [TestMethod]
         public async Task Handle_NonHttpsUrl_ReturnsFailure()
         {
             var command = new RegisterProjectCommand
             {
                 GithubRepositoryUrl = new Uri("http://github.com/owner/repo"),
-                UserId = "user-123"
+                UserId = "user-123",
+                GithubLogin = "octocat",
+                AvatarUrl = "https://avatars.githubusercontent.com/u/1"
             };
 
             var result = await _sut.Handle(command, CancellationToken.None);
@@ -68,7 +115,9 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
             var command = new RegisterProjectCommand
             {
                 GithubRepositoryUrl = new Uri("https://gitlab.com/owner/repo"),
-                UserId = "user-123"
+                UserId = "user-123",
+                GithubLogin = "octocat",
+                AvatarUrl = "https://avatars.githubusercontent.com/u/1"
             };
 
             var result = await _sut.Handle(command, CancellationToken.None);
@@ -83,7 +132,9 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
             var command = new RegisterProjectCommand
             {
                 GithubRepositoryUrl = new Uri("https://github.com/owner/repo/extra"),
-                UserId = "user-123"
+                UserId = "user-123",
+                GithubLogin = "octocat",
+                AvatarUrl = "https://avatars.githubusercontent.com/u/1"
             };
 
             var result = await _sut.Handle(command, CancellationToken.None);
@@ -101,7 +152,9 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
             var command = new RegisterProjectCommand
             {
                 GithubRepositoryUrl = new Uri("https://github.com/owner/repo"),
-                UserId = "user-123"
+                UserId = "user-123",
+                GithubLogin = "octocat",
+                AvatarUrl = "https://avatars.githubusercontent.com/u/1"
             };
 
             var result = await _sut.Handle(command, CancellationToken.None);
@@ -117,7 +170,9 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
             var command = new RegisterProjectCommand
             {
                 GithubRepositoryUrl = new Uri("https://github.com/owner/repo"),
-                UserId = "user-123"
+                UserId = "user-123",
+                GithubLogin = "octocat",
+                AvatarUrl = "https://avatars.githubusercontent.com/u/1"
             };
 
             var result = await _sut.Handle(command, CancellationToken.None);
@@ -134,7 +189,9 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
             var command = new RegisterProjectCommand
             {
                 GithubRepositoryUrl = new Uri("https://github.com/owner/repo"),
-                UserId = "user-123"
+                UserId = "user-123",
+                GithubLogin = "octocat",
+                AvatarUrl = "https://avatars.githubusercontent.com/u/1"
             };
 
             var result = await _sut.Handle(command, CancellationToken.None);
@@ -154,7 +211,9 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
             var command = new RegisterProjectCommand
             {
                 GithubRepositoryUrl = new Uri("https://github.com/owner/repo"),
-                UserId = "user-123"
+                UserId = "user-123",
+                GithubLogin = "octocat",
+                AvatarUrl = "https://avatars.githubusercontent.com/u/1"
             };
 
             var result = await _sut.Handle(command, CancellationToken.None);
@@ -176,7 +235,9 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
             var command = new RegisterProjectCommand
             {
                 GithubRepositoryUrl = new Uri("https://github.com/owner/repo"),
-                UserId = "user-123"
+                UserId = "user-123",
+                GithubLogin = "octocat",
+                AvatarUrl = "https://avatars.githubusercontent.com/u/1"
             };
 
             var result = await _sut.Handle(command, CancellationToken.None);
@@ -195,7 +256,9 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
             await _sut.Handle(new RegisterProjectCommand
             {
                 GithubRepositoryUrl = new Uri("https://github.com/owner/repo"),
-                UserId = "user-123"
+                UserId = "user-123",
+                GithubLogin = "octocat",
+                AvatarUrl = "https://avatars.githubusercontent.com/u/1"
             }, CancellationToken.None);
 
             _mockRepository.Verify(r => r.CreateAsync(It.Is<Project>(p => p.Status == ProjectStatus.Draft)), Times.Once);
@@ -212,7 +275,9 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
             var command = new RegisterProjectCommand
             {
                 GithubRepositoryUrl = new Uri("https://github.com/owner/repo"),
-                UserId = "user-123"
+                UserId = "user-123",
+                GithubLogin = "octocat",
+                AvatarUrl = "https://avatars.githubusercontent.com/u/1"
             };
 
             var result = await _sut.Handle(command, CancellationToken.None);

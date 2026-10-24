@@ -53,6 +53,7 @@ namespace TimeForCode.Donation.Specifications.Steps
             mockProjectRepository.Setup(x => x.GetByIdAsync(anotherUsersProject.Id.ToString()))
                 .ReturnsAsync(anotherUsersProject);
 
+            TrackProject(anotherUsersProject);
             _registeredProjectId = anotherUsersProject.Id.ToString();
         }
 

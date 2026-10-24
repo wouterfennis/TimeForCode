@@ -12,15 +12,18 @@ namespace TimeForCode.Donation.Application.Handlers
     {
         private readonly IGithubRepositoryApiService _githubService;
         private readonly IProjectRepository _projectRepository;
+        private readonly IMaintainerRepository _maintainerRepository;
         private readonly ILogger<RegisterProjectHandler> _logger;
 
         public RegisterProjectHandler(
             IGithubRepositoryApiService githubService,
             IProjectRepository projectRepository,
+            IMaintainerRepository maintainerRepository,
             ILogger<RegisterProjectHandler> logger)
         {
             _githubService = githubService;
             _projectRepository = projectRepository;
+            _maintainerRepository = maintainerRepository;
             _logger = logger;
         }
 
@@ -93,6 +96,8 @@ namespace TimeForCode.Donation.Application.Handlers
                 _logger.LogWarning(exception, "Conflict while creating project for URL {NormalizedUrl}", normalizedUrl);
                 return Result<RegisterProjectResult>.Conflict("Repository is already registered.");
             }
+
+            await _maintainerRepository.UpsertAsync(Maintainer.Create(request.UserId, request.GithubLogin, request.AvatarUrl));
 
             _logger.LogInformation("Project {ProjectId} registered successfully for URL {NormalizedUrl}", project.Id, normalizedUrl);
 

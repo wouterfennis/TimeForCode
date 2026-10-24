@@ -34,6 +34,7 @@ This document provides an explicit, feature-level view of what is implemented, p
 | List projects | ✅ | GET /api/v1/project with pagination; lists `Active` projects only; no authentication required |
 | Search and filter projects | ✅ | Same endpoint with `searchText`, `language` and `tag` filters (combinable), newest-first sort and Mongo indexes; back-end only, see [project search](api-surface.md#project-search) |
 | Project lifecycle (submit, approve, request changes, archive, re-activate) | ✅ | Back-end only; maintainers read their own non-Active project and the reviewer reason via `GET /api/v1/project/{id}/manage`; states Draft, PendingApproval, Active, Archived; approve and request-changes are admin-only, the rest maintainer-only; the `Active`-only donation rule is enforced in the domain but no donation endpoint exists yet |
+| Maintainer profile and own projects | ✅ | Back-end only; `Maintainer` document upserted by platform user id when a project is registered; `GET /api/v1/maintainer/me` and `GET /api/v1/maintainer/me/projects` (status and donated hours per project), see [maintainer endpoints](api-surface.md#maintainer-endpoints); owner-only operations check the project's publisher |
 | Update project details | ❌ | No endpoint |
 | Project milestone tracking | ❌ | Domain model exists; no API |
 | Project tagging | ❌ | Domain model exists; no API |

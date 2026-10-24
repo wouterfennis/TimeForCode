@@ -29,6 +29,7 @@ namespace TimeForCode.Donation.Specifications.Mocking
                     typeof(IProjectRepository),
                     typeof(IDonorOrganizationRepository),
                     typeof(IContributorRepository),
+                    typeof(IMaintainerRepository),
                     typeof(IContributionRepository),
                     typeof(IDonationRepository),
                     typeof(IDonationAllocationRepository),
@@ -80,6 +81,7 @@ namespace TimeForCode.Donation.Specifications.Mocking
         public void ResetState()
         {
             Services.GetRequiredService<InMemoryContributorRepository>().Clear();
+            Services.GetRequiredService<InMemoryMaintainerRepository>().Clear();
             Services.GetRequiredService<InMemoryContributionRepository>().Clear();
             Services.GetRequiredService<InMemoryDonationRepository>().Clear();
             Services.GetRequiredService<InMemoryDonationAllocationRepository>().Clear();
@@ -106,6 +108,10 @@ namespace TimeForCode.Donation.Specifications.Mocking
             var contributorRepository = new InMemoryContributorRepository();
             services.TryAddSingleton(contributorRepository);
             services.TryAddSingleton<IContributorRepository>(contributorRepository);
+
+            var maintainerRepository = new InMemoryMaintainerRepository();
+            services.TryAddSingleton(maintainerRepository);
+            services.TryAddSingleton<IMaintainerRepository>(maintainerRepository);
 
             var contributionRepository = new InMemoryContributionRepository();
             services.TryAddSingleton(contributionRepository);

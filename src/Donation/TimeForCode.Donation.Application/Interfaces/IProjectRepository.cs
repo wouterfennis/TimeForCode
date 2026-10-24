@@ -10,5 +10,10 @@ namespace TimeForCode.Donation.Application.Interfaces
         Task CreateAsync(Project project);
         Task UpdateAsync(Project project);
         Task<Project?> GetByGithubUrlAsync(Uri githubRepositoryUrl);
+
+        /// <summary>
+        /// Returns the projects published by the user in any lifecycle state, oldest first.
+        /// </summary>
+        Task<IReadOnlyList<Project>> GetByPublishedByUserIdAsync(string userId, CancellationToken cancellationToken);
     }
 }

@@ -184,6 +184,12 @@ Add a contributor to the organization.
 
 ---
 
+### Maintainers
+
+#### Maintainer profile and own projects ✅
+
+Implemented as `GET /api/v1/maintainer/me` and `GET /api/v1/maintainer/me/projects`; the profile is created when the user registers their first project. See [docs/current/api-surface.md](../current/api-surface.md#maintainer-endpoints) for payloads and status codes.
+
 ### Contributors
 
 #### Contributor profile ✅

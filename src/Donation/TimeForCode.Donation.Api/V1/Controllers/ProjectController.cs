@@ -46,12 +46,14 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         public async Task<IActionResult> RegisterProject(RegisterProjectRequest request)
         {
             var userId = User.Claims.SingleOrDefault(x => x.Type == ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userId))
+            var login = User.FindFirst("login")?.Value;
+            var avatarUrl = User.FindFirst("avatar_url")?.Value;
+            if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(login) || string.IsNullOrEmpty(avatarUrl))
             {
                 return BadRequest(new ProblemDetails
                 {
                     Title = "User identity could not be determined",
-                    Detail = "The token does not contain a valid user identifier.",
+                    Detail = "The token does not contain a valid user identifier, GitHub login and avatar.",
                     Status = StatusCodes.Status400BadRequest
                 });
             }
@@ -59,7 +61,9 @@ namespace TimeForCode.Donation.Api.V1.Controllers
             var command = new RegisterProjectCommand
             {
                 GithubRepositoryUrl = request.GithubRepositoryUrl,
-                UserId = userId
+                UserId = userId,
+                GithubLogin = login,
+                AvatarUrl = avatarUrl
             };
 
             var result = await _mediator.Send(command);

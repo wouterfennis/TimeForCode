@@ -164,11 +164,12 @@ A developer who owns or maintains a registered project.
 
 | Attribute | Type | Description |
 | --- | --- | --- |
-| id | UUID | Internal identifier |
-| userId | UUID | Linked user account |
-| name | string | Display name |
-| githubUsername | string | GitHub username |
-| projects | Project[] | Projects maintained by this person |
+| id | ObjectId | Internal identifier |
+| platformUserId | string | Platform user account, unique; the maintainer is upserted by it when a project is registered |
+| githubLogin | string | GitHub login, refreshed on every registration |
+| avatarUrl | string | GitHub avatar URL, refreshed on every registration |
+
+Projects point to their maintainer through `Project.publishedByUserId`; the maintainer holds no project list.
 
 ### Milestone
 
