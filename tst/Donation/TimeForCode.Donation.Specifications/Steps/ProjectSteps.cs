@@ -21,7 +21,6 @@ namespace TimeForCode.Donation.Specifications.Steps
         private readonly DonationContext _context;
         private readonly DonationFixtures _fixtures;
 
-        private TimeForCode.Donation.Api.Client.RegisterProjectResult? _registerResult;
         private ProjectResponse? _getProjectByIdResult;
 
         public ProjectSteps(IDonationClient donationClient, IServiceProvider provider, DonationContext context, DonationFixtures fixtures)
@@ -115,7 +114,7 @@ namespace TimeForCode.Donation.Specifications.Steps
                 .Callback<Project>(p => _context.RegisteredProjectId = p.Id.ToString())
                 .Returns(Task.CompletedTask);
 
-            await _context.CaptureAsync(async () => _registerResult = await _donationClient.RegisterProjectAsync(new RegisterProjectRequest
+            await _context.CaptureAsync(() => _donationClient.RegisterProjectAsync(new RegisterProjectRequest
             {
                 GithubRepositoryUrl = new Uri(Constants.TestGithubRepositoryUrl)
             }));
@@ -139,17 +138,16 @@ namespace TimeForCode.Donation.Specifications.Steps
         [Then("The project is registered on the time for code platform")]
         public void ThenTheProjectIsRegisteredOnTheTimeForCodePlatform()
         {
+            // The in-process and the live When steps both record the new project in the shared context.
             _context.LastException.Should().BeNull();
-            _registerResult.Should().NotBeNull();
-            _registerResult!.ProjectId.Should().NotBeNullOrEmpty();
+            _context.RegisteredProjectId.Should().NotBeNullOrEmpty();
         }
 
         [Then("The stored project metadata includes the following fields:")]
         public void ThenTheStoredProjectMetadataIncludesTheFollowingFields(DataTable table)
         {
             _context.LastException.Should().BeNull();
-            _registerResult.Should().NotBeNull();
-            _registerResult!.ProjectId.Should().NotBeNullOrEmpty();
+            _context.RegisteredProjectId.Should().NotBeNullOrEmpty();
 
             var fieldCheckers = new Dictionary<string, Func<Project, bool>>(StringComparer.OrdinalIgnoreCase)
             {
