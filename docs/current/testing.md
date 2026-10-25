@@ -35,6 +35,8 @@ graph LR
 
 BDD-style acceptance tests that describe the expected behaviour of the Authorization API from the outside. These tests cover the full authentication flow using the Identity Provider Mock as the external OAuth 2.0 provider.
 
+The features run in parallel (`ExecutionScope.ClassLevel`, one test class per feature file). This is safe because every scenario builds its own host, cookie container, `SessionContext` and fakes.
+
 ### Authorization — Api.Tests
 
 **Path**: `tst/Authorization/TimeForCode.Authorization.Api.Tests`
@@ -101,6 +103,8 @@ The mock implements:
 **Path**: `tst/Donation/TimeForCode.Donation.Specifications`
 
 BDD-style acceptance tests for the Donation API. Covers the full project lifecycle: publishing a repository, browsing the project listing, and unpublishing a project, plus pledging hours, the donation lifecycle (activate, cancel, automatic completion) and browsing donations with their progress (`Features/Donations`). Uses an in-memory donation repository next to a `WebApplicationFactory` with Moq and `MockHttp` to stub the MongoDB repositories and the GitHub API service.
+
+The scenarios run sequentially: one shared host serves every scenario and is reset before each one, so parallel execution makes scenarios wipe each other's state (70 to 100 of 213 failed in a trial). The host clears the JwtBearer `Authority` so it does not try to load OpenID metadata from the Development stack; without that, every authenticated scenario took about 1.15 s on Windows.
 
 ### Donation — Api.Tests
 

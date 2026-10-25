@@ -66,6 +66,7 @@ namespace TimeForCode.Donation.Specifications.Mocking
                 {
                     // The host runs in Development, where Authority points at a stack that is not running; loading its metadata fails slowly on every authenticated request.
                     options.Authority = null;
+                    // MetadataAddress is declared non-nullable, but null is the only value that stops the handler from deriving a metadata address.
                     options.MetadataAddress = null!;
                     options.ConfigurationManager = null;
                     var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Constants.TestJwtSigningKey));
