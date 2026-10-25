@@ -120,8 +120,7 @@ namespace TimeForCode.Donation.Specifications.Steps
             }));
         }
 
-        [When("The user requests the project details")]
-        [When("The user requests the project details without an account")]
+        [When("The user requests the project details( without an account)")]
         public Task WhenTheUserRequestsTheProjectDetailsAsync()
         {
             string projectId = _context.RegisteredProjectId ?? Constants.TestProjectId;

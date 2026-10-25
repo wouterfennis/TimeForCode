@@ -105,8 +105,7 @@ namespace TimeForCode.Donation.Specifications.Steps
                 new AddContributionRequest { Hours = hours, GithubReference = githubReference }));
         }
 
-        [When("The user requests the contributions of the project")]
-        [When("The user requests the contributions of the project without an account")]
+        [When("The user requests the contributions of the project( without an account)")]
         public Task WhenTheUserRequestsTheContributionsOfTheProjectAsync()
         {
             return GetContributionsAsync(_context.RegisteredProjectId ?? Constants.TestProjectId);

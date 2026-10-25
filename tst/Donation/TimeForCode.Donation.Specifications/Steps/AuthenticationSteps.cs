@@ -20,20 +20,24 @@ namespace TimeForCode.Donation.Specifications.Steps
             _liveScenario = liveScenario;
         }
 
-        [Given("The user has an access token")]
-        public async Task GivenTheUserHasAnAccessTokenAsync()
+        internal enum UserKind
         {
-            _bearerTokenHandler.Token = _liveScenario.IsLive
-                ? await LiveAuthentication.GetUserTokenAsync()
-                : GenerateTestToken(Constants.TestUserId);
+            User,
+            Administrator
         }
 
-        [Given("The user has an administrator access token")]
-        public async Task GivenTheUserHasAnAdministratorAccessTokenAsync()
+        [StepArgumentTransformation(@"(administrator )?")]
+        public static UserKind ToUserKind(string text)
         {
-            _bearerTokenHandler.Token = _liveScenario.IsLive
-                ? await LiveAuthentication.GetAdminTokenAsync()
-                : GenerateTestToken("admin", "admin");
+            return string.IsNullOrWhiteSpace(text) ? UserKind.User : UserKind.Administrator;
+        }
+
+        [Given(@"^The user has an ((?:administrator )?)access token$")]
+        public async Task GivenTheUserHasAnAccessTokenAsync(UserKind kind)
+        {
+            _bearerTokenHandler.Token = kind == UserKind.Administrator
+                ? (_liveScenario.IsLive ? await LiveAuthentication.GetAdminTokenAsync() : GenerateTestToken("admin", "admin"))
+                : (_liveScenario.IsLive ? await LiveAuthentication.GetUserTokenAsync() : GenerateTestToken(Constants.TestUserId));
         }
 
         [Given("The user does not have an access token")]

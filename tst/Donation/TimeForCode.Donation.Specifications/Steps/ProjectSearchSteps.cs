@@ -96,10 +96,8 @@ namespace TimeForCode.Donation.Specifications.Steps
             }
         }
 
-        [When("The user requests the list of published projects")]
-        [When("The user requests the list of published projects without an account")]
-        [When("The user searches the projects without criteria")]
-        [When("The user searches the projects without an account")]
+        [When("The user requests the list of published projects( without an account)")]
+        [When("^The user searches the projects without (?:criteria|an account)$")]
         public Task WhenTheUserSearchesTheProjectsWithoutCriteriaAsync()
         {
             return SearchAsync(null, null, null, null, null);
