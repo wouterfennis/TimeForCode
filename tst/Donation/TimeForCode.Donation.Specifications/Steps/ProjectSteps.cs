@@ -139,9 +139,9 @@ namespace TimeForCode.Donation.Specifications.Steps
         [Then("The project is registered on the time for code platform")]
         public void ThenTheProjectIsRegisteredOnTheTimeForCodePlatform()
         {
+            // The in-process and the live When steps both record the new project in the shared context.
             _context.LastException.Should().BeNull();
-            _registerResult.Should().NotBeNull();
-            _registerResult!.ProjectId.Should().NotBeNullOrEmpty();
+            _context.RegisteredProjectId.Should().NotBeNullOrEmpty();
         }
 
         [Then("The stored project metadata includes the following fields:")]
