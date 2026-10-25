@@ -1,4 +1,4 @@
-using FluentAssertions;
+using AwesomeAssertions;
 using TimeForCode.Authorization.Infrastructure.Services;
 
 namespace TimeForCode.Authorization.Infrastructure.Tests.Services

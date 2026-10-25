@@ -7,7 +7,7 @@
 | API / Commands / Application / Domain / Infrastructure / Values | `src/<Module>/TimeForCode.<Module>.<Layer>/` |
 | Specs (Reqnroll) / Unit (`Api.Tests`, `Application.Tests`) / Infra / Architecture tests | `tst/<Module>/TimeForCode.<Module>.<Kind>/` |
 
-Stack: MediatR + `Result<T>`, MongoDB, MSTest + FluentAssertions + Moq, Reqnroll, ArchUnitNET layer rules (violations break the build). Style comes from `.editorconfig`; a hook formats edited `.cs` files, and `dotnet format ./TimeForCode.sln` runs before committing C#.
+Stack: MediatR + `Result<T>`, MongoDB, MSTest + AwesomeAssertions + Moq, Reqnroll, ArchUnitNET layer rules (violations break the build). Style comes from `.editorconfig`; a hook formats edited `.cs` files, and `dotnet format ./TimeForCode.sln` runs before committing C#.
 
 **Development is test-driven**: red test first (seen failing for the right reason), minimal code to green, then refactor. No production code without a failing test. Details: `.claude/rules/testing-strategy.md`.
 

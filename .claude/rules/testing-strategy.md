@@ -33,7 +33,7 @@ Per module under `tst/<Module>/TimeForCode.<Module>.<Kind>/`:
 | `Specifications` | Reqnroll scenarios from the issue's Gherkin comment, run against `TimeForCodeWebApplicationFactory` | Outside-in acceptance tests |
 | `Architecture.Tests` | ArchUnitNET layer and naming rules | Violations break the build |
 
-Frameworks: **MSTest**, FluentAssertions, Moq, Verify.MSTest, Reqnroll, ArchUnitNET. Do not introduce xUnit/NUnit/NetArchTest.
+Frameworks: **MSTest**, AwesomeAssertions, Moq, Verify.MSTest, Reqnroll, ArchUnitNET. Do not introduce xUnit/NUnit/NetArchTest.
 Not every module has every kind (for example `Shared.Tests`); check `repo-map` instead of assuming.
 
 ## Conventions

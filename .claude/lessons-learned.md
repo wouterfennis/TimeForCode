@@ -37,6 +37,13 @@ Non-obvious knowledge from past sessions. Read and update through skill `lessons
 - **Date / issue:** 2026-10-15 / #110
 - **Lesson:** The read-guard hook blocks Bash reads (`grep`, `cat`, `ls`...) of `node_modules` and lockfiles, except a dependency's own `package.json`; append `# allow-excluded` when a wider read is intended. Local Node is 24.12, so packages needing 24.15 or later fail with `engine-strict`; pick a release that supports every Node 24.
 
+### Assertions library is AwesomeAssertions 9.x, namespace `AwesomeAssertions`
+
+- **Date / issue:** 2026-10-25 / #101
+- **Lesson:** Tests use `using AwesomeAssertions;` (package 9.6.0). The 7.x line keeps the `FluentAssertions` namespace, so only 8.x and later renamed it. Some `.cs` files start with a BOM, so a `sed 's/^using .../'` misses the first line; grep the whole tree for the old name afterwards. Architecture tests use ArchUnitNET's own `.Should()` and need no assertions package.
+- **Why:** FluentAssertions 8+ is commercially licensed; two files kept the old using after the first sed pass.
+- **How to apply:** never add `FluentAssertions` back; after any bulk rename run `grep -rn FluentAssertions tst src *.props` and expect no hits outside docs that explain the switch.
+
 ## Donation module
 
 ### Project status values are persisted as integers
@@ -63,7 +70,7 @@ Non-obvious knowledge from past sessions. Read and update through skill `lessons
 ### Reqnroll catalog fakes need distinct ids and `BsonDocument` needs `ToJson()` in assertions
 
 - **Date / issue:** 2026-10-13 / #76
-- **Lesson:** `ProjectBuilder.BuildActive()` and the lifecycle project share `Constants.TestProjectId`, so an "is not included" check on that id fails; use `ProjectBuilder.IdFor(n)`. FluentAssertions treats `BsonDocument` as a collection of elements, so compare `ToJson()` strings.
+- **Lesson:** `ProjectBuilder.BuildActive()` and the lifecycle project share `Constants.TestProjectId`, so an "is not included" check on that id fails; use `ProjectBuilder.IdFor(n)`. AwesomeAssertions (like FluentAssertions before it) treats `BsonDocument` as a collection of elements, so compare `ToJson()` strings.
 - **Why:** both cost a failed run each.
 - **How to apply:** give each project in an in-memory spec catalog its own id; render Mongo filters with `RenderArgs<T>` (driver 3.x) and compare JSON.
 

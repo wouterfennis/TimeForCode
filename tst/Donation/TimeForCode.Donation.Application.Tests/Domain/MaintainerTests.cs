@@ -1,4 +1,4 @@
-using FluentAssertions;
+using AwesomeAssertions;
 using TimeForCode.Donation.Domain;
 
 namespace TimeForCode.Donation.Application.Tests.Domain

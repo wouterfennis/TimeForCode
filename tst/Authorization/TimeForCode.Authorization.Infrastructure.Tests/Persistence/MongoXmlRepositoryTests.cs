@@ -1,4 +1,4 @@
-using FluentAssertions;
+using AwesomeAssertions;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Moq;

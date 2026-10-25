@@ -61,7 +61,7 @@ API controllers map `Result<T>` to HTTP responses. Failures map to `BadRequest(P
 ### Testing Stack
 
 - **Test framework:** MSTest (`[TestClass]`, `[TestMethod]`, `[TestInitialize]`)
-- **Assertions:** FluentAssertions — always use `.Should()` chains
+- **Assertions:** AwesomeAssertions (`using AwesomeAssertions;`, not FluentAssertions, which is commercially licensed) — always use `.Should()` chains
 - **Mocking:** Moq — `Mock<T>`, `.Setup(...)`, `.Verify(...)`
 - **BDD runner:** Reqnroll — step classes carry `[Binding]`, dependencies are constructor-injected via BoDi
 - **Integration host:** `WebApplicationFactory<Startup>` in `Mocking/TimeForCodeWebApplicationFactory.cs`

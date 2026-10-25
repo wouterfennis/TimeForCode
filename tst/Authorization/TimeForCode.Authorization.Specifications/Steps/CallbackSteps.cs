@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+﻿using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Bson;
 using Moq;
@@ -100,7 +100,8 @@ namespace TimeForCode.Authorization.Specifications.Steps
 
             var saved = repository.Invocations
                 .Where(i => i.Method.Name == nameof(IAccountInformationRepository.CreateOrUpdateAsync))
-                .Select(i => (AccountInformation)i.Arguments[0])
+                .Select(i => i.Arguments[0])
+                .OfType<AccountInformation>()
                 .Single();
 
             saved.ToBsonDocument().ToJson().Should().NotContainEquivalentOf("token");
