@@ -3,6 +3,9 @@
   <PropertyGroup>
     <NuGetAuditMode>all</NuGetAuditMode>
     <NuGetAuditLevel>moderate</NuGetAuditLevel>
+    <!-- Verify maintenance fee: open source project without revenue. Renew before the month passes. -->
+    <Verify_SponsorshipExemption>OpenSource</Verify_SponsorshipExemption>
+    <Verify_SponsorshipExemptionUntil>2027-10</Verify_SponsorshipExemptionUntil>
   </PropertyGroup>
 
 </Project>
