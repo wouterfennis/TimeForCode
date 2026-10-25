@@ -5,19 +5,19 @@ Feature: Project submission and admin approval workflow
 
 Scenario: Maintainer submits a draft project for review
 	Given The user has an access token
-	And The user has a project in draft
+	And The user has a project that is in draft
 	When The user submits the project for review
 	Then The project is pending approval
 
 Scenario: Administrator approves a pending project
 	Given The user has an administrator access token
-	And There is a project pending approval
+	And There is a project that is pending approval
 	When The administrator approves the project
 	Then The project is active
 
 Scenario: Administrator requests changes on a pending project
 	Given The user has an administrator access token
-	And There is a project pending approval
+	And There is a project that is pending approval
 	When The administrator requests changes with the reason "Please add a description"
 	Then The project is back in draft
 	And The project shows the reviewer reason "Please add a description"
@@ -31,13 +31,13 @@ Scenario: Maintainer sees the reviewer reason on their draft project
 
 Scenario: Maintainer archives an active project
 	Given The user has an access token
-	And The user has an active project
+	And The user has a project that is active
 	When The user archives the project
 	Then The project is archived
 
 Scenario: Maintainer re-activates an archived project
 	Given The user has an access token
-	And The user has an archived project
+	And The user has a project that is archived
 	When The user re-activates the project
 	Then The project is active
 
@@ -55,13 +55,13 @@ Scenario Outline: Invalid lifecycle transitions are rejected
 
 Scenario: Non-administrator cannot approve a project
 	Given The user has an access token
-	And There is a project pending approval
+	And There is a project that is pending approval
 	When The user approves the project
 	Then The request is rejected as forbidden
 
 Scenario: Non-administrator cannot request changes
 	Given The user has an access token
-	And There is a project pending approval
+	And There is a project that is pending approval
 	When The user requests changes with the reason "Please add a description"
 	Then The request is rejected as forbidden
 
