@@ -26,18 +26,30 @@ namespace TimeForCode.Donation.Specifications.Steps
             Administrator
         }
 
-        [StepArgumentTransformation(@"(administrator )?")]
+        private const string UserKindPattern = "((?:administrator )?)";
+
+        [StepArgumentTransformation(UserKindPattern)]
         public static UserKind ToUserKind(string text)
         {
             return string.IsNullOrWhiteSpace(text) ? UserKind.User : UserKind.Administrator;
         }
 
-        [Given(@"^The user has an ((?:administrator )?)access token$")]
+        [Given("^The user has an " + UserKindPattern + "access token$")]
         public async Task GivenTheUserHasAnAccessTokenAsync(UserKind kind)
         {
             _bearerTokenHandler.Token = kind == UserKind.Administrator
-                ? (_liveScenario.IsLive ? await LiveAuthentication.GetAdminTokenAsync() : GenerateTestToken("admin", "admin"))
-                : (_liveScenario.IsLive ? await LiveAuthentication.GetUserTokenAsync() : GenerateTestToken(Constants.TestUserId));
+                ? await GetAdminTokenAsync()
+                : await GetUserTokenAsync();
+        }
+
+        private async Task<string> GetUserTokenAsync()
+        {
+            return _liveScenario.IsLive ? await LiveAuthentication.GetUserTokenAsync() : GenerateTestToken(Constants.TestUserId);
+        }
+
+        private async Task<string> GetAdminTokenAsync()
+        {
+            return _liveScenario.IsLive ? await LiveAuthentication.GetAdminTokenAsync() : GenerateTestToken("admin", "admin");
         }
 
         [Given("The user does not have an access token")]

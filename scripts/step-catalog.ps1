@@ -30,15 +30,18 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
-$attributePattern = '\[(Given|When|Then|StepDefinition)\(\s*(@?)"((?:[^"\\]|\\.|"")*)"'
+$attributePattern = '\[(Given|When|Then|StepDefinition)\(\s*(@?)"((?:[^"\\]|\\.|"")*)"((?:\s*\+\s*(?:\w+|"[^"]*"))*)'
+$constantPattern = 'const string (\w+)\s*=\s*"((?:[^"\\]|\\.)*)"'
 $featureKeywords = 'Given|When|Then|And|But|\*'
 
-# Reqnroll reads a step text with {int}/{float}/{string}/{word} as a cucumber expression and anything else as a regex.
+# Reqnroll reads a step text with {int}/{float}/{string}/{word} or an optional "(text)" group as a cucumber expression and anything else as a regex.
 function ConvertTo-StepRegex([string]$expression) {
-    if ($expression -notmatch '\{(int|float|string|word)}') {
+    $isCucumber = $expression -match '\{(int|float|string|word)}' -or ($expression -notmatch '^\^' -and $expression -match '\([A-Za-z ]+\)')
+    if (-not $isCucumber) {
         return ($expression -replace '^\^?', '^' -replace '\$?$', '$')
     }
     $regex = [regex]::Escape($expression)
+    $regex = [regex]::Replace($regex, '\\\(([^()]*?)\\\)', '(?:$1)?')
     $regex = $regex.Replace('\{int}', '(-?\d+)').Replace('\{float}', '(-?\d+(?:[.,]\d+)?)')
     $regex = $regex.Replace('\{string}', '("[^"]*"|''[^'']*'')').Replace('\{word}', '(\S+)')
     return "^$regex$"
@@ -52,11 +55,19 @@ function Get-HandWrittenFiles([string]$specRoot) {
 function Get-StepDefinitions([string]$specRoot) {
     foreach ($file in Get-HandWrittenFiles $specRoot) {
         $lineNumber = 0
-        foreach ($line in Get-Content -LiteralPath $file.FullName) {
+        $lines = Get-Content -LiteralPath $file.FullName
+        $constants = @{}
+        foreach ($m in [regex]::Matches(($lines -join "`n"), $constantPattern)) { $constants[$m.Groups[1].Value] = $m.Groups[2].Value }
+        foreach ($line in $lines) {
             $lineNumber++
             foreach ($match in [regex]::Matches($line, $attributePattern)) {
                 $text = $match.Groups[3].Value
                 $text = if ($match.Groups[2].Value) { $text.Replace('""', '"') } else { $text.Replace('\\', '\').Replace('\"', '"') }
+                # Concatenated literals and string constants: "^text " + Constant + "$"
+                foreach ($part in ($match.Groups[4].Value -split '\+' | Where-Object { $_.Trim() })) {
+                    $part = $part.Trim()
+                    $text += if ($part.StartsWith('"')) { $part.Trim('"') } else { $constants[$part] }
+                }
                 [pscustomobject]@{
                     Keyword = $match.Groups[1].Value
                     Text    = $text

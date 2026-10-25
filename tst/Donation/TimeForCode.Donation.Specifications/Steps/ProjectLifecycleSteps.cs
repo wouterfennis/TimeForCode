@@ -13,6 +13,7 @@ namespace TimeForCode.Donation.Specifications.Steps
     [Binding]
     internal class ProjectLifecycleSteps
     {
+        private const string GivenStatusPattern = "(in draft|pending approval|active|archived)";
         private const string StatusPattern = "(in draft|back in draft|pending approval|active|archived)";
 
         private readonly IDonationClient _donationClient;
@@ -42,8 +43,8 @@ namespace TimeForCode.Donation.Specifications.Steps
             };
         }
 
-        [Given("^The user has a project that is " + StatusPattern + "$")]
-        [Given("^There is a project that is " + StatusPattern + "$")]
+        [Given("^The user has a project that is " + GivenStatusPattern + "$")]
+        [Given("^There is a project that is " + GivenStatusPattern + "$")]
         public void GivenTheProjectIs(ProjectStatus status)
         {
             _fixtures.SetupLifecycleProject(status);
