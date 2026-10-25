@@ -43,7 +43,7 @@
     <PackageVersion Include="Scalar.AspNetCore" Version="2.18.3" />
     <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="8.23.0" />
     <PackageVersion Include="TngTech.ArchUnitNET" Version="0.13.4" />
-    <PackageVersion Include="Verify.MSTest" Version="31.22.0" />
+    <PackageVersion Include="Verify.MSTest" Version="33.3.4" />
   </ItemGroup>
 
 </Project>
