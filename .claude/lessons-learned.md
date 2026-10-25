@@ -1,124 +1,16 @@
 # Lessons learned
 
-Non-obvious knowledge from past sessions. Read and update through skill `lessons-learned`; entry format is defined there.
+Non-obvious knowledge from past sessions that has no better home. Read and update through skill `lessons-learned`; entry format is defined there.
 
-## Workflow and gates
+Before adding an entry, check whether it belongs in a rule (`.claude/rules/`), a skill, a hook (`.claude/hooks/`), a script (`scripts/`) or a code comment instead; those load at the right moment, this file does not. Past lessons were moved there:
 
-### Check the approval markers before starting a phase
+- Specs (`DonationContext`, `SessionContext`, catalog fakes, `@live` login), assertions library: `.claude/rules/testing-strategy.md`
+- Input limits, token scopes: skill `dotnet-conventions`
+- NSwag client and Swagger snapshot: skill `swagger-snapshot-review`
+- Solution-wide format churn: `.claude/hooks/format-solution.ps1`, skill `dotnet-format`
+- Approval markers: `scripts/check-approval.ps1`, skill `agent-handoffs`
+- Stale local Mongo volume: `scripts/start-local.ps1 -ResetData`
+- `nginx -t` at image build: comment in `Dockerfile.frontend`
+- Project status numbers: comment on the enum plus `ProjectStatusTests`
 
-- **Date / issue:** 2026-10-08 / #75
-- **Lesson:** `/write-feature` needs `APPROVED: plan` and `/implement-issue` needs `APPROVED: feature` as the first line of a human comment on the issue.
-- **Why:** both phases stop at the gate; the jq `test("\\s*$")` variant fails to parse in `gh --jq`, so use `test("^APPROVED: (plan|feature)"; "m")`.
-- **How to apply:** run the marker check first and tell the user which marker to post instead of starting work.
-
-### Ask about scope-changing decisions up front
-
-- **Date / issue:** 2026-10-08 / #75
-- **Lesson:** A change that alters existing behaviour (lifecycle status, a removed endpoint) deserves one AskUserQuestion before coding.
-- **How to apply:** grep for other consumers of an endpoint before removing it, and surface any conflict with the issue's criteria in the question.
-
-## Tooling and environment
-
-### Shell quirks on this machine
-
-- **Date / issue:** 2026-10-08 / #75
-- **Lesson:** No Python is installed; large heredocs with apostrophes inside a single Bash call can fail to parse and run nothing; `sleep` followed by a command is blocked.
-- **Why:** a failed parse silently skips the whole command, which looks like a no-op.
-- **How to apply:** create files with the Write tool, keep Bash commands short, wait with `run_in_background` or Monitor.
-
-### `dotnet format ./TimeForCode.sln` churns unrelated files
-
-- **Date / issue:** 2026-10-08 / #75
-- **Lesson:** The solution-wide format modifies files in other modules, which pollutes the PR.
-- **How to apply:** after formatting, run `git status --short` and `git checkout --` every path outside the issue's scope.
-
-### Read guard and Node engines (front-end work)
-
-- **Date / issue:** 2026-10-15 / #110
-- **Lesson:** The read-guard hook blocks Bash reads (`grep`, `cat`, `ls`...) of `node_modules` and lockfiles, except a dependency's own `package.json`; append `# allow-excluded` when a wider read is intended. Local Node is 24.12, so packages needing 24.15 or later fail with `engine-strict`; pick a release that supports every Node 24.
-
-### Assertions library is AwesomeAssertions 9.x, namespace `AwesomeAssertions`
-
-- **Date / issue:** 2026-10-25 / #101
-- **Lesson:** Tests use `using AwesomeAssertions;` (package 9.6.0). The 7.x line keeps the `FluentAssertions` namespace, so only 8.x and later renamed it. Some `.cs` files start with a BOM, so a `sed 's/^using .../'` misses the first line; grep the whole tree for the old name afterwards. Architecture tests use ArchUnitNET's own `.Should()` and need no assertions package.
-- **Why:** FluentAssertions 8+ is commercially licensed; two files kept the old using after the first sed pass.
-- **How to apply:** never add `FluentAssertions` back; after any bulk rename run `grep -rn FluentAssertions tst src *.props` and expect no hits outside docs that explain the switch.
-### The Podman guard also matches the compose file name
-
-- **Date / issue:** 2026-10-21 / #111
-- **Lesson:** `guard-bash.ps1` denies any shell command with an unquoted `docker-compose` word, so `git diff -- docker-compose*` or `Get-Content docker-compose.yaml` is refused too.
-- **How to apply:** read the compose file with Read or Grep, or quote the path; `podman build -f Dockerfile.frontend` is fine.
-
-### The local Mongo volume keeps old data shapes
-
-- **Date / issue:** 2026-10-21 / #111
-- **Lesson:** After a breaking data change (ADR-014), old documents stay in the local `mongo` volume; the smoke test then fails with a 500 (here: `ux_refresh_token_hash` could not be built because old `RefreshToken` documents had no `TokenHash`).
-- **How to apply:** read the API container log (`podman logs timeforcode-authorization-api`), then delete only the old-shape documents with `podman exec mongo mongosh ...` and rerun.
-
-## Front-end
-
-### `nginx -t` runs at image build time, without the compose network
-
-- **Date / issue:** 2026-10-21 / #111
-- **Lesson:** `Dockerfile.frontend` runs `nginx -t`, which resolves a literal `proxy_pass` host such as `donation-api` and fails with "host not found in upstream" during the build. Server-level `add_header` relies on `add_header_inherit merge` (nginx 1.29.3 or later).
-- **How to apply:** for the first proxy location (#112), use an `upstream` with `server donation-api:8080 resolve;` plus a `resolver`, or a variable in `proxy_pass`, and keep the smoke test's header checks green.
-
-## Donation module
-
-### Project status values are persisted as integers
-
-- **Date / issue:** 2026-10-08 / #75
-- **Lesson:** `ProjectStatus` is stored as its numeric value (Active=0, Archived=1, Draft=2, PendingApproval=3); never renumber or reorder.
-- **Why:** old `Published` documents are 0 and would silently change meaning.
-- **How to apply:** only append new members with explicit numbers.
-
-### Admin tokens use scope `admin`, user tokens scope `user`
-
-- **Date / issue:** 2026-10-08 / #75
-- **Lesson:** The Authorization API issues admin JWTs with `scope=admin` and `role=admin` (sub `admin`). Donation policies: `ApiUser` (scope user), `ApiAdmin` (scope admin).
-- **Why:** an admin token fails `ApiUser`, so admin and maintainer endpoints are naturally disjoint.
-- **How to apply:** use `ApiAdmin` for admin-only endpoints; spec step "The user has an administrator access token" builds such a token.
-
-### NSwag client and Swagger snapshot follow the controller
-
-- **Date / issue:** 2026-10-08 / #75
-- **Lesson:** `TimeForCode.Donation.Api.json` is regenerated on build and drives the generated client used by the Specifications; `SwaggerTests` then fails until the verified snapshot is replaced after review (skill `swagger-snapshot-review`).
-- **Why:** removing or renaming an endpoint breaks every consumer at compile time.
-- **How to apply:** build the whole solution after any controller change (Api project first, so the JSON is regenerated); accept the snapshot only after reading the diff. NSwag emits positional parameters, so adding a query param removes the old overload and breaks its callers; grep `GetXxxAsync(` first.
-
-### Reqnroll catalog fakes need distinct ids and `BsonDocument` needs `ToJson()` in assertions
-
-- **Date / issue:** 2026-10-13 / #76
-- **Lesson:** `ProjectBuilder.BuildActive()` and the lifecycle project share `Constants.TestProjectId`, so an "is not included" check on that id fails; use `ProjectBuilder.IdFor(n)`. AwesomeAssertions (like FluentAssertions before it) treats `BsonDocument` as a collection of elements, so compare `ToJson()` strings.
-- **Why:** both cost a failed run each.
-- **How to apply:** give each project in an in-memory spec catalog its own id; render Mongo filters with `RenderArgs<T>` (driver 3.x) and compare JSON.
-
-### Declare input limits as attributes, not in controller code
-
-- **Date / issue:** 2026-10-13 / #76, PR #98
-- **Lesson:** `Range`, `StringLength`, `MaxLength`, `RegularExpression` and `[Url]` on action parameters or request properties appear in the OpenAPI document and are enforced by `[ApiController]` (400 validation problem details). `[EmailAddress]` is enforced but not emitted as `format: email` (shared `OpenApiTransformers.AddEmailFormat` adds it); `MaxLength` cannot be put on a `Uri` property. `[EmailAddress]` rejects `""`, which the old FluentValidation rule allowed.
-- **Why:** manual `if (pageNumber < 1)` checks left the schema silent, and the donor-organization list answered 500 for huge page numbers.
-- **How to apply:** put shared limits in the module's `ApiConstraints`, change the Swagger snapshot only after reading the diff, and give a spec scenario to every behaviour change (for example malformed ids now 400, not 404).
-
-### Donation step classes share state through `DonationContext`
-
-- **Date / issue:** 2026-10-24 / #151 (replaces the earlier `partial` advice from #75)
-- **Lesson:** Donation step classes are one per aggregate (`ProjectSteps`, `ProjectLifecycleSteps`, `ContributionSteps`, `DonationSteps`, ...). State several classes need (`LastException`, list results, ids) lives in `DonationContext`; arrange helpers they share live in `DonationFixtures`. Both are injected per scenario.
-- **Why:** private fields per step class hid duplicates and forced step classes to reach into each other.
-- **How to apply:** put a failed response through `_context.CaptureAsync`, never in a private field; add a new aggregate as its own `[Binding]` class taking the context.
-
-### Live scenarios sign in through the real login and need the stack's admin secret
-
-- **Date / issue:** 2026-10-22 / #137
-- **Lesson:** a `@live` Donation scenario gets a user token by replaying the smoke-test login (Auth login, mock IdP confirm form, callback) and reads the `AccessToken` cookie, whose JSON is PascalCase (`Token`). Admin steps need `TIMEFORCODE_LIVE_TEST_ADMIN_SECRET`; `start-local.ps1` makes a random secret per run unless `TEST_ADMIN_ACCESS_SECRET` is exported first.
-- **Why:** a camelCase assumption failed only against the real stack, and the running stack's secret cannot be recovered afterwards.
-- **How to apply:** export `TEST_ADMIN_ACCESS_SECRET` before `podman compose up`, tag persistence scenarios `@live` plus `@liveonly` (skipped in-process), and give each scenario unique data.
-
-## Authorization module
-
-### Reqnroll steps share errors through `SessionContext`, and logout-style calls expire the client cookies
-
-- **Date / issue:** 2026-10-17 / #107
-- **Lesson:** `_exception` fields are private per step class, so a reused Then step ("The user is informed their profile was not found") sees nothing from a new When step; use `SessionContext.LastException`. An endpoint that expires the token cookies also removes them from the spec `CookieContainer`, so a "kept token" scenario must re-add the cookies after the call.
-- **Why:** both cost a failed spec run.
-- **How to apply:** set `LastException` in new When steps; copy `GetAllCookies()` before the call and re-add them to simulate a token the user kept.
+## Entries

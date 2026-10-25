@@ -15,7 +15,16 @@ function Get-StaleCount {
 }
 
 $wasClean = (Get-StaleCount) -eq 0
+$dirtyBefore = @(git diff --name-only)
 dotnet format whitespace ./TimeForCode.sln
 $code = $LASTEXITCODE
+
+# The formatter touches files outside the branch's scope; restore those so they do not pollute the PR.
+$inScope = @(git diff --name-only origin/main...HEAD) + $dirtyBefore
+$churn = @(git diff --name-only | Where-Object { $_ -notin $inScope })
+if ($churn.Count) {
+    git checkout -- $churn
+    Write-Output "Reverted formatter churn in $($churn.Count) file(s) outside the branch: $($churn -join ', ')"
+}
 if ($wasClean -and $code -eq 0) { (Get-Item (Join-Path $root '.agent-state/last-dotnet-run')).LastWriteTime = Get-Date }
 exit $code

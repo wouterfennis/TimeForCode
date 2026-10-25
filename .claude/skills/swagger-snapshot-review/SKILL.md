@@ -16,7 +16,7 @@ Work through every item in this checklist before touching the snapshot file:
 - [ ] **Breaking change** — Does the diff remove, rename, or change the type of an existing field or endpoint? If yes, existing callers are broken.
 - [ ] **API versioning** — If the change is breaking, should a new API version (e.g. `/v2/`) be introduced instead of modifying the existing contract?
 - [ ] **Optional fields** — If new fields are added, are they marked optional (`nullable: true` in the spec) so existing clients that do not send them are not broken?
-- [ ] **NSwag client impact** — Does the `src/Authorization/TimeForCode.Authorization.Api.Client/` generated client need review? NSwag renames generated methods when endpoints are added or reordered (e.g. `RepositoriesAsync` → `RepositoriesAllAsync`). Check all callers of the affected methods.
+- [ ] **NSwag client impact** — Does the `src/Authorization/TimeForCode.Authorization.Api.Client/` generated client need review? NSwag renames generated methods when endpoints are added or reordered (e.g. `RepositoriesAsync` → `RepositoriesAllAsync`). Check all callers of the affected methods. NSwag emits positional parameters, so adding a query parameter removes the old overload and breaks its callers; grep `GetXxxAsync(` first. `TimeForCode.Donation.Api.json` is regenerated on build, so build the Api project first and then the whole solution after any controller change.
 
 **If any checklist item reveals a breaking change or unresolved question:**
 Stop. Do not update the snapshot. Log the finding as a loose end and surface it to the user via AskUserQuestion before proceeding.

@@ -9,9 +9,18 @@
     running, starts (or initialises) it when necessary, and then delegates to
     `podman compose up --build`.
 
+.PARAMETER ResetData
+    Runs `podman compose down --volumes` first, so old data shapes (for example after a breaking change, ADR-014) are gone.
+
 .EXAMPLE
     .\scripts\start-local.ps1
 #>
+
+param(
+    # Local Mongo keeps old data shapes after a breaking change (ADR-014): the APIs then fail on startup or answer 500.
+    # -ResetData drops the stack's containers and volumes before starting.
+    [switch] $ResetData
+)
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
@@ -61,6 +70,11 @@ if (-not $env:TEST_ADMIN_ACCESS_SECRET) {
     # Secret for the test-only admin token endpoint (enabled on the local stack only); random per run.
     $env:TEST_ADMIN_ACCESS_SECRET = [Convert]::ToBase64String([System.Security.Cryptography.RandomNumberGenerator]::GetBytes(32))
     Write-Info "Generated a random TEST_ADMIN_ACCESS_SECRET for this run."
+}
+
+if ($ResetData) {
+    Write-Info "Removing containers and volumes (-ResetData)..."
+    podman compose down --volumes
 }
 
 Write-Info "Starting the TimeForCode stack..."
