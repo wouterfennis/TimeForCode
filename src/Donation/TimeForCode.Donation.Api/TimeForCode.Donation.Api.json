@@ -1544,6 +1544,142 @@
         }
       }
     },
+    "/api/v1/maintainer/me": {
+      "get": {
+        "tags": [
+          "Maintainer"
+        ],
+        "summary": "Returns the maintainer profile of the caller. The profile is created when the caller publishes their first project.",
+        "operationId": "GetMyMaintainerProfile",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MaintainerProfileResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. Retry after the number of seconds given in the Retry-After header.",
+            "headers": {
+              "Retry-After": {
+                "description": "Number of seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/maintainer/me/projects": {
+      "get": {
+        "tags": [
+          "Maintainer"
+        ],
+        "summary": "Lists the projects published by the caller in any lifecycle state, oldest first, with the hours donated to each.\r\nHours donated add up the hours committed by Active and Completed donations.",
+        "operationId": "GetMyProjects",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetMyProjectsResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. Retry after the number of seconds given in the Retry-After header.",
+            "headers": {
+              "Retry-After": {
+                "description": "Number of seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/Project": {
       "post": {
         "tags": [
@@ -2586,14 +2722,19 @@
         "type": "object",
         "properties": {
           "name": {
+            "examples": [
+              "Acme Software"
+            ],
             "maxLength": 200,
             "minLength": 1,
             "pattern": "[\\s\\S]*\\S[\\s\\S]*",
             "type": "string",
-            "description": "The name of the donor organization.",
-            "example": "Acme Software"
+            "description": "The name of the donor organization."
           },
           "contactEmail": {
+            "examples": [
+              "open-source@acme.example"
+            ],
             "maxLength": 254,
             "minLength": 0,
             "type": [
@@ -2601,10 +2742,12 @@
               "string"
             ],
             "description": "The contact email of the donor organization.",
-            "format": "email",
-            "example": "open-source@acme.example"
+            "format": "email"
           },
           "website": {
+            "examples": [
+              "https://acme.example"
+            ],
             "maxLength": 2048,
             "minLength": 0,
             "type": [
@@ -2612,8 +2755,7 @@
               "string"
             ],
             "description": "The website URL of the donor organization.",
-            "format": "uri",
-            "example": "https://acme.example"
+            "format": "uri"
           }
         },
         "description": "Represents a request to create a donor organization."
@@ -2877,6 +3019,20 @@
           }
         }
       },
+      "GetMyProjectsResult": {
+        "required": [
+          "projects"
+        ],
+        "type": "object",
+        "properties": {
+          "projects": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MaintainedProjectDto"
+            }
+          }
+        }
+      },
       "GetProjectsResponse": {
         "required": [
           "projects",
@@ -2922,6 +3078,49 @@
           }
         },
         "description": "Represents a paginated list of published projects."
+      },
+      "MaintainedProjectDto": {
+        "required": [
+          "project",
+          "hoursDonated"
+        ],
+        "type": "object",
+        "properties": {
+          "project": {
+            "$ref": "#/components/schemas/ProjectDto"
+          },
+          "hoursDonated": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "MaintainerProfileResponse": {
+        "required": [
+          "id",
+          "githubLogin",
+          "avatarUrl"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The maintainer identifier."
+          },
+          "githubLogin": {
+            "type": "string",
+            "description": "The GitHub login of the maintainer."
+          },
+          "avatarUrl": {
+            "type": "string",
+            "description": "The avatar URL of the maintainer."
+          }
+        },
+        "description": "Represents the profile of a maintainer, the owner of one or more projects."
       },
       "PledgeDonationRequest": {
         "required": [
@@ -3372,12 +3571,14 @@
         "type": "object",
         "properties": {
           "reason": {
+            "examples": [
+              "Please add a description of the project."
+            ],
             "maxLength": 1000,
             "minLength": 1,
             "pattern": "[\\s\\S]*\\S[\\s\\S]*",
             "type": "string",
-            "description": "The reason the changes are requested. Shown to the maintainer.",
-            "example": "Please add a description of the project."
+            "description": "The reason the changes are requested. Shown to the maintainer."
           }
         },
         "description": "Represents an administrator's request for changes to a project under review."
@@ -3386,28 +3587,35 @@
         "type": "object",
         "properties": {
           "role": {
+            "examples": [
+              "Backend developer"
+            ],
             "maxLength": 100,
             "minLength": 0,
             "type": [
               "null",
               "string"
             ],
-            "description": "The role of the contributor.",
-            "example": "Backend developer"
+            "description": "The role of the contributor."
           },
           "skills": {
+            "examples": [
+              [
+                "C#",
+                "MongoDB"
+              ]
+            ],
             "maxItems": 50,
             "type": "array",
             "items": {
               "type": "string"
             },
-            "description": "The skills of the contributor; each is trimmed, blank ones are dropped and duplicates (ignoring case) are merged.\r\nEach skill has at most 100 characters.",
-            "example": [
-              "C#",
-              "MongoDB"
-            ]
+            "description": "The skills of the contributor; each is trimmed, blank ones are dropped and duplicates (ignoring case) are merged.\r\nEach skill has at most 100 characters."
           },
           "hoursAvailable": {
+            "examples": [
+              10
+            ],
             "maximum": 10000,
             "minimum": 0,
             "pattern": "^-?(?:0|[1-9]\\d*)$",
@@ -3417,8 +3625,7 @@
               "string"
             ],
             "description": "The whole number of hours the contributor can donate.",
-            "format": "int32",
-            "example": 10
+            "format": "int32"
           },
           "donorOrganizationId": {
             "pattern": "^[0-9a-fA-F]{24}$",
@@ -3438,14 +3645,19 @@
         "type": "object",
         "properties": {
           "name": {
+            "examples": [
+              "Acme Software"
+            ],
             "maxLength": 200,
             "minLength": 1,
             "pattern": "[\\s\\S]*\\S[\\s\\S]*",
             "type": "string",
-            "description": "The name of the donor organization.",
-            "example": "Acme Software"
+            "description": "The name of the donor organization."
           },
           "contactEmail": {
+            "examples": [
+              "open-source@acme.example"
+            ],
             "maxLength": 254,
             "minLength": 0,
             "type": [
@@ -3453,10 +3665,12 @@
               "string"
             ],
             "description": "The contact email of the donor organization.",
-            "format": "email",
-            "example": "open-source@acme.example"
+            "format": "email"
           },
           "website": {
+            "examples": [
+              "https://acme.example"
+            ],
             "maxLength": 2048,
             "minLength": 0,
             "type": [
@@ -3464,8 +3678,7 @@
               "string"
             ],
             "description": "The website URL of the donor organization.",
-            "format": "uri",
-            "example": "https://acme.example"
+            "format": "uri"
           }
         },
         "description": "Represents a request to update a donor organization."
@@ -3487,6 +3700,9 @@
     },
     {
       "name": "DonorOrganization"
+    },
+    {
+      "name": "Maintainer"
     },
     {
       "name": "Project"

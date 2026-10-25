@@ -41,20 +41,20 @@ Scenario: Too many skills are rejected
 	Given The user has an access token
 	And The user is registered as a contributor on the time for code platform
 	When The user updates their contributor profile with 51 skills
-	Then The user is informed the contributor profile is invalid
+	Then The request is rejected as invalid
 	And The contributor profile is unchanged
 
 Scenario: A skill that is too long is rejected
 	Given The user has an access token
 	And The user is registered as a contributor on the time for code platform
 	When The user updates their contributor profile with a skill of 101 characters
-	Then The user is informed the contributor profile is invalid
+	Then The request is rejected as invalid
 
 Scenario Outline: User attempts to set an invalid amount of available hours
 	Given The user has an access token
 	And The user is registered as a contributor on the time for code platform
 	When The user updates their contributor profile with <hours> available hours
-	Then The user is informed the contributor profile is invalid
+	Then The request is rejected as invalid
 	And The contributor profile is unchanged
 
 	Examples:
@@ -74,7 +74,7 @@ Scenario: Linking to an unknown donor organization is rejected
 	And The user is registered as a contributor on the time for code platform
 	And There is no donor organization with the given identifier
 	When The user links their contributor profile to the donor organization
-	Then The user is informed the donor organization was not found
+	Then The request is rejected as not found
 	And The contributor profile is unchanged
 
 Scenario: Admin views the profile of another user
@@ -100,38 +100,38 @@ Scenario: A regular user cannot view the profile of another user
 	Given The user has an access token
 	And Another user is registered as a contributor on the time for code platform
 	When The user requests the contributor profile of the other user
-	Then The user is informed they are not allowed to access this contributor profile
+	Then The request is rejected as forbidden
 
 Scenario: A regular user cannot update the profile of another user
 	Given The user has an access token
 	And Another user is registered as a contributor on the time for code platform
 	When The user updates the contributor profile of the other user with the role "Designer"
-	Then The user is informed they are not allowed to access this contributor profile
+	Then The request is rejected as forbidden
 	And The contributor profile of the other user is unchanged
 
 Scenario: A regular user cannot view the contributors of a donor organization
 	Given The user has an access token
 	And There is a donor organization on the time for code platform
 	When The user requests the contributors of the donor organization
-	Then The user is informed they are not allowed to view the contributors of a donor organization
+	Then The request is rejected as forbidden
 
 Scenario: Requesting a contributor profile that does not exist
 	Given The user has an administrator access token
 	And There is no contributor with the given identifier
 	When The user requests the contributor profile of the other user
-	Then The user is informed the contributor was not found
+	Then The request is rejected as not found
 
 @live
 Scenario: Viewing a contributor profile requires authentication
 	Given The user does not have an access token
 	When The user requests their own contributor profile
-	Then The user is informed they must be logged in
+	Then The request is rejected as unauthorized
 
 @live
 Scenario: Updating a contributor profile requires authentication
 	Given The user does not have an access token
 	When The user updates their contributor profile with the role "Backend developer"
-	Then The user is informed they must be logged in
+	Then The request is rejected as unauthorized
 
 
 @live

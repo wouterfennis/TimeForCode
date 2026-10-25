@@ -1,28 +1,38 @@
-using FluentAssertions;
-using Microsoft.AspNetCore.Http;
+using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Bson;
 using Moq;
 using Reqnroll;
 using TimeForCode.Donation.Api.Client;
 using TimeForCode.Donation.Application.Interfaces;
-using TimeForCode.Donation.Specifications.Mocking;
 using TimeForCode.Donation.Specifications.TestBuilder;
 using DomainStatus = TimeForCode.Donation.Values.DonationStatus;
 using DonationEntity = TimeForCode.Donation.Domain.Donation;
 
 namespace TimeForCode.Donation.Specifications.Steps
 {
-    internal partial class ProjectSteps
+    /// <summary>Pledging hours to a project and following a donation until it is completed.</summary>
+    [Binding]
+    internal class DonationSteps
     {
         private const string UnknownDonationId = "5f43a0e74b12c84f1b0000ff";
 
+        private readonly IDonationClient _donationClient;
+        private readonly IServiceProvider _provider;
+        private readonly DonationContext _context;
+        private readonly DonationFixtures _fixtures;
+
         private DonationResponse? _donationResult;
-        private GetDonationsResponse? _getDonationsResult;
         private DonorOrganizationResponse? _organizationResult;
         private string? _trackedDonationId;
 
-        private InMemoryDonationRepository Donations => _provider.GetRequiredService<InMemoryDonationRepository>();
+        public DonationSteps(IDonationClient donationClient, IServiceProvider provider, DonationContext context, DonationFixtures fixtures)
+        {
+            _donationClient = donationClient;
+            _provider = provider;
+            _context = context;
+            _fixtures = fixtures;
+        }
 
         [Given("^The user has an? (pending|active|completed|cancelled) donation$")]
         public void GivenTheUserHasADonation(string state)
@@ -68,7 +78,7 @@ namespace TimeForCode.Donation.Specifications.Steps
         [Given("There is a published project with {int} donations")]
         public void GivenThereIsAPublishedProjectWithDonations(int count)
         {
-            GivenThereIsAPublishedProjectOnTheTimeForCodePlatform();
+            _fixtures.PublishActiveProject();
             for (var i = 0; i < count; i++)
             {
                 AddDonation("pending", "another-user-id", null, null, null);
@@ -103,7 +113,7 @@ namespace TimeForCode.Donation.Specifications.Steps
         public Task WhenTheUserChangesTheDonationAsync(string action)
         {
             var id = _trackedDonationId ?? UnknownDonationId;
-            return CaptureAsync(async () => _donationResult = action == "activates"
+            return _context.CaptureAsync(async () => _donationResult = action == "activates"
                 ? await _donationClient.ActivateDonationAsync(id)
                 : await _donationClient.CancelDonationAsync(id));
         }
@@ -111,27 +121,27 @@ namespace TimeForCode.Donation.Specifications.Steps
         [When("The user requests their donations")]
         public Task WhenTheUserRequestsTheirDonationsAsync()
         {
-            return CaptureAsync(async () => _getDonationsResult = await _donationClient.GetMyDonationsAsync());
+            return _context.CaptureAsync(async () => _context.DonationsResult = await _donationClient.GetMyDonationsAsync());
         }
 
         [When("The user requests the donations of the project")]
         public Task WhenTheUserRequestsTheDonationsOfTheProjectAsync()
         {
-            return CaptureAsync(async () => _getDonationsResult = await _donationClient.GetProjectDonationsAsync(_registeredProjectId ?? Constants.TestProjectId));
+            return _context.CaptureAsync(async () => _context.DonationsResult = await _donationClient.GetProjectDonationsAsync(_context.RegisteredProjectId ?? Constants.TestProjectId));
         }
 
         [Then("The donation is recorded on the time for code platform")]
         public void ThenTheDonationIsRecordedOnTheTimeForCodePlatform()
         {
-            _exception.Should().BeNull();
+            _context.LastException.Should().BeNull();
             _donationResult.Should().NotBeNull();
-            Donations.Donations.Should().Contain(d => d.Id.ToString() == _donationResult!.Id);
+            _fixtures.Donations.Donations.Should().Contain(d => d.Id.ToString() == _donationResult!.Id);
         }
 
         [Then("^The donation is (pending|active|completed|cancelled)$")]
         public void ThenTheDonationIsInState(string state)
         {
-            _exception.Should().BeNull();
+            _context.LastException.Should().BeNull();
             StoredDonation().Status.Should().Be(ParseState(state));
         }
 
@@ -171,94 +181,70 @@ namespace TimeForCode.Donation.Specifications.Steps
         [Then("The donations of the user are returned")]
         public void ThenTheDonationsOfTheUserAreReturned()
         {
-            _exception.Should().BeNull();
-            _getDonationsResult.Should().NotBeNull();
-            _getDonationsResult!.Donations.Should().ContainSingle().Which.Id.Should().Be(_trackedDonationId);
+            _context.LastException.Should().BeNull();
+            _context.DonationsResult.Should().NotBeNull();
+            _context.DonationsResult!.Donations.Should().ContainSingle().Which.Id.Should().Be(_trackedDonationId);
         }
 
         [Then("An empty list of donations is returned")]
         public void ThenAnEmptyListOfDonationsIsReturned()
         {
-            _exception.Should().BeNull();
-            _getDonationsResult.Should().NotBeNull();
-            _getDonationsResult!.Donations.Should().BeEmpty();
+            _context.LastException.Should().BeNull();
+            _context.DonationsResult.Should().NotBeNull();
+            _context.DonationsResult!.Donations.Should().BeEmpty();
         }
 
         [Then("{int} donations are returned")]
         public void ThenDonationsAreReturned(int count)
         {
-            _exception.Should().BeNull();
-            _getDonationsResult.Should().NotBeNull();
-            _getDonationsResult!.Donations.Should().HaveCount(count);
+            _context.LastException.Should().BeNull();
+            _context.DonationsResult.Should().NotBeNull();
+            _context.DonationsResult!.Donations.Should().HaveCount(count);
         }
 
         [Then("Each donation shows its status, hours committed, hours logged and progress")]
         public void ThenEachDonationShowsItsStatusAndProgress()
         {
-            _getDonationsResult.Should().NotBeNull();
-            _getDonationsResult!.Donations.Should().OnlyContain(d => d.HoursCommitted > 0 && d.HoursLogged >= 0 && d.ProgressPercentage >= 0);
-        }
-
-        [Then("The user is informed the donor is invalid")]
-        public void ThenTheUserIsInformedTheDonorIsInvalid()
-        {
-            _exception.Should().NotBeNull();
-            _exception!.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
-        }
-
-        [Then("The user is informed the donation was not found")]
-        public void ThenTheUserIsInformedTheDonationWasNotFound()
-        {
-            _exception.Should().NotBeNull();
-            _exception!.StatusCode.Should().Be(StatusCodes.Status404NotFound);
+            _context.DonationsResult.Should().NotBeNull();
+            _context.DonationsResult!.Donations.Should().OnlyContain(d => d.HoursCommitted > 0 && d.HoursLogged >= 0 && d.ProgressPercentage >= 0);
         }
 
         private Task PledgeAsync(int hours, bool asIndividual, string? organizationId)
         {
-            return CaptureAsync(async () => _donationResult = await _donationClient.PledgeDonationAsync(
-                _registeredProjectId ?? Constants.TestProjectId,
+            return _context.CaptureAsync(async () => _donationResult = await _donationClient.PledgeDonationAsync(
+                _context.RegisteredProjectId ?? Constants.TestProjectId,
                 new PledgeDonationRequest { Hours = hours, AsIndividual = asIndividual, DonorOrganizationId = organizationId }));
         }
 
         private string AddDonation(string state, string pledgedByUserId, string? committed, string? logged, ObjectId? organizationId)
         {
-            EnsureActiveProjectRegistered();
+            _fixtures.EnsureActiveProjectRegistered();
 
             var donation = DonationBuilder.Build(
-                ObjectIdOf(_registeredProjectId ?? Constants.TestProjectId),
+                DonationFixtures.ObjectIdOf(_context.RegisteredProjectId ?? Constants.TestProjectId),
                 ParseState(state),
                 pledgedByUserId,
                 string.IsNullOrEmpty(committed) ? 20 : int.Parse(committed),
                 string.IsNullOrEmpty(logged) ? 0 : int.Parse(logged),
                 organizationId);
-            Donations.CreateAsync(donation);
+            _fixtures.Donations.CreateAsync(donation);
 
             return donation.Id.ToString();
-        }
-
-        private void EnsureActiveProjectRegistered()
-        {
-            if (_registeredProjectId != null || _lifecycleProject != null)
-            {
-                return;
-            }
-
-            GivenThereIsAPublishedProjectOnTheTimeForCodePlatform();
         }
 
         private DonationEntity StoredDonation()
         {
             var id = _trackedDonationId ?? _donationResult?.Id;
-            return Donations.Donations.Single(d => d.Id.ToString() == id);
+            return _fixtures.Donations.Donations.Single(d => d.Id.ToString() == id);
         }
 
         private (int Committed, int Logged, int Progress) ShownDonation()
         {
-            _exception.Should().BeNull();
+            _context.LastException.Should().BeNull();
 
-            if (_getDonationsResult != null)
+            if (_context.DonationsResult != null)
             {
-                var shown = _getDonationsResult.Donations.Should().ContainSingle().Subject;
+                var shown = _context.DonationsResult.Donations.Should().ContainSingle().Subject;
                 return (shown.HoursCommitted, shown.HoursLogged, shown.ProgressPercentage);
             }
 

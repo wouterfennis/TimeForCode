@@ -15,7 +15,7 @@
         5. The Auth API accepts its own JWT
         6. The Donation API accepts the Auth API JWT and stores a project (Mongo write)
         7. The stored project is read back (Mongo read)
-        8. The data protection key ring is stored in the database (needs podman)
+        8. The data protection key ring is stored in the database (needs podman or, with -ContainerCli, docker)
         9. The front-end serves the SPA on / and on a deep link, and its built script
        10. A missing front-end asset returns 404 instead of the SPA
        11. Every front-end response carries the security headers
@@ -35,6 +35,9 @@
 .PARAMETER FrontendBaseUrl
     Base URL of the front-end (the SPA served by nginx). Default: http://localhost:8084
 
+.PARAMETER ContainerCli
+    Container CLI used to inspect the Mongo container (check 8). Default: podman, and the check is skipped when it is missing. CI passes docker explicitly, and then a missing CLI fails the check.
+
 .EXAMPLE
     .\scripts\smoke-test.ps1
 
@@ -47,7 +50,8 @@ param(
     [string] $IdpMockBaseUrl    = "http://localhost:8081",
     [string] $DonationApiBaseUrl = "http://localhost:8082",
     [string] $ClientRedirectUri    = "http://localhost:8084",
-    [string] $FrontendBaseUrl      = "http://localhost:8084"
+    [string] $FrontendBaseUrl      = "http://localhost:8084",
+    [string] $ContainerCli         = "podman"
 )
 
 Set-StrictMode -Version Latest
@@ -270,12 +274,21 @@ try {
 
 Write-Section "4. Data protection key ring"
 
-if (Get-Command podman -ErrorAction SilentlyContinue) {
-    $keys = podman exec mongo mongosh -u root -p example --authenticationDatabase admin AuthorizationServer --quiet --eval 'db.DataProtectionKeyDocument.countDocuments({})' 2>&1 | Select-Object -Last 1
-    if ([int]"$keys".Trim() -ge 1) { Write-Pass "Data protection key ring is stored in the database ($keys key(s))" }
-    else                           { Write-Fail "No data protection key in the database" "mongosh said: $keys" }
+if (Get-Command $ContainerCli -ErrorAction SilentlyContinue) {
+    $previousPreference = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
+    try {
+        $output = & $ContainerCli exec mongo mongosh -u root -p example --authenticationDatabase admin AuthorizationServer --quiet --eval 'db.DataProtectionKeyDocument.countDocuments({})' 2>&1
+    } finally {
+        $ErrorActionPreference = $previousPreference
+    }
+    $keys = ($output | ForEach-Object { "$_".Trim() } | Where-Object { $_ -match '^\d+$' } | Select-Object -Last 1)
+    if ($keys -and [int]$keys -ge 1) { Write-Pass "Data protection key ring is stored in the database ($keys key(s))" }
+    else                           { Write-Fail "No data protection key in the database" "mongosh said: $($output | Select-Object -Last 1)" }
+} elseif ($PSBoundParameters.ContainsKey("ContainerCli")) {
+    Write-Fail "Container CLI '$ContainerCli' was requested but is not available"
 } else {
-    Write-Output "  [SKIP] podman not available, database not inspected"
+    Write-Output "  [SKIP] $ContainerCli not available, database not inspected"
 }
 
 # ---------------------------------------------------------------------------

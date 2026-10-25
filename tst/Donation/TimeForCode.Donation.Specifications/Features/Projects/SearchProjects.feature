@@ -70,7 +70,7 @@ Scenario: Projects with the same age keep a consistent order across pages
 
 Scenario Outline: User searches with invalid paging
 	When The user requests page <page> of the projects with <size> projects per page
-	Then The user is informed the paging request is invalid
+	Then The request is rejected as invalid
 
 	Examples:
 		| page       | size |
@@ -84,7 +84,7 @@ Scenario Outline: User searches with invalid paging
 
 Scenario Outline: User searches with criteria that are too long
 	When The user searches the projects with a <criterion> of 101 characters
-	Then The user is informed the search criteria are invalid
+	Then The request is rejected as invalid
 
 	Examples:
 		| criterion |

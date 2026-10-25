@@ -1,4 +1,4 @@
-using FluentAssertions;
+using AwesomeAssertions;
 using TimeForCode.Authorization.Domain.Entities;
 
 namespace TimeForCode.Authorization.Application.Tests.EntityTests

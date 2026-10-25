@@ -21,11 +21,11 @@ Scenario: User views a specific donor organization
 Scenario: Requesting a non-existent donor organization returns not found
 	Given There is no donor organization with the given identifier
 	When The user requests the donor organization details
-	Then The user is informed the donor organization was not found
+	Then The request is rejected as not found
 
 Scenario Outline: User browses the donor organizations with invalid paging
 	When The user requests page <page> of the donor organizations with <size> donor organizations per page
-	Then The user is informed the donor organization listing request is invalid
+	Then The request is rejected as invalid
 
 	Examples:
 		| page       | size |
@@ -38,4 +38,4 @@ Scenario Outline: User browses the donor organizations with invalid paging
 
 Scenario: Requesting a donor organization with a malformed identifier is rejected
 	When The user requests the donor organization with the identifier "not-an-identifier"
-	Then The user is informed the donor organization identifier is invalid
+	Then The request is rejected as invalid

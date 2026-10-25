@@ -37,7 +37,7 @@ Scenario Outline: User attempts to publish a repository that cannot be made publ
 	Given The user has an access token
 	And The repository is <repository state> on the external platform
 	When The user publishes the repository on the time for code platform
-	Then The user is informed the repository cannot be published
+	Then The request is rejected as invalid
 
 	Examples:
 		| repository state |
@@ -48,18 +48,18 @@ Scenario: User attempts to publish the same repository twice
 	Given The user has an access token
 	And The user has already published the repository on the time for code platform
 	When The user publishes the repository on the time for code platform
-	Then The user is informed the repository is already published
+	Then The request is rejected as a conflict
 
 Scenario: Publishing a repository requires authentication
 	Given The user does not have an access token
 	When The user publishes the repository on the time for code platform
-	Then The user is informed they must be logged in
+	Then The request is rejected as unauthorized
 
 Scenario: User attempts to publish a repository that does not exist on the external platform
 	Given The user has an access token
 	And The external platform does not have the repository
 	When The user publishes the repository on the time for code platform
-	Then The user is informed the repository cannot be published
+	Then The request is rejected as invalid
 
 
 @live
@@ -76,4 +76,4 @@ Scenario: Publishing the same repository twice is rejected
 	Given The user has an access token
 	And The user has published a new repository on the live platform
 	When The user publishes the same repository on the live platform again
-	Then The user is informed the repository is already published
+	Then The request is rejected as a conflict

@@ -11,6 +11,19 @@ namespace TimeForCode.Authorization.Infrastructure.Extensions
     {
         internal const string ApplicationName = "TimeForCode.Authorization";
 
+        /// <summary>Entry assembly name of the OpenAPI document generator that runs the app at build time.</summary>
+        internal const string OpenApiDocumentGeneratorAssembly = "GetDocument.Insider";
+
+        /// <summary>
+        /// Whether the key ring can be shared through the database. It cannot without a connection string, nor during
+        /// build-time OpenAPI document generation, where a configured development database is not reachable.
+        /// </summary>
+        internal static bool UseSharedKeyRing(string? connectionString, string? entryAssemblyName)
+        {
+            return !string.IsNullOrWhiteSpace(connectionString)
+                && entryAssemblyName != OpenApiDocumentGeneratorAssembly;
+        }
+
         /// <summary>
         /// Data Protection with a key ring that is persisted in the database and shared by all instances,
         /// so protected values survive restarts and can be read by any instance.

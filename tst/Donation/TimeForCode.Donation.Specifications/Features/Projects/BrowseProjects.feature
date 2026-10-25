@@ -39,4 +39,4 @@ Scenario: Project listing includes contribution metrics
 
 Scenario: Requesting a project with a malformed identifier is rejected
 	When The user requests the project with the identifier "not-an-identifier"
-	Then The user is informed the project identifier is invalid
+	Then The request is rejected as invalid

@@ -162,6 +162,15 @@ A donation completes automatically (Active -> Completed) when the hours logged t
 
 The user JWT issued by the Authorization API carries the `login` and `avatar_url` claims (GitHub login and avatar URL of the account) next to `sub`, `scope` and `aud`; the Donation API reads them to fill the contributor snapshot.
 
+### Maintainer Endpoints
+
+The maintainer profile is created (or its GitHub login and avatar refreshed) when a user registers a project with `POST /api/v1/project`; the token must carry the `login` and `avatar_url` claims, otherwise registration answers `400`. Owner-only project operations (`manage`, `submit`, `archive`, `reactivate`) compare the project's publisher with the caller and answer `403` for anyone else.
+
+| Method | Path | Status | Description |
+| --- | --- | --- | --- |
+| `GET` | `/api/v1/maintainer/me` | ✅ | Returns the caller's maintainer profile (user JWT): `{ "id", "githubLogin", "avatarUrl" }`; `404` when the caller never registered a project, `401` without a token |
+| `GET` | `/api/v1/maintainer/me/projects` | ✅ | Lists the caller's projects in any lifecycle state, oldest first (user JWT): `{ "projects": [ { "project": { ..., "status" }, "hoursDonated": 15 } ] }`; `hoursDonated` adds up the hours committed by `Active` and `Completed` donations (pending and cancelled ones are not counted); an empty list when the caller has no projects, `401` without a token |
+
 ### Contributor Endpoints
 
 | Method | Path | Status | Description |

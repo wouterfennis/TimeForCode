@@ -1,5 +1,4 @@
-using FluentAssertions;
-using Microsoft.AspNetCore.Http;
+using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Bson;
 using Moq;
@@ -8,33 +7,28 @@ using TimeForCode.Donation.Api.Client;
 using TimeForCode.Donation.Application.Interfaces;
 using TimeForCode.Donation.Commands;
 using TimeForCode.Donation.Domain;
-using TimeForCode.Donation.Specifications.Mocking;
 using TimeForCode.Donation.Specifications.TestBuilder;
 using TimeForCode.Donation.Values;
 
 namespace TimeForCode.Donation.Specifications.Steps
 {
+    /// <summary>Registering a repository as a project and reading one project.</summary>
     [Binding]
-    internal partial class ProjectSteps
+    internal class ProjectSteps
     {
         private readonly IDonationClient _donationClient;
         private readonly IServiceProvider _provider;
-        private readonly BearerTokenHandler _bearerTokenHandler;
+        private readonly DonationContext _context;
+        private readonly DonationFixtures _fixtures;
 
-        private TimeForCode.Donation.Api.Client.RegisterProjectResult? _registerResult;
-        private GetProjectsResponse? _getProjectsResult;
         private ProjectResponse? _getProjectByIdResult;
-        private ApiException? _exception;
 
-        /// <summary>The failed API response of the last call, shared with step classes that assert on pledges.</summary>
-        internal ApiException? LastException => _exception;
-        private string? _registeredProjectId;
-
-        public ProjectSteps(IDonationClient donationClient, IServiceProvider provider, BearerTokenHandler bearerTokenHandler)
+        public ProjectSteps(IDonationClient donationClient, IServiceProvider provider, DonationContext context, DonationFixtures fixtures)
         {
             _donationClient = donationClient;
             _provider = provider;
-            _bearerTokenHandler = bearerTokenHandler;
+            _context = context;
+            _fixtures = fixtures;
         }
 
         [Given("There is a project published by another user")]
@@ -49,11 +43,11 @@ namespace TimeForCode.Donation.Specifications.Steps
                 PublishedAt = new DateTimeOffset(2024, 1, 1, 0, 0, 0, TimeSpan.Zero)
             }.InStatus(TimeForCode.Donation.Values.ProjectStatus.Active);
 
-            var mockProjectRepository = _provider.GetRequiredService<Mock<IProjectRepository>>();
-            mockProjectRepository.Setup(x => x.GetByIdAsync(anotherUsersProject.Id.ToString()))
+            _fixtures.ProjectRepository.Setup(x => x.GetByIdAsync(anotherUsersProject.Id.ToString()))
                 .ReturnsAsync(anotherUsersProject);
 
-            _registeredProjectId = anotherUsersProject.Id.ToString();
+            _fixtures.TrackProject(anotherUsersProject);
+            _context.RegisteredProjectId = anotherUsersProject.Id.ToString();
         }
 
         [Given("The repository is public and active on the external platform")]
@@ -95,109 +89,65 @@ namespace TimeForCode.Donation.Specifications.Steps
         {
             var existingProject = ProjectBuilder.BuildActive();
 
-            var mockProjectRepository = _provider.GetRequiredService<Mock<IProjectRepository>>();
-            mockProjectRepository.Setup(x => x.GetByGithubUrlAsync(It.IsAny<Uri>()))
+            _fixtures.ProjectRepository.Setup(x => x.GetByGithubUrlAsync(It.IsAny<Uri>()))
                 .ReturnsAsync(existingProject);
-            mockProjectRepository.Setup(x => x.GetByIdAsync(existingProject.Id.ToString()))
+            _fixtures.ProjectRepository.Setup(x => x.GetByIdAsync(existingProject.Id.ToString()))
                 .ReturnsAsync(existingProject);
 
             var mockGithubService = _provider.GetRequiredService<Mock<IGithubRepositoryApiService>>();
             mockGithubService.Setup(x => x.GetRepositoryMetadataAsync(It.IsAny<Uri>()))
                 .ReturnsAsync(Result<GithubSnapshot>.Success(ProjectBuilder.BuildSnapshot()));
 
-            _registeredProjectId = existingProject.Id.ToString();
-        }
-
-        [Given("There are published projects on the time for code platform")]
-        public void GivenThereArePublishedProjectsOnTheTimeForCodePlatform()
-        {
-            _catalog.Add(ProjectBuilder.BuildActive(ProjectBuilder.IdFor(100)));
+            _context.RegisteredProjectId = existingProject.Id.ToString();
         }
 
         [Given("There is a published project on the time for code platform")]
         public void GivenThereIsAPublishedProjectOnTheTimeForCodePlatform()
         {
-            var project = ProjectBuilder.BuildActive();
-            var mockProjectRepository = _provider.GetRequiredService<Mock<IProjectRepository>>();
-            mockProjectRepository.Setup(x => x.GetByIdAsync(project.Id.ToString()))
-                .ReturnsAsync(project);
-            _catalog.Add(project);
-
-            _registeredProjectId = project.Id.ToString();
-        }
-
-        [Given("One of the projects has been unpublished")]
-        public void GivenOneOfTheProjectsHasBeenUnpublished()
-        {
-            _catalog.ForEach(p => p.Archive());
+            _fixtures.PublishActiveProject();
         }
 
         [When("The user publishes the repository on the time for code platform")]
         public async Task WhenTheUserPublishesTheRepositoryOnTheTimeForCodePlatformAsync()
         {
-            var mockProjectRepository = _provider.GetRequiredService<Mock<IProjectRepository>>();
-            mockProjectRepository.Setup(x => x.CreateAsync(It.IsAny<Project>()))
-                .Callback<Project>(p => _registeredProjectId = p.Id.ToString())
+            _fixtures.ProjectRepository.Setup(x => x.CreateAsync(It.IsAny<Project>()))
+                .Callback<Project>(p => _context.RegisteredProjectId = p.Id.ToString())
                 .Returns(Task.CompletedTask);
 
-            try
+            await _context.CaptureAsync(() => _donationClient.RegisterProjectAsync(new RegisterProjectRequest
             {
-                _registerResult = await _donationClient.RegisterProjectAsync(new RegisterProjectRequest
-                {
-                    GithubRepositoryUrl = new Uri(Constants.TestGithubRepositoryUrl)
-                });
-            }
-            catch (ApiException<ProblemDetails> exception)
-            {
-                _exception = exception;
-            }
-            catch (ApiException exception)
-            {
-                _exception = exception;
-            }
-        }
-
-        [When("The user requests the list of published projects")]
-        [When("The user requests the list of published projects without an account")]
-        public Task WhenTheUserRequestsTheListOfPublishedProjectsAsync()
-        {
-            return SearchAsync(null, null, null, null, null);
+                GithubRepositoryUrl = new Uri(Constants.TestGithubRepositoryUrl)
+            }));
         }
 
         [When("The user requests the project details")]
         [When("The user requests the project details without an account")]
-        public async Task WhenTheUserRequestsTheProjectDetailsAsync()
+        public Task WhenTheUserRequestsTheProjectDetailsAsync()
         {
-            var projectId = _registeredProjectId ?? Constants.TestProjectId;
+            string projectId = _context.RegisteredProjectId ?? Constants.TestProjectId;
 
-            try
-            {
-                _getProjectByIdResult = await _donationClient.GetProjectByIdAsync(projectId);
-            }
-            catch (ApiException<ProblemDetails> exception)
-            {
-                _exception = exception;
-            }
-            catch (ApiException exception)
-            {
-                _exception = exception;
-            }
+            return _context.CaptureAsync(async () => _getProjectByIdResult = await _donationClient.GetProjectByIdAsync(projectId));
+        }
+
+        [When("^The user requests the project with the identifier \"(.*)\"$")]
+        public Task WhenTheUserRequestsTheProjectWithTheIdentifierAsync(string identifier)
+        {
+            return _context.CaptureAsync(async () => _getProjectByIdResult = await _donationClient.GetProjectByIdAsync(identifier));
         }
 
         [Then("The project is registered on the time for code platform")]
         public void ThenTheProjectIsRegisteredOnTheTimeForCodePlatform()
         {
-            _exception.Should().BeNull();
-            _registerResult.Should().NotBeNull();
-            _registerResult!.ProjectId.Should().NotBeNullOrEmpty();
+            // The in-process and the live When steps both record the new project in the shared context.
+            _context.LastException.Should().BeNull();
+            _context.RegisteredProjectId.Should().NotBeNullOrEmpty();
         }
 
         [Then("The stored project metadata includes the following fields:")]
         public void ThenTheStoredProjectMetadataIncludesTheFollowingFields(DataTable table)
         {
-            _exception.Should().BeNull();
-            _registerResult.Should().NotBeNull();
-            _registerResult!.ProjectId.Should().NotBeNullOrEmpty();
+            _context.LastException.Should().BeNull();
+            _context.RegisteredProjectId.Should().NotBeNullOrEmpty();
 
             var fieldCheckers = new Dictionary<string, Func<Project, bool>>(StringComparer.OrdinalIgnoreCase)
             {
@@ -223,75 +173,15 @@ namespace TimeForCode.Donation.Specifications.Steps
             var fields = table.Rows.Select(row => row["Field"]).ToList();
             fields.Should().AllSatisfy(field => fieldCheckers.Should().ContainKey(field));
 
-            var mockProjectRepository = _provider.GetRequiredService<Mock<IProjectRepository>>();
-            mockProjectRepository.Verify(x => x.CreateAsync(It.Is<Project>(p =>
+            _fixtures.ProjectRepository.Verify(x => x.CreateAsync(It.Is<Project>(p =>
                 fields.All(field => fieldCheckers[field](p))
             )), Times.Once);
-        }
-
-        [Then("The user is informed the repository cannot be published")]
-        public void ThenTheUserIsInformedTheRepositoryCannotBePublished()
-        {
-            _exception.Should().NotBeNull();
-            _exception!.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
-        }
-
-        [Then("The user is informed the repository is already published")]
-        public void ThenTheUserIsInformedTheRepositoryIsAlreadyPublished()
-        {
-            _exception.Should().NotBeNull();
-            _exception!.StatusCode.Should().Be(StatusCodes.Status409Conflict);
-        }
-
-        [Then("The user is informed they do not have permission")]
-        public void ThenTheUserIsInformedTheyDoNotHavePermission()
-        {
-            _exception.Should().NotBeNull();
-            _exception!.StatusCode.Should().Be(StatusCodes.Status403Forbidden);
-        }
-
-        [Then("The user is informed they must be logged in")]
-        public void ThenTheUserIsInformedTheyMustBeLoggedIn()
-        {
-            _exception.Should().NotBeNull();
-            _exception!.StatusCode.Should().Be(StatusCodes.Status401Unauthorized);
-        }
-
-        [Then("A paginated list of projects is returned")]
-        public void ThenAPaginatedListOfProjectsIsReturned()
-        {
-            _exception.Should().BeNull();
-            _getProjectsResult.Should().NotBeNull();
-            _getProjectsResult!.Projects.Should().NotBeNull();
-        }
-
-        [Then("Each project includes a link to the original GitHub repository")]
-        public void ThenEachProjectIncludesALinkToTheOriginalGitHubRepository()
-        {
-            _getProjectsResult.Should().NotBeNull();
-            _getProjectsResult!.Projects.Should().NotBeEmpty();
-            _getProjectsResult!.Projects.Should().AllSatisfy(p => p.GithubUrl.Should().NotBeNullOrEmpty());
-        }
-
-        [Then("Each project summary includes stars, forks, and open issues counts")]
-        public void ThenEachProjectSummaryIncludesStarsForksAndOpenIssuesCounts()
-        {
-            var expectedSnapshot = ProjectBuilder.BuildSnapshot();
-
-            _getProjectsResult.Should().NotBeNull();
-            _getProjectsResult!.Projects.Should().NotBeEmpty();
-            _getProjectsResult!.Projects.Should().AllSatisfy(p =>
-            {
-                p.StargazersCount.Should().Be(expectedSnapshot.StargazersCount);
-                p.ForksCount.Should().Be(expectedSnapshot.ForksCount);
-                p.OpenIssuesCount.Should().Be(expectedSnapshot.OpenIssuesCount);
-            });
         }
 
         [Then("The full project details are returned")]
         public void ThenTheFullProjectDetailsAreReturned()
         {
-            _exception.Should().BeNull();
+            _context.LastException.Should().BeNull();
             _getProjectByIdResult.Should().NotBeNull();
             _getProjectByIdResult!.Name.Should().NotBeNullOrEmpty();
         }
@@ -301,14 +191,6 @@ namespace TimeForCode.Donation.Specifications.Steps
         {
             _getProjectByIdResult.Should().NotBeNull();
             _getProjectByIdResult!.GithubUrl.Should().NotBeNullOrEmpty();
-        }
-
-        [Then("The archived project is not included in the results")]
-        public void ThenTheArchivedProjectIsNotIncludedInTheResults()
-        {
-            _exception.Should().BeNull();
-            _getProjectsResult.Should().NotBeNull();
-            _getProjectsResult!.Projects.Should().BeEmpty();
         }
     }
 }

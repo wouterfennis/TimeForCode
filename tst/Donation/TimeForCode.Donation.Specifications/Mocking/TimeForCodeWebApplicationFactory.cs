@@ -29,6 +29,7 @@ namespace TimeForCode.Donation.Specifications.Mocking
                     typeof(IProjectRepository),
                     typeof(IDonorOrganizationRepository),
                     typeof(IContributorRepository),
+                    typeof(IMaintainerRepository),
                     typeof(IContributionRepository),
                     typeof(IDonationRepository),
                     typeof(IDonationAllocationRepository),
@@ -63,6 +64,11 @@ namespace TimeForCode.Donation.Specifications.Mocking
                 // Override JWT validation to accept symmetric test tokens
                 services.PostConfigure<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme, options =>
                 {
+                    // The host runs in Development, where Authority points at a stack that is not running; loading its metadata fails slowly on every authenticated request.
+                    options.Authority = null;
+                    // MetadataAddress is declared non-nullable, but null is the only value that stops the handler from deriving a metadata address.
+                    options.MetadataAddress = null!;
+                    options.ConfigurationManager = null;
                     var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Constants.TestJwtSigningKey));
                     options.TokenValidationParameters = new TokenValidationParameters
                     {
@@ -80,6 +86,7 @@ namespace TimeForCode.Donation.Specifications.Mocking
         public void ResetState()
         {
             Services.GetRequiredService<InMemoryContributorRepository>().Clear();
+            Services.GetRequiredService<InMemoryMaintainerRepository>().Clear();
             Services.GetRequiredService<InMemoryContributionRepository>().Clear();
             Services.GetRequiredService<InMemoryDonationRepository>().Clear();
             Services.GetRequiredService<InMemoryDonationAllocationRepository>().Clear();
@@ -106,6 +113,10 @@ namespace TimeForCode.Donation.Specifications.Mocking
             var contributorRepository = new InMemoryContributorRepository();
             services.TryAddSingleton(contributorRepository);
             services.TryAddSingleton<IContributorRepository>(contributorRepository);
+
+            var maintainerRepository = new InMemoryMaintainerRepository();
+            services.TryAddSingleton(maintainerRepository);
+            services.TryAddSingleton<IMaintainerRepository>(maintainerRepository);
 
             var contributionRepository = new InMemoryContributionRepository();
             services.TryAddSingleton(contributionRepository);

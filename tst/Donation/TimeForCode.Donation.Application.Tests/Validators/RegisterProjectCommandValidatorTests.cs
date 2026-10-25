@@ -1,4 +1,4 @@
-using FluentAssertions;
+using AwesomeAssertions;
 using TimeForCode.Donation.Application.Validators;
 using TimeForCode.Donation.Commands;
 
@@ -15,7 +15,9 @@ namespace TimeForCode.Donation.Application.Tests.Validators
             var command = new RegisterProjectCommand
             {
                 GithubRepositoryUrl = new Uri("https://github.com/owner/repo"),
-                UserId = "user-123"
+                UserId = "user-123",
+                GithubLogin = "octocat",
+                AvatarUrl = "https://avatars.githubusercontent.com/u/1"
             };
 
             var result = await _sut.ValidateAsync(command, CancellationToken.None);
@@ -29,7 +31,9 @@ namespace TimeForCode.Donation.Application.Tests.Validators
             var command = new RegisterProjectCommand
             {
                 GithubRepositoryUrl = new Uri("https://github.com/owner/repo"),
-                UserId = string.Empty
+                UserId = string.Empty,
+                GithubLogin = "octocat",
+                AvatarUrl = "https://avatars.githubusercontent.com/u/1"
             };
 
             var result = await _sut.ValidateAsync(command, CancellationToken.None);
@@ -44,7 +48,9 @@ namespace TimeForCode.Donation.Application.Tests.Validators
             var command = new RegisterProjectCommand
             {
                 GithubRepositoryUrl = new Uri("ftp://github.com/owner/repo"),
-                UserId = "user-123"
+                UserId = "user-123",
+                GithubLogin = "octocat",
+                AvatarUrl = "https://avatars.githubusercontent.com/u/1"
             };
 
             var result = await _sut.ValidateAsync(command, CancellationToken.None);

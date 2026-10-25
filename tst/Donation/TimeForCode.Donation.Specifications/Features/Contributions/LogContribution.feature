@@ -41,19 +41,19 @@ Scenario: Logging a contribution requires authentication
 	Given The user does not have an access token
 	And There is a published project on the time for code platform
 	When The user logs 3 hours on the project
-	Then The user is informed they must be logged in
+	Then The request is rejected as unauthorized
 
 Scenario: User attempts to log hours on a project that does not exist
 	Given The user has an access token
 	And There is no project with the given identifier
 	When The user logs 3 hours on the project
-	Then The user is informed the project was not found
+	Then The request is rejected as not found
 
 Scenario Outline: User attempts to log hours with a reference that is not a GitHub link
 	Given The user has an access token
 	And There is a published project on the time for code platform
 	When The user logs 3 hours on the project with the GitHub reference "<reference>"
-	Then The user is informed the GitHub reference is invalid
+	Then The request is rejected as invalid
 	And No hours are logged on the project
 
 	Examples:
@@ -66,7 +66,7 @@ Scenario Outline: User attempts to log an amount of hours that is not positive
 	Given The user has an access token
 	And There is a published project on the time for code platform
 	When The user logs <hours> hours on the project
-	Then The user is informed the hours are invalid
+	Then The request is rejected as invalid
 	And No hours are logged on the project
 
 	Examples:
@@ -91,4 +91,4 @@ Scenario: Logging hours on a registered project requires authentication
 	And The user has an active project registered on the live platform
 	And The user does not have an access token
 	When The user logs 3 hours on the project
-	Then The user is informed they must be logged in
+	Then The request is rejected as unauthorized

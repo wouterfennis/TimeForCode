@@ -1,4 +1,4 @@
-using FluentAssertions;
+using AwesomeAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
@@ -126,20 +126,6 @@ namespace TimeForCode.Authorization.Specifications.Steps
         {
             _anonymiseRequest.Should().NotBeNull();
             _infrastructure.MockHttp.GetMatchCount(_anonymiseRequest!).Should().Be(1);
-        }
-
-        [Then("The user is informed the account could not be deleted")]
-        public void ThenTheUserIsInformedTheAccountCouldNotBeDeleted()
-        {
-            _session.LastException.Should().NotBeNull();
-            _session.LastException!.StatusCode.Should().Be(StatusCodes.Status502BadGateway);
-        }
-
-        [Then("The user is informed the account deletion requires authentication")]
-        public void ThenTheUserIsInformedTheAccountDeletionRequiresAuthentication()
-        {
-            _session.LastException.Should().NotBeNull();
-            _session.LastException!.StatusCode.Should().Be(StatusCodes.Status401Unauthorized);
         }
 
         private async Task DeleteAsync()

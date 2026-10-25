@@ -1,4 +1,4 @@
-using FluentAssertions;
+using AwesomeAssertions;
 using Microsoft.AspNetCore.Http;
 using Reqnroll;
 using TimeForCode.Authorization.Api.Client;
@@ -14,11 +14,13 @@ namespace TimeForCode.Authorization.Specifications.Steps
         private readonly IAuthClient _authClient;
         private TryVoid<ApiException?>? _result = null;
         private readonly ScenarioInfrastructure _infrastructure;
+        private readonly SessionContext _session;
 
-        public LoginSteps(IAuthClient authClient, ScenarioInfrastructure infrastructure)
+        public LoginSteps(IAuthClient authClient, ScenarioInfrastructure infrastructure, SessionContext session)
         {
             _authClient = authClient;
             _infrastructure = infrastructure;
+            _session = session;
         }
 
         [Given("The user logs in at the time for code platform")]
@@ -33,6 +35,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
         public async Task WhenTheUserLogsInAtTheTimeForCodePlatformWithAnInvalidRedirectUrlAsync()
         {
             _result = await _authClient.TryLoginAsync(IdentityProvider.Github, new Uri("http://invalid-uri.com"));
+            _session.LastException = _result.Exception;
         }
 
         [Then("The user is redirected to the external platform")]
@@ -49,14 +52,6 @@ namespace TimeForCode.Authorization.Specifications.Steps
             var location = new Uri(_result!.Exception!.Headers["Location"].Single());
 
             System.Web.HttpUtility.ParseQueryString(location.Query).AllKeys.Should().NotContain("scope");
-        }
-
-        [Then("The user is informed the login redirect uri is rejected")]
-        public void ThenTheUserIsInformedTheRedirectUriIsRejected()
-        {
-            _result.Should().NotBeNull();
-            _result!.Exception.Should().NotBeNull();
-            _result!.Exception!.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
         }
     }
 }

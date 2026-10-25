@@ -1,41 +1,49 @@
-using FluentAssertions;
-using Microsoft.AspNetCore.Http;
+using AwesomeAssertions;
 using MongoDB.Bson;
 using Reqnroll;
+using TimeForCode.Donation.Api.Client;
 using TimeForCode.Donation.Domain;
+using TimeForCode.Donation.Specifications.Mocking;
 
 namespace TimeForCode.Donation.Specifications.Steps
 {
-    internal partial class ProjectSteps
+    /// <summary>Anonymising the contributions of a user whose account was deleted.</summary>
+    [Binding]
+    internal class ContributorAnonymisationSteps
     {
         private const string OtherUserId = "507f1f77bcf86cd799439021";
         private const string OtherUserLogin = "hubot";
         private const string OtherUserAvatarUrl = "https://avatars.githubusercontent.com/u/480938?v=4";
         private const string UserWithoutContributionsId = "507f1f77bcf86cd799439099";
 
+        private readonly IDonationClient _donationClient;
+        private readonly BearerTokenHandler _bearerTokenHandler;
+        private readonly DonationContext _context;
+        private readonly DonationFixtures _fixtures;
+
         private ObjectId? _anonymisedContributorId;
+
+        public ContributorAnonymisationSteps(IDonationClient donationClient, BearerTokenHandler bearerTokenHandler, DonationContext context, DonationFixtures fixtures)
+        {
+            _donationClient = donationClient;
+            _bearerTokenHandler = bearerTokenHandler;
+            _context = context;
+            _fixtures = fixtures;
+        }
 
         [Given("Another user has already logged {int} hours on the project")]
         public void GivenAnotherUserHasAlreadyLoggedHoursOnTheProject(int hours)
         {
             var other = Contributor.Create(OtherUserId, OtherUserLogin, OtherUserAvatarUrl);
-            Contributors.Add(other);
-            var nextMoment = FirstLoggedAt.AddDays(Contributions.Contributions.Count);
-            Contributions.CreateAsync(NewContribution(ObjectIdOf(_registeredProjectId!), other, hours, nextMoment));
-        }
-
-        [Given("The user has already logged {int} hours on a published project")]
-        public void GivenTheUserHasAlreadyLoggedHoursOnAPublishedProject(int hours)
-        {
-            GivenThereIsAPublishedProjectOnTheTimeForCodePlatform();
-            GivenTheUserHasAlreadyLoggedHoursOnTheProject(hours);
+            _fixtures.Contributors.Add(other);
+            _fixtures.LogHours(other, hours);
         }
 
         [Given("The account of the user has been deleted at the time for code platform")]
         [When("The account of the user is deleted at the time for code platform")]
         public Task WhenTheAccountOfTheUserIsDeletedAtTheTimeForCodePlatformAsync()
         {
-            _anonymisedContributorId = Contributors.Contributors
+            _anonymisedContributorId = _fixtures.Contributors.Contributors
                 .SingleOrDefault(c => c.PlatformUserId == Constants.TestUserId)?.Id;
 
             return AnonymiseAsServiceAsync(Constants.TestUserId);
@@ -50,16 +58,16 @@ namespace TimeForCode.Donation.Specifications.Steps
         [When("The user asks to anonymise a contributor")]
         public Task WhenTheUserAsksToAnonymiseAContributorAsync()
         {
-            return CaptureAsync(() => _donationClient.AnonymiseContributorAsync(Constants.TestUserId));
+            return _context.CaptureAsync(() => _donationClient.AnonymiseContributorAsync(Constants.TestUserId));
         }
 
         [Then("The contributor of the user is shown as a deleted user")]
         public void ThenTheContributorOfTheUserIsShownAsADeletedUser()
         {
-            _exception.Should().BeNull();
+            _context.LastException.Should().BeNull();
             _anonymisedContributorId.Should().NotBeNull();
 
-            var contributor = Contributors.Contributors.Single(c => c.Id == _anonymisedContributorId);
+            var contributor = _fixtures.Contributors.Contributors.Single(c => c.Id == _anonymisedContributorId);
             contributor.GithubLogin.Should().Be(Contributor.DeletedUserLogin);
             contributor.AvatarUrl.Should().Be(Contributor.DeletedUserAvatarUrl);
             contributor.PlatformUserId.Should().NotBe(Constants.TestUserId);
@@ -68,9 +76,9 @@ namespace TimeForCode.Donation.Specifications.Steps
         [Then("The contributions of the project no longer show the login or avatar of the user")]
         public void ThenTheContributionsOfTheProjectNoLongerShowTheLoginOrAvatarOfTheUser()
         {
-            _getContributionsResult.Should().NotBeNull();
-            _getContributionsResult!.Contributions.Should().NotBeEmpty();
-            _getContributionsResult.Contributions.Should().OnlyContain(c =>
+            _context.ContributionsResult.Should().NotBeNull();
+            _context.ContributionsResult!.Contributions.Should().NotBeEmpty();
+            _context.ContributionsResult.Contributions.Should().OnlyContain(c =>
                 c.ContributorGitHubLogin == Contributor.DeletedUserLogin
                 && c.ContributorAvatarUrl == Contributor.DeletedUserAvatarUrl);
         }
@@ -78,37 +86,31 @@ namespace TimeForCode.Donation.Specifications.Steps
         [Then("The contributor of the other user is unchanged")]
         public void ThenTheContributorOfTheOtherUserIsUnchanged()
         {
-            var other = Contributors.Contributors.Single(c => c.PlatformUserId == OtherUserId);
+            var other = _fixtures.Contributors.Contributors.Single(c => c.PlatformUserId == OtherUserId);
             other.GithubLogin.Should().Be(OtherUserLogin);
             other.AvatarUrl.Should().Be(OtherUserAvatarUrl);
 
-            _getContributionsResult.Should().NotBeNull();
-            _getContributionsResult!.Contributions.Should().Contain(c =>
+            _context.ContributionsResult.Should().NotBeNull();
+            _context.ContributionsResult!.Contributions.Should().Contain(c =>
                 c.ContributorGitHubLogin == OtherUserLogin && c.ContributorAvatarUrl == OtherUserAvatarUrl);
         }
 
         [Then("The anonymisation is confirmed")]
         public void ThenTheAnonymisationIsConfirmed()
         {
-            _exception.Should().BeNull();
-        }
-
-        [Then("The user is informed they are not allowed to anonymise a contributor")]
-        public void ThenTheUserIsInformedTheyAreNotAllowedToAnonymiseAContributor()
-        {
-            _exception.Should().NotBeNull();
-            _exception!.StatusCode.Should().Be(StatusCodes.Status403Forbidden);
+            _context.LastException.Should().BeNull();
         }
 
         private async Task AnonymiseAsServiceAsync(string userId)
         {
             _bearerTokenHandler.Token = AuthenticationSteps.GenerateTestToken("authorization-service", "service");
 
-            await CaptureAsync(() => _donationClient.AnonymiseContributorAsync(userId));
+            await _context.CaptureAsync(() => _donationClient.AnonymiseContributorAsync(userId));
 
-            if (_exception == null && _registeredProjectId != null)
+            if (_context.LastException == null && _context.RegisteredProjectId != null)
             {
-                await GetContributionsAsync(_registeredProjectId);
+                string projectId = _context.RegisteredProjectId;
+                await _context.CaptureAsync(async () => _context.ContributionsResult = await _donationClient.GetContributionsAsync(projectId));
             }
         }
     }

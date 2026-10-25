@@ -1,4 +1,4 @@
-using FluentAssertions;
+using AwesomeAssertions;
 
 namespace TimeForCode.Authorization.Specifications.Mocking
 {

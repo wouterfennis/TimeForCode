@@ -24,7 +24,7 @@ Scenario: Authenticated user retrieves a single repository by owner and name
 Scenario Outline: Requesting a repository with an invalid owner or name is rejected
 	Given The user has an access token
 	When The user requests repository "<repository>" from the time for code platform
-	Then The user is informed the repository request is invalid
+	Then The request is rejected as invalid
 
 	Examples:
 		| repository                                                                                             |

@@ -50,6 +50,11 @@ namespace TimeForCode.Donation.Specifications.Mocking
             return OldestFirst(d => d.ProjectId.ToString() == projectId && d.Status == DonationStatus.Active);
         }
 
+        public Task<IReadOnlyList<DonationEntity>> GetReceivedByProjectIdsAsync(IReadOnlyCollection<string> projectIds, CancellationToken cancellationToken)
+        {
+            return OldestFirst(d => projectIds.Contains(d.ProjectId.ToString()) && d.Status is DonationStatus.Active or DonationStatus.Completed);
+        }
+
         public Task<IReadOnlyList<DonationEntity>> GetByDonorOrganizationIdsAsync(IReadOnlyCollection<string> organizationIds, CancellationToken cancellationToken)
         {
             return OldestFirst(d => d.DonorOrganizationId is ObjectId id && organizationIds.Contains(id.ToString()));

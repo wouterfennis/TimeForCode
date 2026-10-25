@@ -33,7 +33,7 @@ Per module under `tst/<Module>/TimeForCode.<Module>.<Kind>/`:
 | `Specifications` | Reqnroll scenarios from the issue's Gherkin comment, run against `TimeForCodeWebApplicationFactory` | Outside-in acceptance tests |
 | `Architecture.Tests` | ArchUnitNET layer and naming rules | Violations break the build |
 
-Frameworks: **MSTest**, FluentAssertions, Moq, Verify.MSTest, Reqnroll, ArchUnitNET. Do not introduce xUnit/NUnit/NetArchTest.
+Frameworks: **MSTest**, AwesomeAssertions, Moq, Verify.MSTest, Reqnroll, ArchUnitNET. Do not introduce xUnit/NUnit/NetArchTest.
 Not every module has every kind (for example `Shared.Tests`); check `repo-map` instead of assuming.
 
 ## Conventions
@@ -44,6 +44,16 @@ Not every module has every kind (for example `Shared.Tests`); check `repo-map` i
 - Every new handler and validator gets a positive and a negative-path unit test; every Gherkin scenario gets bound steps.
 - Test data inline or in `TestData/`; deterministic (fixed GUIDs); no shared mutable state between tests.
 - `[Ignore]` is allowed only with `// TODO(review): flaky - <reason>` and an entry under Loose Ends.
+
+## Step style (Reqnroll)
+
+Run `pwsh scripts/step-catalog.ps1 -Steps` before adding a step: it lists every step with its usage count and definition file, and reports unused definitions. Baseline numbers: `docs/current/reqnroll-baseline.md`.
+
+- **One rejection vocabulary.** Express a rejected request with the existing generic rejection steps, not one step per endpoint; add a status-only rejection step only when no generic one fits.
+- **Parameterize, do not copy.** A step that differs from an existing one in a value or a word becomes one step with a `{string}`/`{int}`/`{word}` parameter (or an alternation in a regex), not a second step.
+- **Tables for optional fields.** Three or more optional fields in a Given or When go in a data table, not in a chain of `And` steps or a step per combination.
+- **`Background` for shared preambles.** Steps repeated at the start of every scenario in a feature move to `Background`.
+- **Delete what the catalog reports unused**, and keep the step count per feature no higher than the scenarios need.
 
 ## Running tests
 

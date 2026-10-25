@@ -16,4 +16,4 @@ Scenario: User profile is not found
 	Given The user has an access token
 	And The user does not have a profile on the time for code platform
 	When The user requests their profile from the time for code platform
-	Then The user is informed their profile was not found
+	Then The request is rejected as not found

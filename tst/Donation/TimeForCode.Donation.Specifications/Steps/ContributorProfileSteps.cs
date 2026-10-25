@@ -1,5 +1,4 @@
-using FluentAssertions;
-using Microsoft.AspNetCore.Http;
+using AwesomeAssertions;
 using MongoDB.Bson;
 using Reqnroll;
 using TimeForCode.Donation.Api.Client;
@@ -7,29 +6,39 @@ using TimeForCode.Donation.Domain;
 
 namespace TimeForCode.Donation.Specifications.Steps
 {
-    internal partial class ProjectSteps
+    /// <summary>The contributor profile of the user and of other users.</summary>
+    [Binding]
+    internal class ContributorProfileSteps
     {
         private const string ProfileOtherUserId = "another-user-id";
+
+        private readonly IDonationClient _donationClient;
+        private readonly DonationContext _context;
+        private readonly DonationFixtures _fixtures;
 
         private ContributorProfileResponse? _profileResult;
         private GetDonorOrganizationContributorsResponse? _organizationContributorsResult;
         private string? _otherContributorId;
 
-        /// <summary>The donor organization of the scenario, set by the donor organization steps so a profile can be linked to it.</summary>
-        internal string? ScenarioDonorOrganizationId { get; set; }
+        public ContributorProfileSteps(IDonationClient donationClient, DonationContext context, DonationFixtures fixtures)
+        {
+            _donationClient = donationClient;
+            _context = context;
+            _fixtures = fixtures;
+        }
 
-        private Contributor OtherContributor => Contributors.Contributors.Single(c => c.PlatformUserId == ProfileOtherUserId);
+        private Contributor OtherContributor => _fixtures.Contributors.Contributors.Single(c => c.PlatformUserId == ProfileOtherUserId);
 
         [Given("The user is registered as a contributor on the time for code platform")]
         public void GivenTheUserIsRegisteredAsAContributorOnTheTimeForCodePlatform()
         {
-            TestUserContributor();
+            _fixtures.TestUserContributor();
         }
 
         [Given("The user is registered as a contributor with the role {string}")]
         public void GivenTheUserIsRegisteredAsAContributorWithTheRole(string role)
         {
-            TestUserContributor().UpdateProfile(role, null, null, null);
+            _fixtures.TestUserContributor().UpdateProfile(role, null, null, null);
         }
 
         [Given("Another user is registered as a contributor on the time for code platform")]
@@ -41,7 +50,7 @@ namespace TimeForCode.Donation.Specifications.Steps
         [Given("Another user is registered as a contributor affiliated with the donor organization")]
         public void GivenAnotherUserIsRegisteredAsAContributorAffiliatedWithTheDonorOrganization()
         {
-            RegisterOtherContributor().UpdateProfile(null, null, null, ObjectIdOf(ScenarioDonorOrganizationId!));
+            RegisterOtherContributor().UpdateProfile(null, null, null, DonationFixtures.ObjectIdOf(_context.DonorOrganizationId!));
         }
 
         [Given("There is no contributor with the given identifier")]
@@ -53,20 +62,20 @@ namespace TimeForCode.Donation.Specifications.Steps
         [When("The user requests their own contributor profile")]
         public Task WhenTheUserRequestsTheirOwnContributorProfileAsync()
         {
-            return CaptureAsync(async () => _profileResult = await _donationClient.GetMyContributorProfileAsync());
+            return _context.CaptureAsync(async () => _profileResult = await _donationClient.GetMyContributorProfileAsync());
         }
 
         [When("The user requests the contributor profile of the other user")]
         public Task WhenTheUserRequestsTheContributorProfileOfTheOtherUserAsync()
         {
-            return CaptureAsync(async () => _profileResult = await _donationClient.GetContributorProfileAsync(_otherContributorId!));
+            return _context.CaptureAsync(async () => _profileResult = await _donationClient.GetContributorProfileAsync(_otherContributorId!));
         }
 
         [When("The user requests the contributors of the donor organization")]
         public Task WhenTheUserRequestsTheContributorsOfTheDonorOrganizationAsync()
         {
-            return CaptureAsync(async () => _organizationContributorsResult =
-                await _donationClient.GetDonorOrganizationContributorsAsync(ScenarioDonorOrganizationId!));
+            return _context.CaptureAsync(async () => _organizationContributorsResult =
+                await _donationClient.GetDonorOrganizationContributorsAsync(_context.DonorOrganizationId!));
         }
 
         [When("The user updates their contributor profile with the role {string}")]
@@ -110,13 +119,13 @@ namespace TimeForCode.Donation.Specifications.Steps
         [When("The user links their contributor profile to the donor organization")]
         public Task WhenTheUserLinksTheirContributorProfileToTheDonorOrganizationAsync()
         {
-            return UpdateOwnProfileAsync(new UpdateContributorProfileRequest { DonorOrganizationId = ScenarioDonorOrganizationId });
+            return UpdateOwnProfileAsync(new UpdateContributorProfileRequest { DonorOrganizationId = _context.DonorOrganizationId });
         }
 
         [When("The user updates the contributor profile of the other user with the role {string}")]
         public Task WhenTheUserUpdatesTheContributorProfileOfTheOtherUserWithTheRoleAsync(string role)
         {
-            return CaptureAsync(async () => _profileResult = await _donationClient.UpdateContributorProfileAsync(
+            return _context.CaptureAsync(async () => _profileResult = await _donationClient.UpdateContributorProfileAsync(
                 _otherContributorId!,
                 new UpdateContributorProfileRequest { Role = role }));
         }
@@ -124,10 +133,10 @@ namespace TimeForCode.Donation.Specifications.Steps
         [Then("The contributor profile is updated on the time for code platform")]
         public void ThenTheContributorProfileIsUpdatedOnTheTimeForCodePlatform()
         {
-            _exception.Should().BeNull();
+            _context.LastException.Should().BeNull();
             _profileResult.Should().NotBeNull();
 
-            var stored = Contributors.Contributors.Single(c => c.PlatformUserId == Constants.TestUserId);
+            var stored = _fixtures.Contributors.Contributors.Single(c => c.PlatformUserId == Constants.TestUserId);
             stored.Id.ToString().Should().Be(_profileResult!.Id);
             stored.Role.Should().Be(_profileResult.Role);
             stored.Skills.Should().Equal(_profileResult.Skills);
@@ -160,19 +169,19 @@ namespace TimeForCode.Donation.Specifications.Steps
         public void ThenTheContributorProfileShowsTheAffiliationWithTheDonorOrganization()
         {
             _profileResult.Should().NotBeNull();
-            _profileResult!.DonorOrganizationId.Should().Be(ScenarioDonorOrganizationId);
+            _profileResult!.DonorOrganizationId.Should().Be(_context.DonorOrganizationId);
         }
 
         [Then("The contributor profile is unchanged")]
         public void ThenTheContributorProfileIsUnchanged()
         {
-            AssertEmptyProfile(Contributors.Contributors.Single(c => c.PlatformUserId == Constants.TestUserId));
+            AssertEmptyProfile(_fixtures.Contributors.Contributors.Single(c => c.PlatformUserId == Constants.TestUserId));
         }
 
         [Then("The contributor profile of the other user is returned")]
         public void ThenTheContributorProfileOfTheOtherUserIsReturned()
         {
-            _exception.Should().BeNull();
+            _context.LastException.Should().BeNull();
             _profileResult.Should().NotBeNull();
             _profileResult!.Id.Should().Be(_otherContributorId);
         }
@@ -180,7 +189,7 @@ namespace TimeForCode.Donation.Specifications.Steps
         [Then("The contributor profile of the other user shows the role {string}")]
         public void ThenTheContributorProfileOfTheOtherUserShowsTheRole(string role)
         {
-            _exception.Should().BeNull();
+            _context.LastException.Should().BeNull();
             _profileResult.Should().NotBeNull();
             _profileResult!.Role.Should().Be(role);
             OtherContributor.Role.Should().Be(role);
@@ -195,49 +204,21 @@ namespace TimeForCode.Donation.Specifications.Steps
         [Then("The contributors of the donor organization are returned")]
         public void ThenTheContributorsOfTheDonorOrganizationAreReturned()
         {
-            _exception.Should().BeNull();
+            _context.LastException.Should().BeNull();
             _organizationContributorsResult.Should().NotBeNull();
             _organizationContributorsResult!.Contributors.Should().ContainSingle()
                 .Which.Id.Should().Be(_otherContributorId);
         }
 
-        [Then("The user is informed the contributor profile is invalid")]
-        public void ThenTheUserIsInformedTheContributorProfileIsInvalid()
-        {
-            _exception.Should().NotBeNull();
-            _exception!.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
-        }
-
-        [Then("The user is informed they are not allowed to access this contributor profile")]
-        public void ThenTheUserIsInformedTheyAreNotAllowedToAccessThisContributorProfile()
-        {
-            _exception.Should().NotBeNull();
-            _exception!.StatusCode.Should().Be(StatusCodes.Status403Forbidden);
-        }
-
-        [Then("The user is informed they are not allowed to view the contributors of a donor organization")]
-        public void ThenTheUserIsInformedTheyAreNotAllowedToViewTheContributorsOfADonorOrganization()
-        {
-            _exception.Should().NotBeNull();
-            _exception!.StatusCode.Should().Be(StatusCodes.Status403Forbidden);
-        }
-
-        [Then("The user is informed the contributor was not found")]
-        public void ThenTheUserIsInformedTheContributorWasNotFound()
-        {
-            _exception.Should().NotBeNull();
-            _exception!.StatusCode.Should().Be(StatusCodes.Status404NotFound);
-        }
-
         private Task UpdateOwnProfileAsync(UpdateContributorProfileRequest request)
         {
-            return CaptureAsync(async () => _profileResult = await _donationClient.UpdateMyContributorProfileAsync(request));
+            return _context.CaptureAsync(async () => _profileResult = await _donationClient.UpdateMyContributorProfileAsync(request));
         }
 
         private Contributor RegisterOtherContributor()
         {
             var contributor = Contributor.Create(ProfileOtherUserId, "other-user", "https://avatars.githubusercontent.com/u/2?v=4");
-            Contributors.Add(contributor);
+            _fixtures.Contributors.Add(contributor);
             _otherContributorId = contributor.Id.ToString();
             return contributor;
         }

@@ -1,0 +1,2 @@
+// Class level (one feature at a time per worker) on purpose: every scenario builds its own host, but the unit-style projects use method level.
+[assembly: Parallelize(Scope = ExecutionScope.ClassLevel)]

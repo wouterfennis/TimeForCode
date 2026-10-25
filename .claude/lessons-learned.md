@@ -37,6 +37,12 @@ Non-obvious knowledge from past sessions. Read and update through skill `lessons
 - **Date / issue:** 2026-10-15 / #110
 - **Lesson:** The read-guard hook blocks Bash reads (`grep`, `cat`, `ls`...) of `node_modules` and lockfiles, except a dependency's own `package.json`; append `# allow-excluded` when a wider read is intended. Local Node is 24.12, so packages needing 24.15 or later fail with `engine-strict`; pick a release that supports every Node 24.
 
+### Assertions library is AwesomeAssertions 9.x, namespace `AwesomeAssertions`
+
+- **Date / issue:** 2026-10-25 / #101
+- **Lesson:** Tests use `using AwesomeAssertions;` (package 9.6.0). The 7.x line keeps the `FluentAssertions` namespace, so only 8.x and later renamed it. Some `.cs` files start with a BOM, so a `sed 's/^using .../'` misses the first line; grep the whole tree for the old name afterwards. Architecture tests use ArchUnitNET's own `.Should()` and need no assertions package.
+- **Why:** FluentAssertions 8+ is commercially licensed; two files kept the old using after the first sed pass.
+- **How to apply:** never add `FluentAssertions` back; after any bulk rename run `grep -rn FluentAssertions tst src *.props` and expect no hits outside docs that explain the switch.
 ### The Podman guard also matches the compose file name
 
 - **Date / issue:** 2026-10-21 / #111
@@ -83,7 +89,7 @@ Non-obvious knowledge from past sessions. Read and update through skill `lessons
 ### Reqnroll catalog fakes need distinct ids and `BsonDocument` needs `ToJson()` in assertions
 
 - **Date / issue:** 2026-10-13 / #76
-- **Lesson:** `ProjectBuilder.BuildActive()` and the lifecycle project share `Constants.TestProjectId`, so an "is not included" check on that id fails; use `ProjectBuilder.IdFor(n)`. FluentAssertions treats `BsonDocument` as a collection of elements, so compare `ToJson()` strings.
+- **Lesson:** `ProjectBuilder.BuildActive()` and the lifecycle project share `Constants.TestProjectId`, so an "is not included" check on that id fails; use `ProjectBuilder.IdFor(n)`. AwesomeAssertions (like FluentAssertions before it) treats `BsonDocument` as a collection of elements, so compare `ToJson()` strings.
 - **Why:** both cost a failed run each.
 - **How to apply:** give each project in an in-memory spec catalog its own id; render Mongo filters with `RenderArgs<T>` (driver 3.x) and compare JSON.
 
@@ -94,12 +100,12 @@ Non-obvious knowledge from past sessions. Read and update through skill `lessons
 - **Why:** manual `if (pageNumber < 1)` checks left the schema silent, and the donor-organization list answered 500 for huge page numbers.
 - **How to apply:** put shared limits in the module's `ApiConstraints`, change the Swagger snapshot only after reading the diff, and give a spec scenario to every behaviour change (for example malformed ids now 400, not 404).
 
-### Spec step classes can be split with `partial`
+### Donation step classes share state through `DonationContext`
 
-- **Date / issue:** 2026-10-08 / #75
-- **Lesson:** Reqnroll step classes keep state in private fields (for example `_exception`), so shared Then-steps only see state in the same class. Split large step classes as `partial class` files (`ProjectSteps.Lifecycle.cs`).
-- **Why:** a second step class would not see the first one's captured API error.
-- **How to apply:** extend the existing partial class rather than adding a new binding class for the same feature area.
+- **Date / issue:** 2026-10-24 / #151 (replaces the earlier `partial` advice from #75)
+- **Lesson:** Donation step classes are one per aggregate (`ProjectSteps`, `ProjectLifecycleSteps`, `ContributionSteps`, `DonationSteps`, ...). State several classes need (`LastException`, list results, ids) lives in `DonationContext`; arrange helpers they share live in `DonationFixtures`. Both are injected per scenario.
+- **Why:** private fields per step class hid duplicates and forced step classes to reach into each other.
+- **How to apply:** put a failed response through `_context.CaptureAsync`, never in a private field; add a new aggregate as its own `[Binding]` class taking the context.
 
 ### Live scenarios sign in through the real login and need the stack's admin secret
 

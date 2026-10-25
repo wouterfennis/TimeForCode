@@ -35,6 +35,8 @@ graph LR
 
 BDD-style acceptance tests that describe the expected behaviour of the Authorization API from the outside. These tests cover the full authentication flow using the Identity Provider Mock as the external OAuth 2.0 provider.
 
+The features run in parallel (`ExecutionScope.ClassLevel`, one test class per feature file). This is safe because every scenario builds its own host, cookie container, `SessionContext` and fakes.
+
 ### Authorization — Api.Tests
 
 **Path**: `tst/Authorization/TimeForCode.Authorization.Api.Tests`
@@ -101,6 +103,8 @@ The mock implements:
 **Path**: `tst/Donation/TimeForCode.Donation.Specifications`
 
 BDD-style acceptance tests for the Donation API. Covers the full project lifecycle: publishing a repository, browsing the project listing, and unpublishing a project, plus pledging hours, the donation lifecycle (activate, cancel, automatic completion) and browsing donations with their progress (`Features/Donations`). Uses an in-memory donation repository next to a `WebApplicationFactory` with Moq and `MockHttp` to stub the MongoDB repositories and the GitHub API service.
+
+The scenarios run sequentially: one shared host serves every scenario and is reset before each one, so parallel execution makes scenarios wipe each other's state (70 to 100 of 213 failed in a trial). The host clears the JwtBearer `Authority` so it does not try to load OpenID metadata from the Development stack; without that, every authenticated scenario took about 1.15 s on Windows.
 
 ### Donation — Api.Tests
 
@@ -234,6 +238,16 @@ The Donation Specifications run real scenarios against the compose stack with re
 | `TIMEFORCODE_LIVE_TEST_ADMIN_SECRET` | The `TEST_ADMIN_ACCESS_SECRET` the stack was started with, needed to approve projects |
 | `TIMEFORCODE_LIVE_CLIENT_REDIRECT_URI` | Optional redirect URI of the login, default `http://localhost:8084` |
 
+#### CI job
+
+The `live` job in `.github/workflows/pullRequest.yaml` runs on every pull request to `main`, in parallel with `build`. It builds and starts the backend services of the compose stack (not the front end) in the background, polls the Authorization API, identity provider mock and Donation API until each answers (three minutes per service at most), then runs `scripts/smoke-test.ps1 -ContainerCli docker` and `dotnet test` on the Donation Specifications with `TestCategory=live`. A failing smoke check or live scenario fails the job. The stack's admin secret is random per run and masked in the log, so no repository secret is needed.
+
+On failure the job uploads the artifact `live-tier-diagnostics` with the container logs (`compose-logs.txt`) and the `.trx` results. The stack is always torn down, volumes included.
+
+Duration: about 2 minutes in pull request runs (2026-10-24: 2m28s on the first run, 1m53s once the Authorization image build stopped waiting for Mongo; both with a cold image build, a 10/10 smoke test and 14 live scenarios). That is well under the ten minute budget, so the job stays on every pull request; if later runs exceed roughly ten minutes, move the trigger from `pull_request` to a nightly `schedule` instead. The job has a 30 minute timeout.
+
+The image build logs `warn` lines about the data protection key ring (no encryptor, keys stored in the container). They come from the build-time OpenAPI document generation, which starts the app without a database, and are not failures of the job. The Authorization API skips its database-backed key ring during that generation (entry assembly `GetDocument.Insider`), so the build no longer waits 30 seconds for a Mongo that is not there.
+
 ```powershell
 $env:TEST_ADMIN_ACCESS_SECRET = 'choose-a-secret'
 podman compose up -d
@@ -243,7 +257,7 @@ $env:TIMEFORCODE_LIVE_TEST_ADMIN_SECRET = $env:TEST_ADMIN_ACCESS_SECRET
 dotnet test tst/Donation/TimeForCode.Donation.Specifications --filter "TestCategory=live"
 ```
 
-A scenario that needs real persistence carries `@liveonly` next to `@live`: the in-process run reports it as skipped (the mocks cannot store data), the live run executes it. The live steps live in `Steps/ProjectSteps.Live.cs` and `Steps/LiveDonorOrganizationSteps.cs` and use only the API. Reruns pass because every scenario registers a project or donor organization with a unique name, and an `@liveonly` clean-up archives the active project and deletes the donor organization.
+A scenario that needs real persistence carries `@liveonly` next to `@live`: the in-process run reports it as skipped (the mocks cannot store data), the live run executes it. The live steps live in `Steps/LiveProjectSteps.cs` and `Steps/LiveDonorOrganizationSteps.cs` and use only the API. Reruns pass because every scenario registers a project or donor organization with a unique name, and an `@liveonly` clean-up archives the active project and deletes the donor organization.
 
 Covered live: contributor profile (including the Auth-issued JWT), project publishing, project search (an approved project is found, a draft is not), contributions, donation pledges and donor organizations, plus the unauthenticated rejections.
 
@@ -258,6 +272,10 @@ The `Documentation Site` workflow (`.github/workflows/docs-site.yaml`) runs on p
 ### E2E tests
 
 The `frontend` job ("Front-end checks") in `pullRequest.yaml` and `build.yaml` runs `npm ci --ignore-scripts`, lint, typecheck, tests with coverage and the build. It uploads the lcov file as the `frontend-coverage` artifact, which the `build` job (`needs: frontend`) downloads before the SonarCloud scan end. On `main`, `release-please` also depends on this job.
+
+### Specification baseline
+
+Scenario, step and line counts of the Reqnroll projects, and how to regenerate them with `scripts/step-catalog.ps1`: [reqnroll-baseline.md](reqnroll-baseline.md).
 
 ---
 

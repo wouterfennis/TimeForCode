@@ -6,5 +6,7 @@ namespace TimeForCode.Donation.Commands
     {
         public required Uri GithubRepositoryUrl { get; init; }
         public required string UserId { get; init; }
+        public required string GithubLogin { get; init; }
+        public required string AvatarUrl { get; init; }
     }
 }

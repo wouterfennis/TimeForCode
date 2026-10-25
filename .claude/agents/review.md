@@ -46,6 +46,7 @@ Start from the log's Completed list, then verify with Grep/Glob/Read ranges.
 - **Conventions**: `<Verb><Noun>Command`, `<Verb><Noun>Handler`, `I<Noun>`, tests `<Method>_<Condition>_<Expected>`, steps `<Feature>Steps`.
 - **Errors**: failures via `Result<T>.Failure`, API errors as `ProblemDetails`, no swallowed `catch (Exception)`.
 - **Reqnroll steps**: personas "The user" / "The external platform" / "The time for code platform"; no class names, HTTP verbs or status codes in step text; existing steps reused (Grep for near-duplicates).
+- **Step reuse**: run `pwsh scripts/step-catalog.ps1`; flag a new step where an existing or parameterized one would do, a status-only rejection step added next to the generic rejection steps, and any unused definition or feature step without a definition it reports (style: `.claude/rules/testing-strategy.md`, "Step style").
 - **Mongo**: new collections/queries/indexes follow skill `mongo-review` expectations.
 - **Security**: authorisation attributes present on new endpoints, no secrets, input validated.
 - **Markers**: Grep `TODO\(review\)`; each must be a finding and appear in Loose Ends.

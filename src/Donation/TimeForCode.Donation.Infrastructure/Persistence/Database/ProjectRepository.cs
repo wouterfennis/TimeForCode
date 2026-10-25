@@ -43,7 +43,11 @@ namespace TimeForCode.Donation.Infrastructure.Persistence.Database
                         Unique = true
                     });
 
-                collection.Indexes.CreateOne(indexModel);
+                var publisherIndexModel = new CreateIndexModel<Project>(
+                    Builders<Project>.IndexKeys.Ascending(p => p.PublishedByUserId).Ascending(p => p.PublishedAt),
+                    new CreateIndexOptions<Project> { Name = "ix_projects_published_by_user_id_published_at" });
+
+                collection.Indexes.CreateMany([indexModel, publisherIndexModel]);
                 collection.Indexes.CreateMany(ProjectSearchDefinitions.IndexModels);
                 _indexesCreated = true;
             }
@@ -59,6 +63,15 @@ namespace TimeForCode.Donation.Infrastructure.Persistence.Database
             return await _collection
                 .Find(Builders<Project>.Filter.Eq("_id", objectId))
                 .FirstOrDefaultAsync();
+        }
+
+        public async Task<IReadOnlyList<Project>> GetByPublishedByUserIdAsync(string userId, CancellationToken cancellationToken)
+        {
+            return await _collection
+                .Find(Builders<Project>.Filter.Eq(p => p.PublishedByUserId, userId))
+                .SortBy(p => p.PublishedAt)
+                .ThenBy(p => p.Id)
+                .ToListAsync(cancellationToken);
         }
 
         public async Task<(IReadOnlyList<Project> Projects, int TotalCount)> SearchActiveAsync(ProjectSearchCriteria criteria, CancellationToken cancellationToken)
