@@ -1,4 +1,4 @@
-using FluentAssertions;
+using AwesomeAssertions;
 using TimeForCode.Donation.Application.Validators;
 using TimeForCode.Donation.Commands;
 

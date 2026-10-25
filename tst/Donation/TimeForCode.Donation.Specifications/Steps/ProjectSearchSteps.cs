@@ -1,4 +1,4 @@
-using FluentAssertions;
+using AwesomeAssertions;
 using Moq;
 using Reqnroll;
 using TimeForCode.Donation.Api.Client;

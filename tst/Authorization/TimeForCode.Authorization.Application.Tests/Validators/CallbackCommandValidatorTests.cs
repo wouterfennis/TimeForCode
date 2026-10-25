@@ -1,4 +1,4 @@
-using FluentAssertions;
+using AwesomeAssertions;
 using TimeForCode.Authorization.Application.Validators;
 using TimeForCode.Authorization.Commands;
 
