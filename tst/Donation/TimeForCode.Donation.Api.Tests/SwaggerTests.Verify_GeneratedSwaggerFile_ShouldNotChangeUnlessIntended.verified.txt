@@ -2722,14 +2722,19 @@
         "type": "object",
         "properties": {
           "name": {
+            "examples": [
+              "Acme Software"
+            ],
             "maxLength": 200,
             "minLength": 1,
             "pattern": "[\\s\\S]*\\S[\\s\\S]*",
             "type": "string",
-            "description": "The name of the donor organization.",
-            "example": "Acme Software"
+            "description": "The name of the donor organization."
           },
           "contactEmail": {
+            "examples": [
+              "open-source@acme.example"
+            ],
             "maxLength": 254,
             "minLength": 0,
             "type": [
@@ -2737,10 +2742,12 @@
               "string"
             ],
             "description": "The contact email of the donor organization.",
-            "format": "email",
-            "example": "open-source@acme.example"
+            "format": "email"
           },
           "website": {
+            "examples": [
+              "https://acme.example"
+            ],
             "maxLength": 2048,
             "minLength": 0,
             "type": [
@@ -2748,8 +2755,7 @@
               "string"
             ],
             "description": "The website URL of the donor organization.",
-            "format": "uri",
-            "example": "https://acme.example"
+            "format": "uri"
           }
         },
         "description": "Represents a request to create a donor organization."
@@ -3565,12 +3571,14 @@
         "type": "object",
         "properties": {
           "reason": {
+            "examples": [
+              "Please add a description of the project."
+            ],
             "maxLength": 1000,
             "minLength": 1,
             "pattern": "[\\s\\S]*\\S[\\s\\S]*",
             "type": "string",
-            "description": "The reason the changes are requested. Shown to the maintainer.",
-            "example": "Please add a description of the project."
+            "description": "The reason the changes are requested. Shown to the maintainer."
           }
         },
         "description": "Represents an administrator's request for changes to a project under review."
@@ -3579,28 +3587,35 @@
         "type": "object",
         "properties": {
           "role": {
+            "examples": [
+              "Backend developer"
+            ],
             "maxLength": 100,
             "minLength": 0,
             "type": [
               "null",
               "string"
             ],
-            "description": "The role of the contributor.",
-            "example": "Backend developer"
+            "description": "The role of the contributor."
           },
           "skills": {
+            "examples": [
+              [
+                "C#",
+                "MongoDB"
+              ]
+            ],
             "maxItems": 50,
             "type": "array",
             "items": {
               "type": "string"
             },
-            "description": "The skills of the contributor; each is trimmed, blank ones are dropped and duplicates (ignoring case) are merged.\nEach skill has at most 100 characters.",
-            "example": [
-              "C#",
-              "MongoDB"
-            ]
+            "description": "The skills of the contributor; each is trimmed, blank ones are dropped and duplicates (ignoring case) are merged.\nEach skill has at most 100 characters."
           },
           "hoursAvailable": {
+            "examples": [
+              10
+            ],
             "maximum": 10000,
             "minimum": 0,
             "pattern": "^-?(?:0|[1-9]\\d*)$",
@@ -3610,8 +3625,7 @@
               "string"
             ],
             "description": "The whole number of hours the contributor can donate.",
-            "format": "int32",
-            "example": 10
+            "format": "int32"
           },
           "donorOrganizationId": {
             "pattern": "^[0-9a-fA-F]{24}$",
@@ -3631,14 +3645,19 @@
         "type": "object",
         "properties": {
           "name": {
+            "examples": [
+              "Acme Software"
+            ],
             "maxLength": 200,
             "minLength": 1,
             "pattern": "[\\s\\S]*\\S[\\s\\S]*",
             "type": "string",
-            "description": "The name of the donor organization.",
-            "example": "Acme Software"
+            "description": "The name of the donor organization."
           },
           "contactEmail": {
+            "examples": [
+              "open-source@acme.example"
+            ],
             "maxLength": 254,
             "minLength": 0,
             "type": [
@@ -3646,10 +3665,12 @@
               "string"
             ],
             "description": "The contact email of the donor organization.",
-            "format": "email",
-            "example": "open-source@acme.example"
+            "format": "email"
           },
           "website": {
+            "examples": [
+              "https://acme.example"
+            ],
             "maxLength": 2048,
             "minLength": 0,
             "type": [
@@ -3657,8 +3678,7 @@
               "string"
             ],
             "description": "The website URL of the donor organization.",
-            "format": "uri",
-            "example": "https://acme.example"
+            "format": "uri"
           }
         },
         "description": "Represents a request to update a donor organization."
