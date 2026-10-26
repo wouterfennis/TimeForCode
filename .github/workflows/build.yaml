@@ -48,7 +48,7 @@ jobs:
     - name: Build
       run: npm run build
 
-    # Build only: the image is pushed once the front-end has a deployment
+    # Build only; pushing the image is tracked in #166
     - name: Build Docker image front-end
       uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
       with:
