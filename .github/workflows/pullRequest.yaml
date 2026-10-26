@@ -215,7 +215,7 @@ jobs:
         Add-Content -Path $env:GITHUB_ENV -Value "TIMEFORCODE_LIVE_TEST_ADMIN_SECRET=$secret"
 
     - name: Start the compose stack
-      run: docker compose up --build --detach authorization-api identity-provider-mock donation-api mongo
+      run: docker compose up --build --detach authorization-api identity-provider-mock donation-api frontend mongo
 
     - name: Wait until the stack is healthy
       shell: pwsh
