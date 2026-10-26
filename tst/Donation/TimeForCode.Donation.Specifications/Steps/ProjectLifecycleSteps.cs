@@ -13,6 +13,9 @@ namespace TimeForCode.Donation.Specifications.Steps
     [Binding]
     internal class ProjectLifecycleSteps
     {
+        private const string GivenStatusPattern = "(in draft|pending approval|active|archived)";
+        private const string StatusPattern = "(in draft|back in draft|pending approval|active|archived)";
+
         private readonly IDonationClient _donationClient;
         private readonly DonationContext _context;
         private readonly DonationFixtures _fixtures;
@@ -28,40 +31,22 @@ namespace TimeForCode.Donation.Specifications.Steps
             _fixtures = fixtures;
         }
 
-        [Given("The user has a project in draft")]
-        public void GivenTheUserHasAProjectInDraft()
+        [StepArgumentTransformation(StatusPattern)]
+        public static ProjectStatus ToProjectStatus(string text)
         {
-            _fixtures.SetupLifecycleProject(ProjectStatus.Draft);
-        }
-
-        [Given("The user has an active project")]
-        public void GivenTheUserHasAnActiveProject()
-        {
-            _fixtures.SetupLifecycleProject(ProjectStatus.Active);
-        }
-
-        [Given("The user has an archived project")]
-        public void GivenTheUserHasAnArchivedProject()
-        {
-            _fixtures.SetupLifecycleProject(ProjectStatus.Archived);
-        }
-
-        [Given("There is a project pending approval")]
-        public void GivenThereIsAProjectPendingApproval()
-        {
-            _fixtures.SetupLifecycleProject(ProjectStatus.PendingApproval);
-        }
-
-        [Given("^There is a project that is (in draft|pending approval|active|archived)$")]
-        public void GivenThereIsAProjectThatIs(string state)
-        {
-            var status = state switch
+            return text switch
             {
-                "in draft" => ProjectStatus.Draft,
+                "in draft" or "back in draft" => ProjectStatus.Draft,
                 "pending approval" => ProjectStatus.PendingApproval,
                 "active" => ProjectStatus.Active,
                 _ => ProjectStatus.Archived
             };
+        }
+
+        [Given("^The user has a project that is " + GivenStatusPattern + "$")]
+        [Given("^There is a project that is " + GivenStatusPattern + "$")]
+        public void GivenTheProjectIs(ProjectStatus status)
+        {
             _fixtures.SetupLifecycleProject(status);
         }
 
@@ -139,28 +124,10 @@ namespace TimeForCode.Donation.Specifications.Steps
             _maintainedProject!.ReviewerReason.Should().Be(reason);
         }
 
-        [Then("The project is pending approval")]
-        public void ThenTheProjectIsPendingApproval()
+        [Then("^The project is " + StatusPattern + "$")]
+        public void ThenTheProjectIs(ProjectStatus status)
         {
-            AssertLifecycleStatus(ProjectStatus.PendingApproval);
-        }
-
-        [Then("The project is active")]
-        public void ThenTheProjectIsActive()
-        {
-            AssertLifecycleStatus(ProjectStatus.Active);
-        }
-
-        [Then("The project is back in draft")]
-        public void ThenTheProjectIsBackInDraft()
-        {
-            AssertLifecycleStatus(ProjectStatus.Draft);
-        }
-
-        [Then("The project is archived")]
-        public void ThenTheProjectIsArchived()
-        {
-            AssertLifecycleStatus(ProjectStatus.Archived);
+            AssertLifecycleStatus(status);
         }
 
         [Then("The project shows the reviewer reason {string}")]

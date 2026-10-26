@@ -75,8 +75,7 @@ namespace TimeForCode.Donation.Specifications.Steps
                 .ReturnsAsync(conflictingOrg);
         }
 
-        [When("The user requests the list of donor organizations")]
-        [When("The user requests the list of donor organizations without an account")]
+        [When("The user requests the list of donor organizations( without an account)")]
         public async Task WhenTheUserRequestsTheListOfDonorOrganizationsAsync()
         {
             try

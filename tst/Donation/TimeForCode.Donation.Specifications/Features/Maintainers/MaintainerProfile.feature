@@ -31,7 +31,7 @@ Scenario: User without a maintainer profile requests it
 
 Scenario: Maintainer lists their own projects with status and received donations
 	Given The user has an access token
-	And The user has a project in draft
+	And The user has a project that is in draft
 	And The user has an active project with donations of 10 and 5 hours
 	When The user requests their own projects
 	Then The projects of the user are returned
@@ -40,7 +40,7 @@ Scenario: Maintainer lists their own projects with status and received donations
 
 Scenario: Projects of other maintainers are not listed
 	Given The user has an access token
-	And The user has an active project
+	And The user has a project that is active
 	And There is a project published by another user
 	When The user requests their own projects
 	Then Only the projects of the user are returned
