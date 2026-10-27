@@ -28,33 +28,45 @@ Scenario Outline: Projects that are not active are never listed
 
 Scenario: User searches projects by text
 	Given There are active projects with the names "Rocket Planner" and "Garden Tracker"
-	When The user searches the projects for the text "rocket"
+	When The user searches the projects with:
+		| Text   |
+		| rocket |
 	Then Only the project "Rocket Planner" is included in the results
 
 Scenario: User filters projects by language
 	Given There are active projects written in "C#" and in "Rust"
-	When The user filters the projects by the language "Rust"
+	When The user searches the projects with:
+		| Language |
+		| Rust     |
 	Then Only projects written in "Rust" are included in the results
 
 Scenario: User filters projects by tag
 	Given There are active projects tagged "accessibility" and "gaming"
-	When The user filters the projects by the tag "gaming"
+	When The user searches the projects with:
+		| Tag    |
+		| gaming |
 	Then Only projects tagged "gaming" are included in the results
 
 Scenario: User combines text, language and tag criteria
 	Given There are active projects that match only some of the text, language and tag criteria
-	When The user searches the projects for the text "planner" with the language "C#" and the tag "gaming"
+	When The user searches the projects with:
+		| Text    | Language | Tag    |
+		| planner | C#       | gaming |
 	Then Only projects matching all criteria are included in the results
 
 Scenario: Search without matches returns an empty list
 	Given There are published projects on the time for code platform
-	When The user searches the projects for the text "no such project"
+	When The user searches the projects with:
+		| Text            |
+		| no such project |
 	Then An empty list of projects is returned
 	And The total number of matching projects is zero
 
 Scenario: User pages through the search results
 	Given There are 5 active projects on the time for code platform
-	When The user requests page 2 of the projects with 2 projects per page
+	When The user searches the projects with:
+		| Page | Page size |
+		| 2    | 2         |
 	Then 2 projects are returned
 	And The total number of matching projects is 5
 
@@ -69,7 +81,9 @@ Scenario: Projects with the same age keep a consistent order across pages
 	Then Both searches return the projects in the same order
 
 Scenario Outline: User searches with invalid paging
-	When The user requests page <page> of the projects with <size> projects per page
+	When The user searches the projects with:
+		| Page   | Page size |
+		| <page> | <size>    |
 	Then The request is rejected as invalid
 
 	Examples:

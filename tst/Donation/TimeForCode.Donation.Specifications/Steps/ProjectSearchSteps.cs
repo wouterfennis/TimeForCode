@@ -1,6 +1,7 @@
 using AwesomeAssertions;
 using Moq;
 using Reqnroll;
+using System.Globalization;
 using TimeForCode.Donation.Api.Client;
 using TimeForCode.Donation.Application.Interfaces;
 using TimeForCode.Donation.Domain;
@@ -103,34 +104,17 @@ namespace TimeForCode.Donation.Specifications.Steps
             return SearchAsync(null, null, null, null, null);
         }
 
-        [When("The user searches the projects for the text {string}")]
-        public Task WhenTheUserSearchesTheProjectsForTheTextAsync(string text)
+        [When("The user searches the projects with:")]
+        public Task WhenTheUserSearchesTheProjectsWithAsync(DataTable table)
         {
-            return SearchAsync(text, null, null, null, null);
-        }
+            var row = table.Rows.Single();
 
-        [When("The user filters the projects by the language {string}")]
-        public Task WhenTheUserFiltersTheProjectsByTheLanguageAsync(string language)
-        {
-            return SearchAsync(null, language, null, null, null);
-        }
-
-        [When("The user filters the projects by the tag {string}")]
-        public Task WhenTheUserFiltersTheProjectsByTheTagAsync(string tag)
-        {
-            return SearchAsync(null, null, tag, null, null);
-        }
-
-        [When("The user searches the projects for the text {string} with the language {string} and the tag {string}")]
-        public Task WhenTheUserSearchesTheProjectsForTheTextWithTheLanguageAndTheTagAsync(string text, string language, string tag)
-        {
-            return SearchAsync(text, language, tag, null, null);
-        }
-
-        [When("The user requests page {int} of the projects with {int} projects per page")]
-        public Task WhenTheUserRequestsPageOfTheProjectsAsync(int pageNumber, int pageSize)
-        {
-            return SearchAsync(null, null, null, pageNumber, pageSize);
+            return SearchAsync(
+                Cell(table, row, "Text"),
+                Cell(table, row, "Language"),
+                Cell(table, row, "Tag"),
+                table.Header.Contains("Page") ? int.Parse(row["Page"], CultureInfo.InvariantCulture) : null,
+                table.Header.Contains("Page size") ? int.Parse(row["Page size"], CultureInfo.InvariantCulture) : null);
         }
 
         [When("The user searches the projects twice without criteria")]
@@ -292,6 +276,11 @@ namespace TimeForCode.Donation.Specifications.Steps
         {
             _firstSearchOrder.Should().NotBeNullOrEmpty();
             _secondSearchOrder.Should().Equal(_firstSearchOrder);
+        }
+
+        private static string? Cell(DataTable table, DataTableRow row, string column)
+        {
+            return table.Header.Contains(column) ? row[column] : null;
         }
 
         private List<string> ResultIds()
