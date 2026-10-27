@@ -130,8 +130,10 @@ Human approval is required at these two points before the next phase begins:
 **Approval marker.** An approval is a comment by a human (not the agent) on the issue whose first line is exactly `APPROVED: plan` or `APPROVED: feature`. Free-text such as "looks good" or "not approved" never counts. Each phase skill checks for its marker before starting, and stops with the instruction "post `APPROVED: <phase>` on the issue" if it is missing:
 
 ```powershell
-gh issue view <number> --json comments --jq '[.comments[] | select(.body | test("^APPROVED: (plan|feature)\\s*$"; "m")) | {a: .author.login, h: (.body | split("\n")[0])}]'
+pwsh scripts/check-approval.ps1 -Issue <number> -Phase plan|feature
 ```
+
+The script exits 1 and prints the instruction when the marker is missing. In a raw `--jq`, match with `test("^APPROVED: (plan|feature)"; "m")`; a `\\s*$` variant fails to parse.
 
 There is no orchestrator; the phases are run manually in order: `/plan-issue` → `/write-feature <n>` → `/implement-issue <n>` → `review` agent → `markdown-linter` agent → `/ship-pr <n>`.
 

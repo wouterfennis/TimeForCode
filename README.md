@@ -104,7 +104,7 @@ Start the front-end separately with `npm ci` and `npm run dev` in `src/Frontend/
 
 ### Verify the stack
 
-The smoke-test script is a true smoke tier: about ten checks that prove the stack is up and wired (service availability, OIDC discovery, login round trip, the Auth API JWT accepted by the Donation API, one Mongo-backed write and read, and the data protection key ring in the database). It finishes well within a minute. Feature-level behaviour is covered by the Reqnroll specifications, not by this script:
+The smoke-test script is a true smoke tier: about a dozen checks that prove the stack is up and wired (service availability, OIDC discovery, login round trip, the Auth API JWT accepted by the Donation API, one Mongo-backed write and read, the data protection key ring in the database, and the front-end: the SPA, the 404 for a missing asset and the security headers). It finishes well within a minute. Feature-level behaviour is covered by the Reqnroll specifications, not by this script:
 
 ```powershell
 .\scripts\smoke-test.ps1

@@ -91,6 +91,7 @@ Present the list of changed files to the calling agent or user.
 
 ## Notes
 
+- A solution-wide `dotnet format` also touches files in other modules. `.claude/hooks/format-solution.ps1` reverts files outside the branch's diff against `origin/main`; after a raw `dotnet format`, run `git status --short` and `git checkout --` the strays yourself.
 - `dotnet format` modifies files in-place — commit or stash existing changes first if needed.
 - The solution file is at the repository root: `TimeForCode.sln`.
 - StyleCop / EditorConfig rules drive the exact fixes applied.

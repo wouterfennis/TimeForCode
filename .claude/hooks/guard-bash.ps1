@@ -34,7 +34,8 @@ try {
     }
 
     # --- 4. podman only ---
-    if ($unquoted -match "(?i)${verb}docker(-|\s+)compose\b") {
+    # Only the command itself: a file name such as `docker-compose.yaml` or `docker-compose*` is not a call.
+    if ($unquoted -match "(?i)${verb}docker(-|\s+)compose\b(?![.*/\\-])") {
         Send-Decision 'deny' 'This project uses Podman, not Docker. Use `podman compose ...` (see scripts/start-local.ps1).'
     }
 

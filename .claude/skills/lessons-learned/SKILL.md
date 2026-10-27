@@ -13,7 +13,7 @@ Grep the file for the area you will touch (`Grep` on the module, tool or keyword
 
 ## Write (end of a task, or right after a user correction, failed approach or surprise)
 
-Add an entry only when it is non-obvious and not already derivable from code, git history, CLAUDE.md or `.claude/rules/`. Skip task progress and one-off facts.
+Add an entry only when it is non-obvious and not already derivable from code, git history, CLAUDE.md or `.claude/rules/`. Skip task progress and one-off facts. Prefer a better home: a rule for a code area, a skill step, a hook or script that enforces it, a code comment. Use this file only when none fits.
 
 1. Grep for an existing entry on the same topic; update it instead of adding a duplicate. Delete entries that turned out wrong.
 2. Append under the matching `##` category, newest last, using this exact shape:
