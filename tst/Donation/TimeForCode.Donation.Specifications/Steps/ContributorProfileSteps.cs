@@ -3,6 +3,7 @@ using MongoDB.Bson;
 using Reqnroll;
 using TimeForCode.Donation.Api.Client;
 using TimeForCode.Donation.Domain;
+using TimeForCode.Donation.Specifications.Tables;
 
 namespace TimeForCode.Donation.Specifications.Steps
 {
@@ -11,6 +12,7 @@ namespace TimeForCode.Donation.Specifications.Steps
     internal class ContributorProfileSteps
     {
         private const string ProfileOtherUserId = "another-user-id";
+        private const string DonorOrganizationCell = "the donor organization";
 
         private readonly IDonationClient _donationClient;
         private readonly DonationContext _context;
@@ -78,22 +80,24 @@ namespace TimeForCode.Donation.Specifications.Steps
                 await _donationClient.GetDonorOrganizationContributorsAsync(_context.DonorOrganizationId!));
         }
 
-        [When("The user updates their contributor profile with the role {string}")]
-        public Task WhenTheUserUpdatesTheirContributorProfileWithTheRoleAsync(string role)
+        [When("The user updates their contributor profile with:")]
+        public Task WhenTheUserUpdatesTheirContributorProfileWithAsync(DataTable table)
         {
-            return UpdateOwnProfileAsync(new UpdateContributorProfileRequest { Role = role });
-        }
+            var row = StepTables.SingleRow<ContributorProfileTable>(table);
+            var request = new UpdateContributorProfileRequest
+            {
+                Role = row.Role,
+                Skills = row.Skills == null ? null : SplitSkills(row.Skills),
+                HoursAvailable = row.HoursAvailable
+            };
 
-        [When("The user updates their contributor profile with the role {string}, the skills {string} and {int} available hours")]
-        public Task WhenTheUserUpdatesTheirContributorProfileWithTheRoleTheSkillsAndAvailableHoursAsync(string role, string skills, int hours)
-        {
-            return UpdateOwnProfileAsync(new UpdateContributorProfileRequest { Role = role, Skills = SplitSkills(skills), HoursAvailable = hours });
-        }
+            if (row.DonorOrganization != null)
+            {
+                row.DonorOrganization.Should().Be(DonorOrganizationCell);
+                request.DonorOrganizationId = _context.DonorOrganizationId;
+            }
 
-        [When("The user updates their contributor profile with the skills {string}")]
-        public Task WhenTheUserUpdatesTheirContributorProfileWithTheSkillsAsync(string skills)
-        {
-            return UpdateOwnProfileAsync(new UpdateContributorProfileRequest { Skills = SplitSkills(skills) });
+            return UpdateOwnProfileAsync(request);
         }
 
         [When("The user updates their contributor profile with {int} skills")]
@@ -108,18 +112,6 @@ namespace TimeForCode.Donation.Specifications.Steps
         public Task WhenTheUserUpdatesTheirContributorProfileWithASkillOfCharactersAsync(int length)
         {
             return UpdateOwnProfileAsync(new UpdateContributorProfileRequest { Skills = [new string('a', length)] });
-        }
-
-        [When("The user updates their contributor profile with {int} available hours")]
-        public Task WhenTheUserUpdatesTheirContributorProfileWithAvailableHoursAsync(int hours)
-        {
-            return UpdateOwnProfileAsync(new UpdateContributorProfileRequest { HoursAvailable = hours });
-        }
-
-        [When("The user links their contributor profile to the donor organization")]
-        public Task WhenTheUserLinksTheirContributorProfileToTheDonorOrganizationAsync()
-        {
-            return UpdateOwnProfileAsync(new UpdateContributorProfileRequest { DonorOrganizationId = _context.DonorOrganizationId });
         }
 
         [When("The user updates the contributor profile of the other user with the role {string}")]
@@ -144,32 +136,32 @@ namespace TimeForCode.Donation.Specifications.Steps
             stored.DonorOrganizationId?.ToString().Should().Be(_profileResult.DonorOrganizationId);
         }
 
-        [Then("The contributor profile shows the role {string}")]
-        public void ThenTheContributorProfileShowsTheRole(string role)
+        [Then("The contributor profile shows:")]
+        public void ThenTheContributorProfileShows(DataTable table)
         {
             _profileResult.Should().NotBeNull();
-            _profileResult!.Role.Should().Be(role);
-        }
+            var row = StepTables.SingleRow<ContributorProfileTable>(table);
 
-        [Then("The contributor profile shows the skills {string}")]
-        public void ThenTheContributorProfileShowsTheSkills(string skills)
-        {
-            _profileResult.Should().NotBeNull();
-            _profileResult!.Skills.Should().Equal(skills.Split(", "));
-        }
+            if (row.Role != null)
+            {
+                _profileResult!.Role.Should().Be(row.Role);
+            }
 
-        [Then("The contributor profile shows {int} available hours")]
-        public void ThenTheContributorProfileShowsAvailableHours(int hours)
-        {
-            _profileResult.Should().NotBeNull();
-            _profileResult!.HoursAvailable.Should().Be(hours);
-        }
+            if (row.Skills != null)
+            {
+                _profileResult!.Skills.Should().Equal(row.Skills.Split(", "));
+            }
 
-        [Then("The contributor profile shows the affiliation with the donor organization")]
-        public void ThenTheContributorProfileShowsTheAffiliationWithTheDonorOrganization()
-        {
-            _profileResult.Should().NotBeNull();
-            _profileResult!.DonorOrganizationId.Should().Be(_context.DonorOrganizationId);
+            if (row.HoursAvailable != null)
+            {
+                _profileResult!.HoursAvailable.Should().Be(row.HoursAvailable);
+            }
+
+            if (row.DonorOrganization != null)
+            {
+                row.DonorOrganization.Should().Be(DonorOrganizationCell);
+                _profileResult!.DonorOrganizationId.Should().Be(_context.DonorOrganizationId);
+            }
         }
 
         [Then("The contributor profile is unchanged")]

@@ -5,6 +5,7 @@ using TimeForCode.Donation.Api.Client;
 using TimeForCode.Donation.Application.Interfaces;
 using TimeForCode.Donation.Domain;
 using TimeForCode.Donation.Specifications.Mocking;
+using TimeForCode.Donation.Specifications.Tables;
 using TimeForCode.Donation.Specifications.TestBuilder;
 
 namespace TimeForCode.Donation.Specifications.Steps
@@ -107,33 +108,12 @@ namespace TimeForCode.Donation.Specifications.Steps
             return SearchAsync(null, null, null, null, null);
         }
 
-        [When("The user searches the projects for the text {string}")]
-        public Task WhenTheUserSearchesTheProjectsForTheTextAsync(string text)
+        [When("The user searches the projects with:")]
+        public Task WhenTheUserSearchesTheProjectsWithAsync(DataTable table)
         {
-            return SearchAsync(text, null, null, null, null);
-        }
+            var row = StepTables.SingleRow<SearchProjectsTable>(table);
 
-        [When("The user filters the projects by the {word} {string}")]
-        public Task WhenTheUserFiltersTheProjectsByTheCriterionAsync(string criterion, string value)
-        {
-            return criterion switch
-            {
-                "language" => SearchAsync(null, value, null, null, null),
-                "tag" => SearchAsync(null, null, value, null, null),
-                _ => throw new ArgumentOutOfRangeException(nameof(criterion), criterion, "Expected 'language' or 'tag'.")
-            };
-        }
-
-        [When("The user searches the projects for the text {string} with the language {string} and the tag {string}")]
-        public Task WhenTheUserSearchesTheProjectsForTheTextWithTheLanguageAndTheTagAsync(string text, string language, string tag)
-        {
-            return SearchAsync(text, language, tag, null, null);
-        }
-
-        [When("The user requests page {int} of the projects with {int} projects per page")]
-        public Task WhenTheUserRequestsPageOfTheProjectsAsync(int pageNumber, int pageSize)
-        {
-            return SearchAsync(null, null, null, pageNumber, pageSize);
+            return SearchAsync(row.Text, row.Language, row.Tag, row.Page, row.PageSize);
         }
 
         [When("The user searches the projects twice without criteria")]
