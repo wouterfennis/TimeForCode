@@ -8,6 +8,7 @@ using System.Text.Json;
 using TimeForCode.Donation.Api.Client;
 using TimeForCode.Donation.Application.Interfaces;
 using TimeForCode.Donation.Domain;
+using TimeForCode.Donation.Specifications.Tables;
 using TimeForCode.Donation.Specifications.TestBuilder;
 
 namespace TimeForCode.Donation.Specifications.Steps
@@ -168,14 +169,21 @@ namespace TimeForCode.Donation.Specifications.Steps
             }
         }
 
+        [When("The user registers a donor organization with a blank name")]
+        public Task WhenTheUserRegistersADonorOrganizationWithABlankNameAsync()
+        {
+            // Gherkin trims table cells, so a whitespace-only name cannot be written in a table.
+            return RegisterAsync(new CreateDonorOrganizationRequest { Name = "   " });
+        }
+
         [When("The user registers a donor organization with:")]
         public async Task WhenTheUserRegistersADonorOrganizationWithAsync(DataTable table)
         {
-            var row = table.Rows.Single();
-            // A quoted name keeps its whitespace, which Gherkin otherwise trims from table cells.
-            var name = table.Header.Contains("Name") ? row["Name"].Trim('"') : "Acme Corp";
+            var row = StepTables.SingleRow<DonorOrganizationTable>(table);
+            // A missing Name column registers a valid name; an empty Name cell sends an empty name.
+            var name = row.Name ?? "Acme Corp";
 
-            if (!table.Header.Contains("Contact email") && !table.Header.Contains("Website"))
+            if (row.ContactEmail == null && row.Website == null)
             {
                 await RegisterAsync(new CreateDonorOrganizationRequest { Name = name });
                 return;
@@ -191,8 +199,8 @@ namespace TimeForCode.Donation.Specifications.Steps
                 new
                 {
                     name,
-                    contactEmail = table.Header.Contains("Contact email") ? row["Contact email"] : null,
-                    website = table.Header.Contains("Website") ? row["Website"] : null
+                    contactEmail = row.ContactEmail,
+                    website = row.Website
                 });
             var body = await response.Content.ReadAsStringAsync();
 

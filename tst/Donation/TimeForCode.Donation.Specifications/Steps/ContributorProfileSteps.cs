@@ -1,9 +1,9 @@
 using AwesomeAssertions;
 using MongoDB.Bson;
 using Reqnroll;
-using System.Globalization;
 using TimeForCode.Donation.Api.Client;
 using TimeForCode.Donation.Domain;
+using TimeForCode.Donation.Specifications.Tables;
 
 namespace TimeForCode.Donation.Specifications.Steps
 {
@@ -12,10 +12,7 @@ namespace TimeForCode.Donation.Specifications.Steps
     internal class ContributorProfileSteps
     {
         private const string ProfileOtherUserId = "another-user-id";
-        private const string RoleColumn = "Role";
-        private const string SkillsColumn = "Skills";
-        private const string HoursColumn = "Hours available";
-        private const string DonorOrganizationColumn = "Donor organization";
+        private const string DonorOrganizationCell = "the donor organization";
 
         private readonly IDonationClient _donationClient;
         private readonly DonationContext _context;
@@ -86,26 +83,17 @@ namespace TimeForCode.Donation.Specifications.Steps
         [When("The user updates their contributor profile with:")]
         public Task WhenTheUserUpdatesTheirContributorProfileWithAsync(DataTable table)
         {
-            var row = table.Rows.Single();
-            var request = new UpdateContributorProfileRequest();
-
-            if (table.Header.Contains(RoleColumn))
+            var row = StepTables.SingleRow<ContributorProfileTable>(table);
+            var request = new UpdateContributorProfileRequest
             {
-                request.Role = row[RoleColumn];
-            }
+                Role = row.Role,
+                Skills = row.Skills == null ? null : SplitSkills(row.Skills),
+                HoursAvailable = row.HoursAvailable
+            };
 
-            if (table.Header.Contains(SkillsColumn))
+            if (row.DonorOrganization != null)
             {
-                request.Skills = SplitSkills(row[SkillsColumn]);
-            }
-
-            if (table.Header.Contains(HoursColumn))
-            {
-                request.HoursAvailable = int.Parse(row[HoursColumn], CultureInfo.InvariantCulture);
-            }
-
-            if (table.Header.Contains(DonorOrganizationColumn))
-            {
+                row.DonorOrganization.Should().Be(DonorOrganizationCell);
                 request.DonorOrganizationId = _context.DonorOrganizationId;
             }
 
@@ -152,25 +140,26 @@ namespace TimeForCode.Donation.Specifications.Steps
         public void ThenTheContributorProfileShows(DataTable table)
         {
             _profileResult.Should().NotBeNull();
-            var row = table.Rows.Single();
+            var row = StepTables.SingleRow<ContributorProfileTable>(table);
 
-            if (table.Header.Contains(RoleColumn))
+            if (row.Role != null)
             {
-                _profileResult!.Role.Should().Be(row[RoleColumn]);
+                _profileResult!.Role.Should().Be(row.Role);
             }
 
-            if (table.Header.Contains(SkillsColumn))
+            if (row.Skills != null)
             {
-                _profileResult!.Skills.Should().Equal(row[SkillsColumn].Split(", "));
+                _profileResult!.Skills.Should().Equal(row.Skills.Split(", "));
             }
 
-            if (table.Header.Contains(HoursColumn))
+            if (row.HoursAvailable != null)
             {
-                _profileResult!.HoursAvailable.Should().Be(int.Parse(row[HoursColumn], CultureInfo.InvariantCulture));
+                _profileResult!.HoursAvailable.Should().Be(row.HoursAvailable);
             }
 
-            if (table.Header.Contains(DonorOrganizationColumn))
+            if (row.DonorOrganization != null)
             {
+                row.DonorOrganization.Should().Be(DonorOrganizationCell);
                 _profileResult!.DonorOrganizationId.Should().Be(_context.DonorOrganizationId);
             }
         }

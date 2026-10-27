@@ -1,11 +1,11 @@
 using AwesomeAssertions;
 using Moq;
 using Reqnroll;
-using System.Globalization;
 using TimeForCode.Donation.Api.Client;
 using TimeForCode.Donation.Application.Interfaces;
 using TimeForCode.Donation.Domain;
 using TimeForCode.Donation.Specifications.Mocking;
+using TimeForCode.Donation.Specifications.Tables;
 using TimeForCode.Donation.Specifications.TestBuilder;
 
 namespace TimeForCode.Donation.Specifications.Steps
@@ -107,14 +107,9 @@ namespace TimeForCode.Donation.Specifications.Steps
         [When("The user searches the projects with:")]
         public Task WhenTheUserSearchesTheProjectsWithAsync(DataTable table)
         {
-            var row = table.Rows.Single();
+            var row = StepTables.SingleRow<SearchProjectsTable>(table);
 
-            return SearchAsync(
-                Cell(table, row, "Text"),
-                Cell(table, row, "Language"),
-                Cell(table, row, "Tag"),
-                table.Header.Contains("Page") ? int.Parse(row["Page"], CultureInfo.InvariantCulture) : null,
-                table.Header.Contains("Page size") ? int.Parse(row["Page size"], CultureInfo.InvariantCulture) : null);
+            return SearchAsync(row.Text, row.Language, row.Tag, row.Page, row.PageSize);
         }
 
         [When("The user searches the projects twice without criteria")]
@@ -276,11 +271,6 @@ namespace TimeForCode.Donation.Specifications.Steps
         {
             _firstSearchOrder.Should().NotBeNullOrEmpty();
             _secondSearchOrder.Should().Equal(_firstSearchOrder);
-        }
-
-        private static string? Cell(DataTable table, DataTableRow row, string column)
-        {
-            return table.Header.Contains(column) ? row[column] : null;
         }
 
         private List<string> ResultIds()

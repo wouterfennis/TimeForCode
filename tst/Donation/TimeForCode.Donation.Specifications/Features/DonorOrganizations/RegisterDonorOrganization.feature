@@ -21,9 +21,7 @@ Scenario: Registering a donor organization without a name is rejected
 
 
 Scenario: Registering a donor organization with a blank name is rejected
-	When The user registers a donor organization with:
-		| Name   |
-		| "   " |
+	When The user registers a donor organization with a blank name
 	Then The request is rejected as invalid
 
 Scenario: User registers a donor organization with contact details

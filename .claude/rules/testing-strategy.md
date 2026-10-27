@@ -52,6 +52,7 @@ Run `pwsh scripts/step-catalog.ps1 -Steps` before adding a step: it lists every 
 - **One rejection vocabulary.** Express a rejected request with the existing generic rejection steps, not one step per endpoint; add a status-only rejection step only when no generic one fits.
 - **Parameterize, do not copy.** A step that differs from an existing one in a value or a word becomes one step with a `{string}`/`{int}`/`{word}` parameter (or an alternation in a regex), not a second step.
 - **Tables for optional fields.** Three or more optional fields in a Given or When go in a data table, not in a chain of `And` steps or a step per combination.
+  Table steps read one row (`StepTables.SingleRow`), fail on an unknown column, and leave an omitted column at its default. Gherkin trims table cells, so keep a one-line step for whitespace-sensitive values.
 - **`Background` for shared preambles.** Steps repeated at the start of every scenario in a feature move to `Background`.
 - **Delete what the catalog reports unused**, and keep the step count per feature no higher than the scenarios need.
 
