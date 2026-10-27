@@ -6,5 +6,7 @@ export const messages = {
     loading: 'Loading projects…',
     empty: 'There are no active projects yet.',
     error: 'The projects could not be loaded. Try again later.',
+    // The API returns one page (20 by default); paging controls come later.
+    partial: (shown: number, total: number) => `Showing ${shown} of ${total} active projects.`,
   },
 } as const

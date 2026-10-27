@@ -24,6 +24,8 @@ COPY --from=build /app/dist /usr/share/nginx/html
 # Fail the image build on an invalid nginx configuration. The entrypoint renders the template first (as at
 # container start), then tests it. This runs without the compose network: a literal `proxy_pass http://donation-api`
 # fails here with "host not found in upstream", so the upstream is a variable resolved per request.
-RUN /docker-entrypoint.sh nginx -t
+# The rendered file is removed again: it holds the build host's resolver and must not be served if the
+# container cannot render the template at start (for example with a read-only file system).
+RUN /docker-entrypoint.sh nginx -t && rm /etc/nginx/conf.d/default.conf
 
 EXPOSE 8080

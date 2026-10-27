@@ -57,6 +57,23 @@ describe('ProjectsPage', () => {
     expect(items[1]).toHaveTextContent('acme/gadgets')
   })
 
+  it('says how many active projects there are when the API returns only the first page', async () => {
+    mockApi(() => jsonResponse({ projects: [project], totalCount: 35, pageNumber: 1, pageSize: 20 }))
+
+    render(<ProjectsPage />)
+
+    expect(await screen.findByText('Showing 1 of 35 active projects.')).toBeInTheDocument()
+  })
+
+  it('does not mention a total when every active project is shown', async () => {
+    mockApi(() => jsonResponse({ projects: [project], totalCount: 1, pageNumber: 1, pageSize: 20 }))
+
+    render(<ProjectsPage />)
+    await screen.findByRole('list', { name: 'Projects' })
+
+    expect(screen.queryByText(/Showing \d+ of \d+/)).not.toBeInTheDocument()
+  })
+
   it('requests the projects from the front-end origin only', async () => {
     const fetchMock = mockApi(() => jsonResponse({ projects: [], totalCount: 0, pageNumber: 1, pageSize: 20 }))
 

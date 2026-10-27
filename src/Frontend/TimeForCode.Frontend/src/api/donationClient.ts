@@ -11,8 +11,9 @@ const routeThroughFrontendOrigin: Middleware = {
   },
 }
 
-export function createDonationClient() {
-  const client = createClient<paths>({ baseUrl: window.location.origin })
-  client.use(routeThroughFrontendOrigin)
-  return client
-}
+// `fetch` is looked up per request (openapi-fetch otherwise keeps the one present at import), so tests can stub it.
+export const donationClient = createClient<paths>({
+  baseUrl: window.location.origin,
+  fetch: (request) => globalThis.fetch(request),
+})
+donationClient.use(routeThroughFrontendOrigin)

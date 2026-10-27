@@ -14,11 +14,15 @@ export function ProjectsPage() {
   if (state.projects.length === 0) {
     return <p>{messages.projects.empty}</p>
   }
+  const isPartial = state.totalCount > state.projects.length
   return (
-    <ul aria-label={messages.projects.listLabel}>
-      {state.projects.map((project) => (
-        <ProjectListItem key={project.id} project={project} />
-      ))}
-    </ul>
+    <>
+      <ul aria-label={messages.projects.listLabel}>
+        {state.projects.map((project) => (
+          <ProjectListItem key={project.id} project={project} />
+        ))}
+      </ul>
+      {isPartial ? <p>{messages.projects.partial(state.projects.length, state.totalCount)}</p> : null}
+    </>
   )
 }

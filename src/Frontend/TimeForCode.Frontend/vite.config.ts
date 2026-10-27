@@ -11,9 +11,10 @@ export default defineConfig({
   server: {
     // Same route as nginx in the image: /api/donation/v1/Project -> the local Donation API's /api/v1/Project.
     proxy: {
-      '/api/donation': {
+      // Trailing slash as in nginx's `location /api/donation/`, so `/api/donationfoo` is not proxied.
+      '/api/donation/': {
         target: 'http://localhost:8082',
-        rewrite: (path) => path.replace(/^\/api\/donation/, '/api'),
+        rewrite: (path) => path.replace(/^\/api\/donation\//, '/api/'),
       },
     },
   },
