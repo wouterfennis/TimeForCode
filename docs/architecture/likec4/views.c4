@@ -1,61 +1,300 @@
 views {
+  // Level 1 and 2
   view index {
     title 'System context'
     description 'TimeForCode, its users and external systems'
-    include donor, maintainer, admin, timeforcode, github, mongodb
+    include visitor, donor, maintainer, admin, timeforcode, github, mongodb
   }
 
   view containers of timeforcode {
-    title 'Bounded contexts'
+    title 'Containers'
+    description 'The front-end, the two bounded contexts, the shared library and what they talk to'
     include *
+  }
+
+  view frontend of timeforcode.frontend {
+    title 'Front-end'
+    description 'React single-page application served by nginx'
+    include *
+    include timeforcode.bff
   }
 
   view authorization of timeforcode.authorization {
     title 'Authorization bounded context'
     include *
-    include github, mongodb, timeforcode.donation.donationApi
+    include github, mongodb, idpMock, timeforcode.donation, timeforcode.shared
   }
 
   view donation of timeforcode.donation {
     title 'Donation bounded context'
     include *
-    include github, mongodb
+    include github, mongodb, idpMock, timeforcode.authorization, timeforcode.shared
   }
 
   view shared of timeforcode.shared {
     title 'Shared library'
     include *
     include timeforcode.authorization.authApi, timeforcode.donation.donationApi
+    include timeforcode.authorization.authApplication, timeforcode.donation.donationApplication
+    include timeforcode.authorization.authInfrastructure
   }
 
+  // Level 3: the layers of each bounded context
+  view authorizationApi of timeforcode.authorization.authApi {
+    title 'Authorization: API layer'
+    include *
+    include timeforcode.authorization.authApplication.*
+    include timeforcode.donation.donationApi.contributorController
+  }
+
+  view authorizationApplication of timeforcode.authorization.authApplication {
+    title 'Authorization: Application layer'
+    include *
+    include timeforcode.authorization.authApi.*
+    include timeforcode.authorization.authInfrastructure.*
+  }
+
+  view authorizationInfrastructure of timeforcode.authorization.authInfrastructure {
+    title 'Authorization: Infrastructure layer'
+    include *
+    include github, mongodb.authDb, timeforcode.donation.donationApi.contributorController
+  }
+
+  view donationApi of timeforcode.donation.donationApi {
+    title 'Donation: API layer'
+    include *
+    include timeforcode.donation.donationApplication.*
+    include timeforcode.authorization.authApi.jwksController
+    include timeforcode.authorization.authInfrastructure.donationClient
+  }
+
+  view donationApplication of timeforcode.donation.donationApplication {
+    title 'Donation: Application layer'
+    include *
+    include timeforcode.donation.donationApi.*
+    include timeforcode.donation.donationDomain.*
+    include timeforcode.donation.donationInfrastructure.*
+  }
+
+  view donationDomain of timeforcode.donation.donationDomain {
+    title 'Donation: Domain layer'
+    description 'Aggregates and the application components that use them'
+    include *
+    include timeforcode.donation.donationApplication.*
+  }
+
+  view donationInfrastructure of timeforcode.donation.donationInfrastructure {
+    title 'Donation: Infrastructure layer'
+    include *
+    include github, mongodb.donationDb
+    include timeforcode.donation.donationApplication.*
+  }
+
+  // Delivery
+  view delivery {
+    title 'Delivery pipeline'
+    description 'From a pull request to the Azure deployment and the documentation site'
+    include developer, githubActions, sonarCloud, registry, azureCloud, githubPages
+  }
+
+  // Runtime scenarios (arc42 chapter 6)
   dynamic view githubLogin {
-    title 'GitHub login'
+    title 'Scenario 1: GitHub login'
     description 'Runtime scenario 1 in 06-runtime-view.md'
 
-    donor -> timeforcode.authorization.authApi 'GET /api/v1/authentication/login'
-    timeforcode.authorization.authApi -> donor '302 redirect to GitHub (state, client_id)'
+    donor -> timeforcode.authorization.authApi.authController 'GET /api/v1/authentication/login'
+    timeforcode.authorization.authApi.authController -> timeforcode.authorization.authApplication.authHandlers 'dispatch login command'
+    timeforcode.authorization.authApplication.authHandlers -> timeforcode.authorization.authInfrastructure.stateRepository 'store single-use state and PKCE verifier'
+    timeforcode.authorization.authInfrastructure.stateRepository -> mongodb.authDb 'persist state'
+    timeforcode.authorization.authApi.authController -> donor '302 redirect to GitHub (state, client_id)'
     donor -> github 'authorizes the application'
-    github -> timeforcode.authorization.authApi 'GET /callback?code&state'
-    timeforcode.authorization.authApi -> timeforcode.authorization.authApplication 'handles callback'
-    timeforcode.authorization.authApplication -> timeforcode.authorization.authInfrastructure 'exchange code, fetch profile'
-    timeforcode.authorization.authInfrastructure -> github 'POST /login/oauth/access_token, GET /user'
-    timeforcode.authorization.authInfrastructure -> mongodb 'link GitHub account, store refresh token'
-    timeforcode.authorization.authApi -> donor '302 to client, HttpOnly JWT and refresh cookies'
+    github -> timeforcode.authorization.authApi.authController 'GET /callback?code&state'
+    timeforcode.authorization.authApi.authController -> timeforcode.authorization.authApplication.authHandlers 'dispatch callback command'
+    timeforcode.authorization.authApplication.authHandlers -> timeforcode.authorization.authApplication.tokenService 'exchange the code'
+    timeforcode.authorization.authApplication.tokenService -> timeforcode.authorization.authInfrastructure.githubOAuthClient 'exchange code, fetch profile'
+    timeforcode.authorization.authInfrastructure.githubOAuthClient -> github 'POST /login/oauth/access_token, GET /user'
+    timeforcode.authorization.authApplication.authHandlers -> timeforcode.authorization.authApplication.accountService 'link the GitHub account'
+    timeforcode.authorization.authApplication.accountService -> timeforcode.authorization.authInfrastructure.accountRepository 'save account'
+    timeforcode.authorization.authInfrastructure.accountRepository -> mongodb.authDb 'persist'
+    timeforcode.authorization.authApplication.authHandlers -> timeforcode.authorization.authApplication.refreshTokenService 'create the refresh token'
+    timeforcode.authorization.authApi.authController -> donor '302 to client, HttpOnly JWT and refresh cookies'
+  }
+
+  dynamic view tokenRefresh {
+    title 'Scenario 2: Token refresh'
+    description 'Runtime scenario 2 in 06-runtime-view.md'
+
+    donor -> timeforcode.authorization.authApi.authController 'POST /api/v1/authentication/refresh (refresh cookie)'
+    timeforcode.authorization.authApi.authController -> timeforcode.authorization.authApplication.authHandlers 'dispatch refresh command'
+    timeforcode.authorization.authApplication.authHandlers -> timeforcode.authorization.authApplication.refreshTokenService 'validate and replace the refresh token'
+    timeforcode.authorization.authApplication.refreshTokenService -> timeforcode.authorization.authInfrastructure.refreshTokenRepository 'look up the hash, store the replacement'
+    timeforcode.authorization.authInfrastructure.refreshTokenRepository -> mongodb.authDb 'persist'
+    timeforcode.authorization.authApplication.authHandlers -> timeforcode.authorization.authApplication.tokenService 'issue a new access token'
+    timeforcode.authorization.authApi.authController -> donor '200, new HttpOnly cookies'
+  }
+
+  dynamic view deleteAccount {
+    title 'Scenario 2b: Delete account'
+    description 'Runtime scenario 2b in 06-runtime-view.md; the Donation API goes first so a failure leaves everything in place'
+
+    donor -> timeforcode.authorization.authApi.userController 'DELETE /api/v1/user'
+    timeforcode.authorization.authApi.userController -> timeforcode.authorization.authApplication.authHandlers 'dispatch delete-account command'
+    timeforcode.authorization.authApplication.authHandlers -> timeforcode.authorization.authInfrastructure.donationClient 'anonymise the contributor'
+    timeforcode.authorization.authInfrastructure.donationClient -> timeforcode.donation.donationApi.contributorController 'POST /api/v1/contributor/{userId}/anonymise (service token)'
+    timeforcode.donation.donationApi.contributorController -> timeforcode.donation.donationApplication.contributorHandlers 'dispatch anonymise command'
+    timeforcode.donation.donationApplication.contributorHandlers -> timeforcode.donation.donationInfrastructure.contributionRepository 'replace login and avatar on the contributions'
+    timeforcode.donation.donationApplication.contributorHandlers -> timeforcode.donation.donationInfrastructure.contributorRepository 'anonymise the contributor'
+    timeforcode.donation.donationInfrastructure.contributorRepository -> mongodb.donationDb 'persist'
+    timeforcode.donation.donationApi.contributorController -> timeforcode.authorization.authInfrastructure.donationClient '204 No Content'
+    timeforcode.authorization.authApplication.authHandlers -> timeforcode.authorization.authInfrastructure.refreshTokenRepository 'delete the refresh tokens'
+    timeforcode.authorization.authApplication.authHandlers -> timeforcode.authorization.authInfrastructure.accountRepository 'delete the account'
+    timeforcode.authorization.authInfrastructure.accountRepository -> mongodb.authDb 'persist'
+    timeforcode.authorization.authApi.userController -> donor '204, token cookies expired'
+  }
+
+  dynamic view adminSignIn {
+    title 'Administrator passkey sign-in'
+    description 'ADR-011: WebAuthn ceremony with the ASP.NET Core passkey handler'
+
+    admin -> timeforcode.authorization.authApi.adminController 'GET /api/v1/admin-authentication/authentication/options'
+    timeforcode.authorization.authApi.adminController -> timeforcode.authorization.authApplication.adminHandlers 'dispatch options command'
+    timeforcode.authorization.authApplication.adminHandlers -> timeforcode.authorization.authInfrastructure.passkeyService 'create the challenge'
+    timeforcode.authorization.authApi.adminController -> admin 'assertion options'
+    admin -> timeforcode.authorization.authApi.adminController 'POST /api/v1/admin-authentication/authentication (assertion)'
+    timeforcode.authorization.authApi.adminController -> timeforcode.authorization.authApplication.adminHandlers 'dispatch completion command'
+    timeforcode.authorization.authApplication.adminHandlers -> timeforcode.authorization.authInfrastructure.passkeyService 'verify the assertion'
+    timeforcode.authorization.authApplication.adminHandlers -> timeforcode.authorization.authInfrastructure.adminCredentialRepository 'load the credential, update its counter'
+    timeforcode.authorization.authInfrastructure.adminCredentialRepository -> mongodb.authDb 'persist'
+    timeforcode.authorization.authApplication.adminHandlers -> timeforcode.authorization.authApplication.tokenService 'issue an admin-scope token'
+    timeforcode.authorization.authApi.adminController -> admin '200, token cookies'
+  }
+
+  dynamic view registerProject {
+    title 'Scenario 3: Register a project'
+    description 'Runtime scenario 3 in 06-runtime-view.md'
+
+    maintainer -> timeforcode.donation.donationApi.projectController 'POST /api/v1/project { githubUrl } (JWT bearer, policy ApiUser)'
+    timeforcode.donation.donationApi.projectController -> timeforcode.donation.donationApplication.projectHandlers 'dispatch register command'
+    timeforcode.donation.donationApplication.projectHandlers -> timeforcode.donation.donationInfrastructure.githubClient 'fetch the repository'
+    timeforcode.donation.donationInfrastructure.githubClient -> github 'GET /repos/:owner/:repo'
+    timeforcode.donation.donationApplication.projectHandlers -> timeforcode.donation.donationDomain.project 'create the Draft project'
+    timeforcode.donation.donationApplication.projectHandlers -> timeforcode.donation.donationInfrastructure.projectRepository 'insert the project'
+    timeforcode.donation.donationInfrastructure.projectRepository -> mongodb.donationDb 'persist'
+    timeforcode.donation.donationApplication.projectHandlers -> timeforcode.donation.donationInfrastructure.maintainerRepository 'upsert the maintainer'
+    timeforcode.donation.donationApi.projectController -> maintainer '201 Created'
+  }
+
+  dynamic view reviewProject {
+    title 'Scenario 3b: Review a project'
+    description 'Runtime scenario 3b in 06-runtime-view.md'
+
+    maintainer -> timeforcode.donation.donationApi.projectController 'POST /api/v1/project/{id}/submit (owner only)'
+    timeforcode.donation.donationApi.projectController -> timeforcode.donation.donationApplication.projectHandlers 'dispatch submit command'
+    timeforcode.donation.donationApplication.projectHandlers -> timeforcode.donation.donationDomain.project 'Draft to PendingApproval'
+    timeforcode.donation.donationApplication.projectHandlers -> timeforcode.donation.donationInfrastructure.projectRepository 'save'
+    admin -> timeforcode.donation.donationApi.projectController 'POST .../approve or .../request-changes (admin JWT, policy ApiAdmin)'
+    timeforcode.donation.donationApi.projectController -> timeforcode.donation.donationApplication.projectHandlers 'dispatch review command'
+    timeforcode.donation.donationApplication.projectHandlers -> timeforcode.donation.donationDomain.project 'PendingApproval to Active, or back to Draft with a reason'
+    timeforcode.donation.donationApplication.projectHandlers -> timeforcode.donation.donationInfrastructure.projectRepository 'save'
+    timeforcode.donation.donationInfrastructure.projectRepository -> mongodb.donationDb 'persist'
+    timeforcode.donation.donationApi.projectController -> admin '200 OK'
+  }
+
+  dynamic view searchProjects {
+    title 'Scenario 3c: Search active projects'
+    description 'Runtime scenario 3c in 06-runtime-view.md'
+
+    visitor -> timeforcode.donation.donationApi.projectController 'GET /api/v1/project?searchText&language&tag (no authentication)'
+    timeforcode.donation.donationApi.projectController -> timeforcode.donation.donationApplication.projectHandlers 'dispatch search query'
+    timeforcode.donation.donationApplication.projectHandlers -> timeforcode.donation.donationInfrastructure.projectRepository 'search active projects'
+    timeforcode.donation.donationInfrastructure.projectRepository -> mongodb.donationDb 'filter, count, page'
+    timeforcode.donation.donationApi.projectController -> visitor 'page of projects'
+  }
+
+  dynamic view pledgeDonation {
+    title 'Scenario 3d: Pledge hours'
+    description 'Runtime scenario 3d in 06-runtime-view.md'
+
+    donor -> timeforcode.donation.donationApi.donationController 'POST /api/v1/project/{id}/donation (JWT bearer)'
+    timeforcode.donation.donationApi.donationController -> timeforcode.donation.donationApplication.donationHandlers 'dispatch pledge command'
+    timeforcode.donation.donationApplication.donationHandlers -> timeforcode.donation.donationInfrastructure.projectRepository 'load the project, must be Active'
+    timeforcode.donation.donationApplication.donationHandlers -> timeforcode.donation.donationInfrastructure.donorOrganizationRepository 'check the donor organization'
+    timeforcode.donation.donationApplication.donationHandlers -> timeforcode.donation.donationDomain.donation 'create the Pending donation'
+    timeforcode.donation.donationApplication.donationHandlers -> timeforcode.donation.donationInfrastructure.donationRepository 'insert the donation'
+    timeforcode.donation.donationInfrastructure.donationRepository -> mongodb.donationDb 'persist'
+    timeforcode.donation.donationApi.donationController -> donor '201 Created'
+    donor -> timeforcode.donation.donationApi.donationController 'POST /api/v1/donation/{id}/activate'
+    timeforcode.donation.donationApplication.donationHandlers -> timeforcode.donation.donationDomain.donation 'Pending to Active'
+    timeforcode.donation.donationApplication.donationHandlers -> timeforcode.donation.donationInfrastructure.donationRepository 'save, version-checked'
+    timeforcode.donation.donationApi.donationController -> donor '200 OK'
   }
 
   dynamic view logContribution {
     title 'Log a time contribution'
-    description 'Logging time on an Active project'
+    description 'Logging time on an Active project; the hours are counted toward the Active donations of the project'
 
-    donor -> timeforcode.donation.donationApi 'POST contribution (JWT bearer)'
-    timeforcode.donation.donationApi -> timeforcode.shared.authorizeFilter 'validate JWT, policy ApiUser'
-    timeforcode.donation.donationApi -> timeforcode.donation.donationApplication 'dispatch log-contribution command'
-    timeforcode.donation.donationApplication -> timeforcode.donation.donationDomain 'check project is Active'
-    timeforcode.donation.donationApplication -> timeforcode.donation.donationInfrastructure 'upsert contributor, insert contribution'
-    timeforcode.donation.donationInfrastructure -> mongodb 'persist'
-    timeforcode.donation.donationApi -> donor '201 Created'
+    donor -> timeforcode.donation.donationApi.contributionController 'POST /api/v1/project/{id}/contribution (JWT bearer, policy ApiUser)'
+    timeforcode.donation.donationApi.contributionController -> timeforcode.donation.donationApplication.contributionHandlers 'dispatch add-contribution command'
+    timeforcode.donation.donationApplication.contributionHandlers -> timeforcode.donation.donationInfrastructure.projectRepository 'load the project, must be Active'
+    timeforcode.donation.donationApplication.contributionHandlers -> timeforcode.donation.donationInfrastructure.contributorRepository 'upsert the contributor'
+    timeforcode.donation.donationApplication.contributionHandlers -> timeforcode.donation.donationDomain.contribution 'create, enforcing hour and reference limits'
+    timeforcode.donation.donationApplication.contributionHandlers -> timeforcode.donation.donationInfrastructure.contributionRepository 'insert the contribution'
+    timeforcode.donation.donationInfrastructure.contributionRepository -> mongodb.donationDb 'persist'
+    timeforcode.donation.donationApplication.contributionHandlers -> timeforcode.donation.donationApplication.hoursCounter 'count the hours'
+    timeforcode.donation.donationApplication.hoursCounter -> timeforcode.donation.donationInfrastructure.donationRepository 'load Active donations, oldest first'
+    timeforcode.donation.donationApplication.hoursCounter -> timeforcode.donation.donationInfrastructure.allocationRepository 'save the allocation first'
+    timeforcode.donation.donationApplication.hoursCounter -> timeforcode.donation.donationInfrastructure.donationRepository 'save the donation, version-checked'
+    timeforcode.donation.donationInfrastructure.donationRepository -> mongodb.donationDb 'persist'
+    timeforcode.donation.donationApi.contributionController -> donor '201 Created'
   }
 
+  dynamic view correctOrDeleteContribution {
+    title 'Scenario 3d1: Correct or delete a contribution'
+    description 'Runtime scenario 3d1 in 06-runtime-view.md; the entity decides who may change it and by how many hours'
+
+    donor -> timeforcode.donation.donationApi.contributionController 'PUT or DELETE /api/v1/project/{id}/contribution/{contributionId} (user or admin JWT)'
+    timeforcode.donation.donationApi.contributionController -> timeforcode.donation.donationApplication.contributionHandlers 'dispatch correct or delete command'
+    timeforcode.donation.donationApplication.contributionHandlers -> timeforcode.donation.donationInfrastructure.contributionRepository 'load the contribution (deleted ones are not returned)'
+    timeforcode.donation.donationApplication.contributionHandlers -> timeforcode.donation.donationInfrastructure.contributorRepository 'load the contributor'
+    timeforcode.donation.donationApplication.contributionHandlers -> timeforcode.donation.donationDomain.contribution 'Correct or MarkDeleted: refusal or hours delta'
+    timeforcode.donation.donationApplication.contributionHandlers -> timeforcode.donation.donationInfrastructure.contributionRepository 'save, version-checked (409 on conflict)'
+    timeforcode.donation.donationInfrastructure.contributionRepository -> mongodb.donationDb 'persist'
+    timeforcode.donation.donationApplication.contributionHandlers -> timeforcode.donation.donationApplication.hoursCounter 'count hours added by a correction'
+    timeforcode.donation.donationApplication.contributionHandlers -> timeforcode.donation.donationApplication.hoursReleaser 'release hours removed by a correction or deletion'
+    timeforcode.donation.donationApplication.hoursReleaser -> timeforcode.donation.donationDomain.donationAllocation 'plan the release, newest allocation first'
+    timeforcode.donation.donationApplication.hoursReleaser -> timeforcode.donation.donationInfrastructure.donationRepository 'save the donation first; Completed below its commitment is Active again'
+    timeforcode.donation.donationApplication.hoursReleaser -> timeforcode.donation.donationInfrastructure.allocationRepository 'then shrink or remove the allocation'
+    timeforcode.donation.donationInfrastructure.allocationRepository -> mongodb.donationDb 'persist'
+    timeforcode.donation.donationApi.contributionController -> donor '200 or 204 (403, 404 or 409 when refused)'
+  }
+
+  dynamic view maintainerOverview {
+    title 'Scenario 3d2: Maintainer projects and donations'
+    description 'Runtime scenario 3d2 in 06-runtime-view.md'
+
+    maintainer -> timeforcode.donation.donationApi.maintainerController 'GET /api/v1/maintainer/me/projects'
+    timeforcode.donation.donationApi.maintainerController -> timeforcode.donation.donationApplication.maintainerHandlers 'dispatch query'
+    timeforcode.donation.donationApplication.maintainerHandlers -> timeforcode.donation.donationInfrastructure.projectRepository 'load own projects in any state'
+    timeforcode.donation.donationApplication.maintainerHandlers -> timeforcode.donation.donationInfrastructure.donationRepository 'load Active and Completed donations in one query'
+    timeforcode.donation.donationInfrastructure.donationRepository -> mongodb.donationDb 'query'
+    timeforcode.donation.donationApi.maintainerController -> maintainer 'projects with donation totals'
+  }
+
+  dynamic view contributorProfile {
+    title 'Scenario 3e: Maintain a contributor profile'
+    description 'Runtime scenario 3e in 06-runtime-view.md'
+
+    donor -> timeforcode.donation.donationApi.contributorProfileController 'PUT /api/v1/contributor/me (JWT bearer)'
+    timeforcode.donation.donationApi.contributorProfileController -> timeforcode.donation.donationApplication.contributorHandlers 'dispatch update command'
+    timeforcode.donation.donationApplication.contributorHandlers -> timeforcode.donation.donationInfrastructure.contributorRepository 'load the contributor, or register one from the token claims'
+    timeforcode.donation.donationApplication.contributorHandlers -> timeforcode.donation.donationInfrastructure.donorOrganizationRepository 'check the linked donor organization'
+    timeforcode.donation.donationApplication.contributorHandlers -> timeforcode.donation.donationDomain.contributor 'UpdateProfile normalises the skills'
+    timeforcode.donation.donationApplication.contributorHandlers -> timeforcode.donation.donationInfrastructure.contributorRepository 'save the profile fields only'
+    timeforcode.donation.donationInfrastructure.contributorRepository -> mongodb.donationDb 'persist'
+    timeforcode.donation.donationApi.contributorProfileController -> donor '200 OK'
+  }
+
+  // Deployment
   deployment view production {
     title 'Production deployment (Azure)'
     include prod.**
@@ -64,5 +303,10 @@ views {
   deployment view local {
     title 'Local development (podman compose)'
     include local.**
+  }
+
+  deployment view target {
+    title 'Target production deployment (planned)'
+    include target.**
   }
 }
