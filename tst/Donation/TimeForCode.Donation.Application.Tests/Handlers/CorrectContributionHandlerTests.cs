@@ -2,6 +2,7 @@ using AwesomeAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 using MongoDB.Bson;
 using Moq;
+using TimeForCode.Donation.Application.Exceptions;
 using TimeForCode.Donation.Application.Handlers;
 using TimeForCode.Donation.Application.Interfaces;
 using TimeForCode.Donation.Commands;
@@ -158,6 +159,19 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
             result.IsFailure.Should().BeTrue();
             result.FailureStatusCode.Should().Be(System.Net.HttpStatusCode.NotFound);
             _contributionRepository.Verify(r => r.UpdateAsync(It.IsAny<Contribution>(), It.IsAny<CancellationToken>()), Times.Never);
+        }
+
+        [TestMethod]
+        public async Task Handle_ContributionChangedByAnotherRequest_ReturnsConflictAndCountsNothing()
+        {
+            _contributionRepository.Setup(r => r.UpdateAsync(It.IsAny<Contribution>(), It.IsAny<CancellationToken>()))
+                .ThrowsAsync(new RepositoryConflictException("changed"));
+
+            var result = await _sut.Handle(Command(hours: 5), CancellationToken.None);
+
+            result.FailureStatusCode.Should().Be(System.Net.HttpStatusCode.Conflict);
+            _counter.Verify(c => c.CountAsync(It.IsAny<string>(), It.IsAny<ObjectId>(), It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Never);
+            _releaser.Verify(r => r.ReleaseAsync(It.IsAny<ObjectId>(), It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Never);
         }
 
         [TestMethod]

@@ -132,6 +132,7 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         [Authorize(Policy = "ApiUserOrAdmin")]
         public async Task<IActionResult> CorrectContribution([ObjectId] string id, [ObjectId] string contributionId, CorrectContributionRequest request)
@@ -169,6 +170,7 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         [Authorize(Policy = "ApiUserOrAdmin")]
         public async Task<IActionResult> DeleteContribution([ObjectId] string id, [ObjectId] string contributionId)
@@ -208,6 +210,7 @@ namespace TimeForCode.Donation.Api.V1.Controllers
             {
                 HttpStatusCode.NotFound => StatusCodes.Status404NotFound,
                 HttpStatusCode.Forbidden => StatusCodes.Status403Forbidden,
+                HttpStatusCode.Conflict => StatusCodes.Status409Conflict,
                 _ => StatusCodes.Status400BadRequest
             };
 

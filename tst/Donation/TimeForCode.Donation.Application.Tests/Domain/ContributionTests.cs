@@ -206,15 +206,37 @@ namespace TimeForCode.Donation.Application.Tests.Domain
         }
 
         [TestMethod]
-        [DataRow("user-1", "user-1", false, true)]
-        [DataRow("user-2", "user-1", false, false)]
-        [DataRow("user-2", "user-1", true, true)]
-        public void CanBeChangedBy_UserAndRole_FollowsOwnershipOrAdministrator(string userId, string contributorUserId, bool isAdministrator, bool expected)
+        public void Correct_DeletedWithInvalidHours_IsRefusedInsteadOfThrowing()
         {
-            var contributor = Contributor.Create(contributorUserId, "octocat", "https://avatars.githubusercontent.com/u/1");
-            var contribution = Contribution.Create(ProjectId, contributor, 3, null, LoggedAt);
+            var change = Deleted().Correct("user-1", false, Owner, 0, null, ChangedAt);
 
-            contribution.CanBeChangedBy(userId, contributor, isAdministrator).Should().Be(expected);
+            change.Failure.Should().Be(ContributionChangeFailure.Deleted);
+        }
+
+        [TestMethod]
+        public void Correct_OtherUserWithInvalidHours_IsRefusedInsteadOfThrowing()
+        {
+            var change = Logged().Correct("user-2", false, Owner, 0, null, ChangedAt);
+
+            change.Failure.Should().Be(ContributionChangeFailure.NotAllowed);
+        }
+
+        [TestMethod]
+        public void Correct_Contribution_KeepsTheVersionItWasLoadedWith()
+        {
+            var loaded = new Contribution
+            {
+                Id = ObjectId.GenerateNewId(),
+                ProjectId = ProjectId,
+                ContributorId = Owner.Id,
+                ContributorGitHubLogin = Owner.GithubLogin,
+                ContributorAvatarUrl = Owner.AvatarUrl,
+                Hours = 3,
+                LoggedAt = LoggedAt,
+                Version = 4
+            };
+
+            loaded.Correct("user-1", false, Owner, 5, null, ChangedAt).Contribution!.Version.Should().Be(4);
         }
     }
 }

@@ -123,6 +123,22 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
         }
 
         [TestMethod]
+        public async Task ReleaseAsync_NewestDonationCannotBeSaved_DoesNotTakeItsShareFromAnOlderAllocation()
+        {
+            var older = GivenDonation(DonationStatus.Active, committed: 5, logged: 3);
+            var newer = GivenDonation(DonationStatus.Active, committed: 5, logged: 2);
+            var olderAllocation = GivenAllocation(older, 3);
+            GivenAllocations(olderAllocation, GivenAllocation(newer, 2));
+            _donationRepository.Setup(r => r.UpdateAsync(newer)).ThrowsAsync(new RepositoryConflictException("changed"));
+
+            await _sut.ReleaseAsync(ContributionId, 2, CancellationToken.None);
+
+            older.HoursLogged.Should().Be(3);
+            _allocationRepository.Verify(r => r.UpdateAsync(It.Is<DonationAllocation>(a => a.Id == olderAllocation.Id), It.IsAny<CancellationToken>()), Times.Never);
+            _allocationRepository.Verify(r => r.DeleteAsync(It.IsAny<ObjectId>(), It.IsAny<CancellationToken>()), Times.Never);
+        }
+
+        [TestMethod]
         public async Task ReleaseAsync_ContributionWithoutAllocations_ChangesNothing()
         {
             GivenAllocations();

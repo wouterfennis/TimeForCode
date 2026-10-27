@@ -24,6 +24,11 @@ namespace TimeForCode.Donation.Domain
         public DateTimeOffset? DeletedAt { get; init; }
         public string? DeletedByUserId { get; init; }
 
+        /// <summary>
+        /// Counts the saves of the contribution; the repository only saves a change made on the version it loaded (optimistic concurrency).
+        /// </summary>
+        public int Version { get; init; }
+
         public bool IsDeleted => DeletedAt != null;
 
         public static Contribution Create(
@@ -71,13 +76,13 @@ namespace TimeForCode.Donation.Domain
         /// <param name="contributor">The contributor of the contribution, or <c>null</c> when it was anonymised.</param>
         public ContributionChange Correct(string userId, bool isAdministrator, Contributor? contributor, int hours, Uri? githubReference, DateTimeOffset correctedAt)
         {
-            EnsureValid(hours, githubReference);
-
             var refused = Refuse(userId, isAdministrator, contributor);
             if (refused != null)
             {
                 return refused;
             }
+
+            EnsureValid(hours, githubReference);
 
             var entry = new ContributionCorrection
             {
@@ -106,7 +111,7 @@ namespace TimeForCode.Donation.Domain
         }
 
         /// <summary>Only the contributor who logged the contribution and administrators may change it.</summary>
-        public bool CanBeChangedBy(string userId, Contributor? contributor, bool isAdministrator)
+        private bool CanBeChangedBy(string userId, Contributor? contributor, bool isAdministrator)
         {
             return isAdministrator || (contributor != null && contributor.Id == ContributorId && contributor.PlatformUserId == userId);
         }
@@ -150,7 +155,8 @@ namespace TimeForCode.Donation.Domain
                 LoggedAt = LoggedAt,
                 History = history,
                 DeletedAt = deletedAt,
-                DeletedByUserId = deletedByUserId
+                DeletedByUserId = deletedByUserId,
+                Version = Version
             };
         }
     }

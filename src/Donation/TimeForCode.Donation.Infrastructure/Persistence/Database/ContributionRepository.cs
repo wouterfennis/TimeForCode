@@ -1,6 +1,7 @@
 using MongoDB.Bson;
 using MongoDB.Driver;
 using System.Diagnostics.CodeAnalysis;
+using TimeForCode.Donation.Application.Exceptions;
 using TimeForCode.Donation.Application.Interfaces;
 using TimeForCode.Donation.Domain;
 
@@ -62,16 +63,17 @@ namespace TimeForCode.Donation.Infrastructure.Persistence.Database
             }
 
             return await _collection
-                .Find(Builders<Contribution>.Filter.And(
-                    Builders<Contribution>.Filter.Eq(c => c.Id, contributionObjectId),
-                    Builders<Contribution>.Filter.Eq(c => c.ProjectId, projectObjectId),
-                    Builders<Contribution>.Filter.Eq(c => c.DeletedAt, null)))
+                .Find(ContributionDefinitions.LiveContributionFilter(projectObjectId, contributionObjectId))
                 .FirstOrDefaultAsync(cancellationToken);
         }
 
         public async Task UpdateAsync(Contribution contribution, CancellationToken cancellationToken)
         {
-            await _collection.ReplaceOneAsync(Builders<Contribution>.Filter.Eq(c => c.Id, contribution.Id), contribution, cancellationToken: cancellationToken);
+            var result = await _collection.UpdateOneAsync(ContributionDefinitions.VersionFilter(contribution), ContributionDefinitions.Changes(contribution), cancellationToken: cancellationToken);
+            if (result.MatchedCount == 0)
+            {
+                throw new RepositoryConflictException($"Contribution {contribution.Id} was changed by someone else.");
+            }
         }
 
         public async Task AnonymiseByContributorIdAsync(ObjectId contributorId, CancellationToken cancellationToken)
@@ -91,9 +93,7 @@ namespace TimeForCode.Donation.Infrastructure.Persistence.Database
             }
 
             var newest = await _collection
-                .Find(Builders<Contribution>.Filter.And(
-                    Builders<Contribution>.Filter.Eq(c => c.ProjectId, objectId),
-                    Builders<Contribution>.Filter.Eq(c => c.DeletedAt, null)))
+                .Find(ContributionDefinitions.ProjectFilter(objectId))
                 .SortByDescending(c => c.LoggedAt)
                 .ThenByDescending(c => c.Id)
                 .Limit(MaxContributionsPerProject)

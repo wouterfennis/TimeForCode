@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.Extensions.Logging;
+using TimeForCode.Donation.Application.Exceptions;
 using TimeForCode.Donation.Application.Interfaces;
 using TimeForCode.Donation.Commands;
 
@@ -43,7 +44,15 @@ namespace TimeForCode.Donation.Application.Handlers
                 return change.ToFailure();
             }
 
-            await _contributionRepository.UpdateAsync(change.Contribution!, cancellationToken);
+            try
+            {
+                await _contributionRepository.UpdateAsync(change.Contribution!, cancellationToken);
+            }
+            catch (RepositoryConflictException ex)
+            {
+                _logger.LogWarning(ex, "Contribution {ContributionId} was changed concurrently", request.ContributionId);
+                return ContributionChangeMapper.Conflict();
+            }
             await _hoursReleaser.ReleaseAsync(contribution.Id, -change.HoursDelta, cancellationToken);
 
             return Result<ContributionChangedResult>.Success(new ContributionChangedResult { Contribution = change.Contribution!.ToDto() });
