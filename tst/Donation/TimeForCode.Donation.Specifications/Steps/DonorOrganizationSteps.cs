@@ -220,10 +220,7 @@ namespace TimeForCode.Donation.Specifications.Steps
 
         private async Task RegisterAsync(CreateDonorOrganizationRequest request)
         {
-            var mockRepo = _provider.GetRequiredService<Mock<IDonorOrganizationRepository>>();
-            mockRepo.Setup(x => x.CreateAsync(It.IsAny<DonorOrganization>()))
-                .Returns(Task.CompletedTask);
-
+            // No repository mock is set up here: this path also runs on a live host, where in-process services do not exist.
             try
             {
                 _createResult = await _donationClient.CreateDonorOrganizationAsync(request);
