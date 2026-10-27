@@ -8,6 +8,7 @@ using System.Text.Json;
 using TimeForCode.Donation.Api.Client;
 using TimeForCode.Donation.Application.Interfaces;
 using TimeForCode.Donation.Domain;
+using TimeForCode.Donation.Specifications.Tables;
 using TimeForCode.Donation.Specifications.TestBuilder;
 
 namespace TimeForCode.Donation.Specifications.Steps
@@ -168,15 +169,26 @@ namespace TimeForCode.Donation.Specifications.Steps
             }
         }
 
-        [When("The user registers a donor organization with the name {string}")]
-        public Task WhenTheUserRegistersADonorOrganizationWithTheNameAsync(string name)
+        [When("The user registers a donor organization with a blank name")]
+        public Task WhenTheUserRegistersADonorOrganizationWithABlankNameAsync()
         {
-            return RegisterAsync(new CreateDonorOrganizationRequest { Name = name });
+            // Gherkin trims table cells, so a whitespace-only name cannot be written in a table.
+            return RegisterAsync(new CreateDonorOrganizationRequest { Name = "   " });
         }
 
-        [When("The user registers a donor organization with the contact email {string} and the website {string}")]
-        public async Task WhenTheUserRegistersADonorOrganizationWithContactDetailsAsync(string email, string website)
+        [When("The user registers a donor organization with:")]
+        public async Task WhenTheUserRegistersADonorOrganizationWithAsync(DataTable table)
         {
+            var row = StepTables.SingleRow<DonorOrganizationTable>(table);
+            // A missing Name column registers a valid name; an empty Name cell sends an empty name.
+            var name = row.Name ?? "Acme Corp";
+
+            if (row.ContactEmail == null && row.Website == null)
+            {
+                await RegisterAsync(new CreateDonorOrganizationRequest { Name = name });
+                return;
+            }
+
             // Sent as raw JSON: the generated client types the website as a Uri and cannot send invalid values.
             var mockRepo = _provider.GetRequiredService<Mock<IDonorOrganizationRepository>>();
             mockRepo.Setup(x => x.CreateAsync(It.IsAny<DonorOrganization>()))
@@ -184,7 +196,12 @@ namespace TimeForCode.Donation.Specifications.Steps
 
             var response = await _httpClient.PostAsJsonAsync(
                 "api/v1/donororganization",
-                new { name = "Acme Corp", contactEmail = email, website });
+                new
+                {
+                    name,
+                    contactEmail = row.ContactEmail,
+                    website = row.Website
+                });
             var body = await response.Content.ReadAsStringAsync();
 
             if (response.IsSuccessStatusCode)
@@ -203,33 +220,10 @@ namespace TimeForCode.Donation.Specifications.Steps
 
         private async Task RegisterAsync(CreateDonorOrganizationRequest request)
         {
-            var mockRepo = _provider.GetRequiredService<Mock<IDonorOrganizationRepository>>();
-            mockRepo.Setup(x => x.CreateAsync(It.IsAny<DonorOrganization>()))
-                .Returns(Task.CompletedTask);
-
+            // No repository mock is set up here: this path also runs on a live host, where in-process services do not exist.
             try
             {
                 _createResult = await _donationClient.CreateDonorOrganizationAsync(request);
-            }
-            catch (ApiException<ProblemDetails> ex)
-            {
-                _context.LastException = ex;
-            }
-            catch (ApiException ex)
-            {
-                _context.LastException = ex;
-            }
-        }
-
-        [When("The user registers a donor organization without a name")]
-        public async Task WhenTheUserRegistersADonorOrganizationWithoutANameAsync()
-        {
-            try
-            {
-                _createResult = await _donationClient.CreateDonorOrganizationAsync(new CreateDonorOrganizationRequest
-                {
-                    Name = ""
-                });
             }
             catch (ApiException<ProblemDetails> ex)
             {
