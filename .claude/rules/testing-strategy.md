@@ -56,6 +56,15 @@ Run `pwsh scripts/step-catalog.ps1 -Steps` before adding a step: it lists every 
 - **`Background` for shared preambles.** Steps repeated at the start of every scenario in a feature move to `Background`.
 - **Delete what the catalog reports unused**, and keep the step count per feature no higher than the scenarios need.
 
+## Specs: shared state and fakes
+
+- **Assertions:** `using AwesomeAssertions;`, never `FluentAssertions` (8+ is commercially licensed). After a bulk rename grep the tree for the old name; some files start with a BOM, so anchored `sed` misses line 1. Compare `BsonDocument` through `ToJson()`, since the library treats it as a collection of elements.
+- **Donation:** one `[Binding]` class per aggregate. State several classes need (`LastException`, list results, ids) lives in `DonationContext`, shared arrange helpers in `DonationFixtures`; both are injected. Put a failed response through `_context.CaptureAsync`, never into a private field.
+- **Authorization:** a failed call goes into `SessionContext.LastException`, so reused Then steps see it. An endpoint that expires the token cookies also removes them from the spec `CookieContainer`: copy `GetAllCookies()` before the call and re-add them to simulate a kept token.
+- **Catalog fakes:** give each project in an in-memory catalog its own id (`ProjectBuilder.IdFor(n)`); `BuildActive()` and the lifecycle project share `Constants.TestProjectId`. Render Mongo filters with `RenderArgs<T>` (driver 3.x) and compare JSON.
+- **Admin steps:** the step "The user has an administrator access token" builds a `scope=admin` token.
+- **`@live` scenarios** sign in through the real login (Auth login, mock IdP confirm form, callback) and read the `AccessToken` cookie, whose JSON is PascalCase (`Token`). Admin steps need `TIMEFORCODE_LIVE_TEST_ADMIN_SECRET`: export `TEST_ADMIN_ACCESS_SECRET` before `podman compose up` (`start-local.ps1` otherwise makes a random one that cannot be recovered). Tag persistence scenarios `@live` plus `@liveonly` and give each scenario unique data.
+
 ## Running tests
 
 Follow skill `quiet-dotnet`: scope to one project while iterating (`dotnet test tst/<Module>/<Project> --filter "FullyQualifiedName~<Name>"`), full solution once at the end. The trimming hook prints only failures. Delegate big runs to the `test-runner` subagent.

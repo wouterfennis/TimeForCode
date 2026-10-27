@@ -49,6 +49,14 @@ jobs:
     - name: Build
       run: npm run build
 
+    # Build only; pushing the image is tracked in #166
+    - name: Build Docker image front-end
+      uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
+      with:
+        context: .
+        file: ./Dockerfile.frontend
+        tags: timeforcode-frontend:${{ github.sha }}
+
   build:
     name: Build and analyze
     needs: frontend
@@ -207,7 +215,7 @@ jobs:
         Add-Content -Path $env:GITHUB_ENV -Value "TIMEFORCODE_LIVE_TEST_ADMIN_SECRET=$secret"
 
     - name: Start the compose stack
-      run: docker compose up --build --detach authorization-api identity-provider-mock donation-api mongo
+      run: docker compose up --build --detach authorization-api identity-provider-mock donation-api frontend mongo
 
     - name: Wait until the stack is healthy
       shell: pwsh

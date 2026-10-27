@@ -4,6 +4,10 @@ import { defineConfig } from 'vite'
 
 export default defineConfig({
   plugins: [react()],
+  build: {
+    // The nginx CSP (`default-src 'self'`) blocks `data:` URLs, so never inline assets.
+    assetsInlineLimit: 0,
+  },
   test: {
     environment: 'jsdom',
     setupFiles: ['./tests/setup.ts'],

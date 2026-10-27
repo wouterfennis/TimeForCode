@@ -164,6 +164,14 @@ internal class NewFeatureSteps
 }
 ```
 
+### Input limits
+
+Declare limits as attributes (`Range`, `StringLength`, `MaxLength`, `RegularExpression`, `[Url]`) on action parameters or request properties, not as `if` checks in the controller: they appear in the OpenAPI document and `[ApiController]` enforces them (400 validation problem details). Shared limits go in the module's `ApiConstraints`. Gotchas: `[EmailAddress]` is enforced but not emitted as `format: email` (`OpenApiTransformers.AddEmailFormat` adds it) and rejects `""`; `MaxLength` cannot go on a `Uri` property. A behaviour change (for example malformed ids now 400, not 404) needs a spec scenario.
+
+### Token scopes
+
+The Authorization API issues user JWTs with `scope=user` and admin JWTs with `scope=admin`, `role=admin`, sub `admin`. Donation policies: `ApiUser` (scope user) and `ApiAdmin` (scope admin); an admin token fails `ApiUser`, so use `ApiAdmin` for admin-only endpoints.
+
 ### Error responses
 
 ```csharp

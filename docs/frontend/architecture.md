@@ -97,6 +97,15 @@ graph LR
 
 The diagram shows that the browser only ever talks to one origin. The BFF translates cookies into bearer tokens so the backend APIs stay unchanged. Because everything is same-origin, the CORS configuration added for the admin flow is not needed for the SPA, and `SameSite=Strict` keeps working.
 
+**When the BFF arrives** ([ADR-012 amendment](../reference/adr/0012-react-spa-frontend.md#amendment-2026-10-21-nginx-first-the-bff-with-sign-in), 2026-10-21): until sign-in, nginx serves the SPA and sets the security headers. The BFF is introduced with sign-in (#113), the first slice whose API calls need the cookie turned into a bearer header. The SPA only calls relative paths on its own origin, so it does not change when the BFF arrives:
+
+| SPA path | Forwarded to | Until #113 | From #113 on |
+| --- | --- | --- | --- |
+| `/api/auth/*` | Authorization API `/api/*` | Not used | BFF |
+| `/api/donation/*` | Donation API `/api/*` | nginx (added in #112) | BFF |
+
+For example, `/api/donation/v1/Project` goes to the Donation API's `/api/v1/Project`.
+
 Alternatives considered (recorded in the ADR): changing the Donation API to accept cookies (backend change, wider CSRF surface), or hosting the SPA on a sibling subdomain with a shared cookie domain (weakens `SameSite=Strict`). Both widen the scope of this work.
 
 ### CSRF
@@ -133,8 +142,10 @@ Login starts with a browser navigation to the Authorization API login endpoint (
 
 ## Build and deployment
 
-- `Dockerfile.frontend` builds the SPA and serves it with nginx (`src/Frontend/nginx.conf`). When the BFF host is added, the SPA build output is copied into the BFF image instead.
-- The front-end build, lint, type-check, and unit tests run in the `frontend` job of the pull request and main-branch workflows (`.github/workflows/`). A failing check fails the job; on `main` it also blocks Release Please.
+- `Dockerfile.frontend` builds the SPA and serves it with nginx (`src/Frontend/nginx.conf`). The image build runs `nginx -t`, so an invalid configuration fails the build. Deep links fall back to `index.html`; a missing file under `/assets/` returns 404.
+- When the BFF host is added (#113), either the BFF serves the SPA build output or nginx keeps serving it and forwards `/api/*` to the BFF. Decide in #113 and record it here.
+- The front-end build, lint, type-check, and unit tests run in the `frontend` job of the pull request and main-branch workflows (`.github/workflows/`). The same job builds the front-end image from `Dockerfile.frontend`; it is not pushed until the front-end has a deployment. A failing check fails the job; on `main` it also blocks Release Please.
+- `scripts/smoke-test.ps1` (section 5) checks the running front-end in the local stack: the SPA at `/` and on a deep link, a built asset, the 404 for a missing asset, and the security headers on each of those responses.
 - Target topology: one front-end container hosting the SPA. See [Deployment Status](../current/deployment-status.md).
 
 ## Testing strategy
@@ -152,5 +163,8 @@ Follow [testing-strategy](../current/testing.md) and ADR-008: E2E tests stay out
 - No tokens in JavaScript-accessible storage; no tokens in URLs.
 - Never render API-provided HTML. React escapes by default; do not use `dangerouslySetInnerHTML`.
 - External links use `rel="noopener noreferrer"`.
-- Content Security Policy set by the BFF; no inline scripts.
+- Security headers on every response, set by nginx (by the BFF if it takes over serving the files):
+  - `Content-Security-Policy` that allows only the SPA's own origin and no framing: `default-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'`. No inline scripts or styles and no `data:` URLs; React's `style` prop is allowed because it sets styles from script. Allowing another source (for example GitHub avatars) is a deliberate change to `src/Frontend/nginx.conf` and to the smoke test's check.
+  - `X-Content-Type-Options: nosniff`.
+  - `Referrer-Policy: strict-origin-when-cross-origin`.
 - Dependencies are pinned, and Dependabot or the existing dependency-update skill keeps them current.
