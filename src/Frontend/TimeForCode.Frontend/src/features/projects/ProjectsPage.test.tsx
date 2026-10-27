@@ -102,6 +102,14 @@ describe('ProjectsPage', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('The projects could not be loaded. Try again later.')
   })
 
+  it('shows an error when a successful response has no project list', async () => {
+    mockApi(() => jsonResponse({}))
+
+    render(<ProjectsPage />)
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('The projects could not be loaded. Try again later.')
+  })
+
   it('shows an error when the request cannot be made', async () => {
     mockApi(() => Promise.reject(new TypeError('Failed to fetch')))
 

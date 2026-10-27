@@ -16,7 +16,7 @@ export function useProjects(): ProjectsState {
     const abort = new AbortController()
     donationClient
       .GET('/api/v1/Project', { signal: abort.signal })
-      .then(({ data }) => setState(data ? { status: 'loaded', projects: data.projects, totalCount: Number(data.totalCount) } : { status: 'error' }))
+      .then(({ data }) => setState(data?.projects ? { status: 'loaded', projects: data.projects, totalCount: Number(data.totalCount) } : { status: 'error' }))
       .catch(() => {
         if (!abort.signal.aborted) setState({ status: 'error' })
       })

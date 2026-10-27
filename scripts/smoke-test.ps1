@@ -329,6 +329,10 @@ if ((Get-StatusCode $rootPage) -eq 0) {
         Write-Fail "Front-end Donation API route" "Status=$projectListStatus, body has no 'projects' list (is donation-api running and DONATION_API_UPSTREAM correct?)"
     }
 
+    $sWrite = [int](curl -s -o NUL -w "%{http_code}" -X POST "$FrontendBaseUrl/api/donation/v1/Project" 2>&1)
+    if ($sWrite -eq 403) { Write-Pass "Front-end refuses writes on /api/donation/ (POST -> 403)" }
+    else                 { Write-Fail "Front-end Donation API route is read-only" "POST status=$sWrite (expected 403)" }
+
     $frontendResponses = [ordered]@{ "/" = $rootPage; "/projects/123" = $deepLink; "script" = $builtAsset; "/assets/missing.js" = $missingAsset }
     $headerProblems = @(foreach ($entry in $frontendResponses.GetEnumerator()) {
         Get-SecurityHeaderProblems $entry.Value | ForEach-Object { "$($entry.Key) $_" }
