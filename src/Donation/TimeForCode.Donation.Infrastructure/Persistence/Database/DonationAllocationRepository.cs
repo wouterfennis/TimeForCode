@@ -51,6 +51,20 @@ namespace TimeForCode.Donation.Infrastructure.Persistence.Database
             await _collection.InsertOneAsync(allocation, cancellationToken: cancellationToken);
         }
 
+        public async Task<IReadOnlyList<DonationAllocation>> GetByContributionIdAsync(ObjectId contributionId, CancellationToken cancellationToken)
+        {
+            return await _collection
+                .Find(Builders<DonationAllocation>.Filter.Eq(a => a.ContributionId, contributionId))
+                .SortBy(a => a.CreatedAt)
+                .ThenBy(a => a.Id)
+                .ToListAsync(cancellationToken);
+        }
+
+        public async Task UpdateAsync(DonationAllocation allocation, CancellationToken cancellationToken)
+        {
+            await _collection.ReplaceOneAsync(Builders<DonationAllocation>.Filter.Eq(a => a.Id, allocation.Id), allocation, cancellationToken: cancellationToken);
+        }
+
         public async Task DeleteAsync(ObjectId id, CancellationToken cancellationToken)
         {
             await _collection.DeleteOneAsync(Builders<DonationAllocation>.Filter.Eq(a => a.Id, id), cancellationToken);

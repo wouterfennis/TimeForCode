@@ -19,7 +19,7 @@ namespace TimeForCode.Donation.Application.Validators
                 .WithMessage("The GitHub reference must be an HTTPS link to a page on github.com.");
         }
 
-        private static bool IsHttpsGithubLink(Uri? reference)
+        internal static bool IsHttpsGithubLink(Uri? reference)
         {
             return reference != null
                 && reference.IsAbsoluteUri

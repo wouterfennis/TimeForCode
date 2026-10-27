@@ -31,5 +31,32 @@ namespace TimeForCode.Donation.Application.Tests.Domain
 
             act.Should().Throw<ArgumentOutOfRangeException>();
         }
+
+        [TestMethod]
+        public void Reduce_FewerHoursThanAllocated_KeepsTheRemainder()
+        {
+            var allocation = DonationAllocation.Create(ContributionId, DonationId, 5);
+
+            var reduced = allocation.Reduce(2);
+
+            reduced.Id.Should().Be(allocation.Id);
+            reduced.ContributionId.Should().Be(ContributionId);
+            reduced.DonationId.Should().Be(DonationId);
+            reduced.Hours.Should().Be(3);
+            reduced.CreatedAt.Should().Be(allocation.CreatedAt);
+        }
+
+        [TestMethod]
+        [DataRow(0)]
+        [DataRow(-1)]
+        [DataRow(5)]
+        public void Reduce_NotBetweenZeroAndAllocatedHours_Throws(int hours)
+        {
+            var allocation = DonationAllocation.Create(ContributionId, DonationId, 5);
+
+            var act = () => allocation.Reduce(hours);
+
+            act.Should().Throw<ArgumentOutOfRangeException>();
+        }
     }
 }

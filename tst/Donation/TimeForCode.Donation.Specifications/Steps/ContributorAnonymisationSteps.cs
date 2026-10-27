@@ -11,9 +11,9 @@ namespace TimeForCode.Donation.Specifications.Steps
     [Binding]
     internal class ContributorAnonymisationSteps
     {
-        private const string OtherUserId = "507f1f77bcf86cd799439021";
-        private const string OtherUserLogin = "hubot";
-        private const string OtherUserAvatarUrl = "https://avatars.githubusercontent.com/u/480938?v=4";
+        private const string OtherUserId = DonationFixtures.OtherUserId;
+        private const string OtherUserLogin = DonationFixtures.OtherUserLogin;
+        private const string OtherUserAvatarUrl = DonationFixtures.OtherUserAvatarUrl;
         private const string UserWithoutContributionsId = "507f1f77bcf86cd799439099";
 
         private readonly IDonationClient _donationClient;
@@ -29,14 +29,6 @@ namespace TimeForCode.Donation.Specifications.Steps
             _bearerTokenHandler = bearerTokenHandler;
             _context = context;
             _fixtures = fixtures;
-        }
-
-        [Given("Another user has already logged {int} hours on the project")]
-        public void GivenAnotherUserHasAlreadyLoggedHoursOnTheProject(int hours)
-        {
-            var other = Contributor.Create(OtherUserId, OtherUserLogin, OtherUserAvatarUrl);
-            _fixtures.Contributors.Add(other);
-            _fixtures.LogHours(other, hours);
         }
 
         [Given("The account of the user has been deleted at the time for code platform")]

@@ -231,6 +231,51 @@ namespace TimeForCode.Donation.Application.Tests.Domain
             restored.HoursCommitted.Should().Be(10);
         }
 
+        [TestMethod]
+        public void ReleaseHours_ActiveDonation_TakesHoursBackAndStaysActive()
+        {
+            var donation = Build(DonationStatus.Active, committed: 5, logged: 4);
+
+            var released = donation.ReleaseHours(3);
+
+            released.Should().Be(3);
+            donation.HoursLogged.Should().Be(1);
+            donation.Status.Should().Be(DonationStatus.Active);
+        }
+
+        [TestMethod]
+        public void ReleaseHours_CompletedDonation_ReopensAsActive()
+        {
+            var donation = Build(DonationStatus.Completed, committed: 5, logged: 5);
+
+            donation.ReleaseHours(2);
+
+            donation.HoursLogged.Should().Be(3);
+            donation.Status.Should().Be(DonationStatus.Active);
+        }
+
+        [TestMethod]
+        public void ReleaseHours_CancelledDonation_TakesHoursBackAndStaysCancelled()
+        {
+            var donation = Build(DonationStatus.Cancelled, committed: 5, logged: 3);
+
+            donation.ReleaseHours(1);
+
+            donation.HoursLogged.Should().Be(2);
+            donation.Status.Should().Be(DonationStatus.Cancelled);
+        }
+
+        [TestMethod]
+        public void ReleaseHours_MoreThanLogged_ReleasesOnlyWhatIsLogged()
+        {
+            var donation = Build(DonationStatus.Active, committed: 5, logged: 2);
+
+            var released = donation.ReleaseHours(10);
+
+            released.Should().Be(2);
+            donation.HoursLogged.Should().Be(0);
+        }
+
         private static DonationEntity Build(DonationStatus status, int committed = 20, int logged = 0)
         {
             return DonationTestData.Build(status, committed: committed, logged: logged);

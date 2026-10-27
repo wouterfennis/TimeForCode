@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using System.Net;
 using System.Net.Mime;
 using System.Security.Claims;
 using TimeForCode.Donation.Api.V1.Models;
@@ -10,7 +11,7 @@ using TimeForCode.Donation.Commands;
 namespace TimeForCode.Donation.Api.V1.Controllers
 {
     /// <summary>
-    /// Controller for logging and listing the time contributions of a project.
+    /// Controller for logging, listing, correcting and deleting the time contributions of a project.
     /// </summary>
     [ApiController]
     [Produces(MediaTypeNames.Application.Json)]
@@ -20,6 +21,7 @@ namespace TimeForCode.Donation.Api.V1.Controllers
     {
         private const string LoginClaim = "login";
         private const string AvatarUrlClaim = "avatar_url";
+        private const string AdminScope = "admin";
 
         private readonly IMediator _mediator;
 
@@ -114,6 +116,102 @@ namespace TimeForCode.Donation.Api.V1.Controllers
             {
                 Contributions = result.Value.Contributions.Select(ToResponse).ToList()
             });
+        }
+
+        /// <summary>
+        /// Corrects the hours and GitHub reference of a contribution. Allowed for the contributor who logged it and for administrators.
+        /// The previous values are kept as history.
+        /// </summary>
+        /// <param name="id">The project identifier.</param>
+        /// <param name="contributionId">The contribution identifier.</param>
+        /// <param name="request">The corrected hours and the optional GitHub reference (omitted removes it).</param>
+        /// <returns>The corrected contribution.</returns>
+        [HttpPut("{contributionId}", Name = nameof(CorrectContribution))]
+        [ProducesResponseType(typeof(ContributionResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+        [Authorize(Policy = "ApiUserOrAdmin")]
+        public async Task<IActionResult> CorrectContribution([ObjectId] string id, [ObjectId] string contributionId, CorrectContributionRequest request)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return MissingIdentity();
+            }
+
+            var result = await _mediator.Send(new CorrectContributionCommand
+            {
+                ProjectId = id,
+                ContributionId = contributionId,
+                UserId = userId,
+                IsAdministrator = User.HasClaim("scope", AdminScope),
+                Hours = request.Hours,
+                GithubReference = request.GithubReference
+            });
+
+            return result.IsFailure
+                ? ToProblem(result.FailureStatusCode, "Cannot correct contribution", result.ErrorMessage)
+                : Ok(ToResponse(result.Value.Contribution));
+        }
+
+        /// <summary>
+        /// Deletes a contribution. Allowed for the contributor who logged it and for administrators.
+        /// The contribution is only marked as deleted; it no longer appears in the list or counts towards the hours.
+        /// </summary>
+        /// <param name="id">The project identifier.</param>
+        /// <param name="contributionId">The contribution identifier.</param>
+        [HttpDelete("{contributionId}", Name = nameof(DeleteContribution))]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+        [Authorize(Policy = "ApiUserOrAdmin")]
+        public async Task<IActionResult> DeleteContribution([ObjectId] string id, [ObjectId] string contributionId)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return MissingIdentity();
+            }
+
+            var result = await _mediator.Send(new DeleteContributionCommand
+            {
+                ProjectId = id,
+                ContributionId = contributionId,
+                UserId = userId,
+                IsAdministrator = User.HasClaim("scope", AdminScope)
+            });
+
+            return result.IsFailure
+                ? ToProblem(result.FailureStatusCode, "Cannot delete contribution", result.ErrorMessage)
+                : NoContent();
+        }
+
+        private BadRequestObjectResult MissingIdentity()
+        {
+            return BadRequest(new ProblemDetails
+            {
+                Title = "User identity could not be determined",
+                Detail = "The token does not contain a valid user identifier.",
+                Status = StatusCodes.Status400BadRequest
+            });
+        }
+
+        private ObjectResult ToProblem(HttpStatusCode? statusCode, string title, string detail)
+        {
+            var status = statusCode switch
+            {
+                HttpStatusCode.NotFound => StatusCodes.Status404NotFound,
+                HttpStatusCode.Forbidden => StatusCodes.Status403Forbidden,
+                _ => StatusCodes.Status400BadRequest
+            };
+
+            return StatusCode(status, new ProblemDetails { Title = title, Detail = detail, Status = status });
         }
 
         private static ContributionResponse ToResponse(ContributionDto dto)

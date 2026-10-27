@@ -54,6 +54,26 @@ namespace TimeForCode.Donation.Infrastructure.Persistence.Database
             await _collection.InsertOneAsync(contribution);
         }
 
+        public async Task<Contribution?> GetByIdAsync(string projectId, string contributionId, CancellationToken cancellationToken)
+        {
+            if (!ObjectId.TryParse(projectId, out var projectObjectId) || !ObjectId.TryParse(contributionId, out var contributionObjectId))
+            {
+                return null;
+            }
+
+            return await _collection
+                .Find(Builders<Contribution>.Filter.And(
+                    Builders<Contribution>.Filter.Eq(c => c.Id, contributionObjectId),
+                    Builders<Contribution>.Filter.Eq(c => c.ProjectId, projectObjectId),
+                    Builders<Contribution>.Filter.Eq(c => c.DeletedAt, null)))
+                .FirstOrDefaultAsync(cancellationToken);
+        }
+
+        public async Task UpdateAsync(Contribution contribution, CancellationToken cancellationToken)
+        {
+            await _collection.ReplaceOneAsync(Builders<Contribution>.Filter.Eq(c => c.Id, contribution.Id), contribution, cancellationToken: cancellationToken);
+        }
+
         public async Task AnonymiseByContributorIdAsync(ObjectId contributorId, CancellationToken cancellationToken)
         {
             var update = Builders<Contribution>.Update
@@ -71,7 +91,9 @@ namespace TimeForCode.Donation.Infrastructure.Persistence.Database
             }
 
             var newest = await _collection
-                .Find(Builders<Contribution>.Filter.Eq(c => c.ProjectId, objectId))
+                .Find(Builders<Contribution>.Filter.And(
+                    Builders<Contribution>.Filter.Eq(c => c.ProjectId, objectId),
+                    Builders<Contribution>.Filter.Eq(c => c.DeletedAt, null)))
                 .SortByDescending(c => c.LoggedAt)
                 .ThenByDescending(c => c.Id)
                 .Limit(MaxContributionsPerProject)
