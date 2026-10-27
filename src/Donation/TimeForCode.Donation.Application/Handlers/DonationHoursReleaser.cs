@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using MongoDB.Bson;
 using TimeForCode.Donation.Application.Exceptions;
 using TimeForCode.Donation.Application.Interfaces;
+using TimeForCode.Donation.Domain;
 
 namespace TimeForCode.Donation.Application.Handlers
 {
@@ -29,33 +30,25 @@ namespace TimeForCode.Donation.Application.Handlers
         /// </summary>
         public async Task ReleaseAsync(ObjectId contributionId, int hours, CancellationToken cancellationToken)
         {
-            var remaining = hours;
             var allocations = await _allocationRepository.GetByContributionIdAsync(contributionId, cancellationToken);
 
-            foreach (var allocation in allocations.Reverse())
+            foreach (var release in DonationAllocation.PlanRelease(allocations, hours))
             {
-                if (remaining == 0)
+                var allocation = release.Allocation;
+                if (!await ReleaseFromDonationAsync(allocation.DonationId, release.Hours, cancellationToken))
                 {
-                    return;
-                }
-
-                var take = Math.Min(allocation.Hours, remaining);
-                if (!await ReleaseFromDonationAsync(allocation.DonationId, take, cancellationToken))
-                {
-                    _logger.LogError("{Hours} hours of contribution {ContributionId} could not be released from donation {DonationId}", take, contributionId, allocation.DonationId);
+                    _logger.LogError("{Hours} hours of contribution {ContributionId} could not be released from donation {DonationId}", release.Hours, contributionId, allocation.DonationId);
                     continue;
                 }
 
-                if (take == allocation.Hours)
+                if (release.Remaining is { } remaining)
                 {
-                    await _allocationRepository.DeleteAsync(allocation.Id, cancellationToken);
+                    await _allocationRepository.UpdateAsync(remaining, cancellationToken);
                 }
                 else
                 {
-                    await _allocationRepository.UpdateAsync(allocation.Reduce(take), cancellationToken);
+                    await _allocationRepository.DeleteAsync(allocation.Id, cancellationToken);
                 }
-
-                remaining -= take;
             }
         }
 

@@ -39,26 +39,25 @@ namespace TimeForCode.Donation.Application.Handlers
             }
 
             var contributor = await _contributorRepository.GetByIdAsync(contribution.ContributorId);
-            if (!contribution.CanBeChangedBy(request.UserId, contributor, request.IsAdministrator))
+            var change = contribution.Correct(request.UserId, request.IsAdministrator, contributor, request.Hours, request.GithubReference, DateTimeOffset.UtcNow);
+            if (!change.IsSuccess)
             {
-                _logger.LogWarning("User {UserId} may not change contribution {ContributionId}", request.UserId, request.ContributionId);
-                return Result<ContributionChangedResult>.Forbidden("Only the contributor or an administrator can change a contribution.");
+                _logger.LogWarning("Contribution {ContributionId} was not corrected for user {UserId}: {Failure}", request.ContributionId, request.UserId, change.Failure);
+                return change.ToFailure();
             }
 
-            var corrected = contribution.Correct(request.UserId, request.Hours, request.GithubReference, DateTimeOffset.UtcNow);
-            await _contributionRepository.UpdateAsync(corrected, cancellationToken);
+            await _contributionRepository.UpdateAsync(change.Contribution!, cancellationToken);
 
-            var difference = request.Hours - contribution.Hours;
-            if (difference > 0)
+            if (change.HoursDelta > 0)
             {
-                await _hoursCounter.CountAsync(contribution.ProjectId.ToString(), contribution.Id, difference, cancellationToken);
+                await _hoursCounter.CountAsync(contribution.ProjectId.ToString(), contribution.Id, change.HoursDelta, cancellationToken);
             }
-            else if (difference < 0)
+            else if (change.HoursDelta < 0)
             {
-                await _hoursReleaser.ReleaseAsync(contribution.Id, -difference, cancellationToken);
+                await _hoursReleaser.ReleaseAsync(contribution.Id, -change.HoursDelta, cancellationToken);
             }
 
-            return Result<ContributionChangedResult>.Success(new ContributionChangedResult { Contribution = corrected.ToDto() });
+            return Result<ContributionChangedResult>.Success(new ContributionChangedResult { Contribution = change.Contribution!.ToDto() });
         }
     }
 }

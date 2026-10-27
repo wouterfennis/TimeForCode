@@ -36,17 +36,17 @@ namespace TimeForCode.Donation.Application.Handlers
             }
 
             var contributor = await _contributorRepository.GetByIdAsync(contribution.ContributorId);
-            if (!contribution.CanBeChangedBy(request.UserId, contributor, request.IsAdministrator))
+            var change = contribution.MarkDeleted(request.UserId, request.IsAdministrator, contributor, DateTimeOffset.UtcNow);
+            if (!change.IsSuccess)
             {
-                _logger.LogWarning("User {UserId} may not change contribution {ContributionId}", request.UserId, request.ContributionId);
-                return Result<ContributionChangedResult>.Forbidden("Only the contributor or an administrator can change a contribution.");
+                _logger.LogWarning("Contribution {ContributionId} was not deleted for user {UserId}: {Failure}", request.ContributionId, request.UserId, change.Failure);
+                return change.ToFailure();
             }
 
-            var deleted = contribution.MarkDeleted(request.UserId, DateTimeOffset.UtcNow);
-            await _contributionRepository.UpdateAsync(deleted, cancellationToken);
-            await _hoursReleaser.ReleaseAsync(contribution.Id, contribution.Hours, cancellationToken);
+            await _contributionRepository.UpdateAsync(change.Contribution!, cancellationToken);
+            await _hoursReleaser.ReleaseAsync(contribution.Id, -change.HoursDelta, cancellationToken);
 
-            return Result<ContributionChangedResult>.Success(new ContributionChangedResult { Contribution = deleted.ToDto() });
+            return Result<ContributionChangedResult>.Success(new ContributionChangedResult { Contribution = change.Contribution!.ToDto() });
         }
     }
 }

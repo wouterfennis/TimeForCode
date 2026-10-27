@@ -1,5 +1,6 @@
 using FluentValidation;
 using TimeForCode.Donation.Commands;
+using TimeForCode.Donation.Domain;
 
 namespace TimeForCode.Donation.Application.Validators
 {
@@ -14,7 +15,7 @@ namespace TimeForCode.Donation.Application.Validators
                 .WithMessage($"Hours must not exceed {AddContributionCommand.MaxHours}.");
 
             RuleFor(x => x.GithubReference)
-                .Must(AddContributionCommandValidator.IsHttpsGithubLink)
+                .Must(Contribution.IsValidGithubReference)
                 .When(x => x.GithubReference != null)
                 .WithMessage("The GitHub reference must be an HTTPS link to a page on github.com.");
         }

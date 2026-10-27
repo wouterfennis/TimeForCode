@@ -161,6 +161,20 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
         }
 
         [TestMethod]
+        public async Task Handle_ContributionAlreadyDeleted_ReturnsNotFoundAndStoresNothing()
+        {
+            var deleted = _contribution.MarkDeleted("user-1", false, _contributor, DateTimeOffset.UtcNow).Contribution!;
+            _contributionRepository
+                .Setup(r => r.GetByIdAsync(ProjectId.ToString(), _contribution.Id.ToString(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(deleted);
+
+            var result = await _sut.Handle(Command(), CancellationToken.None);
+
+            result.FailureStatusCode.Should().Be(System.Net.HttpStatusCode.NotFound);
+            _contributionRepository.Verify(r => r.UpdateAsync(It.IsAny<Contribution>(), It.IsAny<CancellationToken>()), Times.Never);
+        }
+
+        [TestMethod]
         public async Task Handle_ContributorAnonymisedAndCallerNotAdministrator_ReturnsForbidden()
         {
             _contributorRepository.Setup(r => r.GetByIdAsync(_contributor.Id)).ReturnsAsync((Contributor?)null);

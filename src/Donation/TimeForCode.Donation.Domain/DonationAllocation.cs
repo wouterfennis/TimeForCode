@@ -31,6 +31,31 @@ namespace TimeForCode.Donation.Domain
             };
         }
 
+        /// <summary>
+        /// Plans how to take hours back from the allocations of one contribution: the newest allocation first, which undoes the spill-over in reverse order.
+        /// Releases at most the allocated hours. Nothing is changed; the caller applies the plan.
+        /// </summary>
+        /// <param name="allocationsOldestFirst">The allocations of the contribution, oldest first.</param>
+        public static IReadOnlyList<AllocationRelease> PlanRelease(IEnumerable<DonationAllocation> allocationsOldestFirst, int hours)
+        {
+            var plan = new List<AllocationRelease>();
+            var remaining = hours;
+
+            foreach (var allocation in allocationsOldestFirst.Reverse())
+            {
+                if (remaining <= 0)
+                {
+                    break;
+                }
+
+                var take = Math.Min(allocation.Hours, remaining);
+                plan.Add(new AllocationRelease(allocation, take));
+                remaining -= take;
+            }
+
+            return plan;
+        }
+
         /// <summary>Returns a copy that keeps the hours that remain after part of them was released; releasing all of them removes the allocation instead.</summary>
         public DonationAllocation Reduce(int hours)
         {

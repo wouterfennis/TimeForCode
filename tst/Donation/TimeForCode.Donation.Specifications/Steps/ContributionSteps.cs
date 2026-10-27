@@ -57,7 +57,8 @@ namespace TimeForCode.Donation.Specifications.Steps
         [Given("The user has already deleted the contribution")]
         public async Task GivenTheUserHasAlreadyDeletedTheContributionAsync()
         {
-            await _fixtures.Contributions.UpdateAsync(StoredContribution().MarkDeleted(Constants.TestUserId, DateTimeOffset.UtcNow), CancellationToken.None);
+            ContributionChange deletion = StoredContribution().MarkDeleted(Constants.TestUserId, false, _fixtures.TestUserContributor(), DateTimeOffset.UtcNow);
+            await _fixtures.Contributions.UpdateAsync(deletion.Contribution!, CancellationToken.None);
         }
 
         [Given("The user has already logged {int} hours on a published project")]
