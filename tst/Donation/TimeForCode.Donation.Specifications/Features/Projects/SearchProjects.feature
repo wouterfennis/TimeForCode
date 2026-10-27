@@ -31,15 +31,15 @@ Scenario: User searches projects by text
 	When The user searches the projects for the text "rocket"
 	Then Only the project "Rocket Planner" is included in the results
 
-Scenario: User filters projects by language
-	Given There are active projects written in "C#" and in "Rust"
-	When The user filters the projects by the language "Rust"
-	Then Only projects written in "Rust" are included in the results
+Scenario Outline: User filters projects by a single criterion
+	Given There are active projects whose <criterion> is "<other>" and "<value>"
+	When The user filters the projects by the <criterion> "<value>"
+	Then Only projects with the <criterion> "<value>" are included in the results
 
-Scenario: User filters projects by tag
-	Given There are active projects tagged "accessibility" and "gaming"
-	When The user filters the projects by the tag "gaming"
-	Then Only projects tagged "gaming" are included in the results
+	Examples:
+		| criterion | other         | value  |
+		| language  | C#            | Rust   |
+		| tag       | accessibility | gaming |
 
 Scenario: User combines text, language and tag criteria
 	Given There are active projects that match only some of the text, language and tag criteria
@@ -91,7 +91,6 @@ Scenario Outline: User searches with criteria that are too long
 		| text      |
 		| language  |
 		| tag       |
-
 
 @live
 @liveonly

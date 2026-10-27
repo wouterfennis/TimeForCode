@@ -17,7 +17,6 @@ Scenario: Registering a donor organization without a name is rejected
 	When The user registers a donor organization without a name
 	Then The request is rejected as invalid
 
-
 Scenario: Registering a donor organization with a blank name is rejected
 	When The user registers a donor organization with the name "   "
 	Then The request is rejected as invalid
@@ -38,7 +37,6 @@ Scenario Outline: Registering a donor organization with invalid contact details 
 		| open-source@acme.example | javascript:alert(1)      |
 		| open-source@acme.example | not a url                |
 		| open-source@acme.example |                          |
-
 
 @live
 @liveonly
