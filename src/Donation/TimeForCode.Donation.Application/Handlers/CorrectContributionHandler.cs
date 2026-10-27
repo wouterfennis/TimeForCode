@@ -9,17 +9,20 @@ namespace TimeForCode.Donation.Application.Handlers
     {
         private readonly IContributionRepository _contributionRepository;
         private readonly IContributorRepository _contributorRepository;
+        private readonly IDonationHoursCounter _hoursCounter;
         private readonly IDonationHoursReleaser _hoursReleaser;
         private readonly ILogger<CorrectContributionHandler> _logger;
 
         public CorrectContributionHandler(
             IContributionRepository contributionRepository,
             IContributorRepository contributorRepository,
+            IDonationHoursCounter hoursCounter,
             IDonationHoursReleaser hoursReleaser,
             ILogger<CorrectContributionHandler> logger)
         {
             _contributionRepository = contributionRepository;
             _contributorRepository = contributorRepository;
+            _hoursCounter = hoursCounter;
             _hoursReleaser = hoursReleaser;
             _logger = logger;
         }
@@ -45,11 +48,14 @@ namespace TimeForCode.Donation.Application.Handlers
             var corrected = contribution.Correct(request.UserId, request.Hours, request.GithubReference, DateTimeOffset.UtcNow);
             await _contributionRepository.UpdateAsync(corrected, cancellationToken);
 
-            // TODO(review): hours added by an upward correction are not counted toward donations (DEBT-21); only lowered hours are released
-            var lowered = contribution.Hours - request.Hours;
-            if (lowered > 0)
+            var difference = request.Hours - contribution.Hours;
+            if (difference > 0)
             {
-                await _hoursReleaser.ReleaseAsync(contribution.Id, lowered, cancellationToken);
+                await _hoursCounter.CountAsync(contribution.ProjectId.ToString(), contribution.Id, difference, cancellationToken);
+            }
+            else if (difference < 0)
+            {
+                await _hoursReleaser.ReleaseAsync(contribution.Id, -difference, cancellationToken);
             }
 
             return Result<ContributionChangedResult>.Success(new ContributionChangedResult { Contribution = corrected.ToDto() });

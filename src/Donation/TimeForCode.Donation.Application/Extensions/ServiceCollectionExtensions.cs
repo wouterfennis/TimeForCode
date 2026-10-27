@@ -21,6 +21,7 @@ namespace TimeForCode.Donation.Application.Extensions
             });
 
             services.AddValidatorsFromAssemblyContaining<RegisterProjectCommandValidator>(ServiceLifetime.Transient);
+            services.AddScoped<IDonationHoursCounter, DonationHoursCounter>();
             services.AddScoped<IDonationHoursReleaser, DonationHoursReleaser>();
 
             return services;
