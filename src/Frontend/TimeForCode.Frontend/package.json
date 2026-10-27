@@ -8,15 +8,18 @@
   },
   "scripts": {
     "dev": "vite",
+    "generate:api": "npx --yes --package=typescript@5.9.3 --package=openapi-typescript@7.13.0 openapi-typescript ../../Donation/TimeForCode.Donation.Api/TimeForCode.Donation.Api.json -o src/api/donation.d.ts",
     "build": "tsc -b && vite build",
     "lint": "oxlint --deny-warnings src tests vite.config.ts",
     "typecheck": "tsc -b",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "check:api": "npm run generate:api && git diff --exit-code -- src/api"
   },
   "dependencies": {
+    "openapi-fetch": "0.17.0",
     "react": "19.3.1",
     "react-dom": "19.3.1"
   },
