@@ -15,17 +15,16 @@ Scenario: Administrator activates a pending donation
 	When The user activates the donation
 	Then The donation is active
 
-Scenario: Donor cancels a pending donation
+Scenario Outline: Donor cancels a donation that is not yet completed
 	Given The user has an access token
-	And The user has a pending donation
+	And The user has a <state> donation
 	When The user cancels the donation
 	Then The donation is cancelled
 
-Scenario: Donor cancels an active donation
-	Given The user has an access token
-	And The user has an active donation
-	When The user cancels the donation
-	Then The donation is cancelled
+	Examples:
+		| state   |
+		| pending |
+		| active  |
 
 Scenario: Administrator cancels an active donation
 	Given The user has an administrator access token

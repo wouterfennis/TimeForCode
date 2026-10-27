@@ -68,7 +68,6 @@ Scenario: Pledge without being logged in is rejected
 	When The user pledges 20 hours to the project as an individual
 	Then The request is rejected as unauthorized
 
-
 @live
 @liveonly
 Scenario: A pledge is stored and listed among the donations of the project

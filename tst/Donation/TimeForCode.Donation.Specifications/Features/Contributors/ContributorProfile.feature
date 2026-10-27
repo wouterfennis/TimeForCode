@@ -75,6 +75,7 @@ Scenario Outline: User attempts to set an invalid amount of available hours
 	Examples:
 		| hours |
 		| -1    |
+		| 10001 |
 
 Scenario: User links their profile to a donor organization
 	Given The user has an access token
@@ -155,7 +156,6 @@ Scenario: Updating a contributor profile requires authentication
 		| Role              |
 		| Backend developer |
 	Then The request is rejected as unauthorized
-
 
 @live
 @liveonly
