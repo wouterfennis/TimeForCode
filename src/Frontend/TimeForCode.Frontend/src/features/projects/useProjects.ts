@@ -16,7 +16,11 @@ export function useProjects(): ProjectsState {
     const abort = new AbortController()
     donationClient
       .GET('/api/v1/Project', { signal: abort.signal })
-      .then(({ data }) => setState(data?.projects ? { status: 'loaded', projects: data.projects, totalCount: Number(data.totalCount) } : { status: 'error' }))
+      .then(({ data }) => {
+        if (abort.signal.aborted) return
+        const complete = data?.projects && data.totalCount !== undefined
+        setState(complete ? { status: 'loaded', projects: data.projects, totalCount: Number(data.totalCount) } : { status: 'error' })
+      })
       .catch(() => {
         if (!abort.signal.aborted) setState({ status: 'error' })
       })
