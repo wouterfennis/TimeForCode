@@ -74,7 +74,6 @@ Scenario Outline: User attempts to log an amount of hours that is not positive
 		| 0     |
 		| -2    |
 
-
 @live
 @liveonly
 Scenario: Logged hours are stored and listed for the project

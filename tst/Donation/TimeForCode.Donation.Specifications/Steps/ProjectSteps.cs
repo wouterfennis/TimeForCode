@@ -3,10 +3,12 @@ using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Bson;
 using Moq;
 using Reqnroll;
+using Reqnroll.Assist;
 using TimeForCode.Donation.Api.Client;
 using TimeForCode.Donation.Application.Interfaces;
 using TimeForCode.Donation.Commands;
 using TimeForCode.Donation.Domain;
+using TimeForCode.Donation.Specifications.Tables;
 using TimeForCode.Donation.Specifications.TestBuilder;
 using TimeForCode.Donation.Values;
 
@@ -169,7 +171,7 @@ namespace TimeForCode.Donation.Specifications.Steps
                 ["pushed_at"] = p => p.Snapshot.PushedAt != default,
             };
 
-            var fields = table.Rows.Select(row => row["Field"]).ToList();
+            var fields = table.CreateSet<ProjectFieldTable>().Select(row => row.Field).ToList();
             fields.Should().AllSatisfy(field => fieldCheckers.Should().ContainKey(field));
 
             _fixtures.ProjectRepository.Verify(x => x.CreateAsync(It.Is<Project>(p =>

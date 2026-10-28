@@ -61,7 +61,6 @@ Scenario: User attempts to publish a repository that does not exist on the exter
 	When The user publishes the repository on the time for code platform
 	Then The request is rejected as invalid
 
-
 @live
 @liveonly
 Scenario: A new repository is published with an access token issued by the authorization service

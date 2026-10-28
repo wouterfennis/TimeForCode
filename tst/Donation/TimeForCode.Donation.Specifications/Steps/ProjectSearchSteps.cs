@@ -5,6 +5,7 @@ using TimeForCode.Donation.Api.Client;
 using TimeForCode.Donation.Application.Interfaces;
 using TimeForCode.Donation.Domain;
 using TimeForCode.Donation.Specifications.Mocking;
+using TimeForCode.Donation.Specifications.Tables;
 using TimeForCode.Donation.Specifications.TestBuilder;
 
 namespace TimeForCode.Donation.Specifications.Steps
@@ -46,18 +47,22 @@ namespace TimeForCode.Donation.Specifications.Steps
             _context.Catalog.Add(ProjectBuilder.BuildActive(2, name: secondName));
         }
 
-        [Given("There are active projects written in {string} and in {string}")]
-        public void GivenThereAreActiveProjectsWrittenIn(string firstLanguage, string secondLanguage)
+        [Given("There are active projects whose {word} is {string} and {string}")]
+        public void GivenThereAreActiveProjectsWhoseCriterionIs(string criterion, string first, string second)
         {
-            _context.Catalog.Add(ProjectBuilder.BuildActive(1, language: firstLanguage));
-            _context.Catalog.Add(ProjectBuilder.BuildActive(2, language: secondLanguage));
-        }
-
-        [Given("There are active projects tagged {string} and {string}")]
-        public void GivenThereAreActiveProjectsTagged(string firstTag, string secondTag)
-        {
-            _context.Catalog.Add(ProjectBuilder.BuildActive(1, topics: [firstTag]));
-            _context.Catalog.Add(ProjectBuilder.BuildActive(2, topics: [secondTag]));
+            switch (criterion)
+            {
+                case "language":
+                    _context.Catalog.Add(ProjectBuilder.BuildActive(1, language: first));
+                    _context.Catalog.Add(ProjectBuilder.BuildActive(2, language: second));
+                    break;
+                case "tag":
+                    _context.Catalog.Add(ProjectBuilder.BuildActive(1, topics: [first]));
+                    _context.Catalog.Add(ProjectBuilder.BuildActive(2, topics: [second]));
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(criterion), criterion, "Expected 'language' or 'tag'.");
+            }
         }
 
         [Given("There are active projects that match only some of the text, language and tag criteria")]
@@ -103,34 +108,12 @@ namespace TimeForCode.Donation.Specifications.Steps
             return SearchAsync(null, null, null, null, null);
         }
 
-        [When("The user searches the projects for the text {string}")]
-        public Task WhenTheUserSearchesTheProjectsForTheTextAsync(string text)
+        [When("The user searches the projects with:")]
+        public Task WhenTheUserSearchesTheProjectsWithAsync(DataTable table)
         {
-            return SearchAsync(text, null, null, null, null);
-        }
+            var row = StepTables.SingleRow<SearchProjectsTable>(table);
 
-        [When("The user filters the projects by the language {string}")]
-        public Task WhenTheUserFiltersTheProjectsByTheLanguageAsync(string language)
-        {
-            return SearchAsync(null, language, null, null, null);
-        }
-
-        [When("The user filters the projects by the tag {string}")]
-        public Task WhenTheUserFiltersTheProjectsByTheTagAsync(string tag)
-        {
-            return SearchAsync(null, null, tag, null, null);
-        }
-
-        [When("The user searches the projects for the text {string} with the language {string} and the tag {string}")]
-        public Task WhenTheUserSearchesTheProjectsForTheTextWithTheLanguageAndTheTagAsync(string text, string language, string tag)
-        {
-            return SearchAsync(text, language, tag, null, null);
-        }
-
-        [When("The user requests page {int} of the projects with {int} projects per page")]
-        public Task WhenTheUserRequestsPageOfTheProjectsAsync(int pageNumber, int pageSize)
-        {
-            return SearchAsync(null, null, null, pageNumber, pageSize);
+            return SearchAsync(row.Text, row.Language, row.Tag, row.Page, row.PageSize);
         }
 
         [When("The user searches the projects twice without criteria")]
@@ -230,22 +213,21 @@ namespace TimeForCode.Donation.Specifications.Steps
             _context.ProjectsResult!.Projects.Select(p => p.Name).Should().Equal(name);
         }
 
-        [Then("Only projects written in {string} are included in the results")]
-        public void ThenOnlyProjectsWrittenInAreIncludedInTheResults(string language)
+        [Then("Only projects with the {word} {string} are included in the results")]
+        public void ThenOnlyProjectsWithTheCriterionAreIncludedInTheResults(string criterion, string value)
         {
             _context.LastException.Should().BeNull();
             _context.ProjectsResult.Should().NotBeNull();
-            _context.ProjectsResult!.Projects.Should().NotBeEmpty();
-            _context.ProjectsResult.Projects.Should().OnlyContain(p => p.Language == language);
-        }
 
-        [Then("Only projects tagged {string} are included in the results")]
-        public void ThenOnlyProjectsTaggedAreIncludedInTheResults(string tag)
-        {
-            _context.LastException.Should().BeNull();
-            _context.ProjectsResult.Should().NotBeNull();
-            _context.ProjectsResult!.Projects.Select(p => p.Id).Should().Equal(
-                _context.Catalog.Where(p => p.Snapshot.Topics.Contains(tag)).Select(p => p.Id.ToString()));
+            var matching = criterion switch
+            {
+                "language" => _context.Catalog.Where(p => p.Snapshot.Language == value),
+                "tag" => _context.Catalog.Where(p => p.Snapshot.Topics.Contains(value)),
+                _ => throw new ArgumentOutOfRangeException(nameof(criterion), criterion, "Expected 'language' or 'tag'.")
+            };
+
+            _context.ProjectsResult!.Projects.Should().NotBeEmpty();
+            _context.ProjectsResult.Projects.Select(p => p.Id).Should().Equal(matching.Select(p => p.Id.ToString()));
         }
 
         [Then("Only projects matching all criteria are included in the results")]
