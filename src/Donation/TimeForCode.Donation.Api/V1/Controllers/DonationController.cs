@@ -94,6 +94,39 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         }
 
         /// <summary>
+        /// Returns the donations pledged for a donor organization, oldest first, with their progress.
+        /// Allowed for contributors affiliated with the organization and for administrators.
+        /// </summary>
+        /// <param name="id">The donor organization identifier.</param>
+        /// <returns>The donations of the organization; an empty list when there are none.</returns>
+        [HttpGet("donororganization/{id}/donation", Name = nameof(GetDonorOrganizationDonations))]
+        [ProducesResponseType(typeof(GetDonationsResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+        [Authorize(Policy = "ApiUserOrAdmin")]
+        public async Task<IActionResult> GetDonorOrganizationDonations([ObjectId] string id)
+        {
+            if (!TryGetUserId(out var userId))
+            {
+                return MissingIdentity();
+            }
+
+            var result = await _mediator.Send(new GetDonorOrganizationDonationsQuery
+            {
+                DonorOrganizationId = id,
+                CallerUserId = userId,
+                IsAdministrator = User.HasClaim("scope", AdminScope)
+            });
+
+            return result.IsFailure
+                ? ToProblem(result.FailureStatusCode, "Cannot get donations of donor organization", result.ErrorMessage)
+                : Ok(ToResponse(result.Value));
+        }
+
+        /// <summary>
         /// Returns the donations the caller pledged, oldest first, with their progress.
         /// </summary>
         /// <returns>The caller's donations; an empty list when there are none.</returns>

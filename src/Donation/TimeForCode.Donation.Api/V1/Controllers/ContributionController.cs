@@ -119,6 +119,43 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         }
 
         /// <summary>
+        /// Returns the contributions logged by the contributors affiliated with a donor organization, earliest first.
+        /// Allowed for contributors affiliated with the organization and for administrators.
+        /// </summary>
+        /// <param name="id">The donor organization identifier.</param>
+        /// <returns>The contributions of the organization; an empty list when none were logged.</returns>
+        [HttpGet("~/api/v1/donororganization/{id}/contribution", Name = nameof(GetDonorOrganizationContributions))]
+        [ProducesResponseType(typeof(GetContributionsResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+        [Authorize(Policy = "ApiUserOrAdmin")]
+        public async Task<IActionResult> GetDonorOrganizationContributions([ObjectId] string id)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return MissingIdentity();
+            }
+
+            var result = await _mediator.Send(new GetDonorOrganizationContributionsQuery
+            {
+                DonorOrganizationId = id,
+                CallerUserId = userId,
+                IsAdministrator = User.HasClaim("scope", AdminScope)
+            });
+
+            return result.IsFailure
+                ? ToProblem(result.FailureStatusCode, "Cannot get contributions of donor organization", result.ErrorMessage)
+                : Ok(new GetContributionsResponse
+                {
+                    Contributions = result.Value.Contributions.Select(ToResponse).ToList()
+                });
+        }
+
+        /// <summary>
         /// Corrects the hours and GitHub reference of a contribution. Allowed for the contributor who logged it and for administrators.
         /// The previous values are kept as history.
         /// </summary>
