@@ -26,6 +26,20 @@ namespace TimeForCode.Donation.Infrastructure.Tests.Persistence
         }
 
         [TestMethod]
+        public void ContributorsFilter_Contributors_MatchesTheirNonDeletedContributions()
+        {
+            var otherContributorId = new ObjectId("5f43a0e74b12c84f1b0000c2");
+
+            var filter = Render(ContributionDefinitions.ContributorsFilter([ContributionId, otherContributorId]));
+
+            filter.ToJson().Should().Be(new BsonDocument
+            {
+                { "ContributorId", new BsonDocument("$in", new BsonArray { ContributionId, otherContributorId }) },
+                { "DeletedAt", BsonNull.Value }
+            }.ToJson());
+        }
+
+        [TestMethod]
         public void LiveContributionFilter_ProjectAndContribution_ExcludesDeletedContributions()
         {
             var filter = Render(ContributionDefinitions.LiveContributionFilter(ProjectId, ContributionId));

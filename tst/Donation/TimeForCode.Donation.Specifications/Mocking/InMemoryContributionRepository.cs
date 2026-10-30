@@ -53,6 +53,15 @@ namespace TimeForCode.Donation.Specifications.Mocking
             return Task.CompletedTask;
         }
 
+        public Task<IReadOnlyList<Contribution>> GetByContributorIdsAsync(IReadOnlyCollection<ObjectId> contributorIds, CancellationToken cancellationToken)
+        {
+            IReadOnlyList<Contribution> matches = _contributions
+                .Where(c => contributorIds.Contains(c.ContributorId) && !c.IsDeleted)
+                .OrderBy(c => c.LoggedAt)
+                .ToList();
+            return Task.FromResult(matches);
+        }
+
         public Task<IReadOnlyList<Contribution>> GetByProjectIdAsync(string projectId, CancellationToken cancellationToken)
         {
             IReadOnlyList<Contribution> matches = _contributions

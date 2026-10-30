@@ -9,6 +9,11 @@ namespace TimeForCode.Donation.Infrastructure.Persistence.Database
     [ExcludeFromCodeCoverage(Justification = "Repository implementation")]
     internal class ContributorRepository : IContributorRepository
     {
+        /// <summary>
+        /// Upper bound for the contributors of one donor organization, so the listing and the contribution lookup built on it stay bounded.
+        /// </summary>
+        private const int MaxContributorsPerOrganization = 1000;
+
         private static readonly object IndexCreationLock = new();
         private static bool _indexesCreated;
         private readonly IMongoCollection<Contributor> _collection;
@@ -90,6 +95,7 @@ namespace TimeForCode.Donation.Infrastructure.Persistence.Database
                 .Find(Builders<Contributor>.Filter.Eq(c => c.DonorOrganizationId, donorOrganizationId))
                 .SortBy(c => c.GithubLogin)
                 .ThenBy(c => c.Id)
+                .Limit(MaxContributorsPerOrganization)
                 .ToListAsync(cancellationToken);
         }
 
