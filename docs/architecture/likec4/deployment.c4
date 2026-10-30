@@ -1,5 +1,7 @@
 deployment {
   environment prod 'Production' {
+    description 'Only the Authorization API is deployed to Azure today (deploy/*.bicep)'
+
     azure subscription 'Azure subscription' {
       resourceGroup infra 'rg-platform-infra' {
         description 'deploy/applicationInfrastructure.bicep'
@@ -20,10 +22,65 @@ deployment {
 
   environment local 'Local' {
     developerMachine machine 'Developer machine' {
-      description 'docker-compose.yaml, started with scripts/start-local.ps1'
-      instanceOf timeforcode.authorization
-      instanceOf timeforcode.donation
-      instanceOf mongodb
+      description 'docker-compose.yaml, started with scripts/start-local.ps1 or podman compose up --build'
+
+      composeNetwork network 'app-network' {
+        frontendService = composeService 'frontend :8084' {
+          description 'nginx with the built SPA, Dockerfile.frontend'
+          instanceOf timeforcode.frontend
+        }
+        authService = composeService 'authorization-api :8080' {
+          description 'Dockerfile.authorization-api, bound to localhost'
+          instanceOf timeforcode.authorization
+        }
+        donationService = composeService 'donation-api :8082' {
+          description 'Dockerfile.donation-api'
+          instanceOf timeforcode.donation
+        }
+        idpService = composeService 'identity-provider-mock :8081' {
+          description 'Replaces GitHub, Dockerfile.identity-provider-mock'
+          instanceOf idpMock
+        }
+        mongoService = composeService 'mongo :27017' {
+          description 'MongoDB with a named volume'
+          instanceOf mongodb
+        }
+      }
+    }
+  }
+
+  environment target 'Target production (planned)' {
+    description 'Full platform on Azure as described in arc42 chapter 7; not defined in Bicep yet'
+
+    azure targetSubscription 'Azure subscription' {
+      resourceGroup targetShared 'Shared infrastructure' {
+        targetPlan = appService 'App Service plan'
+        keyVault = azureService 'Azure Key Vault' {
+          description 'Client secrets, RSA key, connection strings'
+        }
+        cosmos = azureService 'Azure Cosmos DB for MongoDB' {
+          description 'Managed replacement for the MongoDB sidecar'
+          instanceOf mongodb
+        }
+        acr = azureService 'Azure Container Registry' {
+          description 'Images built and stored by CI/CD'
+        }
+      }
+      resourceGroup targetApp 'Application' {
+        targetFrontend = appService 'Front-end App Service' {
+          description 'Container with nginx and the SPA'
+          instanceOf timeforcode.frontend
+        }
+        targetBff = appService 'BFF App Service' {
+          instanceOf timeforcode.bff
+        }
+        targetAuth = appService 'Authorization API App Service' {
+          instanceOf timeforcode.authorization
+        }
+        targetDonation = appService 'Donation API App Service' {
+          instanceOf timeforcode.donation
+        }
+      }
     }
   }
 }

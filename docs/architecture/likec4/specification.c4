@@ -8,12 +8,22 @@ specification {
   element container
   element component
   element layer
+  element database {
+    style {
+      shape storage
+    }
+  }
 
   tag external
+  tag planned
+  tag testOnly
 
   deploymentNode environment
   deploymentNode azure
   deploymentNode resourceGroup
   deploymentNode appService
+  deploymentNode azureService
   deploymentNode developerMachine
+  deploymentNode composeNetwork
+  deploymentNode composeService
 }

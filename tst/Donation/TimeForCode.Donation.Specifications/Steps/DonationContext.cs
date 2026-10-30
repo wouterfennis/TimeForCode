@@ -16,6 +16,9 @@ namespace TimeForCode.Donation.Specifications.Steps
 
         public string? DonorOrganizationId { get; set; }
 
+        /// <summary>The contribution the correct and delete steps act on: the last one logged, or an unknown identifier.</summary>
+        public string? ContributionId { get; set; }
+
         /// <summary>The project the lifecycle, maintainer and search steps work on.</summary>
         public Project? LifecycleProject { get; set; }
 

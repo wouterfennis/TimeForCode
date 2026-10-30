@@ -138,6 +138,7 @@ namespace TimeForCode.Donation.Specifications.Steps
             _fixtures.Donations.Donations.Should().Contain(d => d.Id.ToString() == _donationResult!.Id);
         }
 
+        [Given("^The donation is (pending|active|completed|cancelled)$")]
         [Then("^The donation is (pending|active|completed|cancelled)$")]
         public void ThenTheDonationIsInState(string state)
         {

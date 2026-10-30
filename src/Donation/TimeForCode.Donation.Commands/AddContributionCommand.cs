@@ -1,11 +1,12 @@
 using MediatR;
+using TimeForCode.Donation.Values;
 
 namespace TimeForCode.Donation.Commands
 {
     public class AddContributionCommand : IRequest<Result<AddContributionResult>>
     {
-        public const int MaxHours = 10_000;
-        public const int MaxReferenceLength = 2048;
+        public const int MaxHours = ContributionLimits.MaxHours;
+        public const int MaxReferenceLength = ContributionLimits.MaxReferenceLength;
 
         public required string ProjectId { get; init; }
         public required string UserId { get; init; }

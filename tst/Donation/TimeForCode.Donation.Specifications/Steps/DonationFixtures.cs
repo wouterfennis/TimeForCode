@@ -12,6 +12,10 @@ namespace TimeForCode.Donation.Specifications.Steps
     /// <summary>Arrange helpers that several step classes need: the in-memory repositories and the projects and contributors of the scenario.</summary>
     internal class DonationFixtures
     {
+        public const string OtherUserId = "507f1f77bcf86cd799439021";
+        public const string OtherUserLogin = "hubot";
+        public const string OtherUserAvatarUrl = "https://avatars.githubusercontent.com/u/480938?v=4";
+
         public static readonly DateTimeOffset FirstLoggedAt = new(2024, 2, 1, 9, 0, 0, TimeSpan.Zero);
 
         private readonly DonationContext _context;
@@ -99,11 +103,27 @@ namespace TimeForCode.Donation.Specifications.Steps
             return contributor;
         }
 
-        /// <summary>Logs hours of the contributor on the registered project, one day after the previous contribution.</summary>
-        public void LogHours(Contributor contributor, int hours)
+        /// <summary>Registers the second contributor of the scenario, or returns it when it is already registered.</summary>
+        public Contributor OtherUserContributor()
+        {
+            Contributor? existing = Contributors.Contributors.SingleOrDefault(c => c.PlatformUserId == OtherUserId);
+            if (existing != null)
+            {
+                return existing;
+            }
+
+            var other = Contributor.Create(OtherUserId, OtherUserLogin, OtherUserAvatarUrl);
+            Contributors.Add(other);
+            return other;
+        }
+
+        /// <summary>Logs hours of the contributor on the registered project, one day after the previous contribution; the logged contribution becomes the one the correct and delete steps work on.</summary>
+        public void LogHours(Contributor contributor, int hours, Uri? githubReference = null)
         {
             DateTimeOffset nextMoment = FirstLoggedAt.AddDays(Contributions.Contributions.Count);
-            Contributions.CreateAsync(Contribution.Create(ObjectIdOf(_context.RegisteredProjectId!), contributor, hours, null, nextMoment));
+            var contribution = Contribution.Create(ObjectIdOf(_context.RegisteredProjectId!), contributor, hours, githubReference, nextMoment);
+            Contributions.CreateAsync(contribution);
+            _context.ContributionId = contribution.Id.ToString();
         }
     }
 }
