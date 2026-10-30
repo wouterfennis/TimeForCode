@@ -94,40 +94,15 @@ Implemented as `POST /api/v1/project/{id}/submit`, `/approve`, `/request-changes
 
 ### Donations
 
-Implemented (replaces the earlier donation create, list, get and status designs): `POST` and `GET /api/v1/project/{id}/donation`, `GET /api/v1/donation`, `POST /api/v1/donation/{id}/activate` and `/cancel`. See [docs/current/api-surface.md](../current/api-surface.md#donation-endpoints). The transaction endpoints remain planned.
+Implemented (replaces the earlier donation create, list, get and status designs): `POST` and `GET /api/v1/project/{id}/donation`, `GET /api/v1/donation`, `POST /api/v1/donation/{id}/activate` and `/cancel`. See [docs/current/api-surface.md](../current/api-surface.md#donation-endpoints).
 
-#### POST /api/v1/donation/{id}/transaction ❌
+---
 
-Log hours against an active donation.
+### Contributions
 
-**Request**:
+#### Hour tracking ✅
 
-```json
-{
-  "contributorId": "uuid",
-  "hours": 4.5,
-  "description": "Implemented feature X",
-  "githubReference": "https://github.com/owner/repo/pull/42"
-}
-
-```
-
-**Response** (201 Created):
-
-```json
-{
-  "id": "uuid",
-  "donationId": "uuid",
-  "hours": 4.5,
-  "description": "string",
-  "loggedAt": "2026-04-22T14:00:00Z"
-}
-
-```
-
-#### GET /api/v1/donation/{id}/transaction ❌
-
-List all hour-log transactions for a donation.
+Implemented per project, not per donation (replaces the earlier `POST` and `GET /api/v1/donation/{id}/transaction` design): `POST` and `GET /api/v1/project/{id}/contribution`, and `PUT` and `DELETE /api/v1/project/{id}/contribution/{contributionId}`. Logged hours count toward the project's `Active` donations, oldest pledge first. Corrections and soft deletes keep their history and release or re-count hours. See [docs/current/api-surface.md](../current/api-surface.md#contribution-endpoints) for payloads and status codes.
 
 ---
 
