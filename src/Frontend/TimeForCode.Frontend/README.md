@@ -4,7 +4,7 @@ React single-page application for TimeForCode ([ADR-012](../../../docs/reference
 
 ## Prerequisites
 
-Node 24, as pinned in `.nvmrc` (`nvm use` picks it up). `npm install` refuses other major versions (`engine-strict`).
+Node 26, as pinned in `.nvmrc` (`nvm use` picks it up). `npm install` refuses other major versions (`engine-strict`).
 
 ## Scripts
 

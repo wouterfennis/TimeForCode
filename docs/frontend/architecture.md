@@ -10,7 +10,7 @@ This document describes how the new front-end is built and how it talks to the b
 
 | Concern | Choice | Reason |
 | --- | --- | --- |
-| Runtime for tooling | Node 24 (LTS) | Pinned; see [Project setup](#project-setup) |
+| Runtime for tooling | Node 26 (LTS) | Pinned; see [Project setup](#project-setup) |
 | Language | TypeScript 7, `strict` mode | Type safety against the generated API types; the native compiler keeps the type-check fast |
 | Framework | React | Largest ecosystem for accessible component libraries and testing |
 | Build tool | Vite | Fast dev server, simple configuration |
@@ -47,7 +47,7 @@ Organise by feature, not by file type. A feature folder owns its pages, queries,
 
 Implemented in Phase 0 (#110); commands are in the project [README](../../src/Frontend/TimeForCode.Frontend/README.md).
 
-- **Node version**: Node 24, pinned in `.nvmrc` and `package.json` `engines`. `.npmrc` sets `engine-strict`, so installing with another major version fails. CI reads `.nvmrc`.
+- **Node version**: Node 26, pinned in `.nvmrc` and `package.json` `engines`. `.npmrc` sets `engine-strict`, so installing with another major version fails. CI reads `.nvmrc`.
 - **Lock file**: `package-lock.json` is committed. CI installs with `npm ci --ignore-scripts`, so no package install scripts run. Dependency versions are pinned exactly.
 - **Scripts**: `lint`, `typecheck`, `test:coverage` and `build` are the checks the pull request workflow runs. Lint warnings fail the check (`--deny-warnings`).
 - **Coverage**: `test:coverage` writes `coverage/lcov.info` with paths relative to the repository root. The `frontend` CI job uploads it, and the .NET job passes it to SonarCloud (`sonar.javascript.lcov.reportPaths`). Test files, `tests/`, `src/main.tsx` and `vite.config.ts` are excluded from coverage.
