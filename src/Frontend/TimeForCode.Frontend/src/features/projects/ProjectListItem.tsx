@@ -1,6 +1,6 @@
 import type { ProjectSummary } from './useProjects'
 
-export function ProjectListItem({ project }: { project: ProjectSummary }) {
+export function ProjectListItem({ project }: Readonly<{ project: ProjectSummary }>) {
   return (
     <li>
       <a href={project.githubUrl}>{project.fullName}</a>
