@@ -22,6 +22,30 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/project/{id}/contribution/{contributionId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Corrects the hours and GitHub reference of a contribution. Allowed for the contributor who logged it and for administrators.
+         *     The previous values are kept as history.
+         */
+        put: operations["CorrectContribution"];
+        post?: never;
+        /**
+         * Deletes a contribution. Allowed for the contributor who logged it and for administrators.
+         *     The contribution is only marked as deleted; it no longer appears in the list or counts towards the hours.
+         */
+        delete: operations["DeleteContribution"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/contributor/{userId}/anonymise": {
         parameters: {
             query?: never;
@@ -442,6 +466,19 @@ export interface components {
             hoursAvailable?: null | number | string;
             /** @description The identifier of the affiliated donor organization; absent when independent. */
             donorOrganizationId?: null | string;
+        };
+        /** @description Represents a request to correct a logged time contribution. It replaces both values: omitting the reference removes it. */
+        CorrectContributionRequest: {
+            /**
+             * Format: int32
+             * @description The corrected whole number of hours spent on the project.
+             */
+            hours: number | string;
+            /**
+             * Format: uri
+             * @description Optional evidence: an HTTPS link to github.com, for example a pull request or a commit.
+             */
+            githubReference?: null | string;
         };
         /** @description Represents a request to create a donor organization. */
         CreateDonorOrganizationRequest: {
@@ -935,6 +972,189 @@ export interface operations {
             };
             /** @description Not Found */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Too many requests. Retry after the number of seconds given in the Retry-After header. */
+            429: {
+                headers: {
+                    /** @description Number of seconds to wait before retrying. */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    CorrectContribution: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The project identifier. */
+                id: string;
+                /** @description The contribution identifier. */
+                contributionId: string;
+            };
+            cookie?: never;
+        };
+        /** @description The corrected hours and the optional GitHub reference (omitted removes it). */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CorrectContributionRequest"];
+                "text/json": components["schemas"]["CorrectContributionRequest"];
+                "application/*+json": components["schemas"]["CorrectContributionRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContributionResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Too many requests. Retry after the number of seconds given in the Retry-After header. */
+            429: {
+                headers: {
+                    /** @description Number of seconds to wait before retrying. */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    DeleteContribution: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The project identifier. */
+                id: string;
+                /** @description The contribution identifier. */
+                contributionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
