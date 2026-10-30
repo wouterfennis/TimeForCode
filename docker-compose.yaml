@@ -96,6 +96,8 @@ services:
       dockerfile: Dockerfile.frontend
     image: timeforcode-frontend:latest
     container_name: timeforcode-frontend
+    environment:
+      - DONATION_API_UPSTREAM=donation-api:8080
     ports:
       - "8084:8080"
     networks:
