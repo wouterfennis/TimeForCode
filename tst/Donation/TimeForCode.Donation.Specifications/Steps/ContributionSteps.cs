@@ -1,26 +1,32 @@
 using AwesomeAssertions;
+using MongoDB.Bson;
 using Moq;
 using Reqnroll;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using TimeForCode.Donation.Api.Client;
 using TimeForCode.Donation.Application.Interfaces;
 using TimeForCode.Donation.Domain;
+using TimeForCode.Donation.Specifications.Mocking;
 using TimeForCode.Donation.Specifications.TestBuilder;
 
 namespace TimeForCode.Donation.Specifications.Steps
 {
-    /// <summary>Logging hours on a project and listing the logged contributions.</summary>
+    /// <summary>Logging hours on a project, correcting or deleting a logged contribution and listing the logged contributions.</summary>
     [Binding]
     internal class ContributionSteps
     {
         private readonly IDonationClient _donationClient;
+        private readonly BearerTokenHandler _bearerTokenHandler;
         private readonly DonationContext _context;
         private readonly DonationFixtures _fixtures;
 
-        private ContributionResponse? _addContributionResult;
+        private ContributionResponse? _contributionResult;
 
-        public ContributionSteps(IDonationClient donationClient, DonationContext context, DonationFixtures fixtures)
+        public ContributionSteps(IDonationClient donationClient, BearerTokenHandler bearerTokenHandler, DonationContext context, DonationFixtures fixtures)
         {
             _donationClient = donationClient;
+            _bearerTokenHandler = bearerTokenHandler;
             _context = context;
             _fixtures = fixtures;
         }
@@ -31,10 +37,28 @@ namespace TimeForCode.Donation.Specifications.Steps
             _fixtures.Contributors.Contributors.Should().BeEmpty();
         }
 
-        [Given("The user has already logged {int} hours on the project")]
-        public void GivenTheUserHasAlreadyLoggedHoursOnTheProject(int hours)
+        [Given("^(The user|Another user) has already logged (\\d+) hours on the project((?: with the GitHub reference \"[^\"]*\")?)$")]
+        public void GivenSomeoneHasAlreadyLoggedHoursOnTheProject(string who, int hours, string referenceSuffix)
         {
-            _fixtures.LogHours(_fixtures.TestUserContributor(), hours);
+            Contributor contributor = who == "The user" ? _fixtures.TestUserContributor() : _fixtures.OtherUserContributor();
+            _fixtures.LogHours(contributor, hours, ReferenceOf(referenceSuffix));
+        }
+
+        [Given("^The user has logged (\\d+) hours that count towards the donation$")]
+        public async Task GivenTheUserHasLoggedHoursThatCountTowardsTheDonationAsync(int hours)
+        {
+            // Logged through the platform, unlike "has already logged", so the hours are allocated to the active donation
+            _contributionResult = await _donationClient.AddContributionAsync(
+                _context.RegisteredProjectId ?? Constants.TestProjectId,
+                new AddContributionRequest { Hours = hours });
+            _context.ContributionId = _contributionResult.Id;
+        }
+
+        [Given("The user has already deleted the contribution")]
+        public async Task GivenTheUserHasAlreadyDeletedTheContributionAsync()
+        {
+            ContributionChange deletion = StoredContribution().MarkDeleted(Constants.TestUserId, false, _fixtures.TestUserContributor(), DateTimeOffset.UtcNow);
+            await _fixtures.Contributions.UpdateAsync(deletion.Contribution!, CancellationToken.None);
         }
 
         [Given("The user has already logged {int} hours on a published project")]
@@ -44,10 +68,17 @@ namespace TimeForCode.Donation.Specifications.Steps
             _fixtures.LogHours(_fixtures.TestUserContributor(), hours);
         }
 
-        [Given("There is no project with the given identifier")]
-        public void GivenThereIsNoProjectWithTheGivenIdentifier()
+        [Given("^There is no (project|contribution) with the given identifier$")]
+        public void GivenThereIsNoProjectOrContributionWithTheGivenIdentifier(string kind)
         {
-            _context.RegisteredProjectId = ProjectBuilder.IdFor(999);
+            if (kind == "project")
+            {
+                _context.RegisteredProjectId = ProjectBuilder.IdFor(999);
+            }
+            else
+            {
+                _context.ContributionId = ObjectId.GenerateNewId().ToString();
+            }
         }
 
         [Given("There is a published project with logged contributions")]
@@ -96,13 +127,34 @@ namespace TimeForCode.Donation.Specifications.Steps
         [When("^The user logs (-?\\d+) hours on the project((?: with the GitHub reference \"[^\"]*\")?)$")]
         public Task WhenTheUserLogsHoursOnTheProjectAsync(int hours, string referenceSuffix)
         {
-            // The suffix is empty without a reference, otherwise ` with the GitHub reference "<url>"`
-            var reference = referenceSuffix.Split('"').ElementAtOrDefault(1);
-            var githubReference = reference == null ? null : new Uri(reference, UriKind.RelativeOrAbsolute);
-
-            return _context.CaptureAsync(async () => _addContributionResult = await _donationClient.AddContributionAsync(
+            return _context.CaptureAsync(async () => _contributionResult = await _donationClient.AddContributionAsync(
                 _context.RegisteredProjectId ?? Constants.TestProjectId,
-                new AddContributionRequest { Hours = hours, GithubReference = githubReference }));
+                new AddContributionRequest { Hours = hours, GithubReference = ReferenceOf(referenceSuffix) }));
+        }
+
+        [When("^The user corrects the contribution to (-?\\d+) hours((?: with the GitHub reference \"[^\"]*\"| without a GitHub reference)?)$")]
+        public Task WhenTheUserCorrectsTheContributionAsync(int hours, string referenceSuffix)
+        {
+            // The reference is optional on a correction as well: without one the correction removes it
+            return _context.CaptureAsync(async () => _contributionResult = await _donationClient.CorrectContributionAsync(
+                _context.RegisteredProjectId ?? Constants.TestProjectId,
+                _context.ContributionId!,
+                new CorrectContributionRequest { Hours = hours, GithubReference = ReferenceOf(referenceSuffix) }));
+        }
+
+        [When("^The user deletes the contribution((?: of \\d+ hours)?)$")]
+        public Task WhenTheUserDeletesTheContributionAsync(string hoursSuffix)
+        {
+            // The suffix is empty when the scenario has a single contribution, otherwise ` of <n> hours`
+            if (hoursSuffix.Length > 0)
+            {
+                int hours = int.Parse(hoursSuffix.Split(' ')[2]);
+                _context.ContributionId = _fixtures.Contributions.Contributions.Single(c => c.Hours == hours && !c.IsDeleted).Id.ToString();
+            }
+
+            return _context.CaptureAsync(() => _donationClient.DeleteContributionAsync(
+                _context.RegisteredProjectId ?? Constants.TestProjectId,
+                _context.ContributionId!));
         }
 
         [When("The user requests the contributions of the project( without an account)")]
@@ -121,22 +173,22 @@ namespace TimeForCode.Donation.Specifications.Steps
         public void ThenTheContributionIsRecordedOnTheTimeForCodePlatform()
         {
             _context.LastException.Should().BeNull();
-            _addContributionResult.Should().NotBeNull();
-            _fixtures.Contributions.Contributions.Should().Contain(c => c.Id.ToString() == _addContributionResult!.Id);
+            _contributionResult.Should().NotBeNull();
+            _fixtures.Contributions.Contributions.Should().Contain(c => c.Id.ToString() == _contributionResult!.Id);
         }
 
         [Then("The contribution shows {int} hours")]
         public void ThenTheContributionShowsHours(int hours)
         {
-            _addContributionResult.Should().NotBeNull();
-            _addContributionResult!.Hours.Should().Be(hours);
+            _contributionResult.Should().NotBeNull();
+            _contributionResult!.Hours.Should().Be(hours);
         }
 
         [Then("The contributions of the project add up to {int} hours")]
         public void ThenTheContributionsOfTheProjectAddUpToHours(int hours)
         {
             var projectId = DonationFixtures.ObjectIdOf(_context.RegisteredProjectId!);
-            var stored = _fixtures.Contributions.Contributions.Where(c => c.ProjectId == projectId);
+            var stored = _fixtures.Contributions.Contributions.Where(c => c.ProjectId == projectId && !c.IsDeleted);
 
             stored.Sum(c => c.Hours).Should().Be(hours);
         }
@@ -150,16 +202,67 @@ namespace TimeForCode.Donation.Specifications.Steps
         [Then("The contribution shows the GitHub login and avatar of the user")]
         public void ThenTheContributionShowsTheGitHubLoginAndAvatarOfTheUser()
         {
-            _addContributionResult.Should().NotBeNull();
-            _addContributionResult!.ContributorGitHubLogin.Should().Be(Constants.TestUserLogin);
-            _addContributionResult.ContributorAvatarUrl.Should().Be(Constants.TestUserAvatarUrl);
+            _contributionResult.Should().NotBeNull();
+            _contributionResult!.ContributorGitHubLogin.Should().Be(Constants.TestUserLogin);
+            _contributionResult.ContributorAvatarUrl.Should().Be(Constants.TestUserAvatarUrl);
         }
 
-        [Then("The contribution includes the GitHub reference {string}")]
-        public void ThenTheContributionIncludesTheGitHubReference(string reference)
+        [Then("^The contribution (includes|no longer includes) the GitHub reference \"([^\"]*)\"$")]
+        public void ThenTheContributionIncludesTheGitHubReference(string includes, string reference)
         {
-            _addContributionResult.Should().NotBeNull();
-            _addContributionResult!.GithubReference.Should().Be(reference);
+            // The response of the last call when it succeeded, otherwise the stored contribution (a rejected correction leaves it unchanged)
+            string? current = _contributionResult != null ? _contributionResult.GithubReference : StoredContribution().GithubReference?.ToString();
+
+            if (includes == "includes")
+            {
+                current.Should().Be(reference);
+            }
+            else
+            {
+                current.Should().NotBe(reference);
+            }
+        }
+
+        [Then("^The history of the contribution keeps (\\d+) hours((?: and the GitHub reference \"[^\"]*\")?)$")]
+        public void ThenTheHistoryOfTheContributionKeepsHours(int hours, string referenceSuffix)
+        {
+            IEnumerable<ContributionCorrection> history = StoredContribution().History.Where(h => h.Hours == hours);
+
+            Uri? reference = ReferenceOf(referenceSuffix);
+            if (reference != null)
+            {
+                history = history.Where(h => h.GithubReference == reference);
+            }
+
+            history.Should().ContainSingle();
+        }
+
+        [Then("^The (correction|deletion) is recorded with the user and the time$")]
+        public void ThenTheChangeIsRecordedWithTheUserAndTheTime(string change)
+        {
+            Contribution stored = StoredContribution();
+            string userId = new JwtSecurityTokenHandler().ReadJwtToken(_bearerTokenHandler.Token).Claims.Single(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            (string? changedBy, DateTimeOffset? changedAt) = change == "correction"
+                ? (stored.History[^1].CorrectedByUserId, stored.History[^1].CorrectedAt)
+                : (stored.DeletedByUserId, stored.DeletedAt);
+
+            changedBy.Should().Be(userId);
+            changedAt.Should().BeCloseTo(DateTimeOffset.UtcNow, TimeSpan.FromMinutes(1));
+        }
+
+        [Then("^The contribution(?: of \\d+ hours)? is no longer listed for the project$")]
+        public async Task ThenTheContributionIsNoLongerListedForTheProjectAsync()
+        {
+            await GetContributionsAsync(_context.RegisteredProjectId ?? Constants.TestProjectId);
+
+            _context.LastException.Should().BeNull();
+            _context.ContributionsResult!.Contributions.Should().NotContain(c => c.Id == _context.ContributionId);
+        }
+
+        [Then("The contribution is kept on the time for code platform as deleted")]
+        public void ThenTheContributionIsKeptOnTheTimeForCodePlatformAsDeleted()
+        {
+            StoredContribution().IsDeleted.Should().BeTrue();
         }
 
         [Then("^The user is registered as (?:a|one) contributor on the time for code platform$")]
@@ -236,6 +339,19 @@ namespace TimeForCode.Donation.Specifications.Steps
             _context.LastException.Should().BeNull();
             _context.ContributionsResult.Should().NotBeNull();
             _context.ContributionsResult!.Contributions.Should().BeEmpty();
+        }
+
+        /// <summary>The stored contribution the scenario works on, deleted or not.</summary>
+        private Contribution StoredContribution()
+        {
+            return _fixtures.Contributions.Contributions.Single(c => c.Id.ToString() == _context.ContributionId);
+        }
+
+        /// <summary>The suffix is empty or `without a GitHub reference` without a reference, otherwise ` with the GitHub reference "&lt;url&gt;"`.</summary>
+        private static Uri? ReferenceOf(string referenceSuffix)
+        {
+            var reference = referenceSuffix.Split('"').ElementAtOrDefault(1);
+            return reference == null ? null : new Uri(reference, UriKind.RelativeOrAbsolute);
         }
 
         private Task GetContributionsAsync(string projectId)

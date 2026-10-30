@@ -1,4 +1,8 @@
 model {
+  // People
+  visitor = actor 'Visitor' {
+    description 'Anonymous person who browses active projects and their logged contributions'
+  }
   donor = actor 'Donor' {
     description 'Organization or individual who pledges and logs time'
   }
@@ -6,45 +10,188 @@ model {
     description 'Registers and manages an open-source project'
   }
   admin = actor 'Administrator' {
-    description 'Reviews projects and manages the platform'
+    description 'Single operator who reviews projects; signs in with a passkey'
+  }
+  developer = actor 'Developer' {
+    description 'Changes the code and documentation of TimeForCode'
   }
 
+  // External systems
   github = system 'GitHub' {
     #external
-    description 'OAuth 2.0 identity provider and source of repository metadata'
+    description 'OAuth 2.0 identity provider and public REST API for repository metadata'
   }
   mongodb = system 'MongoDB' {
     #external
     description 'Document store, one database per bounded context'
     technology 'MongoDB'
-    style {
-      shape storage
+
+    authDb = database 'AuthorizationServer' {
+      description 'Users, refresh tokens, login state, admin passkeys, data-protection keys'
     }
+    donationDb = database 'TimeForCode' {
+      description 'Projects, donations, allocations, donor organizations, contributors, contributions, maintainers'
+    }
+  }
+  idpMock = system 'Identity Provider Mock' {
+    #testOnly
+    description 'Stands in for GitHub in local runs and the specification tests (OAuth endpoints and public REST API)'
+    technology 'ASP.NET Core'
+  }
+  registry = system 'GitHub Container Registry' {
+    #external
+    description 'ghcr.io, holds the Authorization API image; the front-end image is built in CI but not pushed yet (#166)'
+  }
+  githubActions = system 'GitHub Actions' {
+    #external
+    description 'Builds, tests and releases (release-please), deploys the Bicep templates, publishes the documentation site'
+  }
+  sonarCloud = system 'SonarCloud' {
+    #external
+    description 'Static analysis and coverage reports'
+  }
+  githubPages = system 'GitHub Pages' {
+    #external
+    description 'Hosts the documentation site: arc42 chapters and this model'
+  }
+  azureCloud = system 'Microsoft Azure' {
+    #external
+    description 'Hosts the production App Service, deployed from deploy/*.bicep'
   }
 
   timeforcode = system 'TimeForCode' {
     description 'Connects donated time to open-source projects'
 
+    frontend = container 'Front-end' {
+      description 'React single-page application, built to static files and served by nginx; holds no business logic'
+      technology 'React, TypeScript, Vite, nginx'
+
+      appShell = component 'App shell' {
+        description 'Application shell, routing and providers (src/app)'
+      }
+      features = component 'Features' {
+        #planned
+        description 'One folder per feature with its pages, queries and tests: projects, profile, admin, auth (src/features)'
+        style {
+          border dashed
+        }
+      }
+      designSystem = component 'Design-system components' {
+        #planned
+        description 'Accessible UI components on CSS custom properties (src/components)'
+        style {
+          border dashed
+        }
+      }
+      messages = component 'Messages' {
+        description 'All user-facing strings (src/messages)'
+      }
+      apiClients = component 'Generated API clients' {
+        #planned
+        description 'Typed clients generated from the OpenAPI snapshots of both APIs (src/api)'
+        style {
+          border dashed
+        }
+      }
+      nginx = component 'nginx' {
+        description 'Serves the static build, falls back to index.html for client routes, adds the security headers (src/Frontend/nginx.conf)'
+        technology 'nginx'
+      }
+
+      appShell -> features 'routes to'
+      features -> designSystem 'renders with'
+      features -> messages 'reads strings from'
+      features -> apiClients 'calls the APIs with'
+      nginx -> appShell 'serves the build of'
+    }
+
+    bff = container 'Backend for frontend' {
+      #planned
+      description 'Proposed same-origin host that turns the HttpOnly token cookies into bearer tokens for the Donation API (ADR-012, front-end architecture)'
+      technology 'ASP.NET Core'
+      style {
+        border dashed
+      }
+    }
+
     authorization = container 'Authorization' {
-      description 'Bounded context: identity, token issuance and sessions'
-      technology '.NET 10'
+      description 'Bounded context: identity, token issuance, sessions and the administrator passkey'
+      technology '.NET 10, ASP.NET Core'
 
       authApi = layer 'API' {
-        description 'Controllers: login, callback, refresh, logout, user, JWKS'
+        description 'Controllers, token validation and rate limiting'
         technology 'ASP.NET Core'
+
+        authController = component 'AuthenticationController' {
+          description 'login, callback, refresh, logout (/api/v1/authentication)'
+        }
+        userController = component 'UserController' {
+          description 'profile, repositories, account deletion (/api/v1/user)'
+        }
+        adminController = component 'AdminAuthenticationController' {
+          description 'passkey registration and sign-in of the administrator (/api/v1/admin-authentication, own rate limit)'
+        }
+        jwksController = component 'JWKS and OpenID configuration' {
+          description 'Publishes the public signing keys and the discovery document'
+        }
+        testAdminController = component 'TestAdminAccessController' {
+          #testOnly
+          description 'Issues an admin token for live tests when a secret is configured; off by default (ADR-017)'
+        }
       }
       authCommands = layer 'Commands' {
         description 'MediatR command and result types'
       }
       authApplication = layer 'Application' {
-        description 'MediatR handlers, token service, account linking'
+        description 'MediatR handlers, validators, token and account services, repository interfaces'
         technology 'MediatR'
+
+        authHandlers = component 'Login handlers' {
+          description 'Login, Callback, Refresh, Logout, DeleteAccount handlers and their validators'
+        }
+        adminHandlers = component 'Admin passkey handlers' {
+          description 'Registration and authentication options and completion, test admin token'
+        }
+        tokenService = component 'TokenService' {
+          description 'Signs RS256 JWTs (user, admin and service scope) with the current signing key'
+        }
+        refreshTokenService = component 'RefreshTokenService' {
+          description 'Hashes, rotates and replaces refresh tokens'
+        }
+        accountService = component 'AccountService' {
+          description 'Creates or updates the account linked to a GitHub identity'
+        }
       }
       authDomain = layer 'Domain' {
-        description 'OAuth constants and domain primitives'
+        description 'OAuth constants and the admin credential entity'
       }
       authInfrastructure = layer 'Infrastructure' {
-        description 'GitHub OAuth client, Donation API client, user and token repositories, RSA key loading'
+        description 'GitHub OAuth client, Donation API client, MongoDB repositories, passkey ceremony, data protection'
+
+        githubOAuthClient = component 'GithubService' {
+          description 'Exchanges the OAuth code, reads the profile and repositories'
+        }
+        donationClient = component 'DonationService' {
+          description 'Calls the Donation API with a service token (anonymise a contributor)'
+        }
+        accountRepository = component 'AccountInformationRepository' {
+          description 'Users and linked accounts'
+        }
+        refreshTokenRepository = component 'RefreshTokenRepository' {
+          description 'Hashed refresh tokens'
+        }
+        stateRepository = component 'StateRepository' {
+          description 'Durable single-use login state with PKCE (ADR-015)'
+        }
+        adminCredentialRepository = component 'AdminCredentialRepository' {
+          description 'Registered administrator passkeys'
+        }
+        passkeyService = component 'PasskeyCeremonyService' {
+          description 'The one class that uses the ASP.NET Core passkey handler (ADR-011)'
+        }
+        dataProtection = component 'Data protection' {
+          description 'Encrypts stored values; the key ring lives in MongoDB'
+        }
       }
       authValues = layer 'Values' {
         description 'Shared value objects (ExternalAccessToken, TokenResult)'
@@ -55,31 +202,144 @@ model {
       authApplication -> authDomain 'uses'
       authApplication -> authValues 'uses'
       authInfrastructure -> authApplication 'implements interfaces of'
+
+      authApi.authController -> authApplication.authHandlers 'dispatches login, callback, refresh and logout'
+      authApi.userController -> authApplication.authHandlers 'dispatches profile and account deletion'
+      authApi.adminController -> authApplication.adminHandlers 'dispatches passkey ceremonies'
+      authApi.testAdminController -> authApplication.adminHandlers 'dispatches test admin token'
+      authApplication.authHandlers -> authApplication.accountService 'links the GitHub account'
+      authApplication.authHandlers -> authApplication.tokenService 'issues access tokens'
+      authApplication.authHandlers -> authApplication.refreshTokenService 'issues and rotates refresh tokens'
+      authApplication.adminHandlers -> authApplication.tokenService 'issues admin tokens'
+      authApplication.tokenService -> authInfrastructure.githubOAuthClient 'exchanges the OAuth code via IIdentityProviderService'
+      authApplication.authHandlers -> authInfrastructure.stateRepository 'via IStateRepository'
+      authApplication.authHandlers -> authInfrastructure.accountRepository 'reads and deletes the account'
+      authApplication.authHandlers -> authInfrastructure.refreshTokenRepository 'deletes refresh tokens'
+      authApplication.authHandlers -> authInfrastructure.donationClient 'via IDonationService'
+      authApplication.accountService -> authInfrastructure.accountRepository 'via IAccountInformationRepository'
+      authApplication.accountService -> authInfrastructure.dataProtection 'via IEncryptionService'
+      authApplication.refreshTokenService -> authInfrastructure.refreshTokenRepository 'via IRefreshTokenRepository'
+      authApplication.adminHandlers -> authInfrastructure.passkeyService 'via IPasskeyCeremonyService'
+      authApplication.adminHandlers -> authInfrastructure.adminCredentialRepository 'via IAdminCredentialRepository'
     }
 
     donation = container 'Donation' {
-      description 'Bounded context: projects, contributions and donor organizations'
-      technology '.NET 10'
+      description 'Bounded context: projects and their review, donations, hour tracking, donor organizations, contributor and maintainer profiles'
+      technology '.NET 10, ASP.NET Core'
 
       donationApi = layer 'API' {
-        description 'Controllers: projects, review lifecycle, donor organizations, contributions'
+        description 'Controllers, JWT bearer validation and the ApiUser, ApiAdmin, ApiUserOrAdmin and ApiService policies'
         technology 'ASP.NET Core'
+
+        projectController = component 'ProjectController' {
+          description 'register, search, detail, review lifecycle (/api/v1/project)'
+        }
+        donationController = component 'DonationController' {
+          description 'pledge, list, activate, cancel donations'
+        }
+        contributionController = component 'ContributionController' {
+          description 'log, list, correct, delete contributions (/api/v1/project/{id}/contribution)'
+        }
+        contributorProfileController = component 'ContributorProfileController' {
+          description 'own contributor profile (/api/v1/contributor/me)'
+        }
+        contributorController = component 'ContributorController' {
+          description 'anonymise a contributor; service scope only (/api/v1/contributor/{userId}/anonymise)'
+        }
+        donorOrganizationController = component 'DonorOrganizationController' {
+          description 'create, list, read, update, delete donor organizations and list their contributors'
+        }
+        maintainerController = component 'MaintainerController' {
+          description 'own maintainer profile and projects (/api/v1/maintainer/me)'
+        }
       }
       donationCommands = layer 'Commands' {
         description 'MediatR command, query and result types'
       }
       donationApplication = layer 'Application' {
-        description 'MediatR handlers, repository and GitHub metadata interfaces'
+        description 'MediatR handlers, validators, hour counting and releasing, repository and GitHub interfaces'
         technology 'MediatR'
+
+        projectHandlers = component 'Project handlers' {
+          description 'Register, search, detail, submit, approve, request changes, archive, re-activate'
+        }
+        donationHandlers = component 'Donation handlers' {
+          description 'Pledge, activate, cancel, list by user, project or donor organization'
+        }
+        contributionHandlers = component 'Contribution handlers' {
+          description 'Add, correct, delete and list contributions'
+        }
+        hoursCounter = component 'DonationHoursCounter' {
+          description 'Counts hours toward the Active donations of a project, oldest pledge first, spilling over'
+        }
+        hoursReleaser = component 'DonationHoursReleaser' {
+          description 'Takes hours back from allocations, newest first, saving the donation before its allocation'
+        }
+        contributorHandlers = component 'Contributor handlers' {
+          description 'Contributor profile and anonymisation'
+        }
+        organizationHandlers = component 'Donor organization handlers' {
+          description 'Create, read, update, delete, list contributors'
+        }
+        maintainerHandlers = component 'Maintainer handlers' {
+          description 'Maintainer profile, own projects with donation totals'
+        }
       }
       donationDomain = layer 'Domain' {
-        description 'Project aggregate with lifecycle state machine, contributions, contributors'
+        description 'Aggregates with their rules; no outward dependencies'
+
+        project = component 'Project' {
+          description 'Lifecycle Draft, PendingApproval, Active, Archived; GitHub snapshot and milestones'
+        }
+        donation = component 'Donation' {
+          description 'Pledge of hours: Pending, Active, Completed, Cancelled; counts and releases hours'
+        }
+        donationAllocation = component 'DonationAllocation' {
+          description 'Hours of one contribution counted toward one donation; plans releases'
+        }
+        contribution = component 'Contribution' {
+          description 'Logged hours with limits, history, soft delete and who may change it'
+        }
+        contributor = component 'Contributor' {
+          description 'Developer who logs hours, with profile and optional donor organization'
+        }
+        maintainer = component 'Maintainer' {
+          description 'Developer who owns projects'
+        }
+        donorOrganization = component 'DonorOrganization' {
+          description 'Company registered as a donor'
+        }
       }
       donationInfrastructure = layer 'Infrastructure' {
-        description 'MongoDB repositories, GitHub public REST API client'
+        description 'MongoDB repositories and the GitHub public REST API client'
+
+        projectRepository = component 'ProjectRepository' {
+          description 'Projects, with the active-project search filter and its indexes'
+        }
+        donationRepository = component 'DonationRepository' {
+          description 'Donations with optimistic concurrency (Version)'
+        }
+        allocationRepository = component 'DonationAllocationRepository' {
+          description 'Allocations per contribution and donation'
+        }
+        contributionRepository = component 'ContributionRepository' {
+          description 'Contributions; hides deleted ones, version-checked updates'
+        }
+        contributorRepository = component 'ContributorRepository' {
+          description 'Contributors, upserted by platform user id'
+        }
+        maintainerRepository = component 'MaintainerRepository' {
+          description 'Maintainers, upserted by platform user id'
+        }
+        donorOrganizationRepository = component 'DonorOrganizationRepository' {
+          description 'Donor organizations'
+        }
+        githubClient = component 'GithubRepositoryApiService' {
+          description 'Reads public repository metadata from the GitHub REST API'
+        }
       }
       donationValues = layer 'Values' {
-        description 'Shared value objects (ProjectStatus)'
+        description 'Shared value objects: ProjectStatus, DonationStatus, ContributionLimits, ContributorProfileLimits'
       }
 
       donationApi -> donationCommands 'sends'
@@ -87,41 +347,130 @@ model {
       donationApplication -> donationDomain 'uses'
       donationApplication -> donationValues 'uses'
       donationInfrastructure -> donationApplication 'implements interfaces of'
+
+      donationApi.projectController -> donationApplication.projectHandlers 'dispatches'
+      donationApi.donationController -> donationApplication.donationHandlers 'dispatches'
+      donationApi.contributionController -> donationApplication.contributionHandlers 'dispatches'
+      donationApi.contributorProfileController -> donationApplication.contributorHandlers 'dispatches'
+      donationApi.contributorController -> donationApplication.contributorHandlers 'dispatches anonymise'
+      donationApi.donorOrganizationController -> donationApplication.organizationHandlers 'dispatches'
+      donationApi.maintainerController -> donationApplication.maintainerHandlers 'dispatches'
+
+      donationApplication.contributionHandlers -> donationApplication.hoursCounter 'counts added hours'
+      donationApplication.contributionHandlers -> donationApplication.hoursReleaser 'releases removed hours'
+      donationApplication.projectHandlers -> donationDomain.project 'applies lifecycle transitions'
+      donationApplication.donationHandlers -> donationDomain.donation 'applies transitions'
+      donationApplication.contributionHandlers -> donationDomain.contribution 'asks to change itself'
+      donationApplication.contributorHandlers -> donationDomain.contributor 'updates the profile'
+      donationApplication.maintainerHandlers -> donationDomain.maintainer 'reads'
+      donationApplication.organizationHandlers -> donationDomain.donorOrganization 'manages'
+      donationApplication.hoursCounter -> donationDomain.donation 'counts hours'
+      donationApplication.hoursCounter -> donationDomain.donationAllocation 'creates'
+      donationApplication.hoursReleaser -> donationDomain.donationAllocation 'plans the release'
+      donationApplication.hoursReleaser -> donationDomain.donation 'releases hours'
+
+      donationApplication.projectHandlers -> donationInfrastructure.projectRepository 'via IProjectRepository'
+      donationApplication.projectHandlers -> donationInfrastructure.githubClient 'via IGithubRepositoryApiService'
+      donationApplication.projectHandlers -> donationInfrastructure.maintainerRepository 'via IMaintainerRepository'
+      donationApplication.donationHandlers -> donationInfrastructure.donationRepository 'via IDonationRepository'
+      donationApplication.donationHandlers -> donationInfrastructure.projectRepository 'loads the project of a pledge'
+      donationApplication.donationHandlers -> donationInfrastructure.donorOrganizationRepository 'checks the donor organization'
+      donationApplication.contributionHandlers -> donationInfrastructure.projectRepository 'loads the project'
+      donationApplication.contributorHandlers -> donationInfrastructure.donorOrganizationRepository 'checks the donor organization'
+      donationApplication.organizationHandlers -> donationInfrastructure.contributorRepository 'lists affiliated contributors'
+      donationApplication.maintainerHandlers -> donationInfrastructure.projectRepository 'loads own projects'
+      donationApplication.maintainerHandlers -> donationInfrastructure.donationRepository 'loads received donations'
+      donationApplication.contributionHandlers -> donationInfrastructure.contributionRepository 'via IContributionRepository'
+      donationApplication.contributionHandlers -> donationInfrastructure.contributorRepository 'via IContributorRepository'
+      donationApplication.contributorHandlers -> donationInfrastructure.contributorRepository 'via IContributorRepository'
+      donationApplication.contributorHandlers -> donationInfrastructure.contributionRepository 'anonymises snapshots'
+      donationApplication.organizationHandlers -> donationInfrastructure.donorOrganizationRepository 'via IDonorOrganizationRepository'
+      donationApplication.maintainerHandlers -> donationInfrastructure.maintainerRepository 'via IMaintainerRepository'
+      donationApplication.hoursCounter -> donationInfrastructure.donationRepository 'loads and saves donations'
+      donationApplication.hoursCounter -> donationInfrastructure.allocationRepository 'saves allocations'
+      donationApplication.hoursReleaser -> donationInfrastructure.donationRepository 'loads and saves donations'
+      donationApplication.hoursReleaser -> donationInfrastructure.allocationRepository 'shrinks and removes allocations'
     }
 
     shared = container 'Shared' {
       description 'Cross-cutting library used by both bounded contexts'
       technology '.NET 10'
 
-      cookieHandler = component 'CookieAuthorizationHandler' {
-        description 'Reads the JWT cookie and attaches it as bearer token on outgoing calls'
+      defaultPipeline = component 'Default API pipeline' {
+        description 'Controllers, OpenAPI document, rate-limit policies and the middleware order (UseDefaultApiPipeline)'
       }
-      authorizeFilter = component 'AuthorizeFilter' {
-        description 'Validates the token on incoming requests'
+      securityHeaders = component 'Security headers' {
+        description 'Adds the security response headers to every API response'
+      }
+      validationBehaviour = component 'ValidationBehaviour' {
+        description 'MediatR pipeline behaviour that runs the FluentValidation validators before a handler'
+      }
+      cookieHandler = component 'CookieAuthorizationHandler' {
+        description 'Reads the access token cookie and attaches it as bearer token on outgoing calls'
+      }
+      refreshForwarding = component 'RefreshTokenForwardingHandler' {
+        description 'Forwards the refresh token cookie of the incoming request to the Authorization API'
       }
     }
+
+    // Containers
+    frontend -> bff 'calls the APIs through (proposed)' 'HTTPS'
+    bff -> authorization 'login, refresh, session' 'HTTPS, cookies'
+    bff -> donation 'REST with bearer token from the cookie' 'HTTPS'
+    authorization -> donation 'anonymises contributor on account deletion' 'HTTPS, service token'
+    donation -> authorization 'fetches the signing keys (OpenID configuration, JWKS)' 'HTTPS'
+    authorization -> shared 'uses'
+    donation -> shared 'uses'
   }
 
   // System context
-  donor -> timeforcode 'signs in, logs time contributions' 'HTTPS'
-  maintainer -> timeforcode 'signs in, registers projects' 'HTTPS'
-  admin -> timeforcode 'approves projects' 'HTTPS, admin scope'
+  visitor -> timeforcode 'browses active projects and contributions' 'HTTPS'
+  donor -> timeforcode 'signs in, pledges and logs time' 'HTTPS'
+  maintainer -> timeforcode 'signs in, registers and manages projects' 'HTTPS'
+  admin -> timeforcode 'signs in with a passkey, approves projects' 'HTTPS, admin scope'
+  timeforcode -> github 'OAuth 2.0 login, repository metadata' 'HTTPS'
+  timeforcode -> mongodb 'stores its data' 'MongoDB wire protocol'
 
   // Bounded contexts
   timeforcode.authorization -> github 'OAuth 2.0 login' 'HTTPS'
   timeforcode.donation -> github 'fetches repository metadata' 'HTTPS REST'
-  timeforcode.authorization -> mongodb 'stores users and tokens' 'MongoDB wire protocol'
-  timeforcode.donation -> mongodb 'stores projects and contributions' 'MongoDB wire protocol'
-  timeforcode.authorization -> timeforcode.donation 'anonymises contributor on account deletion' 'HTTPS, service token'
+  timeforcode.authorization -> mongodb.authDb 'stores users, tokens, state, passkeys' 'MongoDB wire protocol'
+  timeforcode.donation -> mongodb.donationDb 'stores projects, donations and contributions' 'MongoDB wire protocol'
+  timeforcode.authorization -> idpMock 'OAuth 2.0 when GitHub is replaced' 'HTTP'
+  timeforcode.donation -> idpMock 'repository metadata when GitHub is replaced' 'HTTP'
 
-  // Layers to external systems
-  timeforcode.authorization.authInfrastructure -> github 'OAuth 2.0' 'HTTPS'
-  timeforcode.authorization.authInfrastructure -> mongodb 'persistence'
-  timeforcode.authorization.authInfrastructure -> timeforcode.donation.donationApi 'anonymise contributor' 'HTTPS, service token'
-  timeforcode.donation.donationInfrastructure -> github 'repository metadata' 'HTTPS REST'
-  timeforcode.donation.donationInfrastructure -> mongodb 'persistence'
+  // Components to external systems
+  timeforcode.authorization.authInfrastructure.githubOAuthClient -> github 'POST /login/oauth/access_token, GET /user, repositories' 'HTTPS'
+  timeforcode.authorization.authInfrastructure.accountRepository -> mongodb.authDb 'users'
+  timeforcode.authorization.authInfrastructure.refreshTokenRepository -> mongodb.authDb 'refresh tokens'
+  timeforcode.authorization.authInfrastructure.stateRepository -> mongodb.authDb 'login state'
+  timeforcode.authorization.authInfrastructure.adminCredentialRepository -> mongodb.authDb 'passkeys'
+  timeforcode.authorization.authInfrastructure.dataProtection -> mongodb.authDb 'key ring'
+  timeforcode.authorization.authInfrastructure.donationClient -> timeforcode.donation.donationApi.contributorController 'POST anonymise' 'HTTPS, service token'
+  timeforcode.donation.donationApi -> timeforcode.authorization.authApi.jwksController 'fetches the signing keys' 'HTTPS'
+  timeforcode.donation.donationInfrastructure.githubClient -> github 'GET /repos/:owner/:repo' 'HTTPS REST'
+  timeforcode.donation.donationInfrastructure.projectRepository -> mongodb.donationDb 'projects'
+  timeforcode.donation.donationInfrastructure.donationRepository -> mongodb.donationDb 'donations'
+  timeforcode.donation.donationInfrastructure.allocationRepository -> mongodb.donationDb 'allocations'
+  timeforcode.donation.donationInfrastructure.contributionRepository -> mongodb.donationDb 'contributions'
+  timeforcode.donation.donationInfrastructure.contributorRepository -> mongodb.donationDb 'contributors'
+  timeforcode.donation.donationInfrastructure.maintainerRepository -> mongodb.donationDb 'maintainers'
+  timeforcode.donation.donationInfrastructure.donorOrganizationRepository -> mongodb.donationDb 'donor organizations'
 
   // Shared
-  timeforcode.authorization.authApi -> timeforcode.shared.authorizeFilter 'validates tokens with'
-  timeforcode.donation.donationApi -> timeforcode.shared.authorizeFilter 'validates tokens with'
+  timeforcode.authorization.authApi -> timeforcode.shared.defaultPipeline 'is built on'
+  timeforcode.donation.donationApi -> timeforcode.shared.defaultPipeline 'is built on'
+  timeforcode.shared.defaultPipeline -> timeforcode.shared.securityHeaders 'adds'
+  timeforcode.authorization.authApplication -> timeforcode.shared.validationBehaviour 'runs handlers through'
+  timeforcode.donation.donationApplication -> timeforcode.shared.validationBehaviour 'runs handlers through'
+  timeforcode.authorization.authInfrastructure -> timeforcode.shared.cookieHandler 'forwards the access token with'
+  timeforcode.authorization.authApi -> timeforcode.shared.refreshForwarding 'forwards the refresh cookie with'
+
+  // Delivery
+  developer -> githubActions 'pushes, opens pull requests' 'HTTPS'
+  githubActions -> sonarCloud 'sends analysis and coverage' 'HTTPS'
+  githubActions -> registry 'pushes the Authorization API image' 'HTTPS'
+  githubActions -> azureCloud 'deploys the Bicep templates' 'az deployment sub create'
+  githubActions -> githubPages 'publishes the documentation site' 'HTTPS'
+  azureCloud -> registry 'pulls the Authorization API image' 'HTTPS'
 }

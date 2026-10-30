@@ -43,7 +43,10 @@ namespace TimeForCode.Donation.Specifications.Mocking
                     ContributorAvatarUrl = Contributor.DeletedUserAvatarUrl,
                     Hours = c.Hours,
                     GithubReference = c.GithubReference,
-                    LoggedAt = c.LoggedAt
+                    LoggedAt = c.LoggedAt,
+                    History = c.History,
+                    DeletedAt = c.DeletedAt,
+                    DeletedByUserId = c.DeletedByUserId
                 };
             }
 
@@ -53,12 +56,26 @@ namespace TimeForCode.Donation.Specifications.Mocking
         public Task<IReadOnlyList<Contribution>> GetByProjectIdAsync(string projectId, CancellationToken cancellationToken)
         {
             IReadOnlyList<Contribution> matches = _contributions
-                .Where(c => c.ProjectId.ToString() == projectId)
+                .Where(c => c.ProjectId.ToString() == projectId && !c.IsDeleted)
                 .OrderBy(c => c.LoggedAt)
                 .ThenBy(c => c.Id)
                 .ToList();
 
             return Task.FromResult(matches);
+        }
+
+        public Task<Contribution?> GetByIdAsync(string projectId, string contributionId, CancellationToken cancellationToken)
+        {
+            Contribution? match = _contributions.SingleOrDefault(c =>
+                c.Id.ToString() == contributionId && c.ProjectId.ToString() == projectId && !c.IsDeleted);
+
+            return Task.FromResult(match);
+        }
+
+        public Task UpdateAsync(Contribution contribution, CancellationToken cancellationToken)
+        {
+            _contributions[_contributions.FindIndex(c => c.Id == contribution.Id)] = contribution;
+            return Task.CompletedTask;
         }
     }
 }

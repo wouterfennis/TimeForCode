@@ -46,8 +46,7 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
                 _projectRepository.Object,
                 _contributorRepository.Object,
                 _contributionRepository.Object,
-                _donationRepository.Object,
-                _allocationRepository.Object,
+                new DonationHoursCounter(_donationRepository.Object, _allocationRepository.Object, NullLogger<DonationHoursCounter>.Instance),
                 NullLogger<AddContributionHandler>.Instance);
         }
 

@@ -110,6 +110,24 @@ namespace TimeForCode.Donation.Domain
         }
 
         /// <summary>
+        /// Takes hours back that were counted from a contribution that was corrected or deleted. A Completed donation that falls below its commitment is Active again;
+        /// a Cancelled donation stays Cancelled.
+        /// </summary>
+        /// <returns>The number of hours that were released; never more than are logged.</returns>
+        public int ReleaseHours(int hours)
+        {
+            var released = Math.Min(hours, HoursLogged);
+            HoursLogged -= released;
+            if (Status == DonationStatus.Completed && HoursLogged < HoursCommitted)
+            {
+                Status = DonationStatus.Active;
+            }
+
+            UpdatedAt = DateTimeOffset.UtcNow;
+            return released;
+        }
+
+        /// <summary>
         /// Counts logged hours toward the commitment of an Active donation and completes it once all pledged hours are logged.
         /// </summary>
         /// <returns>The number of hours that were counted; the rest is left for other donations.</returns>

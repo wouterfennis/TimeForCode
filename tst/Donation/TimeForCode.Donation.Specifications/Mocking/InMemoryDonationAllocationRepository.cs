@@ -24,6 +24,23 @@ namespace TimeForCode.Donation.Specifications.Mocking
             return Task.CompletedTask;
         }
 
+        public Task<IReadOnlyList<DonationAllocation>> GetByContributionIdAsync(ObjectId contributionId, CancellationToken cancellationToken)
+        {
+            IReadOnlyList<DonationAllocation> matches = _allocations
+                .Where(a => a.ContributionId == contributionId)
+                .OrderBy(a => a.CreatedAt)
+                .ThenBy(a => a.Id)
+                .ToList();
+
+            return Task.FromResult(matches);
+        }
+
+        public Task UpdateAsync(DonationAllocation allocation, CancellationToken cancellationToken)
+        {
+            _allocations[_allocations.FindIndex(a => a.Id == allocation.Id)] = allocation;
+            return Task.CompletedTask;
+        }
+
         public Task DeleteAsync(ObjectId id, CancellationToken cancellationToken)
         {
             _allocations.RemoveAll(a => a.Id == id);
