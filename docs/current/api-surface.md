@@ -188,6 +188,32 @@ The maintainer profile is created (or its GitHub login and avatar refreshed) whe
 
 ---
 
+## Reporting API
+
+The Reporting API (`:8083` locally) is back-end only. It reads the donations and contributions of a donor organization from the Donation API over HTTP with the caller's own bearer token, so the Donation API decides who may read: contributors affiliated with the organization and administrators (see DEBT-19: affiliation is self-declared). Reporting has no database and never writes to the Donation API. The caller needs a token whose audiences include the Reporting API (user or admin JWT).
+
+### Reporting Endpoints
+
+| Method | Endpoint | Status | Notes |
+| --- | --- | --- | --- |
+| `GET` | `/api/v1/reporting/donororganization/{id}/impact-report` | ✅ | Impact report of a donor organization (user or admin JWT); `200` with `{ "hoursPledged": 10, "hoursLogged": 4, "projectsSupported": 1, "projects": [ { "projectId": "...", "hoursPledged": 10, "hoursLogged": 4 } ] }`; only `Active` and `Completed` donations count, projects are listed in the order of their first donation, an organization without counted donations gets zeros and an empty list; `400` for a malformed id or a missing bearer token, `401` without a token, `403` when the caller is neither a member nor an administrator, `404` for an unknown organization, `502` when the Donation API fails or cannot be reached |
+| `GET` | `/api/v1/reporting/donororganization/{id}/contribution-history?format=Json\|Csv` | ✅ | Export of the contribution history as a file download (user or admin JWT); `format` is `Json` (default, `application/json`) or `Csv` (`text/csv`); same status codes as the impact report; at most 10000 contributions, earliest first, deleted ones left out, attributed by the contributor's current affiliation (DEBT-21) |
+
+Export schema (the same values in both formats):
+
+| CSV column | JSON field | Type | Notes |
+| --- | --- | --- | --- |
+| `ContributionId` | `id` | string | Contribution identifier |
+| `ProjectId` | `projectId` | string | Project the hours were logged on |
+| `ContributorLogin` | `contributorLogin` | string | GitHub login of the contributor |
+| `Hours` | `hours` | integer | Hours logged |
+| `GithubReference` | `githubReference` | string or `null` | Issue or pull request URL; empty in CSV, `null` in JSON when none was given |
+| `LoggedAt` | `loggedAt` | string | UTC, ISO 8601 (`2026-10-02T07:30:15Z`) |
+
+The CSV has a header row and `\r\n` line endings. Values with a comma, quote or line break are quoted (RFC 4180), and a value starting with `=`, `+`, `-`, `@`, a tab or a carriage return gets a leading `'` so a spreadsheet does not run it as a formula. The JSON is `{ "contributions": [ ... ] }`, an empty list when there are none.
+
+---
+
 ## API Standards
 
 All implemented endpoints follow these conventions:

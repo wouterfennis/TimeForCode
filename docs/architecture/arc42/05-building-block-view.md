@@ -10,7 +10,7 @@ Published views of the [LikeC4 architecture model](../likec4/README.md): [contai
 
 ## Level 1 — System Overview
 
-At the highest level, TimeForCode consists of three deployable services and a shared data store.
+At the highest level, TimeForCode consists of four deployable services and a shared data store. The Reporting API is back-end only so far and has no front-end caller yet.
 
 ```mermaid
 graph LR
@@ -18,6 +18,7 @@ graph LR
         Frontend["Front-end\n(React SPA)"]
         AuthAPI["Authorization API\n(.NET)"]
         DonationAPI["Donation API\n(.NET)"]
+        ReportingAPI["Reporting API\n(.NET)"]
         MongoDB[("MongoDB")]
     end
 
@@ -29,6 +30,7 @@ graph LR
     AuthAPI -->|persistence| MongoDB
     DonationAPI -->|GitHub REST API| GitHub
     DonationAPI -->|persistence| MongoDB
+    ReportingAPI -->|HTTP, caller's token| DonationAPI
 ```
 
 ---
@@ -124,6 +126,44 @@ graph LR
 | `Contribution` | Time-log entry of a contributor on an `Active` project; stores the `ContributorId` plus a snapshot of the GitHub login and avatar (extended reference, like `GithubSnapshot` on `Project`); the entity enforces the hour and GitHub-reference limits itself and decides who may change it: `Correct` and `MarkDeleted` return a `ContributionChange` (the changed contribution and the hours delta, or the refusal `Deleted`/`NotAllowed`); saves are version-checked (`Version`, a concurrent change is a conflict); a correction keeps the replaced hours and reference in `History` (with corrector and time), a deletion only sets `DeletedAt`/`DeletedByUserId` and reads exclude deleted contributions; `DonationAllocation.PlanRelease` decides which allocations give hours back; `DonationHoursCounter` (shared with logging) counts hours toward Active donations and `DonationHoursReleaser` takes released hours back from the donation allocations (donation saved first, then the allocation shrinks or is removed) |
 | `Maintainer` | Developer who owns projects; own MongoDB document, upserted by platform user id (unique index) when a project is registered, with a snapshot of the GitHub login and avatar. Projects link to it through `PublishedByUserId` (indexed); owner-only project operations compare that field with the caller's platform user id, so the maintainer document is not read for ownership checks |
 | `Milestone` | Phase within a project, synced from GitHub milestones |
+
+---
+
+## Level 2 — Reporting Bounded Context
+
+The Reporting context turns the donations and contributions of a donor organization into an impact report and a downloadable contribution history. It owns no data: it reads from the Donation context over HTTP with the caller's own access token (ADR-010, [Shared project coupling boundary](../../reference/shared-project-coupling-boundary.md)) and never writes to it. The Donation context decides who may read an organization, and Reporting passes its unauthorized, forbidden and not found answers on.
+
+```mermaid
+graph LR
+    subgraph Reporting Bounded Context
+        RepAPI_Ctrl["API Layer\n(Controller)"]
+        RepApp["Application Layer\n(Handlers, export formatter)"]
+        RepDomain["Domain Layer\n(ImpactReport)"]
+        RepInfra["Infrastructure Layer\n(Donation data source)"]
+    end
+
+    Client["Caller + JWT"]
+    DonationAPI["Donation API"]
+
+    Client -->|HTTP requests| RepAPI_Ctrl
+    RepAPI_Ctrl -->|queries| RepApp
+    RepApp -->|report rules| RepDomain
+    RepApp -->|IDonationDataSource| RepInfra
+    RepInfra -->|generated client, caller's token| DonationAPI
+```
+
+### Components
+
+| Component | Responsibility |
+| --- | --- |
+| `TimeForCode.Reporting.Api` | `ReportingController` with the impact report and the contribution history export (policy `ApiUserOrAdmin`); takes the caller's bearer token from the request and hands it to the query; maps failures to problem details (`401`, `403`, `404`, `502`) |
+| `TimeForCode.Reporting.Application` | `GetImpactReportHandler`, `GetContributionHistoryExportHandler`, `ContributionHistoryFormatter` (CSV with RFC 4180 quoting and spreadsheet formula guard, JSON) and the `IDonationDataSource` interface |
+| `TimeForCode.Reporting.Domain` | `ImpactReport` and `ProjectImpact` (only `Active` and `Completed` donations count), `OrganizationDonation` and `OrganizationContribution` as read from Donation |
+| `TimeForCode.Reporting.Commands` | Queries and results; `Result<T>` (duplicated per context on purpose) |
+| `TimeForCode.Reporting.Values` | `DonationStatus` (duplicated from Donation on purpose) and `ExportFormat` |
+| `TimeForCode.Reporting.Infrastructure` | `DonationApiDataSource` on the generated `TimeForCode.Donation.Api.Client` with a bearer header per call; `DonationApiOptions` (`BaseUri`); the only place that may reference the Donation client |
+
+Architecture tests (`TimeForCode.Reporting.Architecture.Tests`) enforce the layer rules and the context boundary: Reporting may use nothing of Donation except the generated client, only from Infrastructure, never anything of Authorization, and Donation and Authorization must not know Reporting.
 
 ---
 
