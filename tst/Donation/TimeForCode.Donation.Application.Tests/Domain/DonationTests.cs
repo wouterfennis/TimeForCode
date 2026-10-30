@@ -201,8 +201,9 @@ namespace TimeForCode.Donation.Application.Tests.Domain
             var first = Build(DonationStatus.Active, committed: 10);
             var second = Build(DonationStatus.Active, committed: 10);
 
-            DonationEntity.CountHours([first, second], 15).First();
+            CountedHours firstCounted = DonationEntity.CountHours([first, second], 15).First();
 
+            firstCounted.Donation.Should().BeSameAs(first);
             second.HoursLogged.Should().Be(0);
         }
 

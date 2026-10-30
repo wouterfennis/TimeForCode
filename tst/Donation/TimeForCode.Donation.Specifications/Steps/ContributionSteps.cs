@@ -243,7 +243,7 @@ namespace TimeForCode.Donation.Specifications.Steps
             Contribution stored = StoredContribution();
             string userId = new JwtSecurityTokenHandler().ReadJwtToken(_bearerTokenHandler.Token).Claims.Single(c => c.Type == ClaimTypes.NameIdentifier).Value;
             (string? changedBy, DateTimeOffset? changedAt) = change == "correction"
-                ? (stored.History.Last().CorrectedByUserId, stored.History.Last().CorrectedAt)
+                ? (stored.History[^1].CorrectedByUserId, stored.History[^1].CorrectedAt)
                 : (stored.DeletedByUserId, stored.DeletedAt);
 
             changedBy.Should().Be(userId);

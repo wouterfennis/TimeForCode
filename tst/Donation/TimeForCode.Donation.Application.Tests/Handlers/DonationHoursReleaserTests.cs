@@ -38,7 +38,7 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
             return donation;
         }
 
-        private DonationAllocation GivenAllocation(DonationEntity donation, int hours)
+        private static DonationAllocation GivenAllocation(DonationEntity donation, int hours)
         {
             return DonationAllocation.Create(ContributionId, donation.Id, hours);
         }
