@@ -1,0 +1,425 @@
+﻿{
+  "openapi": "3.1.1",
+  "info": {
+    "title": "Reporting API",
+    "description": "API for the impact report and contribution history export of donor organizations",
+    "version": "v1"
+  },
+  "paths": {
+    "/api/v1/reporting/donororganization/{id}/impact-report": {
+      "get": {
+        "tags": [
+          "Reporting"
+        ],
+        "summary": "Returns the impact report of a donor organization: hours pledged and logged, the number of projects supported and the breakdown per project.",
+        "description": "Only Active and Completed donations count: a Pending donation is not yet committed and a Cancelled one no longer is.\nThe donations come from the Donation context, whose lists are capped; there is no indication when more exist.",
+        "operationId": "GetImpactReport",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The donor organization identifier.",
+            "required": true,
+            "schema": {
+              "pattern": "^[0-9a-fA-F]{24}$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImpactReportResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Bad Gateway",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. Retry after the number of seconds given in the Retry-After header.",
+            "headers": {
+              "Retry-After": {
+                "description": "Number of seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reporting/donororganization/{id}/contribution-history": {
+      "get": {
+        "tags": [
+          "Reporting"
+        ],
+        "summary": "Exports the contribution history of a donor organization as a CSV or JSON file, earliest contribution first.",
+        "description": "CSV columns: ContributionId, ProjectId, ContributorLogin, Hours, GithubReference, LoggedAt (UTC, ISO 8601). JSON has the same\nvalues as camel case fields in a `contributions` list. The list holds at most 10000 contributions with no indication when more\nexist. Contributions are attributed by the contributor's current affiliation, so a contributor who moves to another organization\ntakes their history along. Deleted contributions are left out.",
+        "operationId": "GetContributionHistory",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The donor organization identifier.",
+            "required": true,
+            "schema": {
+              "pattern": "^[0-9a-fA-F]{24}$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "description": "The file format, `Json` (default) or `Csv`.",
+            "schema": {
+              "default": "Json",
+              "$ref": "#/components/schemas/ExportFormat"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContributionHistoryResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Bad Gateway",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. Retry after the number of seconds given in the Retry-After header.",
+            "headers": {
+              "Retry-After": {
+                "description": "Number of seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ContributionHistoryItemResponse": {
+        "required": [
+          "id",
+          "projectId",
+          "contributorLogin",
+          "hours",
+          "loggedAt"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The contribution identifier."
+          },
+          "projectId": {
+            "type": "string",
+            "description": "The project the hours were logged on."
+          },
+          "contributorLogin": {
+            "type": "string",
+            "description": "GitHub login of the contributor."
+          },
+          "hours": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The hours logged.",
+            "format": "int32"
+          },
+          "githubReference": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "The GitHub issue or pull request the hours belong to; `null` when none was given."
+          },
+          "loggedAt": {
+            "type": "string",
+            "description": "When the hours were logged, in UTC.",
+            "format": "date-time"
+          }
+        },
+        "description": "One logged contribution in the export."
+      },
+      "ContributionHistoryResponse": {
+        "required": [
+          "contributions"
+        ],
+        "type": "object",
+        "properties": {
+          "contributions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContributionHistoryItemResponse"
+            },
+            "description": "The contributions, earliest first."
+          }
+        },
+        "description": "The JSON shape of the contribution history export. The CSV export has the same values in the columns\nContributionId, ProjectId, ContributorLogin, Hours, GithubReference and LoggedAt."
+      },
+      "ExportFormat": {
+        "enum": [
+          "Json",
+          "Csv"
+        ]
+      },
+      "ImpactReportResponse": {
+        "required": [
+          "hoursPledged",
+          "hoursLogged",
+          "projectsSupported",
+          "projects"
+        ],
+        "type": "object",
+        "properties": {
+          "hoursPledged": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "Hours committed by the Active and Completed donations of the organization.",
+            "format": "int32"
+          },
+          "hoursLogged": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "Hours logged on those donations.",
+            "format": "int32"
+          },
+          "projectsSupported": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "Number of different projects the donations were pledged to.",
+            "format": "int32"
+          },
+          "projects": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProjectImpactResponse"
+            },
+            "description": "The breakdown per project, in the order of the first donation to each."
+          }
+        },
+        "description": "What a donor organization pledged and delivered. Only Active and Completed donations count."
+      },
+      "ProblemDetails": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "title": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "status": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "detail": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "instance": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "ProjectImpactResponse": {
+        "required": [
+          "projectId",
+          "hoursPledged",
+          "hoursLogged"
+        ],
+        "type": "object",
+        "properties": {
+          "projectId": {
+            "type": "string",
+            "description": "The project identifier."
+          },
+          "hoursPledged": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "Hours the organization committed to the project.",
+            "format": "int32"
+          },
+          "hoursLogged": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "Hours logged on the project's donations of the organization.",
+            "format": "int32"
+          }
+        },
+        "description": "The hours a project received from the organization."
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Reporting"
+    }
+  ]
+}

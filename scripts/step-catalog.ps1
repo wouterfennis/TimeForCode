@@ -9,7 +9,7 @@
     optionally every step definition with its file and usage count.
 
 .PARAMETER Module
-    Module to catalogue (Authorization, Donation) or All (default).
+    Module to catalogue (Authorization, Donation, Reporting) or All (default).
 
 .PARAMETER Steps
     Also list every step definition with its definition file and usage count.
@@ -22,7 +22,7 @@
 #>
 [CmdletBinding()]
 param(
-    [ValidateSet('All', 'Authorization', 'Donation')]
+    [ValidateSet('All', 'Authorization', 'Donation', 'Reporting')]
     [string]$Module = 'All',
     [switch]$Steps,
     [switch]$Markdown
@@ -238,6 +238,6 @@ function Write-Report($results) {
     }
 }
 
-$modules = if ($Module -eq 'All') { 'Authorization', 'Donation' } else { @($Module) }
+$modules = if ($Module -eq 'All') { 'Authorization', 'Donation', 'Reporting' } else { @($Module) }
 $results = foreach ($name in $modules) { Measure-Specification $name }
 Write-Report $results
