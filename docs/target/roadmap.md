@@ -36,7 +36,7 @@ This document describes the phased delivery plan for the TimeForCode platform. E
 
 ---
 
-## Phase 2 — Donations and Hour Tracking
+## Phase 2 — Donations and Hour Tracking (back-end complete)
 
 **Goal**: Organisations can pledge hours and contributors can log time against those pledges.
 
@@ -52,7 +52,7 @@ This document describes the phased delivery plan for the TimeForCode platform. E
 **Definition of Done**:
 
 - An organisation can register and pledge hours to an approved project.
-- A contributor can be assigned to a donation and log hours.
+- A contributor can log hours on a project; they count toward its active donations, oldest pledge first, and can be corrected or deleted.
 - The platform calculates and displays progress.
 - A donation auto-completes when all pledged hours are logged.
 - Full test coverage for the Donation bounded context.
