@@ -27,21 +27,11 @@ namespace TimeForCode.Donation.Application.Handlers
 
         public async Task<Result<GetDonationsResult>> Handle(GetDonorOrganizationDonationsQuery request, CancellationToken cancellationToken)
         {
-            var organization = await _organizationRepository.GetByIdAsync(request.DonorOrganizationId);
-            if (organization == null)
+            var denied = await DonorOrganizationAccess.CheckAsync<GetDonationsResult>(
+                _organizationRepository, _contributorRepository, request.DonorOrganizationId, request.CallerUserId, request.IsAdministrator, _logger);
+            if (denied != null)
             {
-                _logger.LogWarning("Donor organization {DonorOrganizationId} not found", request.DonorOrganizationId);
-                return Result<GetDonationsResult>.NotFound("Donor organization not found.");
-            }
-
-            if (!request.IsAdministrator)
-            {
-                var caller = await _contributorRepository.GetByPlatformUserIdAsync(request.CallerUserId);
-                if (caller?.DonorOrganizationId?.ToString() != request.DonorOrganizationId)
-                {
-                    _logger.LogWarning("User {UserId} is not a member of donor organization {DonorOrganizationId}", request.CallerUserId, request.DonorOrganizationId);
-                    return Result<GetDonationsResult>.Forbidden("Only members of the donor organization or an administrator can access its donations.");
-                }
+                return denied;
             }
 
             var donations = await _donationRepository.GetByDonorOrganizationIdsAsync([request.DonorOrganizationId], cancellationToken);
