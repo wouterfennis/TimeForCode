@@ -122,6 +122,11 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         /// Returns the contributions logged by the contributors affiliated with a donor organization, earliest first.
         /// Allowed for contributors affiliated with the organization and for administrators.
         /// </summary>
+        /// <remarks>
+        /// The list is not paged and holds at most 10000 contributions, earliest first; there is no indication when more exist, so totals
+        /// built from it are incomplete for very large organizations. Contributions are attributed by the contributor's current
+        /// affiliation, so a contributor who moves to another organization takes their history along. Deleted contributions are left out.
+        /// </remarks>
         /// <param name="id">The donor organization identifier.</param>
         /// <returns>The contributions of the organization; an empty list when none were logged.</returns>
         [HttpGet("~/api/v1/donororganization/{id}/contribution", Name = nameof(GetDonorOrganizationContributions))]

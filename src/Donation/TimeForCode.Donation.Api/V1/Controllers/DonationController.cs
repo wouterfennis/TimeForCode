@@ -97,6 +97,9 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         /// Returns the donations pledged for a donor organization, oldest first, with their progress.
         /// Allowed for contributors affiliated with the organization and for administrators.
         /// </summary>
+        /// <remarks>
+        /// The list is not paged and, like the other donation listings, is capped; there is no indication when more donations exist.
+        /// </remarks>
         /// <param name="id">The donor organization identifier.</param>
         /// <returns>The donations of the organization; an empty list when there are none.</returns>
         [HttpGet("donororganization/{id}/donation", Name = nameof(GetDonorOrganizationDonations))]
