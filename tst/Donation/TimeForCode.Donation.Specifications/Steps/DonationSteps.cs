@@ -124,6 +124,12 @@ namespace TimeForCode.Donation.Specifications.Steps
             return _context.CaptureAsync(async () => _context.DonationsResult = await _donationClient.GetMyDonationsAsync());
         }
 
+        [When("The user requests the donations of the donor organization")]
+        public Task WhenTheUserRequestsTheDonationsOfTheDonorOrganizationAsync()
+        {
+            return _context.CaptureAsync(async () => _context.DonationsResult = await _donationClient.GetDonorOrganizationDonationsAsync(_context.DonorOrganizationId!));
+        }
+
         [When("The user requests the donations of the project")]
         public Task WhenTheUserRequestsTheDonationsOfTheProjectAsync()
         {
