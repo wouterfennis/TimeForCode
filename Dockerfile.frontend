@@ -1,5 +1,5 @@
 # Build the React SPA with the Node version the project targets
-FROM node:24-alpine AS build
+FROM node:26-alpine AS build
 
 WORKDIR /app
 
@@ -15,12 +15,17 @@ RUN npm run build
 # Pinned to the minor version: nginx.conf needs `add_header_inherit` (nginx 1.29.3 or later).
 FROM nginxinc/nginx-unprivileged:1.30-alpine AS runtime
 
-COPY src/Frontend/nginx.conf /etc/nginx/conf.d/default.conf
+# The image entrypoint renders the template with envsubst at start; the resolver comes from the container's /etc/resolv.conf.
+COPY src/Frontend/nginx.conf /etc/nginx/templates/default.conf.template
+ENV NGINX_ENTRYPOINT_LOCAL_RESOLVERS=1 \
+    DONATION_API_UPSTREAM=donation-api:8080
 COPY --from=build /app/dist /usr/share/nginx/html
 
-# Fail the image build on an invalid nginx configuration.
-# This runs without the compose network: a literal `proxy_pass http://donation-api` fails here with
-# "host not found in upstream". Use an `upstream` with `resolve` plus a `resolver`, or a variable in `proxy_pass`.
-RUN nginx -t
+# Fail the image build on an invalid nginx configuration. The entrypoint renders the template first (as at
+# container start), then tests it. This runs without the compose network: a literal `proxy_pass http://donation-api`
+# fails here with "host not found in upstream", so the upstream is a variable resolved per request.
+# The rendered file is removed again: it holds the build host's resolver and must not be served if the
+# container cannot render the template at start (for example with a read-only file system).
+RUN /docker-entrypoint.sh nginx -t && rm /etc/nginx/conf.d/default.conf
 
 EXPOSE 8080

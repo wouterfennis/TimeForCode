@@ -4,19 +4,23 @@
   "version": "0.0.0",
   "type": "module",
   "engines": {
-    "node": "^24.0.0"
+    "node": "^26.0.0"
   },
   "scripts": {
     "dev": "vite",
+    "generate:api": "npx --yes --package=typescript@5.9.3 --package=openapi-typescript@7.13.0 openapi-typescript ../../Donation/TimeForCode.Donation.Api/TimeForCode.Donation.Api.json -o src/api/donation.d.ts",
     "build": "tsc -b && vite build",
     "lint": "oxlint --deny-warnings src tests vite.config.ts",
     "typecheck": "tsc -b",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "check:api": "npm run generate:api && git diff --exit-code -- src/api",
+    "verify": "npm run check:api && npm run lint && npm run typecheck && npm test && npm run build"
   },
   "dependencies": {
+    "openapi-fetch": "0.17.0",
     "react": "19.3.1",
     "react-dom": "19.3.1"
   },
@@ -24,7 +28,7 @@
     "@testing-library/dom": "10.4.2",
     "@testing-library/jest-dom": "7.0.1",
     "@testing-library/react": "16.3.3",
-    "@types/node": "24.19.2",
+    "@types/node": "26.6.6",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
     "@vitejs/plugin-react": "6.1.2",

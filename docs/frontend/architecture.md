@@ -10,7 +10,7 @@ This document describes how the new front-end is built and how it talks to the b
 
 | Concern | Choice | Reason |
 | --- | --- | --- |
-| Runtime for tooling | Node 24 (LTS) | Pinned; see [Project setup](#project-setup) |
+| Runtime for tooling | Node 26 (LTS) | Pinned; see [Project setup](#project-setup) |
 | Language | TypeScript 7, `strict` mode | Type safety against the generated API types; the native compiler keeps the type-check fast |
 | Framework | React | Largest ecosystem for accessible component libraries and testing |
 | Build tool | Vite | Fast dev server, simple configuration |
@@ -47,7 +47,7 @@ Organise by feature, not by file type. A feature folder owns its pages, queries,
 
 Implemented in Phase 0 (#110); commands are in the project [README](../../src/Frontend/TimeForCode.Frontend/README.md).
 
-- **Node version**: Node 24, pinned in `.nvmrc` and `package.json` `engines`. `.npmrc` sets `engine-strict`, so installing with another major version fails. CI reads `.nvmrc`.
+- **Node version**: Node 26, pinned in `.nvmrc` and `package.json` `engines`. `.npmrc` sets `engine-strict`, so installing with another major version fails. CI reads `.nvmrc`.
 - **Lock file**: `package-lock.json` is committed. CI installs with `npm ci --ignore-scripts`, so no package install scripts run. Dependency versions are pinned exactly.
 - **Scripts**: `lint`, `typecheck`, `test:coverage` and `build` are the checks the pull request workflow runs. Lint warnings fail the check (`--deny-warnings`).
 - **Coverage**: `test:coverage` writes `coverage/lcov.info` with paths relative to the repository root. The `frontend` CI job uploads it, and the .NET job passes it to SonarCloud (`sonar.javascript.lcov.reportPaths`). Test files, `tests/`, `src/main.tsx` and `vite.config.ts` are excluded from coverage.
@@ -125,9 +125,18 @@ Login starts with a browser navigation to the Authorization API login endpoint (
 ## API client generation
 
 - Source of truth: the committed OpenAPI snapshots next to each API (see [ADR-007](../reference/adr/0007-swagger-snapshot-gate.md)).
-- Generate TypeScript types and a small fetch client from them with a script (`npm run generate:api`), for example with `openapi-typescript`.
-- Commit the generated output, or generate in CI and fail the build if it differs. Choose one and document it here.
-- When a backend change alters a snapshot, regenerate and fix the compile errors. That is the contract gate for the front-end.
+- `npm run generate:api` generates `src/api/donation.d.ts` from the Donation snapshot with `openapi-typescript`. It runs through `npx` with exact versions of `openapi-typescript` and TypeScript 5, because `openapi-typescript` needs the JavaScript compiler API that the native TypeScript 7 compiler of this project does not have. The requests go through `openapi-fetch`, so request and response types come from the generated file only.
+- **Decision (#112): the generated output is committed**, and CI fails when it is stale. `npm run check:api` regenerates it and fails on any `git diff` (step "API types up to date" in the `frontend` job). Committing keeps the Docker build free of files outside the front-end folder and shows API changes in the pull request diff.
+- When a backend change alters a snapshot, `check:api` fails until the types are regenerated and committed; after that `typecheck` shows what the front-end must change. That is the contract gate for the front-end.
+- The Authorization snapshot gets its own generated file when the first feature calls it (#113).
+- The generated paths are the API's own (`/api/v1/Project`); `src/api/donationClient.ts` adds the `/api/donation` prefix of the front-end origin to each request.
+
+## Dev server against the local stack
+
+1. Start the stack: `scripts/start-local.ps1` (Donation API on `http://localhost:8082`).
+2. In `src/Frontend/TimeForCode.Frontend`: `npm run dev` and open the printed URL.
+
+`vite.config.ts` proxies `/api/donation/*` to `http://localhost:8082/api/*`, the same route nginx has in the image, so the SPA code is identical in both setups. The front-end container (`http://localhost:8084`) needs the Donation API container to be running.
 
 ## Rendering strategy
 
@@ -142,10 +151,11 @@ Login starts with a browser navigation to the Authorization API login endpoint (
 
 ## Build and deployment
 
-- `Dockerfile.frontend` builds the SPA and serves it with nginx (`src/Frontend/nginx.conf`). The image build runs `nginx -t`, so an invalid configuration fails the build. Deep links fall back to `index.html`; a missing file under `/assets/` returns 404.
+- `Dockerfile.frontend` builds the SPA and serves it with nginx (`src/Frontend/nginx.conf`). `nginx.conf` is a template that the nginx image entrypoint renders with `envsubst` at start. The image build renders it the same way and runs `nginx -t`, so an invalid configuration fails the build, and then deletes the rendered file, so a container that cannot render the template at start fails instead of serving a stale build-time configuration. Deep links fall back to `index.html`; a missing file under `/assets/` returns 404.
+- **Donation API route (#112)**: nginx forwards `GET` and `HEAD` requests for `/api/donation/*` to the Donation API's `/api/*` (`/api/donation/v1/Project` becomes `/api/v1/Project`); other methods get 403 until the BFF of #113. The browser only talks to the front-end origin, so the Donation API needs no CORS. The upstream comes from `DONATION_API_UPSTREAM` (default `donation-api:8080`, set in `docker-compose.yaml`) and is used as a variable in `proxy_pass` with the container's DNS resolver (`NGINX_LOCAL_RESOLVERS`), so nginx resolves it per request. A literal hostname would make `nginx -t` fail at image build, where the compose network does not exist. Because of that variable nginx does not rewrite the API's `Location` headers by itself, so `proxy_redirect` maps `http://<upstream>/api/` back to `/api/donation/`; `X-Forwarded-For`, `-Host` and `-Proto` are sent for when the API reads them.
 - When the BFF host is added (#113), either the BFF serves the SPA build output or nginx keeps serving it and forwards `/api/*` to the BFF. Decide in #113 and record it here.
 - The front-end build, lint, type-check, and unit tests run in the `frontend` job of the pull request and main-branch workflows (`.github/workflows/`). The same job builds the front-end image from `Dockerfile.frontend`; it is not pushed until the front-end has a deployment. A failing check fails the job; on `main` it also blocks Release Please.
-- `scripts/smoke-test.ps1` (section 5) checks the running front-end in the local stack: the SPA at `/` and on a deep link, a built asset, the 404 for a missing asset, and the security headers on each of those responses.
+- `scripts/smoke-test.ps1` (section 5) checks the running front-end in the local stack: the SPA at `/` and on a deep link, a built asset, the 404 for a missing asset, the security headers on each of those responses, the forwarding route `/api/donation/v1/Project`, and that writes on it are refused.
 - Target topology: one front-end container hosting the SPA. See [Deployment Status](../current/deployment-status.md).
 
 ## Testing strategy
