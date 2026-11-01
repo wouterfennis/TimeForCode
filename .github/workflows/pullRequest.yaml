@@ -194,6 +194,7 @@ jobs:
 
     env:
       TIMEFORCODE_LIVE_DONATION_URL: http://localhost:8082
+      TIMEFORCODE_LIVE_REPORTING_URL: http://localhost:8083
       TIMEFORCODE_LIVE_AUTHORIZATION_URL: http://localhost:8080
       TIMEFORCODE_LIVE_CLIENT_REDIRECT_URI: http://localhost:8084
 
@@ -220,14 +221,18 @@ jobs:
     - name: Wait until the stack is healthy
       shell: pwsh
       run: |
-        $urls = 'http://localhost:8080/.well-known/openid-configuration',
-                'http://localhost:8081/.well-known/openid-configuration',
-                'http://localhost:8082/api/v1/project'
-        foreach ($url in $urls) {
+        # The Reporting API has no anonymous endpoint, so a 401 from its report endpoint means it is up.
+        $urls = [ordered]@{
+          'http://localhost:8080/.well-known/openid-configuration' = 200..399
+          'http://localhost:8081/.well-known/openid-configuration' = 200..399
+          'http://localhost:8082/api/v1/project' = 200..399
+          'http://localhost:8083/api/v1/reporting/donororganization/000000000000000000000000/impact-report' = 401
+        }
+        foreach ($url in $urls.Keys) {
           $deadline = (Get-Date).AddMinutes(3)
           while ($true) {
             $code = curl -s --max-time 5 -o /dev/null -w '%{http_code}' $url
-            if ([int]$code -ge 200 -and [int]$code -lt 400) { break }
+            if ([int]$code -in $urls[$url]) { break }
             if ((Get-Date) -gt $deadline) { throw "$url not healthy (last status $code)" }
             Start-Sleep -Seconds 3
           }
@@ -239,6 +244,9 @@ jobs:
 
     - name: Live scenarios
       run: dotnet test tst/Donation/TimeForCode.Donation.Specifications --configuration Release --filter "TestCategory=live" --logger trx --results-directory TestResults
+
+    - name: Live scenarios (Reporting)
+      run: dotnet test tst/Reporting/TimeForCode.Reporting.Specifications --configuration Release --filter "TestCategory=live" --logger trx --results-directory TestResults
 
     - name: Collect container logs
       if: failure()

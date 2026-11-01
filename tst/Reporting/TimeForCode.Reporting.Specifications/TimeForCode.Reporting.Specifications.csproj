@@ -32,6 +32,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- The live sign-in against the compose stack is shared with the Donation specifications instead of copied. -->
+    <Compile Include="..\..\Donation\TimeForCode.Donation.Specifications\Mocking\LiveAuthentication.cs" Link="Mocking\Shared\LiveAuthentication.cs" />
+    <Compile Include="..\..\Donation\TimeForCode.Donation.Specifications\Mocking\LiveTokenCache.cs" Link="Mocking\Shared\LiveTokenCache.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
   </ItemGroup>
 

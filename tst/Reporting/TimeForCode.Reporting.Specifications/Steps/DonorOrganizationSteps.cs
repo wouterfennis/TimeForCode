@@ -1,4 +1,7 @@
 using Reqnroll;
+using System.Net.Http.Json;
+using System.Text.Json;
+using TimeForCode.Donation.Specifications.Mocking;
 using TimeForCode.Reporting.Domain;
 using TimeForCode.Reporting.Specifications.Mocking;
 using TimeForCode.Reporting.Values;
@@ -13,22 +16,70 @@ namespace TimeForCode.Reporting.Specifications.Steps
 
         private readonly InMemoryDonationDataSource _donationData;
         private readonly ReportingContext _context;
+        private readonly LiveScenario _liveScenario;
         private int _contributionNumber;
+        private string? _liveOrganizationId;
 
-        public DonorOrganizationSteps(InMemoryDonationDataSource donationData, ReportingContext context)
+        public DonorOrganizationSteps(InMemoryDonationDataSource donationData, ReportingContext context, LiveScenario liveScenario)
         {
             _donationData = donationData;
             _context = context;
+            _liveScenario = liveScenario;
         }
 
         /// <summary>A deterministic 24 character hexadecimal identifier, the shape of the identifiers the Donation context issues.</summary>
         private static string IdOf(int number) => number.ToString("x24");
 
         [Given("There is a donor organization on the time for code platform")]
-        public void GivenThereIsADonorOrganizationOnTheTimeForCodePlatform()
+        public async Task GivenThereIsADonorOrganizationOnTheTimeForCodePlatformAsync()
         {
+            if (_liveScenario.IsLive)
+            {
+                _context.DonorOrganizationId = await RegisterLiveDonorOrganizationAsync();
+                return;
+            }
+
             _context.DonorOrganizationId = Constants.TestDonorOrganizationId;
             _donationData.AddOrganization(Constants.TestDonorOrganizationId);
+        }
+
+        [AfterScenario(LiveHost.Tag)]
+        public async Task DeleteLiveDonorOrganizationAsync()
+        {
+            if (!_liveScenario.IsLive || _liveOrganizationId is null)
+            {
+                return;
+            }
+
+            try
+            {
+                using HttpClient donation = await CreateDonationClient(await LiveAuthentication.GetAdminTokenAsync());
+                using HttpResponseMessage response = await donation.DeleteAsync(new Uri($"api/v1/donororganization/{_liveOrganizationId}", UriKind.Relative));
+            }
+            catch (HttpRequestException exception)
+            {
+                // Best-effort clean-up: a failure here must not hide the scenario result.
+                Console.WriteLine($"Could not delete live donor organization {_liveOrganizationId}: {exception.Message}");
+            }
+        }
+
+        // Registered with the Donation API directly and with its own token, so the scenario's own identity (or absence of one) stays untouched.
+        private async Task<string> RegisterLiveDonorOrganizationAsync()
+        {
+            using HttpClient donation = await CreateDonationClient(await LiveAuthentication.GetUserTokenAsync());
+            using HttpResponseMessage response = await donation.PostAsJsonAsync(
+                new Uri("api/v1/donororganization", UriKind.Relative),
+                new { Name = $"Live Reporting Organization {Guid.NewGuid():N}" });
+
+            response.EnsureSuccessStatusCode();
+            JsonElement created = await response.Content.ReadFromJsonAsync<JsonElement>();
+            _liveOrganizationId = created.GetProperty("id").GetString();
+            return _liveOrganizationId!;
+        }
+
+        private static HttpClient CreateDonationClient(string token)
+        {
+            return LiveHost.CreateClient(LiveHost.RequiredDonationAddress, new BearerTokenHandler { Token = token });
         }
 
         [Given("There is no donor organization with the given identifier")]
@@ -38,9 +89,9 @@ namespace TimeForCode.Reporting.Specifications.Steps
         }
 
         [Given("The user is a member of the donor organization")]
-        public void GivenTheUserIsAMemberOfTheDonorOrganization()
+        public async Task GivenTheUserIsAMemberOfTheDonorOrganizationAsync()
         {
-            GivenThereIsADonorOrganizationOnTheTimeForCodePlatform();
+            await GivenThereIsADonorOrganizationOnTheTimeForCodePlatformAsync();
             _donationData.AddMember(Constants.TestDonorOrganizationId, Constants.TestUserId);
         }
 

@@ -28,20 +28,32 @@ Scenario: Impact report of an organization without donations is empty
 	Then The impact report shows 0 hours pledged and 0 hours logged
 	And The impact report shows 0 projects supported
 
+@live
 Scenario: Non-member cannot view the impact report
 	Given The user has an access token
 	And There is a donor organization on the time for code platform
 	When The user requests the impact report of the donor organization
 	Then The request is rejected as forbidden
 
+@live
 Scenario: Impact report requires an account
 	Given The user does not have an access token
 	And There is a donor organization on the time for code platform
 	When The user requests the impact report of the donor organization
 	Then The request is rejected as unauthorized
 
+@live
 Scenario: Impact report of an unknown organization is not found
 	Given The user has an access token
 	And There is no donor organization with the given identifier
 	When The user requests the impact report of the donor organization
 	Then The request is rejected as not found
+
+@live
+@liveonly
+Scenario: Administrator views the impact report of a registered organization on the live platform
+	Given The user has an administrator access token
+	And There is a donor organization on the time for code platform
+	When The user requests the impact report of the donor organization
+	Then The impact report shows 0 hours pledged and 0 hours logged
+	And The impact report shows 0 projects supported

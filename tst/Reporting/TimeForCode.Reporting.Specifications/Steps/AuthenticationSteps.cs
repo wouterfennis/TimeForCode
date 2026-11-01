@@ -3,6 +3,7 @@ using Reqnroll;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using TimeForCode.Donation.Specifications.Mocking;
 using TimeForCode.Reporting.Specifications.Mocking;
 
 namespace TimeForCode.Reporting.Specifications.Steps
@@ -11,22 +12,28 @@ namespace TimeForCode.Reporting.Specifications.Steps
     internal class AuthenticationSteps
     {
         private readonly BearerTokenHandler _bearerTokenHandler;
+        private readonly LiveScenario _liveScenario;
 
-        public AuthenticationSteps(BearerTokenHandler bearerTokenHandler)
+        public AuthenticationSteps(BearerTokenHandler bearerTokenHandler, LiveScenario liveScenario)
         {
             _bearerTokenHandler = bearerTokenHandler;
+            _liveScenario = liveScenario;
         }
 
         [Given("The user has an access token")]
-        public void GivenTheUserHasAnAccessToken()
+        public async Task GivenTheUserHasAnAccessTokenAsync()
         {
-            _bearerTokenHandler.Token = GenerateTestToken(Constants.TestUserId);
+            _bearerTokenHandler.Token = _liveScenario.IsLive
+                ? await LiveAuthentication.GetUserTokenAsync()
+                : GenerateTestToken(Constants.TestUserId);
         }
 
         [Given("The user has an administrator access token")]
-        public void GivenTheUserHasAnAdministratorAccessToken()
+        public async Task GivenTheUserHasAnAdministratorAccessTokenAsync()
         {
-            _bearerTokenHandler.Token = GenerateTestToken("admin", "admin");
+            _bearerTokenHandler.Token = _liveScenario.IsLive
+                ? await LiveAuthentication.GetAdminTokenAsync()
+                : GenerateTestToken("admin", "admin");
         }
 
         [Given("The user does not have an access token")]

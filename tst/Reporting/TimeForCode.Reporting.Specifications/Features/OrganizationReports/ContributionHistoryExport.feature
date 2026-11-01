@@ -21,6 +21,7 @@ Scenario: Member exports the contribution history as JSON
 	Then The export contains the documented fields
 	And The export lists a contribution of 4 hours
 
+@live
 Scenario: Administrator exports the contribution history of any organization
 	Given The user has an administrator access token
 	And There is a donor organization on the time for code platform
@@ -34,18 +35,21 @@ Scenario: Export of an organization without contributions is empty
 	When The user exports the contribution history of the donor organization as JSON
 	Then The export lists no contributions
 
+@live
 Scenario: Non-member cannot export the contribution history
 	Given The user has an access token
 	And There is a donor organization on the time for code platform
 	When The user exports the contribution history of the donor organization as CSV
 	Then The request is rejected as forbidden
 
+@live
 Scenario: Export requires an account
 	Given The user does not have an access token
 	And There is a donor organization on the time for code platform
 	When The user exports the contribution history of the donor organization as JSON
 	Then The request is rejected as unauthorized
 
+@live
 Scenario: Export of an unknown organization is not found
 	Given The user has an access token
 	And There is no donor organization with the given identifier
