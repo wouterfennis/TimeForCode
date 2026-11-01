@@ -49,8 +49,8 @@ namespace TimeForCode.Donation.Infrastructure.Persistence.Database
                         indexKeys.Ascending(d => d.PledgedByUserId).Ascending(d => d.CreatedAt),
                         new CreateIndexOptions { Name = "ix_donations_pledged_by_created_at" }),
                     new CreateIndexModel<Domain.Donation>(
-                        indexKeys.Ascending(d => d.DonorOrganizationId),
-                        new CreateIndexOptions { Name = "ix_donations_donor_organization" })
+                        indexKeys.Ascending(d => d.DonorOrganizationId).Ascending(d => d.CreatedAt).Ascending(d => d.Id),
+                        new CreateIndexOptions { Name = "ix_donations_donor_organization_created_at" })
                 ]);
                 _indexesCreated = true;
             }
@@ -152,7 +152,7 @@ namespace TimeForCode.Donation.Infrastructure.Persistence.Database
             }
 
             var filter = Builders<Domain.Donation>.Filter.Eq(d => d.DonorOrganizationId, objectId);
-            var totalCount = (int)await _collection.CountDocumentsAsync(filter, cancellationToken: cancellationToken);
+            var totalCount = int.CreateSaturating(await _collection.CountDocumentsAsync(filter, cancellationToken: cancellationToken));
             var donations = await _collection
                 .Find(filter)
                 .SortBy(d => d.CreatedAt)

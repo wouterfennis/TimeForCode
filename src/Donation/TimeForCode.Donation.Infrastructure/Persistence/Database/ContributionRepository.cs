@@ -47,8 +47,9 @@ namespace TimeForCode.Donation.Infrastructure.Persistence.Database
                 var contributorIndexModel = new CreateIndexModel<Contribution>(
                     Builders<Contribution>.IndexKeys
                         .Ascending(c => c.ContributorId)
-                        .Ascending(c => c.LoggedAt),
-                    new CreateIndexOptions { Name = "ix_contributions_contributor_logged_at" });
+                        .Ascending(c => c.LoggedAt)
+                        .Ascending(c => c.Id),
+                    new CreateIndexOptions { Name = "ix_contributions_contributor_logged_at_id" });
 
                 collection.Indexes.CreateMany([indexModel, contributorIndexModel]);
                 _indexesCreated = true;
@@ -93,7 +94,7 @@ namespace TimeForCode.Donation.Infrastructure.Persistence.Database
         public async Task<(IReadOnlyList<Contribution> Contributions, int TotalCount)> GetPageByContributorIdsAsync(IReadOnlyCollection<ObjectId> contributorIds, int pageNumber, int pageSize, CancellationToken cancellationToken)
         {
             var filter = ContributionDefinitions.ContributorsFilter(contributorIds);
-            var totalCount = (int)await _collection.CountDocumentsAsync(filter, cancellationToken: cancellationToken);
+            var totalCount = int.CreateSaturating(await _collection.CountDocumentsAsync(filter, cancellationToken: cancellationToken));
             var contributions = await _collection
                 .Find(filter)
                 .SortBy(c => c.LoggedAt)

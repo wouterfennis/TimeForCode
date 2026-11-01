@@ -37,13 +37,18 @@ namespace TimeForCode.Donation.Application.Handlers
             var (donations, totalCount) = await _donationRepository.GetPageByDonorOrganizationIdAsync(
                 request.DonorOrganizationId, request.PageNumber, request.PageSize, cancellationToken);
 
-            return Result<GetDonorOrganizationDonationsResult>.Success(new GetDonorOrganizationDonationsResult
+            return Result<GetDonorOrganizationDonationsResult>.Success(Page(donations.Select(d => d.ToDto()).ToList(), totalCount, request));
+        }
+
+        private static GetDonorOrganizationDonationsResult Page(IReadOnlyList<DonationDto> donations, int totalCount, GetDonorOrganizationDonationsQuery request)
+        {
+            return new GetDonorOrganizationDonationsResult
             {
-                Donations = donations.Select(d => d.ToDto()).ToList(),
+                Donations = donations,
                 TotalCount = totalCount,
                 PageNumber = request.PageNumber,
                 PageSize = request.PageSize
-            });
+            };
         }
     }
 }

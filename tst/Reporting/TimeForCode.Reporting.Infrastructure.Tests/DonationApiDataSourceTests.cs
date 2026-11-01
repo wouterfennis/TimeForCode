@@ -142,6 +142,26 @@ namespace TimeForCode.Reporting.Infrastructure.Tests
         }
 
         [TestMethod]
+        public async Task GetContributionsAsync_TotalNeverReached_StopsAfterThePageLimitWithBadGateway()
+        {
+            var requests = 0;
+            _mockHttp.When(ContributionsUrl).Respond(_ =>
+            {
+                requests++;
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(ContributionPage(requests, int.MaxValue, "507f1f77bcf86cd799439031"), System.Text.Encoding.UTF8, "application/json")
+                };
+            });
+
+            var result = await _sut.GetContributionsAsync(OrganizationId, AccessToken, CancellationToken.None);
+
+            result.IsFailure.Should().BeTrue();
+            result.FailureStatusCode.Should().Be(HttpStatusCode.BadGateway);
+            requests.Should().Be(1000);
+        }
+
+        [TestMethod]
         [DataRow("Pending", DonationStatus.Pending)]
         [DataRow("Active", DonationStatus.Active)]
         [DataRow("Completed", DonationStatus.Completed)]

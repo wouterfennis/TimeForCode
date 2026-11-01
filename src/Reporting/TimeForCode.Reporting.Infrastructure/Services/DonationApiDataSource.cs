@@ -23,6 +23,9 @@ namespace TimeForCode.Reporting.Infrastructure.Services
         /// <summary>Largest page the Donation API serves.</summary>
         private const int PageSize = 100;
 
+        /// <summary>Upper bound on the requests for one list (100000 items), so a runaway total cannot keep a request busy.</summary>
+        private const int MaxPages = 1000;
+
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILogger<DonationApiDataSource> _logger;
 
@@ -64,12 +67,13 @@ namespace TimeForCode.Reporting.Infrastructure.Services
 
         /// <summary>
         /// Reads page after page until the total the Donation API reports is collected. An empty page ends the loop as well, so a
-        /// total that shrinks while reading cannot keep it running.
+        /// total that shrinks while reading cannot keep it running. Paging is by offset, so rows added or deleted while reading can
+        /// shift the pages; the report is a snapshot of a moving list. At most <see cref="MaxPages"/> pages are read.
         /// </summary>
         private static async Task<IReadOnlyList<T>> ReadAllPagesAsync<T>(Func<int, Task<(List<T> Items, int TotalCount)>> readPage)
         {
             var all = new List<T>();
-            for (var pageNumber = 1; ; pageNumber++)
+            for (var pageNumber = 1; pageNumber <= MaxPages; pageNumber++)
             {
                 var (items, totalCount) = await readPage(pageNumber);
                 all.AddRange(items);
@@ -78,6 +82,8 @@ namespace TimeForCode.Reporting.Infrastructure.Services
                     return all;
                 }
             }
+
+            throw new HttpRequestException($"The Donation API holds more than {MaxPages * PageSize} items; a report cannot be built from them.");
         }
 
         private async Task<Result<IReadOnlyList<T>>> ReadAsync<T>(
