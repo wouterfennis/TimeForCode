@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System.Globalization;
 using System.Text.Json.Serialization;
@@ -14,6 +15,8 @@ namespace TimeForCode.Shared.Api.Extensions
     /// </summary>
     public static class ServiceCollectionExtensions
     {
+        private const int DefaultApiPermitLimit = 60;
+
         /// <summary>
         /// Adds controllers with the default JSON serialisation options (enum values as strings).
         /// </summary>
@@ -24,6 +27,17 @@ namespace TimeForCode.Shared.Api.Extensions
                 {
                     x.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
                 });
+        }
+
+        /// <summary>
+        /// Reads the permit limit per minute of the "api" rate-limit policy (<c>RateLimiting:ApiPermitLimit</c>, default 60).
+        /// </summary>
+        public static int GetApiPermitLimit(this IConfiguration configuration)
+        {
+            int limit = configuration.GetValue("RateLimiting:ApiPermitLimit", DefaultApiPermitLimit);
+            return limit > 0
+                ? limit
+                : throw new InvalidOperationException("RateLimiting:ApiPermitLimit must be greater than zero.");
         }
 
         /// <summary>

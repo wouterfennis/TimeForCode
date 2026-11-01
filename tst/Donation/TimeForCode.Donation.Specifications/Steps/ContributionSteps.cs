@@ -166,7 +166,13 @@ namespace TimeForCode.Donation.Specifications.Steps
         [When("The user requests the contributions of the donor organization")]
         public Task WhenTheUserRequestsTheContributionsOfTheDonorOrganizationAsync()
         {
-            return _context.CaptureAsync(async () => _context.ContributionsResult = await _donationClient.GetDonorOrganizationContributionsAsync(_context.DonorOrganizationId!));
+            return GetDonorOrganizationContributionsAsync(1, 20);
+        }
+
+        [When("The user requests page {int} of the contributions of the donor organization with {int} contributions per page")]
+        public Task WhenTheUserRequestsPageOfTheContributionsOfTheDonorOrganizationAsync(int pageNumber, int pageSize)
+        {
+            return GetDonorOrganizationContributionsAsync(pageNumber, pageSize);
         }
 
         [When("^The user requests the contributions of the project with the identifier \"(.*)\"$")]
@@ -197,6 +203,13 @@ namespace TimeForCode.Donation.Specifications.Steps
             var stored = _fixtures.Contributions.Contributions.Where(c => c.ProjectId == projectId && !c.IsDeleted);
 
             stored.Sum(c => c.Hours).Should().Be(hours);
+        }
+
+        [Then("The donor organization has {int} contributions in total")]
+        public void ThenTheDonorOrganizationHasContributionsInTotal(int total)
+        {
+            _context.LastException.Should().BeNull();
+            _context.OrganizationListingTotal.Should().Be(total);
         }
 
         [Then("The contributions of the donor organization add up to {int} hours")]
@@ -366,6 +379,16 @@ namespace TimeForCode.Donation.Specifications.Steps
         {
             var reference = referenceSuffix.Split('"').ElementAtOrDefault(1);
             return reference == null ? null : new Uri(reference, UriKind.RelativeOrAbsolute);
+        }
+
+        private Task GetDonorOrganizationContributionsAsync(int pageNumber, int pageSize)
+        {
+            return _context.CaptureAsync(async () =>
+            {
+                GetDonorOrganizationContributionsResponse page = await _donationClient.GetDonorOrganizationContributionsAsync(_context.DonorOrganizationId!, pageNumber, pageSize);
+                _context.ContributionsResult = new GetContributionsResponse { Contributions = page.Contributions };
+                _context.OrganizationListingTotal = page.TotalCount;
+            });
         }
 
         private Task GetContributionsAsync(string projectId)

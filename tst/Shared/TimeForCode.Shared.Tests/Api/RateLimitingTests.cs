@@ -1,6 +1,7 @@
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Configuration;
 using System.Threading.RateLimiting;
 using TimeForCode.Shared.Api.Extensions;
 
@@ -37,6 +38,36 @@ namespace TimeForCode.Shared.Tests.Api
             var options = new RateLimiterOptions().AddDefaultSlidingWindowPolicy("api", 60);
 
             options.RejectionStatusCode.Should().Be(StatusCodes.Status429TooManyRequests);
+        }
+
+        [TestMethod]
+        public void GetApiPermitLimit_NothingConfigured_Is60()
+        {
+            IConfiguration configuration = new ConfigurationBuilder().Build();
+
+            configuration.GetApiPermitLimit().Should().Be(60);
+        }
+
+        [TestMethod]
+        public void GetApiPermitLimit_Configured_UsesTheConfiguredValue()
+        {
+            IConfiguration configuration = new ConfigurationBuilder()
+                .AddInMemoryCollection(new Dictionary<string, string?> { ["RateLimiting:ApiPermitLimit"] = "600" })
+                .Build();
+
+            configuration.GetApiPermitLimit().Should().Be(600);
+        }
+
+        [TestMethod]
+        public void GetApiPermitLimit_NotPositive_Throws()
+        {
+            IConfiguration configuration = new ConfigurationBuilder()
+                .AddInMemoryCollection(new Dictionary<string, string?> { ["RateLimiting:ApiPermitLimit"] = "0" })
+                .Build();
+
+            Action act = () => configuration.GetApiPermitLimit();
+
+            act.Should().Throw<InvalidOperationException>();
         }
 
         private static OnRejectedContext BuildContext(RateLimitLease lease)

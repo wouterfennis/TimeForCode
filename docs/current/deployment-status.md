@@ -31,7 +31,7 @@ podman compose up --build
 .\scripts\smoke-test.ps1
 ```
 
-The script is a smoke tier of 13 checks: service availability, OIDC discovery, the login round trip, the Auth API JWT accepted by the Donation API, one Mongo-backed write and read (register a project, read it back), the data protection key ring in the database, and the front-end (the SPA on `/` and on a deep link, the 404 for a missing asset, and the security headers on those responses). Project lifecycle, role checks and GitHub token handling are covered by the Reqnroll specifications. Each run leaves one new `Draft` project in the local database.
+The script is a smoke tier of 15 checks: service availability, OIDC discovery, the login round trip, the Auth API JWT accepted by the Donation API, one Mongo-backed write and read (register a project, read it back), the Reporting API (anonymous call refused with 401, and a non-member's call relayed from the Donation API as 403, which proves JWT validation, token forwarding and the Donation call), the data protection key ring in the database, and the front-end (the SPA on `/` and on a deep link, the 404 for a missing asset, and the security headers on those responses). Project lifecycle, role checks and GitHub token handling are covered by the Reqnroll specifications. Each run leaves one new `Draft` project in the local database.
 
 ### Services and Ports
 
@@ -41,6 +41,7 @@ graph LR
     Frontend["Frontend SPA\n:8084"]
     AuthAPI["Authorization API\n:8080"]
     DonationAPI["Donation API\n:8082"]
+    ReportingAPI["Reporting API\n:8083"]
     IdpMock["Identity Provider Mock\n:8081"]
     Mongo[("MongoDB\n:27017")]
 
@@ -48,10 +49,12 @@ graph LR
     Browser --> IdpMock
     Browser --> AuthAPI
     Browser --> DonationAPI
+    Browser --> ReportingAPI
     AuthAPI --> IdpMock
     AuthAPI --> Mongo
     DonationAPI --> IdpMock
     DonationAPI --> Mongo
+    ReportingAPI -->|HTTP, caller's token| DonationAPI
 ```
 
 The Identity Provider Mock replaces GitHub in local development. The Authorization API is configured to direct OAuth 2.0 requests to the mock instead of `github.com`. The Donation API is configured to call the mock's `/repos/{owner}/{repo}` endpoint instead of `api.github.com` when fetching repository metadata on project publish.
@@ -62,6 +65,7 @@ The Identity Provider Mock replaces GitHub in local development. The Authorizati
 | Authorization API | <http://localhost:8080> | OAuth 2.0 + JWT |
 | Identity Provider Mock | <http://localhost:8081> | Simulates GitHub OAuth and GitHub REST API |
 | Donation API | <http://localhost:8082> | Project and donation management |
+| Reporting API | <http://localhost:8083> | Impact report and contribution history export; reads from the Donation API, no database; started in the CI compose stack, covered by the smoke test and by the `@live` Reporting scenarios |
 | MongoDB | mongodb://localhost:27017 | Shared database instance |
 
 ### Container port note
@@ -73,6 +77,7 @@ All .NET services in this stack listen on port **8080** inside the container (no
 | authorization-api | 8080 | 8080 |
 | identity-provider-mock | 8080 | 8081 |
 | donation-api | 8080 | 8082 |
+| reporting-api | 8080 | 8083 |
 | frontend | 8080 | 8084 |
 | mongo | 27017 | 27017 |
 
@@ -84,7 +89,8 @@ All services are configured via environment variables defined in `docker-compose
 - **Token lifetime**: Access token expires in 60 minutes; refresh token in 7 days.
 - **Redirect URIs**: The Authorization API validates redirect URIs against an allowlist.
 - **Test-only admin access**: the Authorization API gets `TestAdminAccess__Enabled` and `TestAdminAccess__Secret` from `TEST_ADMIN_ACCESS_SECRET`. When that variable is unset (plain `podman compose up`) the feature stays disabled; `scripts/start-local.ps1` sets a random value. The Authorization API port is bound to `127.0.0.1`. The Azure deployment runs as `Production` and never sets these values.
-- **Database**: Each service connects to MongoDB using a connection string from `DbOptions__ConnectionString`.
+- **Database**: The Authorization API and the Donation API connect to MongoDB using a connection string from `DbOptions__ConnectionString`. The Reporting API has no database.
+- **Reporting to Donation**: the Reporting API reads from the Donation API at `DonationApiOptions__BaseUri` and forwards the caller's own access token, so the token must list both APIs as audiences (`TokenCreationOptions__Audiences__1` and `__2` of the Authorization API). A missing or invalid address fails the first request that needs the Donation API, not the start of the service.
 
 > Credentials and secrets in `docker-compose.yaml` are for local development only. Do not use them in any other environment.
 
@@ -129,7 +135,7 @@ The infrastructure is defined as code using Azure Bicep templates in the `deploy
 
 | Gap | Notes |
 | --- | --- |
-| Donation API not deployed | Only the Authorization API is currently deployed to Azure |
+| Donation API and Reporting API not deployed | Only the Authorization API is currently deployed to Azure |
 | Frontend not deployed to Azure | Only runs locally |
 | MongoDB managed service | Local compose uses a dev MongoDB; production database provisioning not yet defined in Bicep |
 | No staging environment | Only production is defined |

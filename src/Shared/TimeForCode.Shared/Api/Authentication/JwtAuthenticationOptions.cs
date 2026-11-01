@@ -1,13 +1,14 @@
-﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.Extensions.Configuration;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 
-namespace TimeForCode.Donation.Api.Options
+namespace TimeForCode.Shared.Api.Authentication
 {
     /// <summary>
-    /// Options for authentication
+    /// Options for validating the bearer tokens issued by the Authorization service.
     /// </summary>
     [ExcludeFromCodeCoverage(Justification = "Configuration POCO")]
-    public class AuthenticationOptions
+    public class JwtAuthenticationOptions
     {
         /// <summary>
         /// Name of the configuration section for authentication options
@@ -15,7 +16,7 @@ namespace TimeForCode.Donation.Api.Options
         public const string SectionName = "AuthenticationOptions";
 
         /// <summary>
-        /// Token issuer
+        /// Token authority (metadata endpoint base)
         /// </summary>
         [Required]
         public required string Authority { get; init; }
@@ -38,19 +39,18 @@ namespace TimeForCode.Donation.Api.Options
         public bool RequireHttpsMetadata { get; init; } = true;
 
         /// <summary>
-        /// Bind the configuration to the AuthenticationOptions
+        /// Bind the configuration to the options
         /// </summary>
-        public static AuthenticationOptions Bind(IConfiguration configuration)
+        public static JwtAuthenticationOptions Bind(IConfiguration configuration)
         {
-            var authenticationOptions = new AuthenticationOptions
+            var section = configuration.GetSection(SectionName);
+            return new JwtAuthenticationOptions
             {
-                Authority = configuration.GetSection(SectionName).GetValue<string>(nameof(Authority))!,
-                Audience = configuration.GetSection(SectionName).GetValue<string>(nameof(Audience))!,
-                Issuer = configuration.GetSection(SectionName).GetValue<string>(nameof(Issuer))!,
-                RequireHttpsMetadata = configuration.GetSection(SectionName).GetValue(nameof(RequireHttpsMetadata), true),
+                Authority = section.GetValue<string>(nameof(Authority))!,
+                Audience = section.GetValue<string>(nameof(Audience))!,
+                Issuer = section.GetValue<string>(nameof(Issuer))!,
+                RequireHttpsMetadata = section.GetValue(nameof(RequireHttpsMetadata), true),
             };
-
-            return authenticationOptions;
         }
     }
 }

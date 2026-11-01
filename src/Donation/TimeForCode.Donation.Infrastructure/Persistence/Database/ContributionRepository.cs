@@ -15,11 +15,6 @@ namespace TimeForCode.Donation.Infrastructure.Persistence.Database
         /// </summary>
         private const int MaxContributionsPerProject = 1000;
 
-        /// <summary>
-        /// Upper bound for one organization listing, so the unpaged endpoint cannot read an unbounded collection. The earliest contributions win.
-        /// </summary>
-        private const int MaxContributionsPerOrganization = 10000;
-
         private static readonly object IndexCreationLock = new();
         private static bool _indexesCreated;
         private readonly IMongoCollection<Contribution> _collection;
@@ -52,8 +47,9 @@ namespace TimeForCode.Donation.Infrastructure.Persistence.Database
                 var contributorIndexModel = new CreateIndexModel<Contribution>(
                     Builders<Contribution>.IndexKeys
                         .Ascending(c => c.ContributorId)
-                        .Ascending(c => c.LoggedAt),
-                    new CreateIndexOptions { Name = "ix_contributions_contributor_logged_at" });
+                        .Ascending(c => c.LoggedAt)
+                        .Ascending(c => c.Id),
+                    new CreateIndexOptions { Name = "ix_contributions_contributor_logged_at_id" });
 
                 collection.Indexes.CreateMany([indexModel, contributorIndexModel]);
                 _indexesCreated = true;
@@ -95,14 +91,19 @@ namespace TimeForCode.Donation.Infrastructure.Persistence.Database
             await _collection.UpdateManyAsync(Builders<Contribution>.Filter.Eq(c => c.ContributorId, contributorId), update, cancellationToken: cancellationToken);
         }
 
-        public async Task<IReadOnlyList<Contribution>> GetByContributorIdsAsync(IReadOnlyCollection<ObjectId> contributorIds, CancellationToken cancellationToken)
+        public async Task<(IReadOnlyList<Contribution> Contributions, int TotalCount)> GetPageByContributorIdsAsync(IReadOnlyCollection<ObjectId> contributorIds, int pageNumber, int pageSize, CancellationToken cancellationToken)
         {
-            return await _collection
-                .Find(ContributionDefinitions.ContributorsFilter(contributorIds))
+            var filter = ContributionDefinitions.ContributorsFilter(contributorIds);
+            var totalCount = int.CreateSaturating(await _collection.CountDocumentsAsync(filter, cancellationToken: cancellationToken));
+            var contributions = await _collection
+                .Find(filter)
                 .SortBy(c => c.LoggedAt)
                 .ThenBy(c => c.Id)
-                .Limit(MaxContributionsPerOrganization)
+                .Skip((pageNumber - 1) * pageSize)
+                .Limit(pageSize)
                 .ToListAsync(cancellationToken);
+
+            return (contributions, totalCount);
         }
 
         public async Task<IReadOnlyList<Contribution>> GetByProjectIdAsync(string projectId, CancellationToken cancellationToken)

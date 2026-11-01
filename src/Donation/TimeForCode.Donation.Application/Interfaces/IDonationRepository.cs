@@ -37,5 +37,10 @@ namespace TimeForCode.Donation.Application.Interfaces
         /// Returns the donations pledged for any of the donor organizations.
         /// </summary>
         Task<IReadOnlyList<Domain.Donation>> GetByDonorOrganizationIdsAsync(IReadOnlyCollection<string> organizationIds, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Returns one page of the donations pledged for the donor organization, oldest first, with the total number of donations.
+        /// </summary>
+        Task<(IReadOnlyList<Domain.Donation> Donations, int TotalCount)> GetPageByDonorOrganizationIdAsync(string organizationId, int pageNumber, int pageSize, CancellationToken cancellationToken);
     }
 }

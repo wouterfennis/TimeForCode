@@ -6,7 +6,7 @@ using TimeForCode.Donation.Values;
 
 namespace TimeForCode.Donation.Application.Handlers
 {
-    internal class GetDonorOrganizationDonationsHandler : IRequestHandler<GetDonorOrganizationDonationsQuery, Result<GetDonationsResult>>
+    internal class GetDonorOrganizationDonationsHandler : IRequestHandler<GetDonorOrganizationDonationsQuery, Result<GetDonorOrganizationDonationsResult>>
     {
         private readonly IDonorOrganizationRepository _organizationRepository;
         private readonly IContributorRepository _contributorRepository;
@@ -25,21 +25,30 @@ namespace TimeForCode.Donation.Application.Handlers
             _logger = logger;
         }
 
-        public async Task<Result<GetDonationsResult>> Handle(GetDonorOrganizationDonationsQuery request, CancellationToken cancellationToken)
+        public async Task<Result<GetDonorOrganizationDonationsResult>> Handle(GetDonorOrganizationDonationsQuery request, CancellationToken cancellationToken)
         {
-            var denied = await DonorOrganizationAccess.CheckAsync<GetDonationsResult>(
+            var denied = await DonorOrganizationAccess.CheckAsync<GetDonorOrganizationDonationsResult>(
                 _organizationRepository, _contributorRepository, request.DonorOrganizationId, request.CallerUserId, request.IsAdministrator, _logger);
             if (denied != null)
             {
                 return denied;
             }
 
-            var donations = await _donationRepository.GetByDonorOrganizationIdsAsync([request.DonorOrganizationId], cancellationToken);
+            var (donations, totalCount) = await _donationRepository.GetPageByDonorOrganizationIdAsync(
+                request.DonorOrganizationId, request.PageNumber, request.PageSize, cancellationToken);
 
-            return Result<GetDonationsResult>.Success(new GetDonationsResult
+            return Result<GetDonorOrganizationDonationsResult>.Success(Page(donations.Select(d => d.ToDto()).ToList(), totalCount, request));
+        }
+
+        private static GetDonorOrganizationDonationsResult Page(IReadOnlyList<DonationDto> donations, int totalCount, GetDonorOrganizationDonationsQuery request)
+        {
+            return new GetDonorOrganizationDonationsResult
             {
-                Donations = donations.Select(d => d.ToDto()).ToList()
-            });
+                Donations = donations,
+                TotalCount = totalCount,
+                PageNumber = request.PageNumber,
+                PageSize = request.PageSize
+            };
         }
     }
 }

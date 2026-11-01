@@ -62,7 +62,7 @@ This document provides an explicit, feature-level view of what is implemented, p
 | Manage organization employees | ❌ | Not implemented |
 | Register as an individual contributor | ✅ | `PUT /api/v1/contributor/me` creates the contributor on first use; logging hours creates it too, and both reuse the single contributor per platform user |
 | Contributor skill profile | ✅ | Role, normalised skills, hours available and optional donor organization link; own profile or administrators only; administrators list the contributors of a donor organization. Matchmaking does not use it yet |
-| Donations and contributions of a donor organization | ✅ | `GET /api/v1/donororganization/{id}/donation` and `.../contribution`, read-only, back-end only; affiliated contributors and administrators; lists are capped (DEBT-21) and affiliation is self-declared (DEBT-19). Input for the Reporting context |
+| Donations and contributions of a donor organization | ✅ | `GET /api/v1/donororganization/{id}/donation` and `.../contribution`, read-only, back-end only; affiliated contributors and administrators; both lists are paged, at most 1000 affiliated contributors are read (DEBT-21), and affiliation is self-declared (DEBT-19). Input for the Reporting context |
 | View available donated hours | ❌ | Not implemented |
 
 ---
@@ -81,7 +81,8 @@ This document provides an explicit, feature-level view of what is implemented, p
 
 | Capability | Status | Notes |
 | --- | --- | --- |
-| Hours donated per organization | ❌ | Not implemented |
+| Hours donated per organization | ✅ | Impact report: `GET /api/v1/reporting/donororganization/{id}/impact-report` (hours pledged and logged, projects supported, breakdown per project); back-end only, no dashboard yet |
+| Contribution history export | ✅ | `GET /api/v1/reporting/donororganization/{id}/contribution-history?format=Json\|Csv`; back-end only; reads every page of the Donation lists, only the cap on affiliated contributors can leave contributions out (DEBT-21) |
 | Hours spent per project | ⚠️ | Contributions can be logged, listed, corrected and soft deleted per project (`POST`/`GET /api/v1/project/{id}/contribution`, `PUT`/`DELETE .../{contributionId}`); no total field or dashboard yet |
 | Contribution history for a user | ❌ | Not implemented |
 | Impact dashboard | ❌ | Not implemented |
@@ -95,7 +96,7 @@ This document provides an explicit, feature-level view of what is implemented, p
 | --- | --- | --- |
 | SPA scaffold (Vite, React, TypeScript) | ⚠️ | One page: the project list |
 | Public project list | ⚠️ | Unstyled first page of active projects with loading, empty and error states, read through nginx at `/api/donation/*`; no search, paging controls or detail page |
-| Generated API types | ✅ | `src/api/donation.d.ts` is generated from the Donation OpenAPI snapshot and committed; CI fails when it is stale |
+| Generated API types | ✅ | `src/api/donation.d.ts`, `authorization.d.ts` and `reporting.d.ts` are generated from the OpenAPI snapshots and committed; CI fails when it is stale |
 | Front-end quality gates in CI | ✅ | API types check, lint (oxlint), typecheck, Vitest with axe, coverage to SonarCloud and build run in the `frontend` job |
 | Login, project and donation screens | ❌ | Not implemented |
 | Donation pledge form | ❌ | Not implemented |

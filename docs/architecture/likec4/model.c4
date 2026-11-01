@@ -392,8 +392,59 @@ model {
       donationApplication.hoursReleaser -> donationInfrastructure.allocationRepository 'shrinks and removes allocations'
     }
 
+    reporting = container 'Reporting' {
+      description 'Bounded context: read-only impact report and contribution history export per donor organization; owns no data and reads it from the Donation API'
+      technology '.NET 10, ASP.NET Core'
+
+      reportingApi = layer 'API' {
+        description 'Controller, JWT bearer validation and the ApiUserOrAdmin policy'
+        technology 'ASP.NET Core'
+
+        reportingController = component 'ReportingController' {
+          description 'impact report and contribution history export (/api/v1/reporting/donororganization/{id}); 502 when the Donation API fails'
+        }
+      }
+      reportingCommands = layer 'Commands' {
+        description 'MediatR query and result types'
+      }
+      reportingApplication = layer 'Application' {
+        description 'MediatR handlers, the export formatter and the IDonationDataSource interface'
+        technology 'MediatR'
+
+        reportingHandlers = component 'Report handlers' {
+          description 'Impact report and contribution history export'
+        }
+        historyFormatter = component 'ContributionHistoryFormatter' {
+          description 'Renders the contribution history as JSON or CSV'
+        }
+      }
+      reportingDomain = layer 'Domain' {
+        description 'ImpactReport and the donation and contribution records it is built from; no outward dependencies'
+      }
+      reportingInfrastructure = layer 'Infrastructure' {
+        description 'HTTP client for the Donation API'
+
+        donationApiDataSource = component 'DonationApiDataSource' {
+          description 'Reads donations and contributions of an organization from the Donation API with the bearer token of the caller'
+        }
+      }
+      reportingValues = layer 'Values' {
+        description 'Shared value objects: DonationStatus, ExportFormat'
+      }
+
+      reportingApi -> reportingCommands 'sends'
+      reportingApi -> reportingApplication 'dispatches via MediatR'
+      reportingApplication -> reportingDomain 'uses'
+      reportingApplication -> reportingValues 'uses'
+      reportingInfrastructure -> reportingApplication 'implements interfaces of'
+
+      reportingApi.reportingController -> reportingApplication.reportingHandlers 'dispatches'
+      reportingApplication.reportingHandlers -> reportingApplication.historyFormatter 'formats the export'
+      reportingApplication.reportingHandlers -> reportingInfrastructure.donationApiDataSource 'via IDonationDataSource'
+    }
+
     shared = container 'Shared' {
-      description 'Cross-cutting library used by both bounded contexts'
+      description 'Cross-cutting library used by all bounded contexts'
       technology '.NET 10'
 
       defaultPipeline = component 'Default API pipeline' {
@@ -419,8 +470,12 @@ model {
     bff -> donation 'REST with bearer token from the cookie' 'HTTPS'
     authorization -> donation 'anonymises contributor on account deletion' 'HTTPS, service token'
     donation -> authorization 'fetches the signing keys (OpenID configuration, JWKS)' 'HTTPS'
+    bff -> reporting 'REST with bearer token from the cookie (proposed)' 'HTTPS'
+    reporting -> donation 'reads donations and contributions with the bearer token of the caller' 'HTTPS'
+    reporting -> authorization 'fetches the signing keys (OpenID configuration, JWKS)' 'HTTPS'
     authorization -> shared 'uses'
     donation -> shared 'uses'
+    reporting -> shared 'uses'
   }
 
   // System context
@@ -460,6 +515,11 @@ model {
   // Shared
   timeforcode.authorization.authApi -> timeforcode.shared.defaultPipeline 'is built on'
   timeforcode.donation.donationApi -> timeforcode.shared.defaultPipeline 'is built on'
+  timeforcode.reporting.reportingApi -> timeforcode.shared.defaultPipeline 'is built on'
+  timeforcode.reporting.reportingApplication -> timeforcode.shared.validationBehaviour 'runs handlers through'
+  timeforcode.reporting.reportingInfrastructure.donationApiDataSource -> timeforcode.donation.donationApi.donationController 'GET /api/v1/donororganization/{id}/donation' 'HTTPS, caller bearer token'
+  timeforcode.reporting.reportingInfrastructure.donationApiDataSource -> timeforcode.donation.donationApi.contributionController 'GET /api/v1/donororganization/{id}/contribution' 'HTTPS, caller bearer token'
+  timeforcode.reporting.reportingApi -> timeforcode.authorization.authApi.jwksController 'fetches the signing keys' 'HTTPS'
   timeforcode.shared.defaultPipeline -> timeforcode.shared.securityHeaders 'adds'
   timeforcode.authorization.authApplication -> timeforcode.shared.validationBehaviour 'runs handlers through'
   timeforcode.donation.donationApplication -> timeforcode.shared.validationBehaviour 'runs handlers through'

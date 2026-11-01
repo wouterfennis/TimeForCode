@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Net.Mime;
 using System.Security.Claims;
@@ -94,23 +95,25 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         }
 
         /// <summary>
-        /// Returns the donations pledged for a donor organization, oldest first, with their progress.
+        /// Returns a page of the donations pledged for a donor organization, oldest first, with their progress.
         /// Allowed for contributors affiliated with the organization and for administrators.
         /// </summary>
-        /// <remarks>
-        /// The list is not paged and, like the other donation listings, is capped; there is no indication when more donations exist.
-        /// </remarks>
         /// <param name="id">The donor organization identifier.</param>
-        /// <returns>The donations of the organization; an empty list when there are none.</returns>
+        /// <param name="pageNumber">The page number (1 to 10000, default 1).</param>
+        /// <param name="pageSize">The number of items per page (1 to 100, default 20).</param>
+        /// <returns>The requested page of donations and the total count; an empty list when there are none.</returns>
         [HttpGet("donororganization/{id}/donation", Name = nameof(GetDonorOrganizationDonations))]
-        [ProducesResponseType(typeof(GetDonationsResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(GetDonorOrganizationDonationsResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         [Authorize(Policy = "ApiUserOrAdmin")]
-        public async Task<IActionResult> GetDonorOrganizationDonations([ObjectId] string id)
+        public async Task<IActionResult> GetDonorOrganizationDonations(
+            [ObjectId] string id,
+            [FromQuery, Range(1, ApiConstraints.MaxPageNumber)] int pageNumber = 1,
+            [FromQuery, Range(1, ApiConstraints.MaxPageSize)] int pageSize = 20)
         {
             if (!TryGetUserId(out var userId))
             {
@@ -121,12 +124,20 @@ namespace TimeForCode.Donation.Api.V1.Controllers
             {
                 DonorOrganizationId = id,
                 CallerUserId = userId,
-                IsAdministrator = User.HasClaim("scope", AdminScope)
+                IsAdministrator = User.HasClaim("scope", AdminScope),
+                PageNumber = pageNumber,
+                PageSize = pageSize
             });
 
             return result.IsFailure
                 ? ToProblem(result.FailureStatusCode, "Cannot get donations of donor organization", result.ErrorMessage)
-                : Ok(ToResponse(result.Value));
+                : Ok(new GetDonorOrganizationDonationsResponse
+                {
+                    Donations = result.Value.Donations.Select(ToResponse).ToList(),
+                    TotalCount = result.Value.TotalCount,
+                    PageNumber = result.Value.PageNumber,
+                    PageSize = result.Value.PageSize
+                });
         }
 
         /// <summary>

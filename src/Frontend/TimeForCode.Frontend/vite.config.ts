@@ -24,7 +24,7 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       include: ['src/**/*.{ts,tsx}'],
-      exclude: ['src/main.tsx', 'src/api/donation.d.ts', 'src/**/*.test.{ts,tsx}'],
+      exclude: ['src/main.tsx', 'src/api/*.d.ts', 'src/**/*.test.{ts,tsx}'],
       // lcov paths are relative to the repository root, where the SonarCloud scan runs.
       reporter: ['text', ['lcov', { projectRoot: '../../..' }]],
     },

@@ -20,6 +20,7 @@ graph LR
             AuthAPI["Authorization API\n:8080"]
             IdpMock["Identity Provider Mock\n:8081"]
             DonationAPI["Donation API\n:8082"]
+            ReportingAPI["Reporting API\n:8083"]
             MongoDB[("MongoDB\n:27017")]
         end
     end
@@ -27,6 +28,8 @@ graph LR
     Browser["Browser"] -->|HTTP :8084| Frontend
     Browser -->|HTTP :8080| AuthAPI
     Browser -->|HTTP :8082| DonationAPI
+    Browser -->|HTTP :8083| ReportingAPI
+    ReportingAPI -->|HTTP, caller's token| DonationAPI
     AuthAPI -->|HTTP :8081| IdpMock
     DonationAPI -->|HTTP :8081| IdpMock
     AuthAPI -->|MongoDB wire protocol| MongoDB
@@ -60,7 +63,7 @@ graph LR
     AppServicePlan -->|hosts| AuthAppService
 ```
 
-> **Current**: Only the Authorization API has a Bicep definition. The Donation API and Frontend are not yet configured for Azure deployment.
+> **Current**: Only the Authorization API has a Bicep definition. The Donation API, the Reporting API and the Frontend are not yet configured for Azure deployment.
 
 ---
 
@@ -102,6 +105,7 @@ graph LR
 | Frontend | Azure App Service (container) | Static SPA assets served by nginx |
 | Authorization API | Azure App Service (container) | Current deployment extended |
 | Donation API | Azure App Service (container) | Not yet deployed |
+| Reporting API | Azure App Service (container) | Not yet deployed; stateless, needs only the Donation API address (`DonationApiOptions__BaseUri`) and the token settings |
 | Database | Azure Cosmos DB for MongoDB API | Drop-in replacement for MongoDB driver |
 | Secrets | Azure Key Vault | Client secrets, RSA key, connection strings |
 | Container registry | Azure Container Registry | Build and store images via CI/CD |

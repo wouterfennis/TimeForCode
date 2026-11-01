@@ -136,7 +136,7 @@ GET /api/v1/project?searchText=rocket&language=C%23&tag=gaming&pageNumber=1&page
 | `POST` | `/api/v1/project/{id}/donation` | ✅ | Pledges hours to an `Active` project (user JWT); body `{ "hours": 1-10000, "asIndividual": true }` or `{ "hours": 20, "donorOrganizationId": "<id>" }`, exactly one donor; returns `201` with the donation (id, project id, donor organization id when given, `status` `Pending`, `hoursCommitted`, `hoursLogged` 0, `progressPercentage`, `createdAt`, `updatedAt`); `400` for invalid hours, no donor or both donors, `401` without a token, `404` for an unknown project or donor organization, `409` when the project is not `Active` |
 | `GET` | `/api/v1/project/{id}/donation` | ✅ | Lists the donations of an `Active` project, oldest first, as `{ "donations": [...] }` (at most 1000); no authentication required; `404` for an unknown or non-`Active` project |
 | `GET` | `/api/v1/donation` | ✅ | Lists the caller's own donations, oldest first, as `{ "donations": [...] }` (user JWT); `401` without a token |
-| `GET` | `/api/v1/donororganization/{id}/donation` | ✅ | Lists the donations pledged for a donor organization, oldest first, as `{ "donations": [...] }` (user or admin JWT; contributors affiliated with the organization and administrators only); `400` for a malformed id or missing identity, `401` without a token, `403` for other users, `404` for an unknown organization |
+| `GET` | `/api/v1/donororganization/{id}/donation` | ✅ | Lists the donations pledged for a donor organization, oldest first, as a page `{ "donations": [...], "totalCount", "pageNumber", "pageSize" }` (`pageNumber` 1 to 10000, default 1; `pageSize` 1 to 100, default 20; user or admin JWT; contributors affiliated with the organization and administrators only); `400` for a malformed id, invalid paging parameters or missing identity, `401` without a token, `403` for other users, `404` for an unknown organization |
 | `POST` | `/api/v1/donation/{id}/activate` | ✅ | Pending -> Active; allowed for the donor who pledged it and for administrators (scope `user` or `admin`); returns `200` with the donation; `403` for other users, `404` unknown donation, `409` when not `Pending` |
 | `POST` | `/api/v1/donation/{id}/cancel` | ✅ | Pending or Active -> Cancelled; same permissions as activate; `409` when `Completed` or `Cancelled` |
 
@@ -159,7 +159,7 @@ A donation completes automatically (Active -> Completed) when the hours logged t
 | Method | Path | Status | Description |
 | --- | --- | --- | --- |
 | `POST` | `/api/v1/project/{id}/contribution` | ✅ | Logs hours on an `Active` project (user JWT); body `{ "hours": 1-10000, "githubReference": "https://github.com/..." }` (`githubReference` optional, HTTPS github.com only); upserts the caller as a `Contributor` by `sub` and returns `201` with the contribution (id, contributor id, GitHub login and avatar snapshot, hours, reference, `loggedAt`); `400` for invalid hours or reference or a token without `login`/`avatar_url` claims, `401` without a token, `404` for an unknown or non-`Active` project |
-| `GET` | `/api/v1/donororganization/{id}/contribution` | ✅ | Lists the contributions logged by the contributors currently affiliated with a donor organization, earliest first, as `{ "contributions": [...] }` (at most 10000; deleted contributions are left out; user or admin JWT; contributors affiliated with the organization and administrators only); `400` for a malformed id or missing identity, `401` without a token, `403` for other users, `404` for an unknown organization |
+| `GET` | `/api/v1/donororganization/{id}/contribution` | ✅ | Lists the contributions logged by the contributors currently affiliated with a donor organization, earliest first, as a page `{ "contributions": [...], "totalCount", "pageNumber", "pageSize" }` (`pageNumber` 1 to 10000, default 1; `pageSize` 1 to 100, default 20; deleted contributions are left out; at most 1000 affiliated contributors are read, DEBT-21; user or admin JWT; contributors affiliated with the organization and administrators only); `400` for a malformed id or missing identity, `401` without a token, `403` for other users, `404` for an unknown organization |
 | `PUT` | `/api/v1/project/{id}/contribution/{contributionId}` | ✅ | Corrects a contribution (user or admin JWT; the contributor who logged it or an administrator, scope `admin`); body `{ "hours": 1-10000, "githubReference": "https://github.com/..." }` replaces both values (an omitted `githubReference` removes it); the previous values are appended to the stored history with the corrector and time (the history is not exposed by the API); lowering the hours releases the difference from the donations the contribution was counted toward (newest allocation first; a `Completed` donation that falls below its commitment becomes `Active` again), raising them counts the extra hours toward the project's `Active` donations like logging does; `200` with the contribution; `400` for invalid hours or reference, `401` without a token, `403` for another user, `404` for an unknown or already deleted contribution, `409` when it was changed concurrently |
 | `DELETE` | `/api/v1/project/{id}/contribution/{contributionId}` | ✅ | Soft deletes a contribution (user or admin JWT; the contributor who logged it or an administrator): it stays stored with who deleted it and when, no longer appears in the list and no longer counts towards the hours, and all its hours are released from the donations it was counted toward (a `Completed` donation that falls below its commitment becomes `Active` again); `204`; `401` without a token, `403` for another user, `404` for an unknown or already deleted contribution, `409` when it was changed concurrently |
 | `GET` | `/api/v1/project/{id}/contribution` | ✅ | Lists the non-deleted contributions of an `Active` project, earliest first, as `{ "contributions": [...] }` (at most 1000); no authentication required; `404` for an unknown or non-`Active` project |
@@ -185,6 +185,34 @@ The maintainer profile is created (or its GitHub login and avatar refreshed) whe
 | `GET` | `/api/v1/contributor/{id}` | ✅ | Returns a profile by contributor id; only the contributor themselves (user JWT) and administrators; `200` with the profile, `403` for another user's profile, `404` for an unknown contributor, `400` for a malformed id, `401` without a token |
 | `PUT` | `/api/v1/contributor/{id}` | ✅ | Replaces a profile by contributor id, same body and responses as `PUT /contributor/me` plus `403` for another user's profile; allowed for the contributor themselves and administrators |
 | `GET` | `/api/v1/donororganization/{id}/contributor` | ✅ | Lists the contributors affiliated with a donor organization, ordered by GitHub login (at most 1000; admin JWT only; `403` for user tokens); `200` with `{ "contributors": [ ...profiles ] }`, empty when there are none; `404` for an unknown organization, `400` for a malformed id, `401` without a token |
+
+---
+
+## Reporting API
+
+The Reporting API (`:8083` locally) is back-end only. It reads the donations and contributions of a donor organization from the Donation API over HTTP with the caller's own bearer token, so the Donation API decides who may read: contributors affiliated with the organization and administrators (see DEBT-19: affiliation is self-declared). Reporting has no database and never writes to the Donation API. The caller needs a token whose audiences include the Reporting API (user or admin JWT).
+
+### Reporting Endpoints
+
+| Method | Endpoint | Status | Notes |
+| --- | --- | --- | --- |
+| `GET` | `/api/v1/reporting/donororganization/{id}/impact-report` | ✅ | Impact report of a donor organization (user or admin JWT); `200` with `{ "hoursPledged": 10, "hoursLogged": 4, "projectsSupported": 1, "projects": [ { "projectId": "...", "hoursPledged": 10, "hoursLogged": 4 } ] }`; only `Active` and `Completed` donations count, projects are listed in the order of their first donation, an organization without counted donations gets zeros and an empty list; `400` for a malformed id or a missing bearer token, `401` without a token, `403` when the caller is neither a member nor an administrator, `404` for an unknown organization, `502` when the Donation API fails or cannot be reached |
+| `GET` | `/api/v1/reporting/donororganization/{id}/contribution-history?format=Json\|Csv` | ✅ | Export of the contribution history as a file download (user or admin JWT); `format` is `Json` (default, `application/json`) or `Csv` (`text/csv`); same status codes as the impact report; every contribution, earliest first, deleted ones left out, attributed by the contributor's current affiliation (DEBT-21) |
+
+Export schema (the same values in both formats):
+
+| CSV column | JSON field | Type | Notes |
+| --- | --- | --- | --- |
+| `ContributionId` | `id` | string | Contribution identifier |
+| `ProjectId` | `projectId` | string | Project the hours were logged on |
+| `ContributorLogin` | `contributorLogin` | string | GitHub login of the contributor |
+| `Hours` | `hours` | integer | Hours logged |
+| `GithubReference` | `githubReference` | string or `null` | Issue or pull request URL; empty in CSV, `null` in JSON when none was given |
+| `LoggedAt` | `loggedAt` | string | UTC, ISO 8601 (`2026-10-02T07:30:15Z`) |
+
+The CSV has a header row and `\r\n` line endings. Values with a comma, quote or line break are quoted (RFC 4180), and a value starting with `=`, `+`, `-`, `@`, a tab or a carriage return, also behind leading whitespace of any kind, gets a leading `'` so a spreadsheet does not run it as a formula. The JSON is `{ "contributions": [ ... ] }`, an empty list when there are none. Only the CSV is guarded for spreadsheets; the JSON carries the values unchanged, so treat it as raw data and escape it for whatever shows it.
+
+When the Donation API refuses the caller (`401`, `403`, `404`) the Reporting API answers with the same status and a fixed message per status; the text of the Donation response is never passed on.
 
 ---
 

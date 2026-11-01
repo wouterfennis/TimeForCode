@@ -175,22 +175,9 @@ Implemented as `GET` and `PUT /api/v1/contributor/me`, `GET` and `PUT /api/v1/co
 
 ### Reporting
 
-#### GET /api/v1/organization/{id}/report ❌
+#### Organization impact report and contribution history export ✅
 
-Organization impact report.
-
-**Response**:
-
-```json
-{
-  "organizationId": "uuid",
-  "hoursCommitted": 200,
-  "hoursLogged": 87,
-  "projectsSupported": 3,
-  "donations": []
-}
-
-```
+Implemented as `GET /api/v1/reporting/donororganization/{id}/impact-report` and `GET /api/v1/reporting/donororganization/{id}/contribution-history?format=Json|Csv` in the Reporting API; replaces the earlier `GET /api/v1/organization/{id}/report` design. See [docs/current/api-surface.md](../current/api-surface.md#reporting-api) for payloads, the export schema and status codes.
 
 #### GET /api/v1/project/{id}/report ❌
 

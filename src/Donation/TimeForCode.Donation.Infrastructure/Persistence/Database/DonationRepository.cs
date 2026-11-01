@@ -49,8 +49,8 @@ namespace TimeForCode.Donation.Infrastructure.Persistence.Database
                         indexKeys.Ascending(d => d.PledgedByUserId).Ascending(d => d.CreatedAt),
                         new CreateIndexOptions { Name = "ix_donations_pledged_by_created_at" }),
                     new CreateIndexModel<Domain.Donation>(
-                        indexKeys.Ascending(d => d.DonorOrganizationId),
-                        new CreateIndexOptions { Name = "ix_donations_donor_organization" })
+                        indexKeys.Ascending(d => d.DonorOrganizationId).Ascending(d => d.CreatedAt).Ascending(d => d.Id),
+                        new CreateIndexOptions { Name = "ix_donations_donor_organization_created_at" })
                 ]);
                 _indexesCreated = true;
             }
@@ -142,6 +142,26 @@ namespace TimeForCode.Donation.Infrastructure.Persistence.Database
             return await _collection
                 .Find(Builders<Domain.Donation>.Filter.In(d => d.DonorOrganizationId, objectIds.Select(id => (ObjectId?)id)))
                 .ToListAsync(cancellationToken);
+        }
+
+        public async Task<(IReadOnlyList<Domain.Donation> Donations, int TotalCount)> GetPageByDonorOrganizationIdAsync(string organizationId, int pageNumber, int pageSize, CancellationToken cancellationToken)
+        {
+            if (!ObjectId.TryParse(organizationId, out var objectId))
+            {
+                return ([], 0);
+            }
+
+            var filter = Builders<Domain.Donation>.Filter.Eq(d => d.DonorOrganizationId, objectId);
+            var totalCount = int.CreateSaturating(await _collection.CountDocumentsAsync(filter, cancellationToken: cancellationToken));
+            var donations = await _collection
+                .Find(filter)
+                .SortBy(d => d.CreatedAt)
+                .ThenBy(d => d.Id)
+                .Skip((pageNumber - 1) * pageSize)
+                .Limit(pageSize)
+                .ToListAsync(cancellationToken);
+
+            return (donations, totalCount);
         }
 
         public async Task<IReadOnlyList<Domain.Donation>> GetReceivedByProjectIdsAsync(IReadOnlyCollection<string> projectIds, CancellationToken cancellationToken)

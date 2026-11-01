@@ -126,6 +126,31 @@ The contributor who logged hours, or an administrator, calls `PUT` or `DELETE /a
 
 A signed-in user calls `PUT /api/v1/contributor/me` with role, skills, hours available and an optional donor organization. The API enforces the size limits as validation attributes (`400`); `UpdateContributorProfileHandler` loads the caller's contributor, or registers one from the token claims when logging hours never created it, checks that a linked donor organization exists (`404` otherwise), lets `Contributor.UpdateProfile` normalise the skills and saves only the profile fields, so the identity snapshot and the logged hours stay untouched. `GET` and `PUT /api/v1/contributor/{id}` apply the same rules to a profile by id and answer `403` unless the caller owns it or is an administrator; administrators list a donor organization's contributors with `GET /api/v1/donororganization/{id}/contributor`. Contract: [api-surface.md](../../current/api-surface.md#contributor-endpoints).
 
+## Scenario 3f — Impact report and contribution history export of a donor organization
+
+A caller sends `GET /api/v1/reporting/donororganization/{id}/impact-report` or `.../contribution-history?format=Json|Csv` to the Reporting API with a bearer token that lists the Reporting API as audience. The controller takes the token from the `Authorization` header and `GetImpactReportHandler` or `GetContributionHistoryExportHandler` asks `IDonationDataSource` for the donations or contributions of the organization. `DonationApiDataSource` calls `GET /api/v1/donororganization/{id}/donation` or `.../contribution` on the Donation API with the same token; the token must therefore list the Donation API as audience too.
+
+```mermaid
+sequenceDiagram
+    participant Caller
+    participant ReportingAPI as Reporting API
+    participant DonationAPI as Donation API
+
+    Caller->>ReportingAPI: GET .../impact-report (Bearer token)
+    ReportingAPI->>DonationAPI: GET /api/v1/donororganization/{id}/donation (same token)
+    alt caller is a member or an administrator
+        DonationAPI-->>ReportingAPI: 200 { donations }
+        ReportingAPI-->>Caller: 200 { hoursPledged, hoursLogged, projectsSupported, projects }
+    else not a member, or unknown organization
+        DonationAPI-->>ReportingAPI: 403 or 404
+        ReportingAPI-->>Caller: 403 or 404
+    end
+```
+
+The Donation API alone decides who may read: contributors affiliated with the organization and administrators (affiliation is self-declared, DEBT-19). When the Donation API fails or cannot be reached, Reporting answers `502`. The impact report counts the commitments and logged hours of `Active` and `Completed` donations and groups them per project. The export renders the contributions as CSV or JSON in the documented schema ([API surface](../../current/api-surface.md#reporting-api)). Both lists are read page by page from the paged Donation endpoints until the reported total is collected; only the cap on affiliated contributors can leave contributions out of very large organizations (DEBT-21).
+
+---
+
 ## Scenario 4 — Log Hours Against a Donation (Target)
 
 ```mermaid
