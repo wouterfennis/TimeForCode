@@ -263,7 +263,7 @@ Covered live: contributor profile (including the Auth-issued JWT), project publi
 
 ### Front-end tests
 
-The React SPA (`src/Frontend/TimeForCode.Frontend`) is tested with Vitest, Testing Library and axe (accessibility assertions) in a jsdom environment. Run from that directory: `npm run lint`, `npm run typecheck`, `npm run test:coverage` and `npm run build`. Coverage is written as `coverage/lcov.info` (v8 provider); `src/main.tsx` and the test files are excluded.
+The React SPA (`src/Frontend/TimeForCode.Frontend`) is tested with Vitest, Testing Library and axe (accessibility assertions) in a jsdom environment. Run from that directory: `npm run lint`, `npm run typecheck`, `npm run test:coverage` and `npm run build`, or `npm run verify` for `check:api`, lint, typecheck, tests and build in one go. Components that call the API are tested against a stubbed `fetch` (loading, empty and error states of the project list). `npm run check:api` regenerates `src/api/donation.d.ts` from the Donation OpenAPI snapshot and fails when the committed copy differs. Coverage is written as `coverage/lcov.info` (v8 provider); `src/main.tsx` and the test files are excluded.
 
 ### Documentation site build
 
@@ -271,7 +271,7 @@ The `Documentation Site` workflow (`.github/workflows/docs-site.yaml`) runs on p
 
 ### E2E tests
 
-The `frontend` job ("Front-end checks") in `pullRequest.yaml` and `build.yaml` runs `npm ci --ignore-scripts`, lint, typecheck, tests with coverage and the build. It uploads the lcov file as the `frontend-coverage` artifact, which the `build` job (`needs: frontend`) downloads before the SonarCloud scan end. On `main`, `release-please` also depends on this job.
+The `frontend` job ("Front-end checks") in `pullRequest.yaml` and `build.yaml` runs `npm ci --ignore-scripts`, the "API types up to date" check (`check:api`), lint, typecheck, tests with coverage and the build. It uploads the lcov file as the `frontend-coverage` artifact, which the `build` job (`needs: frontend`) downloads before the SonarCloud scan end. On `main`, `release-please` also depends on this job.
 
 ### Specification baseline
 
