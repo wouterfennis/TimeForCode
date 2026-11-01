@@ -15,7 +15,7 @@ namespace TimeForCode.Shared.Live
         public const string TestAdminSecretVariable = "TIMEFORCODE_LIVE_TEST_ADMIN_SECRET";
         public const string ClientRedirectUriVariable = "TIMEFORCODE_LIVE_CLIENT_REDIRECT_URI";
 
-        private const string DefaultClientRedirectUri = "http://localhost:8084";
+        private const string DefaultClientRedirectUri = "http://localhost:8084"; // NOSONAR S1075: local compose frontend address, overridable via the environment variable
         private const string AccessTokenCookie = "AccessToken";
 
         private static readonly TimeSpan RequestTimeout = TimeSpan.FromSeconds(30);
