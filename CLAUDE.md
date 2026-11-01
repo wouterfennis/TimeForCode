@@ -37,7 +37,7 @@ Tests do not need a running database or container (mocks and in-memory fakes); `
 
 Feature workflow, run manually in order and gated by human `APPROVED: plan` / `APPROVED: feature` comments on the GitHub issue (skill `agent-handoffs`):
 
-`/plan-issue` → `/write-feature <n>` → `/implement-issue <n>` (TDD) → `review` agent → `markdown-linter` agent → `/ship-pr <n>`.
+`/plan-issue` → `/write-feature <n>` → `/implement-issue <n>` (TDD) → `review` agent ‖ `markdown-linter` agent (always launched in parallel, in one message with two Agent calls) → `/ship-pr <n>`.
 
 Small defects: `/fix-bug <n>` (failing regression test first, then fix).
 

@@ -135,7 +135,9 @@ pwsh scripts/check-approval.ps1 -Issue <number> -Phase plan|feature
 
 The script exits 1 and prints the instruction when the marker is missing. In a raw `--jq`, match with `test("^APPROVED: (plan|feature)"; "m")`; a `\\s*$` variant fails to parse.
 
-There is no orchestrator; the phases are run manually in order: `/plan-issue` → `/write-feature <n>` → `/implement-issue <n>` → `review` agent → `markdown-linter` agent → `/ship-pr <n>`.
+There is no orchestrator; the phases are run manually in order: `/plan-issue` → `/write-feature <n>` → `/implement-issue <n>` → `review` agent ‖ `markdown-linter` agent → `/ship-pr <n>`.
+
+The `review` and `markdown-linter` agents are independent, so always launch them in parallel: two Agent calls in one message, not one after the other.
 
 ---
 
