@@ -10,7 +10,7 @@ using System.Text.RegularExpressions;
 namespace IdentityProviderMockService.Tests
 {
     /// <summary>Drives the mock like a browser: authorize page, confirm form, token exchange, profile.</summary>
-    internal sealed class MockSignIn : IDisposable
+    internal sealed partial class MockSignIn : IDisposable
     {
         private const string RedirectUri = "http://localhost/callback";
         // Program is static and cannot be a type argument, so any public type of the assembly marks it.
@@ -51,7 +51,7 @@ namespace IdentityProviderMockService.Tests
                 ["client_id"] = "c",
                 ["scope"] = "user",
             };
-            string? hiddenPersona = HiddenInput(page, "persona");
+            string? hiddenPersona = HiddenPersona(page);
             if (hiddenPersona is not null)
             {
                 form["persona"] = hiddenPersona;
@@ -59,7 +59,7 @@ namespace IdentityProviderMockService.Tests
 
             using HttpResponseMessage confirmed = await _client.PostAsync("/login/oauth/confirm", new FormUrlEncodedContent(form));
             confirmed.StatusCode.Should().Be(HttpStatusCode.Redirect);
-            string code = Regex.Match(confirmed.Headers.Location!.ToString(), "code=([^&]+)").Groups[1].Value;
+            string code = CodeRegex().Match(confirmed.Headers.Location!.ToString()).Groups[1].Value;
 
             using HttpResponseMessage tokenResponse = await _client.PostAsJsonAsync("/login/oauth/access_token", new
             {
@@ -84,9 +84,15 @@ namespace IdentityProviderMockService.Tests
             _factory.Dispose();
         }
 
-        private static string? HiddenInput(string html, string name)
+        [GeneratedRegex("code=([^&]+)")]
+        private static partial Regex CodeRegex();
+
+        [GeneratedRegex("""<input type="hidden" name="persona" value="([^"]*)" />""")]
+        private static partial Regex PersonaInputRegex();
+
+        private static string? HiddenPersona(string html)
         {
-            Match match = Regex.Match(html, $"""<input type="hidden" name="{name}" value="([^"]*)" />""");
+            Match match = PersonaInputRegex().Match(html);
             return match.Success ? WebUtility.HtmlDecode(match.Groups[1].Value) : null;
         }
     }

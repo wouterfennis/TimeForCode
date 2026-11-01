@@ -98,6 +98,44 @@ namespace TimeForCode.Shared.Tests.Live
         }
 
         [TestMethod]
+        public void AddPersona_NoPersona_ReturnsSameUrl()
+        {
+            var url = new Uri("http://localhost:8081/login/oauth/authorize?state=s&scope=user");
+
+            LiveAuthentication.AddPersona(url, null).Should().Be(url);
+        }
+
+        [TestMethod]
+        public void AddPersona_Persona_AppendsEscapedQueryParameter()
+        {
+            var url = new Uri("http://localhost:8081/login/oauth/authorize?state=s&scope=user");
+
+            Uri result = LiveAuthentication.AddPersona(url, "Alice Smith");
+
+            result.AbsoluteUri.Should().Be("http://localhost:8081/login/oauth/authorize?state=s&scope=user&persona=Alice%20Smith");
+        }
+
+        [TestMethod]
+        public void AddPersona_UrlWithoutQuery_StartsTheQuery()
+        {
+            var url = new Uri("http://localhost:8081/login/oauth/authorize");
+
+            LiveAuthentication.AddPersona(url, "alice").AbsoluteUri.Should().Be("http://localhost:8081/login/oauth/authorize?persona=alice");
+        }
+
+        [TestMethod]
+        public void TryExtractInputValue_UnknownInput_ReturnsNull()
+        {
+            LiveAuthentication.TryExtractInputValue(ConfirmForm, "persona").Should().BeNull();
+        }
+
+        [TestMethod]
+        public void TryExtractInputValue_NamedInput_ReturnsDecodedValue()
+        {
+            LiveAuthentication.TryExtractInputValue(ConfirmForm, "state").Should().Be("abc&123");
+        }
+
+        [TestMethod]
         public void ResolveClientRedirectUri_NotConfigured_ReturnsLocalFrontend()
         {
             LiveAuthentication.ResolveClientRedirectUri(null).Should().Be(new Uri("http://localhost:8084"));
