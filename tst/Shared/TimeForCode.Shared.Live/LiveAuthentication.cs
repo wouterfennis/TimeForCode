@@ -58,6 +58,12 @@ namespace TimeForCode.Shared.Live
 
         public static string ExtractInputValue(string html, string name)
         {
+            return TryExtractInputValue(html, name)
+                ?? throw new InvalidOperationException($"The sign-in form has no input named '{name}'.");
+        }
+
+        public static string? TryExtractInputValue(string html, string name)
+        {
             foreach (Match input in InputTagRegex().Matches(html))
             {
                 Dictionary<string, string> attributes = AttributeRegex().Matches(input.Value)
@@ -70,7 +76,21 @@ namespace TimeForCode.Shared.Live
                 }
             }
 
-            throw new InvalidOperationException($"The sign-in form has no input named '{name}'.");
+            return null;
+        }
+
+        /// <summary>Selects a mock identity provider persona by adding it to the authorize URL; without one the mock keeps its single user.</summary>
+        public static Uri AddPersona(Uri identityProviderUrl, string? persona)
+        {
+            if (string.IsNullOrWhiteSpace(persona))
+            {
+                return identityProviderUrl;
+            }
+
+            var builder = new UriBuilder(identityProviderUrl);
+            string parameter = "persona=" + Uri.EscapeDataString(persona);
+            builder.Query = string.IsNullOrEmpty(builder.Query) ? parameter : builder.Query.TrimStart('?') + "&" + parameter;
+            return builder.Uri;
         }
 
         public static string ReadAccessToken(IEnumerable<string> setCookieHeaders)
@@ -90,23 +110,30 @@ namespace TimeForCode.Shared.Live
         }
 
         /// <summary>Logs in through the Authorization API and the mock identity provider, like a browser would.</summary>
-        public static async Task<string> SignInAsync(Uri authorizationAddress, Uri clientRedirectUri)
+        public static async Task<string> SignInAsync(Uri authorizationAddress, Uri clientRedirectUri, string? persona = null)
         {
             using var handler = new HttpClientHandler { AllowAutoRedirect = false, UseCookies = true };
             using var client = new HttpClient(handler) { Timeout = RequestTimeout };
 
             string loginUrl = new Uri(authorizationAddress, "api/v1/authentication/login").AbsoluteUri
                 + $"?IdentityProvider=Github&RedirectUri={Uri.EscapeDataString(clientRedirectUri.AbsoluteUri)}";
-            Uri identityProviderUrl = await GetRedirectAsync(client, loginUrl);
+            Uri identityProviderUrl = AddPersona(await GetRedirectAsync(client, loginUrl), persona);
 
             string form = await client.GetStringAsync(identityProviderUrl);
-            using var confirmation = new FormUrlEncodedContent(new Dictionary<string, string>
+            var fields = new Dictionary<string, string>
             {
                 ["state"] = ExtractInputValue(form, "state"),
                 ["redirect_uri"] = ExtractInputValue(form, "redirect_uri"),
                 ["client_id"] = ExtractInputValue(form, "client_id"),
                 ["scope"] = ExtractInputValue(form, "scope")
-            });
+            };
+            string? personaField = TryExtractInputValue(form, "persona");
+            if (personaField is not null)
+            {
+                fields["persona"] = personaField;
+            }
+
+            using var confirmation = new FormUrlEncodedContent(fields);
             using HttpResponseMessage confirmed = await client.PostAsync(new Uri(identityProviderUrl, "/login/oauth/confirm"), confirmation);
             Uri callbackUrl = RedirectTarget(confirmed, identityProviderUrl);
 
