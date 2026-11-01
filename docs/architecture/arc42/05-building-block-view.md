@@ -131,7 +131,7 @@ graph LR
 
 ## Level 2 — Reporting Bounded Context
 
-The Reporting context turns the donations and contributions of a donor organization into an impact report and a downloadable contribution history. It owns no data: it reads from the Donation context over HTTP with the caller's own access token (ADR-010, [Shared project coupling boundary](../../reference/shared-project-coupling-boundary.md)) and never writes to it. The Donation context decides who may read an organization, and Reporting passes its unauthorized, forbidden and not found answers on.
+The Reporting context turns the donations and contributions of a donor organization into an impact report and a downloadable contribution history. It owns no data: it reads from the Donation context over HTTP with the caller's own access token ([ADR-018](../../reference/adr/0018-reporting-reads-donation-over-http-with-forwarded-token.md), ADR-010, [Shared project coupling boundary](../../reference/shared-project-coupling-boundary.md)) and never writes to it. The Donation context decides who may read an organization, and Reporting passes its unauthorized, forbidden and not found answers on.
 
 ```mermaid
 graph LR

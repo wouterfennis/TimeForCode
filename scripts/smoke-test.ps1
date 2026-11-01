@@ -19,6 +19,7 @@
         9. The front-end serves the SPA on / and on a deep link, and its built script
        10. A missing front-end asset returns 404 instead of the SPA
        11. Every front-end response carries the security headers
+       12. The Reporting API rejects an anonymous call, and reaches the Donation API with the caller's JWT (a non-member gets the Donation API's 403 relayed, not 401 or 502)
 
 .PARAMETER AuthApiBaseUrl
     Base URL of the Authorization API. Default: http://localhost:8080
@@ -28,6 +29,9 @@
 
 .PARAMETER DonationApiBaseUrl
     Base URL of the Donation API. Default: http://localhost:8082
+
+.PARAMETER ReportingApiBaseUrl
+    Base URL of the Reporting API. Default: http://localhost:8083
 
 .PARAMETER ClientRedirectUri
     Front-end origin the login redirects back to (must be a configured valid redirect URI). No front-end needs to run. Default: http://localhost:8084
@@ -49,6 +53,7 @@ param(
     [string] $AuthApiBaseUrl    = "http://localhost:8080",
     [string] $IdpMockBaseUrl    = "http://localhost:8081",
     [string] $DonationApiBaseUrl = "http://localhost:8082",
+    [string] $ReportingApiBaseUrl = "http://localhost:8083",
     [string] $ClientRedirectUri    = "http://localhost:8084",
     [string] $FrontendBaseUrl      = "http://localhost:8084",
     [string] $ContainerCli         = "podman"
@@ -233,10 +238,10 @@ try {
     # The Donation API validates tokens issued by the Auth API, so its audience must be in the JWT.
     $audList         = @($claims.aud)
     $expectedAuthAud = if ($discoveredAuthIssuer) { $discoveredAuthIssuer } else { $AuthApiBaseUrl }
-    if ($audList -contains $expectedAuthAud -and $audList -contains $DonationApiBaseUrl -and $claims.sub) {
-        Write-Pass "JWT audiences include Auth API and Donation API, subject present"
+    if ($audList -contains $expectedAuthAud -and $audList -contains $DonationApiBaseUrl -and $audList -contains $ReportingApiBaseUrl -and $claims.sub) {
+        Write-Pass "JWT audiences include Auth API, Donation API and Reporting API, subject present"
     } else {
-        Write-Fail "JWT audiences or subject incorrect" "Got: $($audList -join ', '), expected '$expectedAuthAud' and '$DonationApiBaseUrl'"
+        Write-Fail "JWT audiences or subject incorrect" "Got: $($audList -join ', '), expected '$expectedAuthAud', '$DonationApiBaseUrl' and '$ReportingApiBaseUrl'"
     }
 
     $r5 = curl -si -H $authHeader "$AuthApiBaseUrl/api/v1/user" 2>&1
@@ -261,6 +266,25 @@ try {
         else                { Write-Fail "Stored project read back" "Status=$sRead" }
     } else {
         Write-Fail "Donation API POST /project with the Auth JWT" "Status=$(Get-StatusCode $r6)"
+    }
+
+    # Reporting API: anonymous is refused; an authenticated non-member of a real organization gets the
+    # Donation API's 403 relayed, which proves JWT validation, token forwarding and the Donation call.
+    $reportBase = "$ReportingApiBaseUrl/api/v1/reporting/donororganization"
+    $sAnon = [int](curl -s -o /dev/null -w "%{http_code}" "$reportBase/000000000000000000000000/impact-report" 2>&1 | Select-Object -Last 1)
+    if ($sAnon -eq 401) { Write-Pass "Reporting API refuses an anonymous call: GET impact-report -> 401" }
+    else                { Write-Fail "Reporting API anonymous call" "Status=$sAnon (expected 401)" }
+
+    $orgBody = @{ name = "smoke-org-" + [guid]::NewGuid().ToString("N").Substring(0, 12) } | ConvertTo-Json -Compress
+    $r7      = curl -si -H $authHeader -H "Content-Type: application/json" --data-raw $orgBody "$DonationApiBaseUrl/api/v1/donororganization" 2>&1
+    $json7   = $r7 | Select-String '^\{' | Select-Object -First 1
+    $orgId   = if ($json7) { ($json7.ToString() | ConvertFrom-Json).id } else { $null }
+    if ((Get-StatusCode $r7) -eq 201 -and $orgId) {
+        $sReport = [int](curl -s -o /dev/null -w "%{http_code}" -H $authHeader "$reportBase/$orgId/impact-report" 2>&1 | Select-Object -Last 1)
+        if ($sReport -eq 403) { Write-Pass "Reporting API forwards the JWT to the Donation API: GET impact-report as non-member -> 403" }
+        else                  { Write-Fail "Reporting API to Donation API round trip" "Status=$sReport (expected 403 for a non-member)" }
+    } else {
+        Write-Fail "Donation API POST /donororganization with the Auth JWT" "Status=$(Get-StatusCode $r7)"
     }
 } catch {
     Write-Fail "Authentication flow aborted: $_"

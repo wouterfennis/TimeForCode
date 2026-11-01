@@ -37,6 +37,10 @@ deployment {
           description 'Dockerfile.donation-api'
           instanceOf timeforcode.donation
         }
+        reportingService = composeService 'reporting-api :8083' {
+          description 'Dockerfile.reporting-api, no database of its own'
+          instanceOf timeforcode.reporting
+        }
         idpService = composeService 'identity-provider-mock :8081' {
           description 'Replaces GitHub, Dockerfile.identity-provider-mock'
           instanceOf idpMock
@@ -79,6 +83,9 @@ deployment {
         }
         targetDonation = appService 'Donation API App Service' {
           instanceOf timeforcode.donation
+        }
+        targetReporting = appService 'Reporting API App Service' {
+          instanceOf timeforcode.reporting
         }
       }
     }

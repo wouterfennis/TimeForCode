@@ -8,7 +8,7 @@ views {
 
   view containers of timeforcode {
     title 'Containers'
-    description 'The front-end, the two bounded contexts, the shared library and what they talk to'
+    description 'The front-end, the three bounded contexts, the shared library and what they talk to'
     include *
   }
 
@@ -31,9 +31,17 @@ views {
     include github, mongodb, idpMock, timeforcode.authorization, timeforcode.shared
   }
 
+  view reporting of timeforcode.reporting {
+    title 'Reporting bounded context'
+    description 'Read-only; gets its data from the Donation API'
+    include *
+    include timeforcode.donation, timeforcode.authorization, timeforcode.shared
+  }
+
   view shared of timeforcode.shared {
     title 'Shared library'
     include *
+    include timeforcode.reporting.reportingApi
     include timeforcode.authorization.authApi, timeforcode.donation.donationApi
     include timeforcode.authorization.authApplication, timeforcode.donation.donationApplication
     include timeforcode.authorization.authInfrastructure

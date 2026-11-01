@@ -31,7 +31,7 @@ podman compose up --build
 .\scripts\smoke-test.ps1
 ```
 
-The script is a smoke tier of 13 checks: service availability, OIDC discovery, the login round trip, the Auth API JWT accepted by the Donation API, one Mongo-backed write and read (register a project, read it back), the data protection key ring in the database, and the front-end (the SPA on `/` and on a deep link, the 404 for a missing asset, and the security headers on those responses). Project lifecycle, role checks and GitHub token handling are covered by the Reqnroll specifications. Each run leaves one new `Draft` project in the local database.
+The script is a smoke tier of 16 checks: service availability, OIDC discovery, the login round trip, the Auth API JWT accepted by the Donation API, one Mongo-backed write and read (register a project, read it back), the Reporting API (anonymous call refused with 401, and a non-member's call relayed from the Donation API as 403, which proves JWT validation, token forwarding and the Donation call), the data protection key ring in the database, and the front-end (the SPA on `/` and on a deep link, the 404 for a missing asset, and the security headers on those responses). Project lifecycle, role checks and GitHub token handling are covered by the Reqnroll specifications. Each run leaves one new `Draft` project in the local database.
 
 ### Services and Ports
 
@@ -65,7 +65,7 @@ The Identity Provider Mock replaces GitHub in local development. The Authorizati
 | Authorization API | <http://localhost:8080> | OAuth 2.0 + JWT |
 | Identity Provider Mock | <http://localhost:8081> | Simulates GitHub OAuth and GitHub REST API |
 | Donation API | <http://localhost:8082> | Project and donation management |
-| Reporting API | <http://localhost:8083> | Impact report and contribution history export; reads from the Donation API, no database; not part of the CI live tier or the smoke test yet |
+| Reporting API | <http://localhost:8083> | Impact report and contribution history export; reads from the Donation API, no database; started in the CI compose stack and covered by the smoke test, not by the Reqnroll live tier |
 | MongoDB | mongodb://localhost:27017 | Shared database instance |
 
 ### Container port note
