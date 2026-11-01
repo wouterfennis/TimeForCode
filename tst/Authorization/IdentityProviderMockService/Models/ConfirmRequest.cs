@@ -36,6 +36,8 @@ namespace IdentityProviderMockService.Models
         /// Optional persona that signs in
         /// </summary>
         [FromForm]
+        [StringLength(PersonaProfile.MaxLength)]
+        [RegularExpression(PersonaProfile.AllowedPattern)]
         public string? Persona { get; init; }
     }
 }

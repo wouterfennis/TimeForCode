@@ -27,9 +27,10 @@ namespace IdentityProviderMockService.Controllers
         {
             _logger.LogDebug("user is returned");
 
-#pragma warning disable S1075 // URIs should not be hardcoded, this is a mock
             string? persona = User.FindFirst(PersonaProfile.ClaimType)?.Value;
             uint id = PersonaProfile.IdFor(persona);
+
+#pragma warning disable S1075 // URIs should not be hardcoded, this is a mock
             var user = new UserResponse
             {
                 Id = id,

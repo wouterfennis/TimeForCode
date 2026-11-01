@@ -13,6 +13,7 @@ namespace IdentityProviderMockService.Tests
     internal sealed class MockSignIn : IDisposable
     {
         private const string RedirectUri = "http://localhost/callback";
+        // Program is static and cannot be a type argument, so any public type of the assembly marks it.
         private readonly WebApplicationFactory<LoginController> _factory = new();
         private readonly HttpClient _client;
 
@@ -23,8 +24,21 @@ namespace IdentityProviderMockService.Tests
 
         public async Task<string> GetAuthorizePageAsync(string? persona)
         {
+            using HttpResponseMessage response = await _client.GetAsync(AuthorizeUrl(persona));
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadAsStringAsync();
+        }
+
+        public async Task<HttpStatusCode> GetAuthorizeStatusAsync(string? persona)
+        {
+            using HttpResponseMessage response = await _client.GetAsync(AuthorizeUrl(persona));
+            return response.StatusCode;
+        }
+
+        private static string AuthorizeUrl(string? persona)
+        {
             string personaQuery = persona is null ? string.Empty : $"&persona={Uri.EscapeDataString(persona)}";
-            return await _client.GetStringAsync($"/login/oauth/authorize?state=s&redirect_uri={Uri.EscapeDataString(RedirectUri)}&client_id=c&scope=user{personaQuery}");
+            return $"/login/oauth/authorize?state=s&redirect_uri={Uri.EscapeDataString(RedirectUri)}&client_id=c&scope=user{personaQuery}";
         }
 
         public async Task<JsonElement> SignInAsync(string? persona)
@@ -72,7 +86,7 @@ namespace IdentityProviderMockService.Tests
 
         private static string? HiddenInput(string html, string name)
         {
-            Match match = Regex.Match(html, $"""<input type="hidden" name="{name}"\s+value="([^"]*)" />""");
+            Match match = Regex.Match(html, $"""<input type="hidden" name="{name}" value="([^"]*)" />""");
             return match.Success ? WebUtility.HtmlDecode(match.Groups[1].Value) : null;
         }
     }

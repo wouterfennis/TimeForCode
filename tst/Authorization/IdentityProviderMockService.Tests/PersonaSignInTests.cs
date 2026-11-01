@@ -1,4 +1,5 @@
 using AwesomeAssertions;
+using System.Net;
 using System.Text.Json;
 
 namespace IdentityProviderMockService.Tests
@@ -72,13 +73,81 @@ namespace IdentityProviderMockService.Tests
         }
 
         [TestMethod]
-        public async Task GetAuthorize_PersonaWithMarkup_IsHtmlEncoded()
+        public async Task GetAuthorize_PersonaWithMarkup_IsRejected()
         {
             using var mock = new MockSignIn();
 
-            string page = await mock.GetAuthorizePageAsync("<script>x</script>");
+            HttpStatusCode status = await mock.GetAuthorizeStatusAsync("<script>x</script>");
 
-            page.Should().NotContain("<script>x</script>");
+            status.Should().Be(HttpStatusCode.BadRequest);
+        }
+
+        [TestMethod]
+        public async Task GetAuthorize_PersonaLongerThanLimit_IsRejected()
+        {
+            using var mock = new MockSignIn();
+
+            HttpStatusCode status = await mock.GetAuthorizeStatusAsync(new string('a', 65));
+
+            status.Should().Be(HttpStatusCode.BadRequest);
+        }
+
+        [TestMethod]
+        public async Task SignIn_PersonaDifferingInCaseAndSpacing_ReturnsSameIdAndLogin()
+        {
+            using var mock = new MockSignIn();
+
+            JsonElement lower = await mock.SignInAsync("alice");
+            JsonElement mixed = await mock.SignInAsync(" Alice ");
+
+            mixed.GetProperty("id").GetUInt32().Should().Be(lower.GetProperty("id").GetUInt32());
+            mixed.GetProperty("login").GetString().Should().Be(lower.GetProperty("login").GetString());
+        }
+
+        [TestMethod]
+        public async Task SignIn_WhitespaceOnlyPersona_BehavesLikeNoPersona()
+        {
+            using var mock = new MockSignIn();
+
+            JsonElement user = await mock.SignInAsync("   ");
+
+            user.GetProperty("id").GetUInt32().Should().Be(1u);
+            user.GetProperty("login").GetString().Should().Be("johndoe");
+        }
+
+        [TestMethod]
+        public async Task GetAuthorize_WhitespaceOnlyPersona_ShowsMockUser()
+        {
+            using var mock = new MockSignIn();
+
+            string page = await mock.GetAuthorizePageAsync("   ");
+
+            page.Should().Contain("mock-user");
+        }
+
+        [TestMethod]
+        public async Task SignIn_WithoutPersona_KeepsOriginalNodeIdAndAvatar()
+        {
+            using var mock = new MockSignIn();
+
+            JsonElement user = await mock.SignInAsync(null);
+
+            user.GetProperty("node_id").GetString().Should().Be("MDQ6VXNlcjE=");
+            user.GetProperty("avatar_url").GetString().Should().Be("https://avatars.githubusercontent.com/u/1?v=4");
+        }
+
+        [TestMethod]
+        public async Task SignIn_TwentyPersonas_GetDistinctIds()
+        {
+            using var mock = new MockSignIn();
+            var ids = new HashSet<uint>();
+
+            for (int i = 0; i < 20; i++)
+            {
+                ids.Add((await mock.SignInAsync($"persona-{i}")).GetProperty("id").GetUInt32());
+            }
+
+            ids.Should().HaveCount(20);
         }
     }
 }

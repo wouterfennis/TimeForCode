@@ -36,6 +36,8 @@ namespace IdentityProviderMockService.Models
         /// Optional persona that signs in; each persona gets its own stable user profile
         /// </summary>
         [FromQuery]
+        [StringLength(PersonaProfile.MaxLength)]
+        [RegularExpression(PersonaProfile.AllowedPattern)]
         public string? Persona { get; init; }
     }
 }

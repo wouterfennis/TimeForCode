@@ -143,7 +143,7 @@ namespace IdentityProviderMockService.Controllers
             string caption = hasPersona ? "Signed in as this persona" : "Signed in as the mock user";
             string avatarLetter = char.ToUpperInvariant(displayName[0]).ToString();
             string personaInput = hasPersona
-                ? $"""<input type="hidden" name="persona"      value="{HtmlEncode(displayName)}" />"""
+                ? $"""<input type="hidden" name="persona" value="{HtmlEncode(displayName)}" />"""
                 : string.Empty;
 
             return RenderLoginHtml(request, displayName, caption, avatarLetter, personaInput);
