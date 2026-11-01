@@ -31,5 +31,11 @@ namespace IdentityProviderMockService.Models
         [FromForm(Name = "client_id")]
         [Required]
         public required string ClientId { get; init; }
+
+        /// <summary>
+        /// Optional persona that signs in
+        /// </summary>
+        [FromForm]
+        public string? Persona { get; init; }
     }
 }

@@ -98,6 +98,8 @@ The mock implements:
 - `GET /user/repos` — returns a list of stub repositories.
 - `GET /repos/{owner}/{repo}` — returns repository metadata for any owner/repo combination; used by the Donation API when registering a project locally.
 
+Personas: the authorize page accepts an optional `persona` query parameter, shown instead of `mock-user` and carried through the confirm form and the access token to `GET /user`. Each persona gets a stable, distinct id (hash of the name, at least 1000) and the persona name as login; without a persona the profile stays `johndoe` with id 1. The behaviour is covered by `tst/Authorization/IdentityProviderMockService.Tests`.
+
 ### Donation — Specifications
 
 **Path**: `tst/Donation/TimeForCode.Donation.Specifications`
