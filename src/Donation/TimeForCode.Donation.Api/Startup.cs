@@ -1,7 +1,4 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
 using System.Diagnostics.CodeAnalysis;
-using TimeForCode.Donation.Api.Options;
 using TimeForCode.Donation.Application.Extensions;
 using TimeForCode.Donation.Infrastructure.Extensions;
 using TimeForCode.Shared.Api.Extensions;
@@ -15,8 +12,6 @@ namespace TimeForCode.Donation.Api
     [ExcludeFromCodeCoverage(Justification = "Application startup wiring")]
     public class Startup
     {
-        private const string ScopeClaim = "scope";
-
         private IConfiguration _configuration { get; }
 
         /// <summary>
@@ -39,29 +34,13 @@ namespace TimeForCode.Donation.Api
                     "API to interact with the donation backend"));
             services.AddDefaultControllers();
 
-            var authenticationOptions = AuthenticationOptions.Bind(_configuration);
-
-            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .AddJwtBearer(options =>
-                {
-                    options.Authority = authenticationOptions.Authority;
-                    options.RequireHttpsMetadata = authenticationOptions.RequireHttpsMetadata;
-                    options.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        ValidateIssuer = true,
-                        ValidateAudience = true,
-                        ValidateLifetime = true,
-                        ValidateIssuerSigningKey = true,
-                        ValidIssuer = authenticationOptions.Issuer,
-                        ValidAudience = authenticationOptions.Audience
-                    };
-                });
+            services.AddJwtBearerAuthentication(_configuration);
 
             services.AddAuthorizationBuilder()
-                    .AddPolicy("ApiUser", policy => policy.RequireClaim(ScopeClaim, "user"))
-                    .AddPolicy("ApiAdmin", policy => policy.RequireClaim(ScopeClaim, "admin"))
-                    .AddPolicy("ApiUserOrAdmin", policy => policy.RequireClaim(ScopeClaim, "user", "admin"))
-                    .AddPolicy("ApiService", policy => policy.RequireClaim(ScopeClaim, "service"));
+                    .AddPolicy("ApiUser", policy => policy.RequireClaim(AuthenticationExtensions.ScopeClaim, "user"))
+                    .AddPolicy("ApiAdmin", policy => policy.RequireClaim(AuthenticationExtensions.ScopeClaim, "admin"))
+                    .AddPolicy("ApiUserOrAdmin", policy => policy.RequireClaim(AuthenticationExtensions.ScopeClaim, "user", "admin"))
+                    .AddPolicy("ApiService", policy => policy.RequireClaim(AuthenticationExtensions.ScopeClaim, "service"));
 
             services.AddApplicationLayer();
             services.AddInfrastructureLayer(_configuration);

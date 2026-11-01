@@ -1,7 +1,4 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
 using System.Diagnostics.CodeAnalysis;
-using TimeForCode.Reporting.Api.Options;
 using TimeForCode.Reporting.Application.Extensions;
 using TimeForCode.Reporting.Infrastructure.Extensions;
 using TimeForCode.Shared.Api.Extensions;
@@ -15,8 +12,6 @@ namespace TimeForCode.Reporting.Api
     [ExcludeFromCodeCoverage(Justification = "Application startup wiring")]
     public class Startup
     {
-        private const string ScopeClaim = "scope";
-
         private IConfiguration _configuration { get; }
 
         /// <summary>
@@ -39,26 +34,10 @@ namespace TimeForCode.Reporting.Api
                     "API for the impact report and contribution history export of donor organizations"));
             services.AddDefaultControllers();
 
-            var authenticationOptions = AuthenticationOptions.Bind(_configuration);
-
-            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .AddJwtBearer(options =>
-                {
-                    options.Authority = authenticationOptions.Authority;
-                    options.RequireHttpsMetadata = authenticationOptions.RequireHttpsMetadata;
-                    options.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        ValidateIssuer = true,
-                        ValidateAudience = true,
-                        ValidateLifetime = true,
-                        ValidateIssuerSigningKey = true,
-                        ValidIssuer = authenticationOptions.Issuer,
-                        ValidAudience = authenticationOptions.Audience
-                    };
-                });
+            services.AddJwtBearerAuthentication(_configuration);
 
             services.AddAuthorizationBuilder()
-                    .AddPolicy("ApiUserOrAdmin", policy => policy.RequireClaim(ScopeClaim, "user", "admin"));
+                    .AddPolicy("ApiUserOrAdmin", policy => policy.RequireClaim(AuthenticationExtensions.ScopeClaim, "user", "admin"));
 
             services.AddApplicationLayer();
             services.AddInfrastructureLayer(_configuration);
