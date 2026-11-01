@@ -22,6 +22,29 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/donororganization/{id}/contribution": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Returns the contributions logged by the contributors affiliated with a donor organization, earliest first.
+         *     Allowed for contributors affiliated with the organization and for administrators.
+         * @description The list is not paged and holds at most 10000 contributions, earliest first; there is no indication when more exist, so totals
+         *     built from it are incomplete for very large organizations. Contributions are attributed by the contributor's current
+         *     affiliation, so a contributor who moves to another organization takes their history along. Deleted contributions are left out.
+         */
+        get: operations["GetDonorOrganizationContributions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/project/{id}/contribution/{contributionId}": {
         parameters: {
             query?: never;
@@ -112,7 +135,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Returns the contributors affiliated with a donor organization, ordered by GitHub login. Administrators only. */
+        /**
+         * Returns the contributors affiliated with a donor organization, ordered by GitHub login. Administrators only.
+         * @description The list is not paged and holds at most 1000 contributors; there is no indication when more exist.
+         */
         get: operations["GetDonorOrganizationContributors"];
         put?: never;
         post?: never;
@@ -134,6 +160,27 @@ export interface paths {
         put?: never;
         /** Pledges hours to an active project, as an individual or for a donor organization (never both). The donation starts as Pending. */
         post: operations["PledgeDonation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/donororganization/{id}/donation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Returns the donations pledged for a donor organization, oldest first, with their progress.
+         *     Allowed for contributors affiliated with the organization and for administrators.
+         * @description The list is not paged and, like the other donation listings, is capped; there is no indication when more donations exist.
+         */
+        get: operations["GetDonorOrganizationDonations"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -999,6 +1046,83 @@ export interface operations {
             };
         };
     };
+    GetDonorOrganizationContributions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The donor organization identifier. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GetContributionsResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Too many requests. Retry after the number of seconds given in the Retry-After header. */
+            429: {
+                headers: {
+                    /** @description Number of seconds to wait before retrying. */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     CorrectContribution: {
         parameters: {
             query?: never;
@@ -1741,6 +1865,83 @@ export interface operations {
             };
             /** @description Conflict */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Too many requests. Retry after the number of seconds given in the Retry-After header. */
+            429: {
+                headers: {
+                    /** @description Number of seconds to wait before retrying. */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    GetDonorOrganizationDonations: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The donor organization identifier. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GetDonationsResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not Found */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
