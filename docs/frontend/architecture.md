@@ -125,10 +125,10 @@ Login starts with a browser navigation to the Authorization API login endpoint (
 ## API client generation
 
 - Source of truth: the committed OpenAPI snapshots next to each API (see [ADR-007](../reference/adr/0007-swagger-snapshot-gate.md)).
-- `npm run generate:api` generates `src/api/donation.d.ts` from the Donation snapshot with `openapi-typescript`. It runs through `npx` with exact versions of `openapi-typescript` and TypeScript 5, because `openapi-typescript` needs the JavaScript compiler API that the native TypeScript 7 compiler of this project does not have. The requests go through `openapi-fetch`, so request and response types come from the generated file only.
+- `npm run generate:api` generates `src/api/donation.d.ts` (and the Authorization and Reporting files, see below) from the snapshots with `openapi-typescript`. It runs through `npx` with exact versions of `openapi-typescript` and TypeScript 5, because `openapi-typescript` needs the JavaScript compiler API that the native TypeScript 7 compiler of this project does not have. The requests go through `openapi-fetch`, so request and response types come from the generated file only.
 - **Decision (#112): the generated output is committed**, and CI fails when it is stale. `npm run check:api` regenerates it and fails on any `git diff` (step "API types up to date" in the `frontend` job). Committing keeps the Docker build free of files outside the front-end folder and shows API changes in the pull request diff.
 - When a backend change alters a snapshot, `check:api` fails until the types are regenerated and committed; after that `typecheck` shows what the front-end must change. That is the contract gate for the front-end.
-- The Authorization snapshot gets its own generated file when the first feature calls it (#113).
+- The Authorization and Reporting snapshots have their own generated files (`authorization.d.ts`, `reporting.d.ts`, scripts `generate:api:<name>`). No typed client exists for them yet: it is added with the first feature that calls them, together with the BFF route (#113).
 - The generated paths are the API's own (`/api/v1/Project`); `src/api/donationClient.ts` adds the `/api/donation` prefix of the front-end origin to each request.
 
 ## Dev server against the local stack

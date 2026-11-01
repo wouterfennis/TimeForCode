@@ -8,7 +8,10 @@
   },
   "scripts": {
     "dev": "vite",
-    "generate:api": "npx --yes --package=typescript@5.9.3 --package=openapi-typescript@7.13.0 openapi-typescript ../../Donation/TimeForCode.Donation.Api/TimeForCode.Donation.Api.json -o src/api/donation.d.ts",
+    "generate:api": "npm run generate:api:donation && npm run generate:api:authorization && npm run generate:api:reporting",
+    "generate:api:donation": "npx --yes --package=typescript@5.9.3 --package=openapi-typescript@7.13.0 openapi-typescript ../../Donation/TimeForCode.Donation.Api/TimeForCode.Donation.Api.json -o src/api/donation.d.ts",
+    "generate:api:authorization": "npx --yes --package=typescript@5.9.3 --package=openapi-typescript@7.13.0 openapi-typescript ../../Authorization/TimeForCode.Authorization.Api/TimeForCode.Authorization.Api.json -o src/api/authorization.d.ts",
+    "generate:api:reporting": "npx --yes --package=typescript@5.9.3 --package=openapi-typescript@7.13.0 openapi-typescript ../../Reporting/TimeForCode.Reporting.Api/TimeForCode.Reporting.Api.json -o src/api/reporting.d.ts",
     "build": "tsc -b && vite build",
     "lint": "oxlint --deny-warnings src tests vite.config.ts",
     "typecheck": "tsc -b",
