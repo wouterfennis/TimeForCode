@@ -82,6 +82,8 @@ services:
       - AuthenticationOptions__Authority=http://authorization-api:8080
       - AuthenticationOptions__Issuer=http://authorization-api:8080
       - AuthenticationOptions__Audience=http://localhost:8082
+      # The live scenarios and Reporting's calls on behalf of users exceed the default 60 requests per minute.
+      - RateLimiting__ApiPermitLimit=600
       - DbOptions__ConnectionString=mongodb://root:example@mongo:27017/?authSource=admin
       - DbOptions__DatabaseName=TimeForCode
       - GithubApiOptions__BaseUrl=http://identity-provider-mock:8080
@@ -106,6 +108,7 @@ services:
       - AuthenticationOptions__Authority=http://authorization-api:8080
       - AuthenticationOptions__Issuer=http://authorization-api:8080
       - AuthenticationOptions__Audience=http://localhost:8083
+      - RateLimiting__ApiPermitLimit=600
       - DonationApiOptions__BaseUri=http://donation-api:8080
     depends_on:
       - donation-api

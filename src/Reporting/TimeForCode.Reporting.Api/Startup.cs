@@ -41,7 +41,7 @@ namespace TimeForCode.Reporting.Api
 
             services.AddApplicationLayer();
             services.AddInfrastructureLayer(_configuration);
-            services.AddRateLimiter(options => options.AddDefaultSlidingWindowPolicy("api", 60));
+            services.AddRateLimiter(options => options.AddDefaultSlidingWindowPolicy("api", _configuration.GetApiPermitLimit()));
         }
 
         /// <summary>
