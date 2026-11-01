@@ -27,15 +27,18 @@ namespace IdentityProviderMockService.Controllers
         {
             _logger.LogDebug("user is returned");
 
+            string? persona = User.FindFirst(PersonaProfile.ClaimType)?.Value;
+            uint id = PersonaProfile.IdFor(persona);
+
 #pragma warning disable S1075 // URIs should not be hardcoded, this is a mock
             var user = new UserResponse
             {
-                Id = 1,
+                Id = id,
                 Name = User.Claims.Single(x => x.Type == ClaimTypes.NameIdentifier)?.Value!,
                 Email = "something@something.org",
-                Login = "johndoe",
-                NodeId = "MDQ6VXNlcjE=",
-                AvatarUrl = "https://avatars.githubusercontent.com/u/1?v=4",
+                Login = PersonaProfile.LoginFor(persona),
+                NodeId = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes($"04:User{id}")),
+                AvatarUrl = $"https://avatars.githubusercontent.com/u/{id}?v=4",
                 Company = "GitHub"
             };
 #pragma warning restore S1075 // URIs should not be hardcoded

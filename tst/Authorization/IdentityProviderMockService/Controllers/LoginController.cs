@@ -59,7 +59,8 @@ namespace IdentityProviderMockService.Controllers
                 State = request.State,
                 RedirectUri = request.RedirectUri,
                 Scope = request.Scope,
-                ClientId = request.ClientId
+                ClientId = request.ClientId,
+                Persona = request.Persona
             });
 
             var uriBuilder = new UriBuilder(request.RedirectUri);
@@ -109,6 +110,10 @@ namespace IdentityProviderMockService.Controllers
             {
                 { "scope", authorizeDetails!.Scope ?? string.Empty }
             };
+            if (!string.IsNullOrWhiteSpace(authorizeDetails.Persona))
+            {
+                claims[PersonaProfile.ClaimType] = authorizeDetails.Persona;
+            }
 
             var tokenHandler = new JwtSecurityTokenHandler();
             var tokenDescriptor = new SecurityTokenDescriptor
@@ -131,7 +136,20 @@ namespace IdentityProviderMockService.Controllers
             });
         }
 
-        private static string BuildLoginHtml(AuthorizeRequest request) => $$"""
+        private static string BuildLoginHtml(AuthorizeRequest request)
+        {
+            bool hasPersona = !string.IsNullOrWhiteSpace(request.Persona);
+            string displayName = hasPersona ? request.Persona!.Trim() : "mock-user";
+            string caption = hasPersona ? "Signed in as this persona" : "Signed in as the mock user";
+            string avatarLetter = char.ToUpperInvariant(displayName[0]).ToString();
+            string personaInput = hasPersona
+                ? $"""<input type="hidden" name="persona" value="{HtmlEncode(displayName)}" />"""
+                : string.Empty;
+
+            return RenderLoginHtml(request, displayName, caption, avatarLetter, personaInput);
+        }
+
+        private static string RenderLoginHtml(AuthorizeRequest request, string displayName, string caption, string avatarLetter, string personaInput) => $$"""
             <!DOCTYPE html>
             <html lang="en">
             <head>
@@ -180,10 +198,10 @@ namespace IdentityProviderMockService.Controllers
                 <div class="logo">&#128274;</div>
                 <h1>Authorize application</h1>
                 <div class="user-badge">
-                  <div class="avatar">M</div>
+                  <div class="avatar">{{HtmlEncode(avatarLetter)}}</div>
                   <div class="user-info">
-                    <strong>mock-user</strong>
-                    <small>Signed in as the mock user</small>
+                    <strong>{{HtmlEncode(displayName)}}</strong>
+                    <small>{{HtmlEncode(caption)}}</small>
                   </div>
                 </div>
                 <p class="scope-note">
@@ -195,6 +213,7 @@ namespace IdentityProviderMockService.Controllers
                   <input type="hidden" name="redirect_uri" value="{{HtmlEncode(request.RedirectUri)}}" />
                   <input type="hidden" name="client_id"    value="{{HtmlEncode(request.ClientId)}}" />
                   <input type="hidden" name="scope"        value="{{HtmlEncode(request.Scope ?? string.Empty)}}" />
+                  {{personaInput}}
                   <button type="submit">Authorize</button>
                 </form>
                 <p class="mock-notice">&#9432;&nbsp;This is a <strong>mock</strong> identity provider for testing.</p>
