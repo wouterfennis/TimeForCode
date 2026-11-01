@@ -228,7 +228,7 @@ Reqnroll turns the `@live` tag into the MSTest category `live`, so `--filter "Te
 
 #### Donation live scenarios
 
-The Donation Specifications run real scenarios against the compose stack with real Mongo. `Given The user has an access token` and `Given The user has an administrator access token` switch to real tokens on a live host (`Mocking/LiveAuthentication.cs`):
+The Donation Specifications run real scenarios against the compose stack with real Mongo. `Given The user has an access token` and `Given The user has an administrator access token` switch to real tokens on a live host (`tst/Shared/TimeForCode.Shared.Live/LiveAuthentication.cs`):
 
 - **User token:** a login round trip through the Authorization API and the mock identity provider, the same path as the smoke test. It proves a JWT issued by the Authorization API is accepted by the Donation API. The mock always signs in the same user.
 - **Administrator token:** the test-only admin endpoint (see above), which needs the stack's secret.
@@ -264,7 +264,7 @@ Covered live: contributor profile (including the Auth-issued JWT), project publi
 
 #### Reporting live scenarios
 
-The Reporting Specifications reuse the Donation live sign-in (`LiveAuthentication.cs` and `LiveTokenCache.cs` are compiled into the project as links, not copied) and need the same variables plus `TIMEFORCODE_LIVE_REPORTING_URL` and `TIMEFORCODE_LIVE_DONATION_URL`. On a live host `There is a donor organization on the time for code platform` registers a unique organization through the Donation API with its own token and an `@live` clean-up deletes it as administrator. Covered live: the anonymous 401, the unknown organization 404, the non-member 403 relayed from the Donation API, the administrator export of a registered organization, and the administrator impact report of a registered organization (`@liveonly`). Scenarios that need a membership, donations or logged hours stay in-process, because membership is self-declared in the Donation context and cannot be arranged through its API without further steps.
+The Reporting Specifications reuse the live sign-in through the shared `TimeForCode.Shared.Live` library (`LiveAuthentication`, `LiveTokenCache`; its tests are in `TimeForCode.Shared.Tests`) and need the same variables plus `TIMEFORCODE_LIVE_REPORTING_URL` and `TIMEFORCODE_LIVE_DONATION_URL`. On a live host `There is a donor organization on the time for code platform` registers a unique organization through the Donation API with its own token and an `@live` clean-up deletes it as administrator. Covered live: the anonymous 401, the unknown organization 404, the non-member 403 relayed from the Donation API, the administrator export of a registered organization, and the administrator impact report of a registered organization (`@liveonly`). Scenarios that need a membership, donations or logged hours stay in-process, because membership is self-declared in the Donation context and cannot be arranged through its API without further steps.
 
 ### Front-end tests
 

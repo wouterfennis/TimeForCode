@@ -4,18 +4,18 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using TimeForCode.Shared.Api.Authentication.Models;
 
-namespace TimeForCode.Donation.Specifications.Mocking
+namespace TimeForCode.Shared.Live
 {
     /// <summary>
     /// Obtains real access tokens from the Authorization API of the compose stack for <c>@live</c> scenarios.
     /// </summary>
-    internal static partial class LiveAuthentication
+    public static partial class LiveAuthentication
     {
         public const string AuthorizationUrlVariable = "TIMEFORCODE_LIVE_AUTHORIZATION_URL";
         public const string TestAdminSecretVariable = "TIMEFORCODE_LIVE_TEST_ADMIN_SECRET";
         public const string ClientRedirectUriVariable = "TIMEFORCODE_LIVE_CLIENT_REDIRECT_URI";
 
-        private const string DefaultClientRedirectUri = "http://localhost:8084";
+        private const string DefaultClientRedirectUri = "http://localhost:8084"; // NOSONAR S1075: local compose frontend address, overridable via the environment variable
         private const string AccessTokenCookie = "AccessToken";
 
         private static readonly TimeSpan RequestTimeout = TimeSpan.FromSeconds(30);

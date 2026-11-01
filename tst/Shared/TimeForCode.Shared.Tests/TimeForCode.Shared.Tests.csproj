@@ -26,6 +26,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\Shared\TimeForCode.Shared\TimeForCode.Shared.csproj" />
+    <ProjectReference Include="..\TimeForCode.Shared.Live\TimeForCode.Shared.Live.csproj" />
   </ItemGroup>
 
   <ItemGroup>

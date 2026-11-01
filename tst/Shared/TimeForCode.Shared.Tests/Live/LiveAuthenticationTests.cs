@@ -1,6 +1,7 @@
 using AwesomeAssertions;
+using TimeForCode.Shared.Live;
 
-namespace TimeForCode.Donation.Specifications.Mocking
+namespace TimeForCode.Shared.Tests.Live
 {
     [TestClass]
     public class LiveAuthenticationTests

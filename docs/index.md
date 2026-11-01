@@ -69,6 +69,7 @@ The interactive [architecture model](https://wouterfennis.github.io/TimeForCode/
 | [Glossary](reference/glossary.md) | Shared domain and technical terms |
 | [ADR Index](reference/adr/README.md) | Architecture Decision Records |
 | [Personal data](reference/personal-data.md) | Stored personal data, purpose, retention and account deletion |
+| [Expose a local container on the LAN](reference/expose-local-container-on-lan.md) | Let other devices on the Wi-Fi reach a Podman container on Windows |
 | [Docs Conventions](README.md) | Documentation standards, status labels, and authoring rules |
 
 ---

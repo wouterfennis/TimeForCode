@@ -1,9 +1,9 @@
 using System.IdentityModel.Tokens.Jwt;
 
-namespace TimeForCode.Donation.Specifications.Mocking
+namespace TimeForCode.Shared.Live
 {
     /// <summary>Keeps a JWT until shortly before it expires and never keeps a failed or unreadable acquisition.</summary>
-    internal sealed class LiveTokenCache
+    public sealed class LiveTokenCache
     {
         private static readonly TimeSpan ExpiryMargin = TimeSpan.FromMinutes(1);
 
