@@ -104,12 +104,12 @@ namespace TimeForCode.Reporting.Specifications.Steps
             return JsonDocument.Parse(_context.LastBody!).RootElement;
         }
 
-        private IEnumerable<JsonElement> ExportedContributions()
+        private JsonElement[] ExportedContributions()
         {
             return JsonDocument.Parse(_context.LastBody!).RootElement.GetProperty("contributions").EnumerateArray().ToArray();
         }
 
-        private IEnumerable<string> CsvLines()
+        private string[] CsvLines()
         {
             return _context.LastBody!.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         }

@@ -74,7 +74,7 @@ namespace TimeForCode.Reporting.Infrastructure.Services
             }
             catch (ApiException exception) when (exception.StatusCode is 401 or 403 or 404)
             {
-                _logger.LogWarning("The Donation API refused the {What} of donor organization {DonorOrganizationId} with status {StatusCode}", what, donorOrganizationId, exception.StatusCode);
+                _logger.LogWarning(exception, "The Donation API refused the {What} of donor organization {DonorOrganizationId} with status {StatusCode}", what, donorOrganizationId, exception.StatusCode);
                 return Result<IReadOnlyList<T>>.Failure(RefusalMessage(exception.StatusCode), (HttpStatusCode)exception.StatusCode);
             }
             catch (ApiException exception)

@@ -76,7 +76,7 @@ namespace TimeForCode.Reporting.Architecture.Tests
             Assert.IsTrue(rule.HasNoViolations(Architecture), Describe(rule));
         }
 
-        private string Describe(ArchUnitNET.Fluent.IArchRule rule)
+        private string Describe(ArchUnitNET.Fluent.Syntax.Elements.Types.TypesShouldConjunctionWithDescription rule)
         {
             return string.Join(Environment.NewLine, rule.Evaluate(Architecture).Where(x => !x.Passed).Select(x => x.Description));
         }
