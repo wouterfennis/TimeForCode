@@ -2,6 +2,7 @@ using AwesomeAssertions;
 using Reqnroll;
 using TimeForCode.Donation.Api.Client;
 using TimeForCode.Donation.Specifications.Mocking;
+using TimeForCode.Shared.Live;
 
 namespace TimeForCode.Donation.Specifications.Steps
 {

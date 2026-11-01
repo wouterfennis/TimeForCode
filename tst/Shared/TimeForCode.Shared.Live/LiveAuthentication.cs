@@ -4,12 +4,12 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using TimeForCode.Shared.Api.Authentication.Models;
 
-namespace TimeForCode.Donation.Specifications.Mocking
+namespace TimeForCode.Shared.Live
 {
     /// <summary>
     /// Obtains real access tokens from the Authorization API of the compose stack for <c>@live</c> scenarios.
     /// </summary>
-    internal static partial class LiveAuthentication
+    public static partial class LiveAuthentication
     {
         public const string AuthorizationUrlVariable = "TIMEFORCODE_LIVE_AUTHORIZATION_URL";
         public const string TestAdminSecretVariable = "TIMEFORCODE_LIVE_TEST_ADMIN_SECRET";

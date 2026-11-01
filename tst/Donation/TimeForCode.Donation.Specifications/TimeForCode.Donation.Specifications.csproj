@@ -32,6 +32,7 @@
     <ProjectReference Include="..\..\..\src\Donation\TimeForCode.Donation.Api.Client\TimeForCode.Donation.Api.Client.csproj" />
     <ProjectReference Include="..\..\..\src\Donation\TimeForCode.Donation.Api\TimeForCode.Donation.Api.csproj" />
     <ProjectReference Include="..\..\..\src\Donation\TimeForCode.Donation.Infrastructure\TimeForCode.Donation.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\Shared\TimeForCode.Shared.Live\TimeForCode.Shared.Live.csproj" />
   </ItemGroup>
 
   <ItemGroup>
