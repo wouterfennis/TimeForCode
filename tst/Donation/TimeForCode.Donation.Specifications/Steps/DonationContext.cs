@@ -35,6 +35,9 @@ namespace TimeForCode.Donation.Specifications.Steps
 
         public GetDonationsResponse? DonationsResult { get; set; }
 
+        /// <summary>Total number of items the last donor organization listing reported, whatever its page size.</summary>
+        public int? OrganizationListingTotal { get; set; }
+
         /// <summary>Runs an API call and keeps a failed response in <see cref="LastException"/> for the Then-steps.</summary>
         public async Task CaptureAsync(Func<Task> apiCall)
         {

@@ -15,8 +15,8 @@ namespace TimeForCode.Reporting.Infrastructure.Tests
         private const string BaseUri = "http://donation.test/";
         private const string OrganizationId = "507f1f77bcf86cd799439013";
         private const string AccessToken = "token-of-the-caller";
-        private const string DonationsUrl = BaseUri + "api/v1/donororganization/" + OrganizationId + "/donation";
-        private const string ContributionsUrl = BaseUri + "api/v1/donororganization/" + OrganizationId + "/contribution";
+        private const string DonationsUrl = BaseUri + "api/v1/donororganization/" + OrganizationId + "/donation*";
+        private const string ContributionsUrl = BaseUri + "api/v1/donororganization/" + OrganizationId + "/contribution*";
 
         private MockHttpMessageHandler _mockHttp = default!;
         private DonationApiDataSource _sut = default!;
@@ -41,14 +41,14 @@ namespace TimeForCode.Reporting.Infrastructure.Tests
             {"donations":[
               {"id":"507f1f77bcf86cd799439041","projectId":"507f1f77bcf86cd799439021","donorOrganizationId":"507f1f77bcf86cd799439013","status":"Active","hoursCommitted":10,"hoursLogged":4,"progressPercentage":40,"createdAt":"2026-10-01T09:00:00+00:00"},
               {"id":"507f1f77bcf86cd799439042","projectId":"507f1f77bcf86cd799439022","status":"Completed","hoursCommitted":6,"hoursLogged":6,"progressPercentage":100,"createdAt":"2026-10-02T09:00:00+00:00"}
-            ]}
+            ],"totalCount":2,"pageNumber":1,"pageSize":100}
             """;
 
         private const string ContributionsJson = """
             {"contributions":[
               {"id":"507f1f77bcf86cd799439031","projectId":"507f1f77bcf86cd799439021","contributorId":"507f1f77bcf86cd799439051","contributorGitHubLogin":"octocat","contributorAvatarUrl":"https://avatars.githubusercontent.com/u/1","hours":4,"githubReference":"https://github.com/acme/app/pull/7","loggedAt":"2026-10-02T09:00:00+00:00"},
               {"id":"507f1f77bcf86cd799439032","projectId":"507f1f77bcf86cd799439021","contributorId":"507f1f77bcf86cd799439051","contributorGitHubLogin":"octocat","contributorAvatarUrl":"https://avatars.githubusercontent.com/u/1","hours":2,"loggedAt":"2026-10-03T09:00:00+00:00"}
-            ]}
+            ],"totalCount":2,"pageNumber":1,"pageSize":100}
             """;
 
         [TestMethod]
@@ -67,6 +67,80 @@ namespace TimeForCode.Reporting.Infrastructure.Tests
             _mockHttp.VerifyNoOutstandingExpectation();
         }
 
+        private static string DonationPage(int pageNumber, int totalCount, params string[] projectIds)
+        {
+            var donations = string.Join(",", projectIds.Select(projectId =>
+                $$"""{"id":"507f1f77bcf86cd799439041","projectId":"{{projectId}}","status":"Active","hoursCommitted":1,"hoursLogged":0,"progressPercentage":0,"createdAt":"2026-10-01T09:00:00+00:00"}"""));
+            return $$"""{"donations":[{{donations}}],"totalCount":{{totalCount}},"pageNumber":{{pageNumber}},"pageSize":100}""";
+        }
+
+        private static string ContributionPage(int pageNumber, int totalCount, params string[] contributionIds)
+        {
+            var contributions = string.Join(",", contributionIds.Select(id =>
+                $$"""{"id":"{{id}}","projectId":"507f1f77bcf86cd799439021","contributorId":"507f1f77bcf86cd799439051","contributorGitHubLogin":"octocat","contributorAvatarUrl":"https://avatars.githubusercontent.com/u/1","hours":1,"loggedAt":"2026-10-02T09:00:00+00:00"}"""));
+            return $$"""{"contributions":[{{contributions}}],"totalCount":{{totalCount}},"pageNumber":{{pageNumber}},"pageSize":100}""";
+        }
+
+        [TestMethod]
+        public async Task GetDonationsAsync_MoreThanOnePage_ReturnsTheDonationsOfEveryPage()
+        {
+            _mockHttp.Expect(HttpMethod.Get, DonationsUrl).WithQueryString("pageNumber", "1").WithQueryString("pageSize", "100")
+                .Respond("application/json", DonationPage(1, 3, "507f1f77bcf86cd799439021", "507f1f77bcf86cd799439022"));
+            _mockHttp.Expect(HttpMethod.Get, DonationsUrl).WithQueryString("pageNumber", "2").WithQueryString("pageSize", "100")
+                .Respond("application/json", DonationPage(2, 3, "507f1f77bcf86cd799439023"));
+
+            var result = await _sut.GetDonationsAsync(OrganizationId, AccessToken, CancellationToken.None);
+
+            result.Value.Select(d => d.ProjectId).Should().Equal("507f1f77bcf86cd799439021", "507f1f77bcf86cd799439022", "507f1f77bcf86cd799439023");
+            _mockHttp.VerifyNoOutstandingExpectation();
+        }
+
+        [TestMethod]
+        public async Task GetDonationsAsync_LaterPageFails_ReturnsBadGateway()
+        {
+            _mockHttp.Expect(HttpMethod.Get, DonationsUrl).WithQueryString("pageNumber", "1")
+                .Respond("application/json", DonationPage(1, 2, "507f1f77bcf86cd799439021"));
+            _mockHttp.Expect(HttpMethod.Get, DonationsUrl).WithQueryString("pageNumber", "2")
+                .Respond(HttpStatusCode.InternalServerError);
+
+            var result = await _sut.GetDonationsAsync(OrganizationId, AccessToken, CancellationToken.None);
+
+            result.FailureStatusCode.Should().Be(HttpStatusCode.BadGateway);
+        }
+
+        [TestMethod]
+        public async Task GetContributionsAsync_MoreThanOnePage_ReturnsTheContributionsOfEveryPage()
+        {
+            _mockHttp.Expect(HttpMethod.Get, ContributionsUrl).WithQueryString("pageNumber", "1").WithQueryString("pageSize", "100")
+                .Respond("application/json", ContributionPage(1, 3, "507f1f77bcf86cd799439031", "507f1f77bcf86cd799439032"));
+            _mockHttp.Expect(HttpMethod.Get, ContributionsUrl).WithQueryString("pageNumber", "2").WithQueryString("pageSize", "100")
+                .Respond("application/json", ContributionPage(2, 3, "507f1f77bcf86cd799439033"));
+
+            var result = await _sut.GetContributionsAsync(OrganizationId, AccessToken, CancellationToken.None);
+
+            result.Value.Select(c => c.Id).Should().Equal("507f1f77bcf86cd799439031", "507f1f77bcf86cd799439032", "507f1f77bcf86cd799439033");
+            _mockHttp.VerifyNoOutstandingExpectation();
+        }
+
+        [TestMethod]
+        public async Task GetContributionsAsync_PageIsEmptyBeforeTheTotalIsReached_StopsAskingForMore()
+        {
+            var requests = 0;
+            _mockHttp.When(ContributionsUrl).Respond(_ =>
+            {
+                requests++;
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(ContributionPage(requests, 5), System.Text.Encoding.UTF8, "application/json")
+                };
+            });
+
+            var result = await _sut.GetContributionsAsync(OrganizationId, AccessToken, CancellationToken.None);
+
+            result.Value.Should().BeEmpty();
+            requests.Should().Be(1);
+        }
+
         [TestMethod]
         [DataRow("Pending", DonationStatus.Pending)]
         [DataRow("Active", DonationStatus.Active)]
@@ -75,7 +149,7 @@ namespace TimeForCode.Reporting.Infrastructure.Tests
         public async Task GetDonationsAsync_EveryStatus_IsMapped(string status, DonationStatus expected)
         {
             _mockHttp.When(DonationsUrl).Respond("application/json",
-                $$"""{"donations":[{"id":"507f1f77bcf86cd799439041","projectId":"507f1f77bcf86cd799439021","status":"{{status}}","hoursCommitted":1,"hoursLogged":0,"progressPercentage":0,"createdAt":"2026-10-01T09:00:00+00:00"}]}""");
+                $$"""{"donations":[{"id":"507f1f77bcf86cd799439041","projectId":"507f1f77bcf86cd799439021","status":"{{status}}","hoursCommitted":1,"hoursLogged":0,"progressPercentage":0,"createdAt":"2026-10-01T09:00:00+00:00"}],"totalCount":1,"pageNumber":1,"pageSize":100}""");
 
             var result = await _sut.GetDonationsAsync(OrganizationId, AccessToken, CancellationToken.None);
 
@@ -175,7 +249,7 @@ namespace TimeForCode.Reporting.Infrastructure.Tests
                 methods.Add(request.Method);
                 return new HttpResponseMessage(HttpStatusCode.OK)
                 {
-                    Content = new StringContent("""{"donations":[],"contributions":[]}""", System.Text.Encoding.UTF8, "application/json")
+                    Content = new StringContent("""{"donations":[],"contributions":[],"totalCount":0,"pageNumber":1,"pageSize":100}""", System.Text.Encoding.UTF8, "application/json")
                 };
             });
 

@@ -190,8 +190,8 @@
         "tags": [
           "Contribution"
         ],
-        "summary": "Returns the contributions logged by the contributors affiliated with a donor organization, earliest first.\nAllowed for contributors affiliated with the organization and for administrators.",
-        "description": "The list is not paged and holds at most 10000 contributions, earliest first; there is no indication when more exist, so totals\nbuilt from it are incomplete for very large organizations. Contributions are attributed by the contributor's current\naffiliation, so a contributor who moves to another organization takes their history along. Deleted contributions are left out.",
+        "summary": "Returns a page of the contributions logged by the contributors affiliated with a donor organization, earliest first.\nAllowed for contributors affiliated with the organization and for administrators.",
+        "description": "Contributions are attributed by the contributor's current affiliation, so a contributor who moves to another organization\ntakes their history along. Deleted contributions are left out.",
         "operationId": "GetDonorOrganizationContributions",
         "parameters": [
           {
@@ -203,6 +203,38 @@
               "pattern": "^[0-9a-fA-F]{24}$",
               "type": "string"
             }
+          },
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "description": "The page number (1 to 10000, default 1).",
+            "schema": {
+              "maximum": 10000,
+              "minimum": 1,
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32",
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "description": "The number of items per page (1 to 100, default 20).",
+            "schema": {
+              "maximum": 100,
+              "minimum": 1,
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32",
+              "default": 20
+            }
           }
         ],
         "responses": {
@@ -211,7 +243,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/GetContributionsResponse"
+                  "$ref": "#/components/schemas/GetDonorOrganizationContributionsResponse"
                 }
               }
             }
@@ -1271,8 +1303,7 @@
         "tags": [
           "Donation"
         ],
-        "summary": "Returns the donations pledged for a donor organization, oldest first, with their progress.\nAllowed for contributors affiliated with the organization and for administrators.",
-        "description": "The list is not paged and, like the other donation listings, is capped; there is no indication when more donations exist.",
+        "summary": "Returns a page of the donations pledged for a donor organization, oldest first, with their progress.\nAllowed for contributors affiliated with the organization and for administrators.",
         "operationId": "GetDonorOrganizationDonations",
         "parameters": [
           {
@@ -1284,6 +1315,38 @@
               "pattern": "^[0-9a-fA-F]{24}$",
               "type": "string"
             }
+          },
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "description": "The page number (1 to 10000, default 1).",
+            "schema": {
+              "maximum": 10000,
+              "minimum": 1,
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32",
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "description": "The number of items per page (1 to 100, default 20).",
+            "schema": {
+              "maximum": 100,
+              "minimum": 1,
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32",
+              "default": 20
+            }
           }
         ],
         "responses": {
@@ -1292,7 +1355,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/GetDonationsResponse"
+                  "$ref": "#/components/schemas/GetDonorOrganizationDonationsResponse"
                 }
               }
             }
@@ -3406,6 +3469,52 @@
         },
         "description": "Represents a list of donations."
       },
+      "GetDonorOrganizationContributionsResponse": {
+        "required": [
+          "contributions",
+          "totalCount",
+          "pageNumber",
+          "pageSize"
+        ],
+        "type": "object",
+        "properties": {
+          "contributions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContributionResponse"
+            },
+            "description": "The contributions of this page, earliest first."
+          },
+          "totalCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The total number of contributions of the organization.",
+            "format": "int32"
+          },
+          "pageNumber": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The page number, starting at 1.",
+            "format": "int32"
+          },
+          "pageSize": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The maximum number of contributions per page.",
+            "format": "int32"
+          }
+        },
+        "description": "Represents one page of the contributions logged by the contributors of a donor organization."
+      },
       "GetDonorOrganizationContributorsResponse": {
         "required": [
           "contributors"
@@ -3421,6 +3530,52 @@
           }
         },
         "description": "Represents the contributors affiliated with a donor organization."
+      },
+      "GetDonorOrganizationDonationsResponse": {
+        "required": [
+          "donations",
+          "totalCount",
+          "pageNumber",
+          "pageSize"
+        ],
+        "type": "object",
+        "properties": {
+          "donations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DonationResponse"
+            },
+            "description": "The donations of this page, oldest pledge first."
+          },
+          "totalCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The total number of donations of the organization.",
+            "format": "int32"
+          },
+          "pageNumber": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The page number, starting at 1.",
+            "format": "int32"
+          },
+          "pageSize": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The maximum number of donations per page.",
+            "format": "int32"
+          }
+        },
+        "description": "Represents one page of the donations pledged for a donor organization."
       },
       "GetDonorOrganizationsResponse": {
         "required": [

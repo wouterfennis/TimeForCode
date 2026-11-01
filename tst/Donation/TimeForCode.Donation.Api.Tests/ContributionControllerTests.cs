@@ -64,13 +64,34 @@ namespace TimeForCode.Donation.Api.Tests
             _mediator.Setup(m => m.Send(
                     It.Is<GetDonorOrganizationContributionsQuery>(q => q.DonorOrganizationId == OrganizationId && q.CallerUserId == UserId && !q.IsAdministrator),
                     It.IsAny<CancellationToken>()))
-                .ReturnsAsync(Result<GetContributionsResult>.Success(new GetContributionsResult { Contributions = [Contribution()] }));
+                .ReturnsAsync(Result<GetDonorOrganizationContributionsResult>.Success(Page([Contribution()], totalCount: 1)));
 
             var result = await CreateSut().GetDonorOrganizationContributions(OrganizationId);
 
-            result.Should().BeOfType<OkObjectResult>().Which.Value.Should().BeOfType<GetContributionsResponse>()
+            result.Should().BeOfType<OkObjectResult>().Which.Value.Should().BeOfType<GetDonorOrganizationContributionsResponse>()
                 .Which.Contributions.Should().ContainSingle().Which.Hours.Should().Be(4);
         }
+
+        [TestMethod]
+        public async Task GetDonorOrganizationContributions_PageRequested_PassesThePageAndReturnsThePagingFields()
+        {
+            _mediator.Setup(m => m.Send(
+                    It.Is<GetDonorOrganizationContributionsQuery>(q => q.PageNumber == 3 && q.PageSize == 5),
+                    It.IsAny<CancellationToken>()))
+                .ReturnsAsync(Result<GetDonorOrganizationContributionsResult>.Success(Page([Contribution()], totalCount: 11, pageNumber: 3, pageSize: 5)));
+
+            var result = await CreateSut().GetDonorOrganizationContributions(OrganizationId, pageNumber: 3, pageSize: 5);
+
+            result.Should().BeOfType<OkObjectResult>().Which.Value.Should().BeEquivalentTo(new { TotalCount = 11, PageNumber = 3, PageSize = 5 });
+        }
+
+        private static GetDonorOrganizationContributionsResult Page(IReadOnlyList<ContributionDto> contributions, int totalCount, int pageNumber = 1, int pageSize = 20) => new()
+        {
+            Contributions = contributions,
+            TotalCount = totalCount,
+            PageNumber = pageNumber,
+            PageSize = pageSize
+        };
 
         [TestMethod]
         public async Task GetDonorOrganizationContributions_Administrator_PassesTheAdministratorFlag()
@@ -78,7 +99,7 @@ namespace TimeForCode.Donation.Api.Tests
             _mediator.Setup(m => m.Send(
                     It.Is<GetDonorOrganizationContributionsQuery>(q => q.IsAdministrator),
                     It.IsAny<CancellationToken>()))
-                .ReturnsAsync(Result<GetContributionsResult>.Success(new GetContributionsResult { Contributions = [] }));
+                .ReturnsAsync(Result<GetDonorOrganizationContributionsResult>.Success(Page([], totalCount: 0)));
 
             var result = await CreateSut(admin: true).GetDonorOrganizationContributions(OrganizationId);
 
@@ -89,7 +110,7 @@ namespace TimeForCode.Donation.Api.Tests
         public async Task GetDonorOrganizationContributions_NotAMember_ReturnsForbidden()
         {
             _mediator.Setup(m => m.Send(It.IsAny<GetDonorOrganizationContributionsQuery>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(Result<GetContributionsResult>.Forbidden("Not a member."));
+                .ReturnsAsync(Result<GetDonorOrganizationContributionsResult>.Forbidden("Not a member."));
 
             var result = await CreateSut().GetDonorOrganizationContributions(OrganizationId);
 
@@ -100,7 +121,7 @@ namespace TimeForCode.Donation.Api.Tests
         public async Task GetDonorOrganizationContributions_UnknownOrganization_ReturnsNotFound()
         {
             _mediator.Setup(m => m.Send(It.IsAny<GetDonorOrganizationContributionsQuery>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(Result<GetContributionsResult>.NotFound("Not found."));
+                .ReturnsAsync(Result<GetDonorOrganizationContributionsResult>.NotFound("Not found."));
 
             var result = await CreateSut().GetDonorOrganizationContributions(OrganizationId);
 

@@ -12,7 +12,7 @@
           "Reporting"
         ],
         "summary": "Returns the impact report of a donor organization: hours pledged and logged, the number of projects supported and the breakdown per project.",
-        "description": "Only Active and Completed donations count: a Pending donation is not yet committed and a Cancelled one no longer is.\nThe donations come from the Donation context, whose lists are capped; there is no indication when more exist.",
+        "description": "Only Active and Completed donations count: a Pending donation is not yet committed and a Cancelled one no longer is.",
         "operationId": "GetImpactReport",
         "parameters": [
           {
@@ -118,7 +118,7 @@
           "Reporting"
         ],
         "summary": "Exports the contribution history of a donor organization as a CSV or JSON file, earliest contribution first.",
-        "description": "CSV columns: ContributionId, ProjectId, ContributorLogin, Hours, GithubReference, LoggedAt (UTC, ISO 8601). JSON has the same\nvalues as camel case fields in a `contributions` list. The list holds at most 10000 contributions with no indication when more\nexist. Contributions are attributed by the contributor's current affiliation, so a contributor who moves to another organization\ntakes their history along. Deleted contributions are left out.",
+        "description": "CSV columns: ContributionId, ProjectId, ContributorLogin, Hours, GithubReference, LoggedAt (UTC, ISO 8601). JSON has the same\nvalues as camel case fields in a `contributions` list. Contributions are attributed by the contributor's current\naffiliation, so a contributor who moves to another organization takes their history along. Deleted contributions are left out.",
         "operationId": "GetContributionHistory",
         "parameters": [
           {

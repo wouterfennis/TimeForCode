@@ -65,6 +65,28 @@ Scenario: Administrator views the contributions of any organization
 	When The user requests the contributions of the donor organization
 	Then The contributions of the donor organization add up to 3 hours
 
+Scenario: Donations are returned page by page
+	Given The user has an access token
+	And There is a donor organization on the time for code platform
+	And The user is affiliated with the donor organization
+	And The donor organization has an active donation of 10 hours
+	And The donor organization has an active donation of 5 hours
+	When The user requests page 2 of the donations of the donor organization with 1 donations per page
+	Then 1 donations are returned
+	And The donor organization has 2 donations in total
+
+Scenario: Contributions are returned page by page
+	Given The user has an access token
+	And There is a published project on the time for code platform
+	And There is a donor organization on the time for code platform
+	And The user is affiliated with the donor organization
+	And The user has already logged 4 hours on the project
+	And Another user is registered as a contributor affiliated with the donor organization
+	And Another user has already logged 3 hours on the project
+	When The user requests page 2 of the contributions of the donor organization with 1 contributions per page
+	Then 1 contributions are returned
+	And The donor organization has 2 contributions in total
+
 Scenario: Organization without donations has an empty list
 	Given The user has an access token
 	And There is a donor organization on the time for code platform

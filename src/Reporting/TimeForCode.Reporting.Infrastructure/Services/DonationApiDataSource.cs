@@ -20,6 +20,9 @@ namespace TimeForCode.Reporting.Infrastructure.Services
         /// <summary>Name of the configured <see cref="HttpClient"/> that points at the Donation API.</summary>
         internal const string HttpClientName = "DonationApi";
 
+        /// <summary>Largest page the Donation API serves.</summary>
+        private const int PageSize = 100;
+
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILogger<DonationApiDataSource> _logger;
 
@@ -33,13 +36,13 @@ namespace TimeForCode.Reporting.Infrastructure.Services
         {
             return ReadAsync(
                 accessToken,
-                async client =>
+                client => ReadAllPagesAsync(async pageNumber =>
                 {
-                    GetDonationsResponse response = await client.GetDonorOrganizationDonationsAsync(donorOrganizationId, cancellationToken);
-                    return (IReadOnlyList<OrganizationDonation>)response.Donations
-                        .Select(d => new OrganizationDonation(d.ProjectId, ToStatus(d.Status), d.HoursCommitted, d.HoursLogged))
-                        .ToList();
-                },
+                    GetDonorOrganizationDonationsResponse response = await client.GetDonorOrganizationDonationsAsync(donorOrganizationId, pageNumber, PageSize, cancellationToken);
+                    return (
+                        response.Donations.Select(d => new OrganizationDonation(d.ProjectId, ToStatus(d.Status), d.HoursCommitted, d.HoursLogged)).ToList(),
+                        response.TotalCount);
+                }),
                 "donations",
                 donorOrganizationId);
         }
@@ -48,15 +51,33 @@ namespace TimeForCode.Reporting.Infrastructure.Services
         {
             return ReadAsync(
                 accessToken,
-                async client =>
+                client => ReadAllPagesAsync(async pageNumber =>
                 {
-                    GetContributionsResponse response = await client.GetDonorOrganizationContributionsAsync(donorOrganizationId, cancellationToken);
-                    return (IReadOnlyList<OrganizationContribution>)response.Contributions
-                        .Select(c => new OrganizationContribution(c.Id, c.ProjectId, c.ContributorGitHubLogin, c.Hours, c.GithubReference, c.LoggedAt))
-                        .ToList();
-                },
+                    GetDonorOrganizationContributionsResponse response = await client.GetDonorOrganizationContributionsAsync(donorOrganizationId, pageNumber, PageSize, cancellationToken);
+                    return (
+                        response.Contributions.Select(c => new OrganizationContribution(c.Id, c.ProjectId, c.ContributorGitHubLogin, c.Hours, c.GithubReference, c.LoggedAt)).ToList(),
+                        response.TotalCount);
+                }),
                 "contributions",
                 donorOrganizationId);
+        }
+
+        /// <summary>
+        /// Reads page after page until the total the Donation API reports is collected. An empty page ends the loop as well, so a
+        /// total that shrinks while reading cannot keep it running.
+        /// </summary>
+        private static async Task<IReadOnlyList<T>> ReadAllPagesAsync<T>(Func<int, Task<(List<T> Items, int TotalCount)>> readPage)
+        {
+            var all = new List<T>();
+            for (var pageNumber = 1; ; pageNumber++)
+            {
+                var (items, totalCount) = await readPage(pageNumber);
+                all.AddRange(items);
+                if (items.Count == 0 || all.Count >= totalCount)
+                {
+                    return all;
+                }
+            }
         }
 
         private async Task<Result<IReadOnlyList<T>>> ReadAsync<T>(

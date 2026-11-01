@@ -9,9 +9,10 @@ namespace TimeForCode.Donation.Application.Interfaces
         Task<IReadOnlyList<Contribution>> GetByProjectIdAsync(string projectId, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Returns the contributions logged by any of the contributors, oldest first; deleted contributions are left out.
+        /// Returns one page of the contributions logged by any of the contributors, oldest first, with the total number of contributions;
+        /// deleted contributions are left out.
         /// </summary>
-        Task<IReadOnlyList<Contribution>> GetByContributorIdsAsync(IReadOnlyCollection<ObjectId> contributorIds, CancellationToken cancellationToken);
+        Task<(IReadOnlyList<Contribution> Contributions, int TotalCount)> GetPageByContributorIdsAsync(IReadOnlyCollection<ObjectId> contributorIds, int pageNumber, int pageSize, CancellationToken cancellationToken);
 
         /// <summary>
         /// Returns the contribution of the project, or <c>null</c> when there is none or it was deleted.

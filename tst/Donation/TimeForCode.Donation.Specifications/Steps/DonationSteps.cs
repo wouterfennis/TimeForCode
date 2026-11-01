@@ -127,7 +127,20 @@ namespace TimeForCode.Donation.Specifications.Steps
         [When("The user requests the donations of the donor organization")]
         public Task WhenTheUserRequestsTheDonationsOfTheDonorOrganizationAsync()
         {
-            return _context.CaptureAsync(async () => _context.DonationsResult = await _donationClient.GetDonorOrganizationDonationsAsync(_context.DonorOrganizationId!));
+            return GetDonorOrganizationDonationsAsync(1, 20);
+        }
+
+        [When("The user requests page {int} of the donations of the donor organization with {int} donations per page")]
+        public Task WhenTheUserRequestsPageOfTheDonationsOfTheDonorOrganizationAsync(int pageNumber, int pageSize)
+        {
+            return GetDonorOrganizationDonationsAsync(pageNumber, pageSize);
+        }
+
+        [Then("The donor organization has {int} donations in total")]
+        public void ThenTheDonorOrganizationHasDonationsInTotal(int total)
+        {
+            _context.LastException.Should().BeNull();
+            _context.OrganizationListingTotal.Should().Be(total);
         }
 
         [When("The user requests the donations of the project")]
@@ -214,6 +227,16 @@ namespace TimeForCode.Donation.Specifications.Steps
         {
             _context.DonationsResult.Should().NotBeNull();
             _context.DonationsResult!.Donations.Should().OnlyContain(d => d.HoursCommitted > 0 && d.HoursLogged >= 0 && d.ProgressPercentage >= 0);
+        }
+
+        private Task GetDonorOrganizationDonationsAsync(int pageNumber, int pageSize)
+        {
+            return _context.CaptureAsync(async () =>
+            {
+                GetDonorOrganizationDonationsResponse page = await _donationClient.GetDonorOrganizationDonationsAsync(_context.DonorOrganizationId!, pageNumber, pageSize);
+                _context.DonationsResult = new GetDonationsResponse { Donations = page.Donations };
+                _context.OrganizationListingTotal = page.TotalCount;
+            });
         }
 
         private Task PledgeAsync(int hours, bool asIndividual, string? organizationId)

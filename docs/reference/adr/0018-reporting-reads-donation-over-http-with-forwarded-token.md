@@ -37,5 +37,5 @@ Reporting is a separate, stateless API service with no database. Its Infrastruct
 - Reporting is only as available and as fast as the Donation API, and each report costs one or more HTTP calls.
 - The caller's token is sent to whatever `DonationApiOptions:BaseUri` points at, so that setting must be trusted configuration.
 - The token travels on the MediatR query objects (`AccessToken`). A logging or serializing pipeline behaviour added later must exclude it, and the header redaction of the HTTP client logging (on by default) must stay on.
-- Report totals inherit the limits of the Donation read endpoints: the lists are capped (DEBT-21), so totals can be incomplete, and organization membership is self-declared (DEBT-19).
+- Reporting reads the paged Donation lists page by page, so a report costs one request per 100 items, and it inherits the limits of the Donation read endpoints: at most 1000 affiliated contributors per organization (DEBT-21), and organization membership is self-declared (DEBT-19).
 - Reporting cannot run without a user or admin token; there is no scheduled or service-to-service report. That would need a new decision.

@@ -60,6 +60,18 @@ namespace TimeForCode.Donation.Specifications.Mocking
             return OldestFirst(d => d.DonorOrganizationId is ObjectId id && organizationIds.Contains(id.ToString()));
         }
 
+        public Task<(IReadOnlyList<DonationEntity> Donations, int TotalCount)> GetPageByDonorOrganizationIdAsync(string organizationId, int pageNumber, int pageSize, CancellationToken cancellationToken)
+        {
+            var matches = _donations
+                .Where(d => d.DonorOrganizationId is ObjectId id && id.ToString() == organizationId)
+                .OrderBy(d => d.CreatedAt)
+                .ThenBy(d => d.Id)
+                .ToList();
+            IReadOnlyList<DonationEntity> page = matches.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
+
+            return Task.FromResult((page, matches.Count));
+        }
+
         private Task<IReadOnlyList<DonationEntity>> OldestFirst(Func<DonationEntity, bool> predicate)
         {
             IReadOnlyList<DonationEntity> matches = _donations

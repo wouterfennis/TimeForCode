@@ -144,6 +144,26 @@ namespace TimeForCode.Donation.Infrastructure.Persistence.Database
                 .ToListAsync(cancellationToken);
         }
 
+        public async Task<(IReadOnlyList<Domain.Donation> Donations, int TotalCount)> GetPageByDonorOrganizationIdAsync(string organizationId, int pageNumber, int pageSize, CancellationToken cancellationToken)
+        {
+            if (!ObjectId.TryParse(organizationId, out var objectId))
+            {
+                return ([], 0);
+            }
+
+            var filter = Builders<Domain.Donation>.Filter.Eq(d => d.DonorOrganizationId, objectId);
+            var totalCount = (int)await _collection.CountDocumentsAsync(filter, cancellationToken: cancellationToken);
+            var donations = await _collection
+                .Find(filter)
+                .SortBy(d => d.CreatedAt)
+                .ThenBy(d => d.Id)
+                .Skip((pageNumber - 1) * pageSize)
+                .Limit(pageSize)
+                .ToListAsync(cancellationToken);
+
+            return (donations, totalCount);
+        }
+
         public async Task<IReadOnlyList<Domain.Donation>> GetReceivedByProjectIdsAsync(IReadOnlyCollection<string> projectIds, CancellationToken cancellationToken)
         {
             var objectIds = projectIds

@@ -147,7 +147,7 @@ sequenceDiagram
     end
 ```
 
-The Donation API alone decides who may read: contributors affiliated with the organization and administrators (affiliation is self-declared, DEBT-19). When the Donation API fails or cannot be reached, Reporting answers `502`. The impact report counts the commitments and logged hours of `Active` and `Completed` donations and groups them per project. The export renders the contributions as CSV or JSON in the documented schema ([API surface](../../current/api-surface.md#reporting-api)). Both lists come from capped Donation lists, so totals and exports of very large organizations can be incomplete without a signal (DEBT-21).
+The Donation API alone decides who may read: contributors affiliated with the organization and administrators (affiliation is self-declared, DEBT-19). When the Donation API fails or cannot be reached, Reporting answers `502`. The impact report counts the commitments and logged hours of `Active` and `Completed` donations and groups them per project. The export renders the contributions as CSV or JSON in the documented schema ([API surface](../../current/api-surface.md#reporting-api)). Both lists are read page by page from the paged Donation endpoints until the reported total is collected; only the cap on affiliated contributors can leave contributions out of very large organizations (DEBT-21).
 
 ---
 

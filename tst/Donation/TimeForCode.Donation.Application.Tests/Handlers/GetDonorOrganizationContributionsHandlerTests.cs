@@ -34,11 +34,13 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
                 NullLogger<GetDonorOrganizationContributionsHandler>.Instance);
         }
 
-        private static GetDonorOrganizationContributionsQuery Query(bool isAdministrator = false) => new()
+        private static GetDonorOrganizationContributionsQuery Query(bool isAdministrator = false, int pageNumber = 1, int pageSize = 20) => new()
         {
             DonorOrganizationId = OrganizationId.ToString(),
             CallerUserId = "user-1",
-            IsAdministrator = isAdministrator
+            IsAdministrator = isAdministrator,
+            PageNumber = pageNumber,
+            PageSize = pageSize
         };
 
         private static Contributor AffiliatedContributor(string platformUserId, ObjectId? organizationId)
@@ -74,16 +76,35 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
             _contributorRepository.Setup(r => r.GetByDonorOrganizationIdAsync(OrganizationId, It.IsAny<CancellationToken>()))
                 .ReturnsAsync([caller]);
             _contributionRepository
-                .Setup(r => r.GetByContributorIdsAsync(
+                .Setup(r => r.GetPageByContributorIdsAsync(
                     It.Is<IReadOnlyCollection<ObjectId>>(ids => ids.Single() == caller.Id),
+                    1,
+                    20,
                     It.IsAny<CancellationToken>()))
-                .ReturnsAsync([Contribution(caller.Id, 4)]);
+                .ReturnsAsync(([Contribution(caller.Id, 4)], 1));
 
             var result = await _sut.Handle(Query(), CancellationToken.None);
 
             result.IsSuccess.Should().BeTrue();
             result.Value.Contributions.Should().ContainSingle()
                 .Which.Hours.Should().Be(4);
+        }
+
+        [TestMethod]
+        public async Task Handle_SecondPage_ReturnsThatPageWithTheTotalCount()
+        {
+            GivenOrganization();
+            var member = AffiliatedContributor("user-2", OrganizationId);
+            _contributorRepository.Setup(r => r.GetByDonorOrganizationIdAsync(OrganizationId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync([member]);
+            _contributionRepository
+                .Setup(r => r.GetPageByContributorIdsAsync(It.IsAny<IReadOnlyCollection<ObjectId>>(), 2, 1, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(([Contribution(member.Id, 3)], 5));
+
+            var result = await _sut.Handle(Query(isAdministrator: true, pageNumber: 2, pageSize: 1), CancellationToken.None);
+
+            result.Value.Should().BeEquivalentTo(new { TotalCount = 5, PageNumber = 2, PageSize = 1 });
+            result.Value.Contributions.Should().ContainSingle().Which.Hours.Should().Be(3);
         }
 
         [TestMethod]
@@ -94,8 +115,8 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
             _contributorRepository.Setup(r => r.GetByDonorOrganizationIdAsync(OrganizationId, It.IsAny<CancellationToken>()))
                 .ReturnsAsync([member]);
             _contributionRepository
-                .Setup(r => r.GetByContributorIdsAsync(It.IsAny<IReadOnlyCollection<ObjectId>>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync([Contribution(member.Id, 2)]);
+                .Setup(r => r.GetPageByContributorIdsAsync(It.IsAny<IReadOnlyCollection<ObjectId>>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(([Contribution(member.Id, 2)], 1));
 
             var result = await _sut.Handle(Query(isAdministrator: true), CancellationToken.None);
 
@@ -114,8 +135,9 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
 
             result.IsSuccess.Should().BeTrue();
             result.Value.Contributions.Should().BeEmpty();
+            result.Value.TotalCount.Should().Be(0);
             _contributionRepository.Verify(
-                r => r.GetByContributorIdsAsync(It.IsAny<IReadOnlyCollection<ObjectId>>(), It.IsAny<CancellationToken>()),
+                r => r.GetPageByContributorIdsAsync(It.IsAny<IReadOnlyCollection<ObjectId>>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()),
                 Times.Never);
         }
 

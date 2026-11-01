@@ -30,11 +30,10 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Returns the contributions logged by the contributors affiliated with a donor organization, earliest first.
+         * Returns a page of the contributions logged by the contributors affiliated with a donor organization, earliest first.
          *     Allowed for contributors affiliated with the organization and for administrators.
-         * @description The list is not paged and holds at most 10000 contributions, earliest first; there is no indication when more exist, so totals
-         *     built from it are incomplete for very large organizations. Contributions are attributed by the contributor's current
-         *     affiliation, so a contributor who moves to another organization takes their history along. Deleted contributions are left out.
+         * @description Contributions are attributed by the contributor's current affiliation, so a contributor who moves to another organization
+         *     takes their history along. Deleted contributions are left out.
          */
         get: operations["GetDonorOrganizationContributions"];
         put?: never;
@@ -174,9 +173,8 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Returns the donations pledged for a donor organization, oldest first, with their progress.
+         * Returns a page of the donations pledged for a donor organization, oldest first, with their progress.
          *     Allowed for contributors affiliated with the organization and for administrators.
-         * @description The list is not paged and, like the other donation listings, is capped; there is no indication when more donations exist.
          */
         get: operations["GetDonorOrganizationDonations"];
         put?: never;
@@ -626,10 +624,50 @@ export interface components {
             /** @description The donations, oldest pledge first. */
             donations: components["schemas"]["DonationResponse"][];
         };
+        /** @description Represents one page of the contributions logged by the contributors of a donor organization. */
+        GetDonorOrganizationContributionsResponse: {
+            /** @description The contributions of this page, earliest first. */
+            contributions: components["schemas"]["ContributionResponse"][];
+            /**
+             * Format: int32
+             * @description The total number of contributions of the organization.
+             */
+            totalCount: number | string;
+            /**
+             * Format: int32
+             * @description The page number, starting at 1.
+             */
+            pageNumber: number | string;
+            /**
+             * Format: int32
+             * @description The maximum number of contributions per page.
+             */
+            pageSize: number | string;
+        };
         /** @description Represents the contributors affiliated with a donor organization. */
         GetDonorOrganizationContributorsResponse: {
             /** @description The affiliated contributors, ordered by GitHub login; empty when there are none. */
             contributors: components["schemas"]["ContributorProfileResponse"][];
+        };
+        /** @description Represents one page of the donations pledged for a donor organization. */
+        GetDonorOrganizationDonationsResponse: {
+            /** @description The donations of this page, oldest pledge first. */
+            donations: components["schemas"]["DonationResponse"][];
+            /**
+             * Format: int32
+             * @description The total number of donations of the organization.
+             */
+            totalCount: number | string;
+            /**
+             * Format: int32
+             * @description The page number, starting at 1.
+             */
+            pageNumber: number | string;
+            /**
+             * Format: int32
+             * @description The maximum number of donations per page.
+             */
+            pageSize: number | string;
         };
         /** @description Represents a paginated list of donor organizations. */
         GetDonorOrganizationsResponse: {
@@ -1048,7 +1086,12 @@ export interface operations {
     };
     GetDonorOrganizationContributions: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description The page number (1 to 10000, default 1). */
+                pageNumber?: number | string;
+                /** @description The number of items per page (1 to 100, default 20). */
+                pageSize?: number | string;
+            };
             header?: never;
             path: {
                 /** @description The donor organization identifier. */
@@ -1064,7 +1107,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["GetContributionsResponse"];
+                    "application/json": components["schemas"]["GetDonorOrganizationContributionsResponse"];
                 };
             };
             /** @description Bad Request */
@@ -1894,7 +1937,12 @@ export interface operations {
     };
     GetDonorOrganizationDonations: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description The page number (1 to 10000, default 1). */
+                pageNumber?: number | string;
+                /** @description The number of items per page (1 to 100, default 20). */
+                pageSize?: number | string;
+            };
             header?: never;
             path: {
                 /** @description The donor organization identifier. */
@@ -1910,7 +1958,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["GetDonationsResponse"];
+                    "application/json": components["schemas"]["GetDonorOrganizationDonationsResponse"];
                 };
             };
             /** @description Bad Request */

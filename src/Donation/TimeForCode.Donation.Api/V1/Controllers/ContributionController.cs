@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Net.Mime;
 using System.Security.Claims;
@@ -119,25 +120,29 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         }
 
         /// <summary>
-        /// Returns the contributions logged by the contributors affiliated with a donor organization, earliest first.
+        /// Returns a page of the contributions logged by the contributors affiliated with a donor organization, earliest first.
         /// Allowed for contributors affiliated with the organization and for administrators.
         /// </summary>
         /// <remarks>
-        /// The list is not paged and holds at most 10000 contributions, earliest first; there is no indication when more exist, so totals
-        /// built from it are incomplete for very large organizations. Contributions are attributed by the contributor's current
-        /// affiliation, so a contributor who moves to another organization takes their history along. Deleted contributions are left out.
+        /// Contributions are attributed by the contributor's current affiliation, so a contributor who moves to another organization
+        /// takes their history along. Deleted contributions are left out.
         /// </remarks>
         /// <param name="id">The donor organization identifier.</param>
-        /// <returns>The contributions of the organization; an empty list when none were logged.</returns>
+        /// <param name="pageNumber">The page number (1 to 10000, default 1).</param>
+        /// <param name="pageSize">The number of items per page (1 to 100, default 20).</param>
+        /// <returns>The requested page of contributions and the total count; an empty list when none were logged.</returns>
         [HttpGet("~/api/v1/donororganization/{id}/contribution", Name = nameof(GetDonorOrganizationContributions))]
-        [ProducesResponseType(typeof(GetContributionsResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(GetDonorOrganizationContributionsResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         [Authorize(Policy = "ApiUserOrAdmin")]
-        public async Task<IActionResult> GetDonorOrganizationContributions([ObjectId] string id)
+        public async Task<IActionResult> GetDonorOrganizationContributions(
+            [ObjectId] string id,
+            [FromQuery, Range(1, ApiConstraints.MaxPageNumber)] int pageNumber = 1,
+            [FromQuery, Range(1, ApiConstraints.MaxPageSize)] int pageSize = 20)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
@@ -149,14 +154,19 @@ namespace TimeForCode.Donation.Api.V1.Controllers
             {
                 DonorOrganizationId = id,
                 CallerUserId = userId,
-                IsAdministrator = User.HasClaim("scope", AdminScope)
+                IsAdministrator = User.HasClaim("scope", AdminScope),
+                PageNumber = pageNumber,
+                PageSize = pageSize
             });
 
             return result.IsFailure
                 ? ToProblem(result.FailureStatusCode, "Cannot get contributions of donor organization", result.ErrorMessage)
-                : Ok(new GetContributionsResponse
+                : Ok(new GetDonorOrganizationContributionsResponse
                 {
-                    Contributions = result.Value.Contributions.Select(ToResponse).ToList()
+                    Contributions = result.Value.Contributions.Select(ToResponse).ToList(),
+                    TotalCount = result.Value.TotalCount,
+                    PageNumber = result.Value.PageNumber,
+                    PageSize = result.Value.PageSize
                 });
         }
 

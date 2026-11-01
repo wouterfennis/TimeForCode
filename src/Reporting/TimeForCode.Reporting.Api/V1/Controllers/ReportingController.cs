@@ -41,7 +41,6 @@ namespace TimeForCode.Reporting.Api.V1.Controllers
         /// </summary>
         /// <remarks>
         /// Only Active and Completed donations count: a Pending donation is not yet committed and a Cancelled one no longer is.
-        /// The donations come from the Donation context, whose lists are capped; there is no indication when more exist.
         /// </remarks>
         /// <param name="id">The donor organization identifier.</param>
         /// <returns>The impact report; zeros and an empty breakdown when the organization has no counted donations.</returns>
@@ -81,9 +80,8 @@ namespace TimeForCode.Reporting.Api.V1.Controllers
         /// </summary>
         /// <remarks>
         /// CSV columns: ContributionId, ProjectId, ContributorLogin, Hours, GithubReference, LoggedAt (UTC, ISO 8601). JSON has the same
-        /// values as camel case fields in a <c>contributions</c> list. The list holds at most 10000 contributions with no indication when more
-        /// exist. Contributions are attributed by the contributor's current affiliation, so a contributor who moves to another organization
-        /// takes their history along. Deleted contributions are left out.
+        /// values as camel case fields in a <c>contributions</c> list. Contributions are attributed by the contributor's current
+        /// affiliation, so a contributor who moves to another organization takes their history along. Deleted contributions are left out.
         /// </remarks>
         /// <param name="id">The donor organization identifier.</param>
         /// <param name="format">The file format, <c>Json</c> (default) or <c>Csv</c>.</param>
