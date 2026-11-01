@@ -343,6 +343,20 @@ if ((Get-StatusCode $rootPage) -eq 0) {
     if ($sMissing -eq 404) { Write-Pass "Missing asset /assets/missing.js -> 404, no SPA fallback" }
     else                   { Write-Fail "Missing asset /assets/missing.js" "Status=$sMissing (expected 404)" }
 
+    # The same-origin route to the Donation API (nginx, until the BFF of #113): /api/donation/v1/Project -> /api/v1/Project
+    $projectList = curl -s -w "`n%{http_code}" "$FrontendBaseUrl/api/donation/v1/Project?pageSize=1" 2>&1
+    $projectListStatus = [int]($projectList | Select-Object -Last 1)
+    $projectListJson = try { ($projectList | Select-Object -SkipLast 1) -join "`n" | ConvertFrom-Json } catch { $null }
+    if ($projectListStatus -eq 200 -and $null -ne $projectListJson -and $null -ne $projectListJson.PSObject.Properties["projects"]) {
+        Write-Pass "Front-end forwards /api/donation/v1/Project to the Donation API ($($projectListJson.totalCount) active project(s))"
+    } else {
+        Write-Fail "Front-end Donation API route" "Status=$projectListStatus, body has no 'projects' list (is donation-api running and DONATION_API_UPSTREAM correct?)"
+    }
+
+    $sWrite = [int](curl -s -o NUL -w "%{http_code}" -X POST "$FrontendBaseUrl/api/donation/v1/Project" 2>&1)
+    if ($sWrite -eq 403) { Write-Pass "Front-end refuses writes on /api/donation/ (POST -> 403)" }
+    else                 { Write-Fail "Front-end Donation API route is read-only" "POST status=$sWrite (expected 403)" }
+
     $frontendResponses = [ordered]@{ "/" = $rootPage; "/projects/123" = $deepLink; "script" = $builtAsset; "/assets/missing.js" = $missingAsset }
     $headerProblems = @(foreach ($entry in $frontendResponses.GetEnumerator()) {
         Get-SecurityHeaderProblems $entry.Value | ForEach-Object { "$($entry.Key) $_" }
