@@ -53,7 +53,7 @@ namespace TimeForCode.Reporting.Specifications.Steps
 
             try
             {
-                using HttpClient donation = await CreateDonationClient(await LiveAuthentication.GetAdminTokenAsync());
+                using HttpClient donation = CreateDonationClient(await LiveAuthentication.GetAdminTokenAsync());
                 using HttpResponseMessage response = await donation.DeleteAsync(new Uri($"api/v1/donororganization/{_liveOrganizationId}", UriKind.Relative));
             }
             catch (HttpRequestException exception)
@@ -66,7 +66,7 @@ namespace TimeForCode.Reporting.Specifications.Steps
         // Registered with the Donation API directly and with its own token, so the scenario's own identity (or absence of one) stays untouched.
         private async Task<string> RegisterLiveDonorOrganizationAsync()
         {
-            using HttpClient donation = await CreateDonationClient(await LiveAuthentication.GetUserTokenAsync());
+            using HttpClient donation = CreateDonationClient(await LiveAuthentication.GetUserTokenAsync());
             using HttpResponseMessage response = await donation.PostAsJsonAsync(
                 new Uri("api/v1/donororganization", UriKind.Relative),
                 new { Name = $"Live Reporting Organization {Guid.NewGuid():N}" });

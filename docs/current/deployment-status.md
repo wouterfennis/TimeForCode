@@ -65,7 +65,7 @@ The Identity Provider Mock replaces GitHub in local development. The Authorizati
 | Authorization API | <http://localhost:8080> | OAuth 2.0 + JWT |
 | Identity Provider Mock | <http://localhost:8081> | Simulates GitHub OAuth and GitHub REST API |
 | Donation API | <http://localhost:8082> | Project and donation management |
-| Reporting API | <http://localhost:8083> | Impact report and contribution history export; reads from the Donation API, no database; started in the CI compose stack and covered by the smoke test, not by the Reqnroll live tier |
+| Reporting API | <http://localhost:8083> | Impact report and contribution history export; reads from the Donation API, no database; started in the CI compose stack, covered by the smoke test and by the `@live` Reporting scenarios |
 | MongoDB | mongodb://localhost:27017 | Shared database instance |
 
 ### Container port note

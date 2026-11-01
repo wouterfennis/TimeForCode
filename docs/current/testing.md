@@ -216,6 +216,7 @@ A Reqnroll scenario tagged `@live` runs unchanged in two hosts. By default it ru
 | --- | --- | --- |
 | Authorization | `TIMEFORCODE_LIVE_AUTHORIZATION_URL` | `http://localhost:8080` |
 | Donation | `TIMEFORCODE_LIVE_DONATION_URL` | `http://localhost:8082` |
+| Reporting | `TIMEFORCODE_LIVE_REPORTING_URL` | `http://localhost:8083` |
 
 ```powershell
 podman compose up -d
@@ -240,7 +241,7 @@ The Donation Specifications run real scenarios against the compose stack with re
 
 #### CI job
 
-The `live` job in `.github/workflows/pullRequest.yaml` runs on every pull request to `main`, in parallel with `build`. It builds and starts the backend services of the compose stack (not the front end) in the background, polls the Authorization API, identity provider mock and Donation API until each answers (three minutes per service at most), then runs `scripts/smoke-test.ps1 -ContainerCli docker` and `dotnet test` on the Donation Specifications with `TestCategory=live`. A failing smoke check or live scenario fails the job. The stack's admin secret is random per run and masked in the log, so no repository secret is needed.
+The `live` job in `.github/workflows/pullRequest.yaml` runs on every pull request to `main`, in parallel with `build`. It builds and starts the backend services of the compose stack (not the front end) in the background, polls the Authorization API, identity provider mock, Donation API and Reporting API until each answers (three minutes per service at most; the Reporting API counts as up on a 401 from its report endpoint), then runs `scripts/smoke-test.ps1 -ContainerCli docker` and `dotnet test` on the Donation and Reporting Specifications with `TestCategory=live`. A failing smoke check or live scenario fails the job. The stack's admin secret is random per run and masked in the log, so no repository secret is needed.
 
 On failure the job uploads the artifact `live-tier-diagnostics` with the container logs (`compose-logs.txt`) and the `.trx` results. The stack is always torn down, volumes included.
 
@@ -260,6 +261,10 @@ dotnet test tst/Donation/TimeForCode.Donation.Specifications --filter "TestCateg
 A scenario that needs real persistence carries `@liveonly` next to `@live`: the in-process run reports it as skipped (the mocks cannot store data), the live run executes it. The live steps live in `Steps/LiveProjectSteps.cs` and `Steps/LiveDonorOrganizationSteps.cs` and use only the API. Reruns pass because every scenario registers a project or donor organization with a unique name, and an `@liveonly` clean-up archives the active project and deletes the donor organization.
 
 Covered live: contributor profile (including the Auth-issued JWT), project publishing, project search (an approved project is found, a draft is not), contributions, donation pledges and donor organizations, plus the unauthenticated rejections.
+
+#### Reporting live scenarios
+
+The Reporting Specifications reuse the Donation live sign-in (`LiveAuthentication.cs` and `LiveTokenCache.cs` are compiled into the project as links, not copied) and need the same variables plus `TIMEFORCODE_LIVE_REPORTING_URL` and `TIMEFORCODE_LIVE_DONATION_URL`. On a live host `There is a donor organization on the time for code platform` registers a unique organization through the Donation API with its own token and an `@live` clean-up deletes it as administrator. Covered live: the anonymous 401, the unknown organization 404, the non-member 403 relayed from the Donation API, the administrator export of a registered organization, and the administrator impact report of a registered organization (`@liveonly`). Scenarios that need a membership, donations or logged hours stay in-process, because membership is self-declared in the Donation context and cannot be arranged through its API without further steps.
 
 ### Front-end tests
 
