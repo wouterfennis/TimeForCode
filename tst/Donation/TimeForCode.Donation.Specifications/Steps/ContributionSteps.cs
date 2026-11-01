@@ -163,6 +163,12 @@ namespace TimeForCode.Donation.Specifications.Steps
             return GetContributionsAsync(_context.RegisteredProjectId ?? Constants.TestProjectId);
         }
 
+        [When("The user requests the contributions of the donor organization")]
+        public Task WhenTheUserRequestsTheContributionsOfTheDonorOrganizationAsync()
+        {
+            return _context.CaptureAsync(async () => _context.ContributionsResult = await _donationClient.GetDonorOrganizationContributionsAsync(_context.DonorOrganizationId!));
+        }
+
         [When("^The user requests the contributions of the project with the identifier \"(.*)\"$")]
         public Task WhenTheUserRequestsTheContributionsOfTheProjectWithTheIdentifierAsync(string identifier)
         {
@@ -191,6 +197,14 @@ namespace TimeForCode.Donation.Specifications.Steps
             var stored = _fixtures.Contributions.Contributions.Where(c => c.ProjectId == projectId && !c.IsDeleted);
 
             stored.Sum(c => c.Hours).Should().Be(hours);
+        }
+
+        [Then("The contributions of the donor organization add up to {int} hours")]
+        public void ThenTheContributionsOfTheDonorOrganizationAddUpToHours(int hours)
+        {
+            _context.LastException.Should().BeNull();
+            _context.ContributionsResult.Should().NotBeNull();
+            _context.ContributionsResult!.Contributions.Sum(c => c.Hours).Should().Be(hours);
         }
 
         [Then("No hours are logged on the project")]

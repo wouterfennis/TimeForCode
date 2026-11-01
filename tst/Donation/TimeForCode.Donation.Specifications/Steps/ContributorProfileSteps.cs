@@ -11,7 +11,6 @@ namespace TimeForCode.Donation.Specifications.Steps
     [Binding]
     internal class ContributorProfileSteps
     {
-        private const string ProfileOtherUserId = "another-user-id";
         private const string DonorOrganizationCell = "the donor organization";
 
         private readonly IDonationClient _donationClient;
@@ -29,7 +28,7 @@ namespace TimeForCode.Donation.Specifications.Steps
             _fixtures = fixtures;
         }
 
-        private Contributor OtherContributor => _fixtures.Contributors.Contributors.Single(c => c.PlatformUserId == ProfileOtherUserId);
+        private Contributor OtherContributor => _fixtures.Contributors.Contributors.Single(c => c.PlatformUserId == DonationFixtures.OtherUserId);
 
         [Given("The user is registered as a contributor on the time for code platform")]
         public void GivenTheUserIsRegisteredAsAContributorOnTheTimeForCodePlatform()
@@ -41,6 +40,12 @@ namespace TimeForCode.Donation.Specifications.Steps
         public void GivenTheUserIsRegisteredAsAContributorWithTheRole(string role)
         {
             _fixtures.TestUserContributor().UpdateProfile(role, null, null, null);
+        }
+
+        [Given("The user is affiliated with the donor organization")]
+        public void GivenTheUserIsAffiliatedWithTheDonorOrganization()
+        {
+            _fixtures.TestUserContributor().UpdateProfile(null, null, null, DonationFixtures.ObjectIdOf(_context.DonorOrganizationId!));
         }
 
         [Given("Another user is registered as a contributor on the time for code platform")]
@@ -209,8 +214,7 @@ namespace TimeForCode.Donation.Specifications.Steps
 
         private Contributor RegisterOtherContributor()
         {
-            var contributor = Contributor.Create(ProfileOtherUserId, "other-user", "https://avatars.githubusercontent.com/u/2?v=4");
-            _fixtures.Contributors.Add(contributor);
+            Contributor contributor = _fixtures.OtherUserContributor();
             _otherContributorId = contributor.Id.ToString();
             return contributor;
         }

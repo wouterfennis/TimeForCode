@@ -185,6 +185,102 @@
         }
       }
     },
+    "/api/v1/donororganization/{id}/contribution": {
+      "get": {
+        "tags": [
+          "Contribution"
+        ],
+        "summary": "Returns the contributions logged by the contributors affiliated with a donor organization, earliest first.\nAllowed for contributors affiliated with the organization and for administrators.",
+        "description": "The list is not paged and holds at most 10000 contributions, earliest first; there is no indication when more exist, so totals\nbuilt from it are incomplete for very large organizations. Contributions are attributed by the contributor's current\naffiliation, so a contributor who moves to another organization takes their history along. Deleted contributions are left out.",
+        "operationId": "GetDonorOrganizationContributions",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The donor organization identifier.",
+            "required": true,
+            "schema": {
+              "pattern": "^[0-9a-fA-F]{24}$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetContributionsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. Retry after the number of seconds given in the Retry-After header.",
+            "headers": {
+              "Retry-After": {
+                "description": "Number of seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/project/{id}/contribution/{contributionId}": {
       "put": {
         "tags": [
@@ -891,6 +987,7 @@
           "ContributorProfile"
         ],
         "summary": "Returns the contributors affiliated with a donor organization, ordered by GitHub login. Administrators only.",
+        "description": "The list is not paged and holds at most 1000 contributors; there is no indication when more exist.",
         "operationId": "GetDonorOrganizationContributors",
         "parameters": [
           {
@@ -1126,6 +1223,102 @@
           },
           "400": {
             "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. Retry after the number of seconds given in the Retry-After header.",
+            "headers": {
+              "Retry-After": {
+                "description": "Number of seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/donororganization/{id}/donation": {
+      "get": {
+        "tags": [
+          "Donation"
+        ],
+        "summary": "Returns the donations pledged for a donor organization, oldest first, with their progress.\nAllowed for contributors affiliated with the organization and for administrators.",
+        "description": "The list is not paged and, like the other donation listings, is capped; there is no indication when more donations exist.",
+        "operationId": "GetDonorOrganizationDonations",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The donor organization identifier.",
+            "required": true,
+            "schema": {
+              "pattern": "^[0-9a-fA-F]{24}$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetDonationsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
             "content": {
               "application/json": {
                 "schema": {

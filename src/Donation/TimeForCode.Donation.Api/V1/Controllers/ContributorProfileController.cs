@@ -159,6 +159,9 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         /// <summary>
         /// Returns the contributors affiliated with a donor organization, ordered by GitHub login. Administrators only.
         /// </summary>
+        /// <remarks>
+        /// The list is not paged and holds at most 1000 contributors; there is no indication when more exist.
+        /// </remarks>
         /// <param name="id">The donor organization identifier.</param>
         /// <returns>The affiliated contributors; an empty list when there are none.</returns>
         [HttpGet("donororganization/{id}/contributor", Name = nameof(GetDonorOrganizationContributors))]

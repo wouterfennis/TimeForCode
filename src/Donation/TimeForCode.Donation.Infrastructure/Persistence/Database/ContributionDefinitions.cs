@@ -19,6 +19,16 @@ namespace TimeForCode.Donation.Infrastructure.Persistence.Database
                 Builders<Contribution>.Filter.Eq(c => c.DeletedAt, null));
         }
 
+        /// <summary>
+        /// The non-deleted contributions logged by any of the contributors.
+        /// </summary>
+        internal static FilterDefinition<Contribution> ContributorsFilter(IReadOnlyCollection<ObjectId> contributorIds)
+        {
+            return Builders<Contribution>.Filter.And(
+                Builders<Contribution>.Filter.In(c => c.ContributorId, contributorIds),
+                Builders<Contribution>.Filter.Eq(c => c.DeletedAt, null));
+        }
+
         internal static FilterDefinition<Contribution> LiveContributionFilter(ObjectId projectId, ObjectId contributionId)
         {
             return Builders<Contribution>.Filter.And(

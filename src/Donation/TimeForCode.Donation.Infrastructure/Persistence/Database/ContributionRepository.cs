@@ -15,6 +15,11 @@ namespace TimeForCode.Donation.Infrastructure.Persistence.Database
         /// </summary>
         private const int MaxContributionsPerProject = 1000;
 
+        /// <summary>
+        /// Upper bound for one organization listing, so the unpaged endpoint cannot read an unbounded collection. The earliest contributions win.
+        /// </summary>
+        private const int MaxContributionsPerOrganization = 10000;
+
         private static readonly object IndexCreationLock = new();
         private static bool _indexesCreated;
         private readonly IMongoCollection<Contribution> _collection;
@@ -44,8 +49,13 @@ namespace TimeForCode.Donation.Infrastructure.Persistence.Database
                         .Ascending(c => c.ProjectId)
                         .Ascending(c => c.LoggedAt),
                     new CreateIndexOptions { Name = "ix_contributions_project_logged_at" });
+                var contributorIndexModel = new CreateIndexModel<Contribution>(
+                    Builders<Contribution>.IndexKeys
+                        .Ascending(c => c.ContributorId)
+                        .Ascending(c => c.LoggedAt),
+                    new CreateIndexOptions { Name = "ix_contributions_contributor_logged_at" });
 
-                collection.Indexes.CreateOne(indexModel);
+                collection.Indexes.CreateMany([indexModel, contributorIndexModel]);
                 _indexesCreated = true;
             }
         }
@@ -83,6 +93,16 @@ namespace TimeForCode.Donation.Infrastructure.Persistence.Database
                 .Set(c => c.ContributorAvatarUrl, Contributor.DeletedUserAvatarUrl);
 
             await _collection.UpdateManyAsync(Builders<Contribution>.Filter.Eq(c => c.ContributorId, contributorId), update, cancellationToken: cancellationToken);
+        }
+
+        public async Task<IReadOnlyList<Contribution>> GetByContributorIdsAsync(IReadOnlyCollection<ObjectId> contributorIds, CancellationToken cancellationToken)
+        {
+            return await _collection
+                .Find(ContributionDefinitions.ContributorsFilter(contributorIds))
+                .SortBy(c => c.LoggedAt)
+                .ThenBy(c => c.Id)
+                .Limit(MaxContributionsPerOrganization)
+                .ToListAsync(cancellationToken);
         }
 
         public async Task<IReadOnlyList<Contribution>> GetByProjectIdAsync(string projectId, CancellationToken cancellationToken)

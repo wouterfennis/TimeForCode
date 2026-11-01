@@ -62,6 +62,7 @@ This document provides an explicit, feature-level view of what is implemented, p
 | Manage organization employees | ❌ | Not implemented |
 | Register as an individual contributor | ✅ | `PUT /api/v1/contributor/me` creates the contributor on first use; logging hours creates it too, and both reuse the single contributor per platform user |
 | Contributor skill profile | ✅ | Role, normalised skills, hours available and optional donor organization link; own profile or administrators only; administrators list the contributors of a donor organization. Matchmaking does not use it yet |
+| Donations and contributions of a donor organization | ✅ | `GET /api/v1/donororganization/{id}/donation` and `.../contribution`, read-only, back-end only; affiliated contributors and administrators; lists are capped (DEBT-21) and affiliation is self-declared (DEBT-19). Input for the Reporting context |
 | View available donated hours | ❌ | Not implemented |
 
 ---
