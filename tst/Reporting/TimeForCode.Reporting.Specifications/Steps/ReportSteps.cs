@@ -93,7 +93,7 @@ namespace TimeForCode.Reporting.Specifications.Steps
 
             int count = _context.LastContentType == "text/csv"
                 ? CsvLines().Skip(1).Count()
-                : ExportedContributions().Count();
+                : ExportedContributions().Length;
 
             count.Should().Be(0);
         }
