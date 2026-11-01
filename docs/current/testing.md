@@ -195,6 +195,48 @@ Use the returned `token` as a bearer token on the Donation API. A plain `podman 
 
 ---
 
+## Seeding the Local Stack
+
+`tools/TimeForCode.Seeder` is a console application that fills a freshly started local stack with deterministic demo data. It calls the real APIs through the generated NSwag clients, so it creates only states the application can produce. It sits outside `src/` and nothing references it.
+
+It signs in as fixed personas through the mock identity provider (`alice-contributor`, `bob-contributor`, `carol-contributor`, `maya-maintainer`, `marco-maintainer`, `dana-donor`, `dirk-donor`) and as the administrator through the test-only admin token endpoint. Each persona name selects a stable mock user (see [Identity Provider Mock Service](#identity-provider-mock-service)). The scenarios run in this fixed order:
+
+| Scenario | Result |
+| --- | --- |
+| `donor-organizations` | Two donor organizations, Acme Software and Globex Engineering |
+| `contributor-profiles` | Profiles with role, skills and hours, affiliated with the organizations |
+| `project-lifecycle` | One project each in draft, pending approval, approved (twice), changes requested (with reason) and archived |
+| `donations` | Active organization and individual donations, a pending one and a cancelled one |
+| `contributions` | Logged hours, one corrected contribution and one deleted contribution |
+| `anonymised-contributor` | A contributor who logged hours and then deleted the account |
+
+### Story lines in the data
+
+The scenarios build on each other, so the data tells connected stories you can follow in the UI:
+
+| Story line | What happens |
+| --- | --- |
+| Acme sponsors the toolkit | Dana (Acme Software) pledges 40 hours to Maya's approved project `approved-toolkit`; the donation is active. Alice and Bob, also Acme members, log hours on it |
+| A corrected and a deleted entry | Alice logs 8 hours and corrects them to 4; Bob logs 2 hours by mistake and deletes them. Both show how correction and soft deletion look |
+| The contributor who left | Carol logs 3 hours on the toolkit and then deletes the account; the hours stay, attributed to a generic deleted user |
+| Globex backs the library | Dirk (Globex Engineering) pledges 25 hours to Marco's `second-approved-library`, active; Bob logs 6 hours there. Dirk's 15-hour pledge on the toolkit is cancelled |
+| An individual donor | Alice pledges 5 hours to the library as herself and leaves the donation pending |
+| Maya's other projects | `draft-notes` is not submitted, `pending-parser` waits for the administrator, `needs-work-cli` was returned with a reason and `archived-legacy` was approved and then archived |
+
+The API has no rejection state, so the administrator's decisions are approving and returning a project with a reason; the archived project stands in for a rejected one.
+
+```powershell
+$env:TEST_ADMIN_ACCESS_SECRET = "my-local-admin-secret"   # before .\scripts\start-local.ps1
+$env:TIMEFORCODE_LIVE_TEST_ADMIN_SECRET = $env:TEST_ADMIN_ACCESS_SECRET
+dotnet run --project tools/TimeForCode.Seeder
+```
+
+The defaults match the local compose stack (Authorization `http://localhost:8080`, Donation `http://localhost:8082`, login redirect `http://localhost:8084`). Override them with `--authorization-url`, `--donation-url`, `--redirect-uri` and `--admin-secret`, or with the `TIMEFORCODE_LIVE_*` variables of the live tier; arguments win. Prefer the environment variable for the secret, because an argument shows up in the process list and the shell history. The seeder fails with a message when the admin secret is missing, when an API does not answer or when the stack refuses the admin token.
+
+The data is the same on every run against a fresh stack, but the seeder is not idempotent: a second run against a seeded stack fails on duplicate names and repositories. Reset by dropping the Mongo volume: `.\scripts\start-local.ps1 -ResetData`. The ordering, persona selection and each scenario's calls are unit-tested without a stack in `tst/Seeder/TimeForCode.Seeder.Tests`.
+
+---
+
 ## Running Tests
 
 ```powershell
