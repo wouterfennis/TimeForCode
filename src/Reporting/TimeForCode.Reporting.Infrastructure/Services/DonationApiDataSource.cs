@@ -96,7 +96,8 @@ namespace TimeForCode.Reporting.Infrastructure.Services
         {
             401 => "The Donation service did not accept the access token.",
             403 => "Only members of the donor organization or an administrator can read its data.",
-            _ => "Donor organization not found."
+            404 => "Donor organization not found.",
+            _ => throw new ArgumentOutOfRangeException(nameof(statusCode), statusCode, "Only 401, 403 and 404 are passed on.")
         };
 
         private static DonationStatus ToStatus(ClientDonationStatus status) => status switch

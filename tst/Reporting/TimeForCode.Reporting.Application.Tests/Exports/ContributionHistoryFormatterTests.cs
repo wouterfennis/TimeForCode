@@ -64,6 +64,7 @@ namespace TimeForCode.Reporting.Application.Tests.Exports
         [DataRow("+1")]
         [DataRow("-1")]
         [DataRow("@cmd")]
+        [DataRow("\tcmd")]
         public void Format_CsvValueStartingWithAFormulaCharacter_PrefixesAQuoteSoSpreadsheetsDoNotRunIt(string value)
         {
             var export = ContributionHistoryFormatter.Format([Contribution(login: value)], ExportFormat.Csv);
@@ -74,6 +75,7 @@ namespace TimeForCode.Reporting.Application.Tests.Exports
         [TestMethod]
         [DataRow(" =SUM(A1)", "' =SUM(A1)")]
         [DataRow("\n=SUM(A1)", "\"'\n=SUM(A1)\"")]
+        [DataRow(" =SUM(A1)", "' =SUM(A1)")]
         public void Format_CsvValueWithAFormulaBehindLeadingWhitespace_PrefixesAQuoteToo(string value, string expectedCell)
         {
             var export = ContributionHistoryFormatter.Format([Contribution(login: value)], ExportFormat.Csv);

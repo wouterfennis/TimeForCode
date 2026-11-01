@@ -73,8 +73,9 @@ namespace TimeForCode.Reporting.Application.Exports
         /// </summary>
         private static string CsvField(string value)
         {
-            string visibleStart = value.TrimStart(' ', '\n');
-            if (visibleStart.Length > 0 && SpreadsheetFormulaStarts.Contains(visibleStart[0]))
+            // The first character itself (a tab or carriage return is a formula start) or the first one behind any leading whitespace, Unicode spaces included.
+            string visibleStart = value.TrimStart();
+            if (value.Length > 0 && (SpreadsheetFormulaStarts.Contains(value[0]) || (visibleStart.Length > 0 && SpreadsheetFormulaStarts.Contains(visibleStart[0]))))
             {
                 value = "'" + value;
             }

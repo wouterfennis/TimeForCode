@@ -55,6 +55,11 @@ namespace TimeForCode.Reporting.Specifications.Steps
             {
                 using HttpClient donation = CreateDonationClient(await LiveAuthentication.GetAdminTokenAsync());
                 using HttpResponseMessage response = await donation.DeleteAsync(new Uri($"api/v1/donororganization/{_liveOrganizationId}", UriKind.Relative));
+                if (!response.IsSuccessStatusCode)
+                {
+                    // Best-effort clean-up, but a leftover organization on the live stack should not go unnoticed.
+                    Console.WriteLine($"Deleting live donor organization {_liveOrganizationId} answered {(int)response.StatusCode}; it was left on the stack.");
+                }
             }
             catch (HttpRequestException exception)
             {
