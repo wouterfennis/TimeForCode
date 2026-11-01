@@ -75,7 +75,7 @@ namespace TimeForCode.Reporting.Infrastructure.Services
             catch (ApiException exception) when (exception.StatusCode is 401 or 403 or 404)
             {
                 _logger.LogWarning("The Donation API refused the {What} of donor organization {DonorOrganizationId} with status {StatusCode}", what, donorOrganizationId, exception.StatusCode);
-                return Result<IReadOnlyList<T>>.Failure(exception.Message, (HttpStatusCode)exception.StatusCode);
+                return Result<IReadOnlyList<T>>.Failure(RefusalMessage(exception.StatusCode), (HttpStatusCode)exception.StatusCode);
             }
             catch (ApiException exception)
             {
@@ -88,6 +88,16 @@ namespace TimeForCode.Reporting.Infrastructure.Services
                 return Result<IReadOnlyList<T>>.Failure("The Donation service could not be reached.", HttpStatusCode.BadGateway);
             }
         }
+
+        /// <summary>
+        /// A fixed message per status: the generated client's own message embeds the start of the downstream response, which must not reach our callers.
+        /// </summary>
+        private static string RefusalMessage(int statusCode) => statusCode switch
+        {
+            401 => "The Donation service did not accept the access token.",
+            403 => "Only members of the donor organization or an administrator can read its data.",
+            _ => "Donor organization not found."
+        };
 
         private static DonationStatus ToStatus(ClientDonationStatus status) => status switch
         {

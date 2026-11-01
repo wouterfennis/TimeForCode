@@ -126,6 +126,65 @@ namespace TimeForCode.Reporting.Infrastructure.Tests
             result.FailureStatusCode.Should().Be(status);
         }
 
+        private const string DownstreamSecret = "downstream-internal-detail";
+
+        [TestMethod]
+        [DataRow(HttpStatusCode.Unauthorized, "The Donation service did not accept the access token.")]
+        [DataRow(HttpStatusCode.Forbidden, "Only members of the donor organization or an administrator can read its data.")]
+        [DataRow(HttpStatusCode.NotFound, "Donor organization not found.")]
+        public async Task GetDonationsAsync_DonationRefusesWithABody_ReturnsAFixedMessageWithoutTheDownstreamBody(HttpStatusCode status, string expectedMessage)
+        {
+            _mockHttp.When(DonationsUrl).Respond(status, "application/json", $$"""{"detail":"{{DownstreamSecret}}"}""");
+
+            var result = await _sut.GetDonationsAsync(OrganizationId, AccessToken, CancellationToken.None);
+
+            result.ErrorMessage.Should().Be(expectedMessage);
+            result.ErrorMessage.Should().NotContain(DownstreamSecret);
+        }
+
+        [TestMethod]
+        [DataRow(HttpStatusCode.Unauthorized, "The Donation service did not accept the access token.")]
+        [DataRow(HttpStatusCode.Forbidden, "Only members of the donor organization or an administrator can read its data.")]
+        [DataRow(HttpStatusCode.NotFound, "Donor organization not found.")]
+        public async Task GetContributionsAsync_DonationRefusesWithABody_ReturnsAFixedMessageWithoutTheDownstreamBody(HttpStatusCode status, string expectedMessage)
+        {
+            _mockHttp.When(ContributionsUrl).Respond(status, "application/json", $$"""{"detail":"{{DownstreamSecret}}"}""");
+
+            var result = await _sut.GetContributionsAsync(OrganizationId, AccessToken, CancellationToken.None);
+
+            result.ErrorMessage.Should().Be(expectedMessage);
+            result.ErrorMessage.Should().NotContain(DownstreamSecret);
+        }
+
+        [TestMethod]
+        public async Task GetDonationsAsync_DonationFailsWithABody_DoesNotLeakTheBody()
+        {
+            _mockHttp.When(DonationsUrl).Respond(HttpStatusCode.InternalServerError, "application/json", $$"""{"detail":"{{DownstreamSecret}}"}""");
+
+            var result = await _sut.GetDonationsAsync(OrganizationId, AccessToken, CancellationToken.None);
+
+            result.ErrorMessage.Should().NotContain(DownstreamSecret);
+        }
+
+        [TestMethod]
+        public async Task GetDonationsAndContributions_Always_OnlyReadFromTheDonationApi()
+        {
+            var methods = new List<HttpMethod>();
+            _mockHttp.When("*").Respond(request =>
+            {
+                methods.Add(request.Method);
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent("""{"donations":[],"contributions":[]}""", System.Text.Encoding.UTF8, "application/json")
+                };
+            });
+
+            await _sut.GetDonationsAsync(OrganizationId, AccessToken, CancellationToken.None);
+            await _sut.GetContributionsAsync(OrganizationId, AccessToken, CancellationToken.None);
+
+            methods.Should().HaveCount(2).And.OnlyContain(method => method == HttpMethod.Get);
+        }
+
         [TestMethod]
         [DataRow(HttpStatusCode.InternalServerError)]
         [DataRow(HttpStatusCode.BadRequest)]

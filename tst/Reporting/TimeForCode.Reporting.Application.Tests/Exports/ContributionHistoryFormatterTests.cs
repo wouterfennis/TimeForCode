@@ -72,6 +72,16 @@ namespace TimeForCode.Reporting.Application.Tests.Exports
         }
 
         [TestMethod]
+        [DataRow(" =SUM(A1)", "' =SUM(A1)")]
+        [DataRow("\n=SUM(A1)", "\"'\n=SUM(A1)\"")]
+        public void Format_CsvValueWithAFormulaBehindLeadingWhitespace_PrefixesAQuoteToo(string value, string expectedCell)
+        {
+            var export = ContributionHistoryFormatter.Format([Contribution(login: value)], ExportFormat.Csv);
+
+            export.Content.Should().Contain("," + expectedCell + ",");
+        }
+
+        [TestMethod]
         public void Format_Csv_IsATextCsvFile()
         {
             var export = ContributionHistoryFormatter.Format([], ExportFormat.Csv);

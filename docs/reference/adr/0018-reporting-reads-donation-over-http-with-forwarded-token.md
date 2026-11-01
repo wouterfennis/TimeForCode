@@ -18,9 +18,10 @@ Options considered:
 
 Reporting is a separate, stateless API service with no database. Its Infrastructure layer reads from the Donation API over HTTP (the generated `TimeForCode.Donation.Api.Client`, base address `DonationApiOptions:BaseUri`) and forwards the caller's own access token on every call. Reporting never writes to the Donation API.
 
-- **The Donation API decides who may read.** It applies the organization access check (affiliated contributors and administrators) to the forwarded token. Reporting passes the `401`, `403` and `404` answers on and maps any other Donation failure to `502`.
+- **The Donation API decides who may read.** It applies the organization access check (affiliated contributors and administrators) to the forwarded token. Reporting passes the `401`, `403` and `404` status on with a fixed message per status, never the text or body of the Donation response, and maps any other Donation failure to `502`.
 - **One token, two audiences.** The Authorization API lists both the Donation and the Reporting API as audiences of user and admin tokens (`TokenCreationOptions__Audiences__1` and `__2`).
-- **Only the Donation client in Infrastructure.** An architecture test limits references to the Donation client to `TimeForCode.Reporting.Infrastructure`; Domain and Application see only the `IDonationDataSource` port.
+- **Only the Donation client in Infrastructure.** An architecture test keeps every Reporting layer except Infrastructure (Values, Domain, Commands, Application and Api) from referencing the Donation client; they see only the `IDonationDataSource` port.
+- **Read-only is tested, not structural.** The generated client also has the write operations of the Donation API. `DonationApiDataSourceTests.GetDonationsAndContributions_Always_OnlyReadFromTheDonationApi` fails if either call sends anything other than a `GET`. An ArchUnit rule on the called client methods was tried and dropped: it cannot see calls made inside async lambdas, so it passed even when it should have failed. A new operation on the data source needs its own request test.
 - **Lazy configuration check.** A missing or invalid `BaseUri` fails the first request that needs the Donation API, not the start of the service, because the OpenAPI build step starts the host.
 
 ## Consequences
@@ -35,5 +36,6 @@ Reporting is a separate, stateless API service with no database. Its Infrastruct
 
 - Reporting is only as available and as fast as the Donation API, and each report costs one or more HTTP calls.
 - The caller's token is sent to whatever `DonationApiOptions:BaseUri` points at, so that setting must be trusted configuration.
+- The token travels on the MediatR query objects (`AccessToken`). A logging or serializing pipeline behaviour added later must exclude it, and the header redaction of the HTTP client logging (on by default) must stay on.
 - Report totals inherit the limits of the Donation read endpoints: the lists are capped (DEBT-21), so totals can be incomplete, and organization membership is self-declared (DEBT-19).
 - Reporting cannot run without a user or admin token; there is no scheduled or service-to-service report. That would need a new decision.

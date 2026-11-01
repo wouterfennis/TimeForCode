@@ -57,9 +57,9 @@ namespace TimeForCode.Reporting.Architecture.Tests
         }
 
         [TestMethod]
-        public void ReportingDomainAndApplication_ShouldNotDependOnTheDonationApiClient()
+        public void ReportingAllLayersExceptInfrastructure_ShouldNotDependOnTheDonationApiClient()
         {
-            var rule = Types().That().ResideInNamespaceMatching(@"^TimeForCode\.Reporting\.(Domain|Application|Commands)(\..*)?$").Should()
+            var rule = Types().That().ResideInNamespaceMatching(@"^TimeForCode\.Reporting\.(Values|Domain|Commands|Application|Api)(\..*)?$").Should()
                 .NotDependOnAnyTypesThat().ResideInNamespaceMatching(DonationApiClient)
                 .Because("The Donation client is an infrastructure detail behind the data source interface");
 

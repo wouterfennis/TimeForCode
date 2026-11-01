@@ -85,6 +85,7 @@ deployment {
           instanceOf timeforcode.donation
         }
         targetReporting = appService 'Reporting API App Service' {
+          description 'Planned: not deployed yet, no Bicep definition (DEBT-22)'
           instanceOf timeforcode.reporting
         }
       }

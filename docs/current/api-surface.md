@@ -210,7 +210,9 @@ Export schema (the same values in both formats):
 | `GithubReference` | `githubReference` | string or `null` | Issue or pull request URL; empty in CSV, `null` in JSON when none was given |
 | `LoggedAt` | `loggedAt` | string | UTC, ISO 8601 (`2026-10-02T07:30:15Z`) |
 
-The CSV has a header row and `\r\n` line endings. Values with a comma, quote or line break are quoted (RFC 4180), and a value starting with `=`, `+`, `-`, `@`, a tab or a carriage return gets a leading `'` so a spreadsheet does not run it as a formula. The JSON is `{ "contributions": [ ... ] }`, an empty list when there are none.
+The CSV has a header row and `\r\n` line endings. Values with a comma, quote or line break are quoted (RFC 4180), and a value starting with `=`, `+`, `-`, `@`, a tab or a carriage return, also behind leading spaces or line breaks, gets a leading `'` so a spreadsheet does not run it as a formula. The JSON is `{ "contributions": [ ... ] }`, an empty list when there are none. Only the CSV is guarded for spreadsheets; the JSON carries the values unchanged, so treat it as raw data and escape it for whatever shows it.
+
+When the Donation API refuses the caller (`401`, `403`, `404`) the Reporting API answers with the same status and a fixed message per status; the text of the Donation response is never passed on.
 
 ---
 

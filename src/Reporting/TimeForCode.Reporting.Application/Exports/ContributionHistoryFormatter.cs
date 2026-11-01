@@ -68,12 +68,13 @@ namespace TimeForCode.Reporting.Application.Exports
             value.ToUniversalTime().ToString("yyyy-MM-dd'T'HH:mm:ss'Z'", CultureInfo.InvariantCulture);
 
         /// <summary>
-        /// A value a spreadsheet would read as a formula gets a leading quote (OWASP CSV injection guidance); values with a separator,
+        /// A value a spreadsheet would read as a formula, also behind leading spaces or line breaks, gets a leading quote (OWASP CSV injection guidance); values with a separator,
         /// quote or line break are quoted with doubled quotes (RFC 4180).
         /// </summary>
         private static string CsvField(string value)
         {
-            if (value.Length > 0 && SpreadsheetFormulaStarts.Contains(value[0]))
+            string visibleStart = value.TrimStart(' ', '\n');
+            if (visibleStart.Length > 0 && SpreadsheetFormulaStarts.Contains(visibleStart[0]))
             {
                 value = "'" + value;
             }
