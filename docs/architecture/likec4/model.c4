@@ -393,7 +393,7 @@ model {
     }
 
     reporting = container 'Reporting' {
-      description 'Bounded context: read-only impact report and contribution history export per donor organization; owns no data and reads it from the Donation API'
+      description 'Bounded context: read-only impact report and contribution history export per donor organization, and the donation report and public summary per project; owns no data and reads it from the Donation API'
       technology '.NET 10, ASP.NET Core'
 
       reportingApi = layer 'API' {
@@ -402,6 +402,9 @@ model {
 
         reportingController = component 'ReportingController' {
           description 'impact report and contribution history export (/api/v1/reporting/donororganization/{id}); 502 when the Donation API fails'
+        }
+        projectReportingController = component 'ProjectReportingController' {
+          description 'detailed donation report for the maintainer or an administrator and anonymous public summary (/api/v1/reporting/project/{id}); 502 when the Donation API fails'
         }
       }
       reportingCommands = layer 'Commands' {
@@ -412,7 +415,7 @@ model {
         technology 'MediatR'
 
         reportingHandlers = component 'Report handlers' {
-          description 'Impact report and contribution history export'
+          description 'Impact report, contribution history export, project donation report and public summary'
         }
         historyFormatter = component 'ContributionHistoryFormatter' {
           description 'Renders the contribution history as JSON or CSV'
@@ -439,6 +442,7 @@ model {
       reportingInfrastructure -> reportingApplication 'implements interfaces of'
 
       reportingApi.reportingController -> reportingApplication.reportingHandlers 'dispatches'
+      reportingApi.projectReportingController -> reportingApplication.reportingHandlers 'dispatches'
       reportingApplication.reportingHandlers -> reportingApplication.historyFormatter 'formats the export'
       reportingApplication.reportingHandlers -> reportingInfrastructure.donationApiDataSource 'via IDonationDataSource'
     }

@@ -149,6 +149,29 @@ sequenceDiagram
 
 The Donation API alone decides who may read: contributors affiliated with the organization and administrators (affiliation is self-declared, DEBT-19). When the Donation API fails or cannot be reached, Reporting answers `502`. The impact report counts the commitments and logged hours of `Active` and `Completed` donations and groups them per project. The export renders the contributions as CSV or JSON in the documented schema ([API surface](../../current/api-surface.md#reporting-api)). Both lists are read page by page from the paged Donation endpoints until the reported total is collected; only the cap on affiliated contributors can leave contributions out of very large organizations (DEBT-21).
 
+## Scenario 3g — Donation report of a project
+
+A caller sends `GET /api/v1/reporting/project/{id}/donation-report` to the Reporting API with a user or admin bearer token. `GetProjectDonationReportHandler` first checks who the caller is: an administrator (scope `admin`) skips the check, everyone else must be the maintainer, which `DonationApiDataSource` verifies with `GET /api/v1/Project/{id}/manage` and the caller's own token (`403` for another user, `404` for an unknown project). It then reads the donations and contributions from the anonymous Donation endpoints `GET /api/v1/project/{id}/donation` and `.../contribution` and builds a `ProjectDonationReport`.
+
+```mermaid
+sequenceDiagram
+    participant Caller
+    participant ReportingAPI as Reporting API
+    participant DonationAPI as Donation API
+
+    Caller->>ReportingAPI: GET .../project/{id}/donation-report (Bearer token)
+    opt caller is not an administrator
+        ReportingAPI->>DonationAPI: GET /api/v1/Project/{id}/manage (same token)
+        DonationAPI-->>ReportingAPI: 200, or 403 / 404
+    end
+    ReportingAPI->>DonationAPI: GET /api/v1/project/{id}/donation
+    ReportingAPI->>DonationAPI: GET /api/v1/project/{id}/contribution
+    DonationAPI-->>ReportingAPI: donations and contributions
+    ReportingAPI-->>Caller: 200 { hoursReceived, hoursLogged, progressPercentage, donations, contributors, ... }
+```
+
+`GET /api/v1/reporting/project/{id}/public-summary` needs no token and skips the maintainer check; it answers only the totals (hours received and logged, progress, number of donors and contributors) and never a name, login or identifier. Only `Active` and `Completed` donations count as received. Both endpoints answer `404` for an unknown or unpublished project, because the Donation reads serve published projects only, and `502` when the Donation API fails or cannot be reached.
+
 ---
 
 ## Scenario 4 — Log Hours Against a Donation (Target)

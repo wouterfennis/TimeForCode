@@ -27,7 +27,9 @@ namespace TimeForCode.Reporting.Specifications.Mocking
 
                 // One host serves every scenario of a run, so the production limit of 60 requests a minute would reject later scenarios.
                 services.RemoveAll<IConfigureOptions<RateLimiterOptions>>();
-                services.Configure<RateLimiterOptions>(options => options.AddDefaultSlidingWindowPolicy("api", int.MaxValue));
+                services.Configure<RateLimiterOptions>(options => options
+                    .AddDefaultSlidingWindowPolicy("api", int.MaxValue)
+                    .AddDefaultSlidingWindowPolicy("public", int.MaxValue));
 
                 // Override JWT validation to accept symmetric test tokens
                 services.PostConfigure<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme, options =>

@@ -47,7 +47,8 @@ namespace TimeForCode.Reporting.Infrastructure.Services
                         response.TotalCount);
                 }),
                 "donations",
-                donorOrganizationId);
+                $"donor organization {donorOrganizationId}",
+                OrganizationRefusal);
         }
 
         public Task<Result<IReadOnlyList<OrganizationContribution>>> GetContributionsAsync(string donorOrganizationId, string accessToken, CancellationToken cancellationToken)
@@ -62,7 +63,54 @@ namespace TimeForCode.Reporting.Infrastructure.Services
                         response.TotalCount);
                 }),
                 "contributions",
-                donorOrganizationId);
+                $"donor organization {donorOrganizationId}",
+                OrganizationRefusal);
+        }
+
+        public Task<Result<bool>> VerifyMaintainerAsync(string projectId, string accessToken, CancellationToken cancellationToken)
+        {
+            return ReadAsync(
+                accessToken,
+                async client =>
+                {
+                    await client.GetMaintainedProjectAsync(projectId, cancellationToken);
+                    return true;
+                },
+                "maintainer check",
+                $"project {projectId}",
+                ProjectRefusal);
+        }
+
+        public Task<Result<IReadOnlyList<ProjectDonation>>> GetProjectDonationsAsync(string projectId, CancellationToken cancellationToken)
+        {
+            return ReadAsync<IReadOnlyList<ProjectDonation>>(
+                null,
+                async client =>
+                {
+                    GetDonationsResponse response = await client.GetProjectDonationsAsync(projectId, cancellationToken);
+                    return response.Donations
+                        .Select(d => new ProjectDonation(d.Id, d.DonorOrganizationId, ToStatus(d.Status), d.HoursCommitted, d.HoursLogged, d.CreatedAt))
+                        .ToList();
+                },
+                "donations",
+                $"project {projectId}",
+                ProjectRefusal);
+        }
+
+        public Task<Result<IReadOnlyList<ProjectContribution>>> GetProjectContributionsAsync(string projectId, CancellationToken cancellationToken)
+        {
+            return ReadAsync<IReadOnlyList<ProjectContribution>>(
+                null,
+                async client =>
+                {
+                    GetContributionsResponse response = await client.GetContributionsAsync(projectId, cancellationToken);
+                    return response.Contributions
+                        .Select(c => new ProjectContribution(c.ContributorId, c.ContributorGitHubLogin, c.Hours))
+                        .ToList();
+                },
+                "contributions",
+                $"project {projectId}",
+                ProjectRefusal);
         }
 
         /// <summary>
@@ -86,44 +134,57 @@ namespace TimeForCode.Reporting.Infrastructure.Services
             throw new HttpRequestException($"The Donation API holds more than {MaxPages * PageSize} items; a report cannot be built from them.");
         }
 
-        private async Task<Result<IReadOnlyList<T>>> ReadAsync<T>(
-            string accessToken,
-            Func<DonationClient, Task<IReadOnlyList<T>>> read,
+        /// <summary>
+        /// Calls the Donation API, with the caller's token when there is one. <paramref name="refusalMessage"/> gives the fixed text for a
+        /// passed-on 401, 403 or 404: the generated client's own message embeds the start of the downstream response, which must not reach our callers.
+        /// </summary>
+        private async Task<Result<T>> ReadAsync<T>(
+            string? accessToken,
+            Func<DonationClient, Task<T>> read,
             string what,
-            string donorOrganizationId)
+            string subject,
+            Func<int, string> refusalMessage)
         {
             using HttpClient httpClient = _httpClientFactory.CreateClient(HttpClientName);
-            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+            if (accessToken is not null)
+            {
+                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+            }
 
             try
             {
-                return Result<IReadOnlyList<T>>.Success(await read(new DonationClient(httpClient)));
+                return Result<T>.Success(await read(new DonationClient(httpClient)));
             }
             catch (ApiException exception) when (exception.StatusCode is 401 or 403 or 404)
             {
-                _logger.LogWarning(exception, "The Donation API refused the {What} of donor organization {DonorOrganizationId} with status {StatusCode}", what, donorOrganizationId, exception.StatusCode);
-                return Result<IReadOnlyList<T>>.Failure(RefusalMessage(exception.StatusCode), (HttpStatusCode)exception.StatusCode);
+                _logger.LogWarning(exception, "The Donation API refused the {What} of {Subject} with status {StatusCode}", what, subject, exception.StatusCode);
+                return Result<T>.Failure(refusalMessage(exception.StatusCode), (HttpStatusCode)exception.StatusCode);
             }
             catch (ApiException exception)
             {
-                _logger.LogError(exception, "The Donation API failed on the {What} of donor organization {DonorOrganizationId} with status {StatusCode}", what, donorOrganizationId, exception.StatusCode);
-                return Result<IReadOnlyList<T>>.Failure("The Donation service could not provide the data.", HttpStatusCode.BadGateway);
+                _logger.LogError(exception, "The Donation API failed on the {What} of {Subject} with status {StatusCode}", what, subject, exception.StatusCode);
+                return Result<T>.Failure("The Donation service could not provide the data.", HttpStatusCode.BadGateway);
             }
             catch (HttpRequestException exception)
             {
-                _logger.LogError(exception, "The Donation API could not be reached for the {What} of donor organization {DonorOrganizationId}", what, donorOrganizationId);
-                return Result<IReadOnlyList<T>>.Failure("The Donation service could not be reached.", HttpStatusCode.BadGateway);
+                _logger.LogError(exception, "The Donation API could not be reached for the {What} of {Subject}", what, subject);
+                return Result<T>.Failure("The Donation service could not be reached.", HttpStatusCode.BadGateway);
             }
         }
 
-        /// <summary>
-        /// A fixed message per status: the generated client's own message embeds the start of the downstream response, which must not reach our callers.
-        /// </summary>
-        private static string RefusalMessage(int statusCode) => statusCode switch
+        private static string OrganizationRefusal(int statusCode) => statusCode switch
         {
             401 => "The Donation service did not accept the access token.",
             403 => "Only members of the donor organization or an administrator can read its data.",
             404 => "Donor organization not found.",
+            _ => throw new ArgumentOutOfRangeException(nameof(statusCode), statusCode, "Only 401, 403 and 404 are passed on.")
+        };
+
+        private static string ProjectRefusal(int statusCode) => statusCode switch
+        {
+            401 => "The Donation service did not accept the access token.",
+            403 => "Only the maintainer of the project or an administrator can read its donation report.",
+            404 => "Project not found.",
             _ => throw new ArgumentOutOfRangeException(nameof(statusCode), statusCode, "Only 401, 403 and 404 are passed on.")
         };
 

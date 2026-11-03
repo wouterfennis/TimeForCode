@@ -198,6 +198,24 @@ The Reporting API (`:8083` locally) is back-end only. It reads the donations and
 | --- | --- | --- | --- |
 | `GET` | `/api/v1/reporting/donororganization/{id}/impact-report` | ✅ | Impact report of a donor organization (user or admin JWT); `200` with `{ "hoursPledged": 10, "hoursLogged": 4, "projectsSupported": 1, "projects": [ { "projectId": "...", "hoursPledged": 10, "hoursLogged": 4 } ] }`; only `Active` and `Completed` donations count, projects are listed in the order of their first donation, an organization without counted donations gets zeros and an empty list; `400` for a malformed id or a missing bearer token, `401` without a token, `403` when the caller is neither a member nor an administrator, `404` for an unknown organization, `502` when the Donation API fails or cannot be reached |
 | `GET` | `/api/v1/reporting/donororganization/{id}/contribution-history?format=Json\|Csv` | ✅ | Export of the contribution history as a file download (user or admin JWT); `format` is `Json` (default, `application/json`) or `Csv` (`text/csv`); same status codes as the impact report; every contribution, earliest first, deleted ones left out, attributed by the contributor's current affiliation (DEBT-21) |
+| `GET` | `/api/v1/reporting/project/{id}/donation-report` | ✅ | Detailed donation report of a project (user JWT of the project's maintainer, or admin JWT); `200` with the schema below; `400` for a malformed id or a missing bearer token, `401` without a token, `403` when the caller is not the maintainer, `404` for an unknown or unpublished project (also for its maintainer), `502` when the Donation API fails or cannot be reached |
+| `GET` | `/api/v1/reporting/project/{id}/public-summary` | ✅ | Public summary of a project, anonymous; aggregate totals only (see below), no names, logins or identifiers; `200`, `400` for a malformed id, `404` for an unknown or unpublished project, `502` when the Donation API fails |
+
+Project donation report (`donation-report`):
+
+```json
+{
+  "hoursReceived": 10, "hoursLogged": 4, "progressPercentage": 40,
+  "donorCount": 1, "contributorCount": 1,
+  "pendingDonations": 0, "activeDonations": 1, "completedDonations": 0, "cancelledDonations": 0,
+  "donations": [ { "id": "...", "donorOrganizationId": "...", "status": "Active", "hoursCommitted": 10, "hoursLogged": 4, "createdAt": "2026-10-01T09:00:00+00:00" } ],
+  "contributors": [ { "contributorId": "...", "contributorLogin": "alice", "hours": 4 } ]
+}
+```
+
+Only `Active` and `Completed` donations count as received (`hoursReceived`, `hoursLogged`, `donorCount`); `Pending` and `Cancelled` ones are listed in `donations` and counted per status. `progressPercentage` is hours logged against hours received in whole percent, capped at 100, `0` when nothing was received. `donorCount` counts an organization once and every individual pledge as one donor, because the Donation API exposes no identity for individual donors. `donorOrganizationId` is absent for an individual pledge. `contributors` adds up the hours per contributor, in the order of their first contribution. The public summary (`public-summary`) holds only `hoursReceived`, `hoursLogged`, `progressPercentage`, `donorCount` and `contributorCount`.
+
+Who may read the detailed report: Reporting asks the Donation API `GET /api/v1/Project/{id}/manage` with the caller's token, which answers `200` only for the project's maintainer; an administrator skips that check because the Donation API offers administrators no such read. The donations and contributions are then read from the anonymous Donation endpoints `GET /api/v1/project/{id}/donation` and `.../contribution`, which serve published projects only. Those Donation lists are not paged and capped at 1000 donations and 1000 contributions (the newest) per project, so a larger project gets totals that are too low without an error (DEBT-23). The anonymous `public-summary` has its own rate-limit policy `public`, half the permit limit of `api`, because every call makes two Donation calls.
 
 Export schema (the same values in both formats):
 
