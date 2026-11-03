@@ -77,5 +77,7 @@ if ($ResetData) {
     podman compose down --volumes
 }
 
+Write-Info "Once the stack is up, fill it with demo data from another terminal: dotnet run --project tools/TimeForCode.Seeder (needs TIMEFORCODE_LIVE_TEST_ADMIN_SECRET set to this run's TEST_ADMIN_ACCESS_SECRET)."
+
 Write-Info "Starting the TimeForCode stack..."
 podman compose up --build

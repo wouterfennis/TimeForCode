@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Authorization\TimeForCode.Authorization.Api.Client\TimeForCode.Authorization.Api.Client.csproj" />
+    <ProjectReference Include="..\..\src\Donation\TimeForCode.Donation.Api.Client\TimeForCode.Donation.Api.Client.csproj" />
+    <ProjectReference Include="..\..\tst\Shared\TimeForCode.Shared.Live\TimeForCode.Shared.Live.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="TimeForCode.Seeder.Tests" />
+  </ItemGroup>
+
+</Project>
