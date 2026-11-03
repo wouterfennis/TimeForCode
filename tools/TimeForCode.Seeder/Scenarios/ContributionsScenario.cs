@@ -2,15 +2,15 @@ using TimeForCode.Donation.Api.Client;
 
 namespace TimeForCode.Seeder.Scenarios
 {
-    internal sealed class ContributionsScenario : SeedScenario
+    internal sealed class ContributionsScenario : ISeedScenario
     {
         private const string Reference = "https://github.com/seed-owner/approved-toolkit/pull/1";
 
-        public override string Name => "contributions";
+        public string Name => "contributions";
 
-        public override IReadOnlyList<Persona> Personas { get; } = [Seeder.Personas.Alice, Seeder.Personas.Bob];
+        public IReadOnlyList<Persona> Personas { get; } = [Seeder.Personas.Alice, Seeder.Personas.Bob];
 
-        public override async Task RunAsync(SeedContext context)
+        public async Task RunAsync(SeedContext context)
         {
             string approved = context.IdOf(SeedIds.ApprovedProject);
             string second = context.IdOf(SeedIds.SecondApprovedProject);

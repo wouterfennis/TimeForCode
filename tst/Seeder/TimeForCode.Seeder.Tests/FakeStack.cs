@@ -24,7 +24,7 @@ namespace TimeForCode.Seeder.Tests
             return Task.FromResult(clients);
         }
 
-        public async Task RunAsync(params SeedScenario[] scenarios)
+        public async Task RunAsync(params ISeedScenario[] scenarios)
         {
             await new SeedRunner(this, _ => { }).RunAsync(scenarios);
         }

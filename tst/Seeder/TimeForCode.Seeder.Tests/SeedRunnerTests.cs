@@ -95,7 +95,7 @@ namespace TimeForCode.Seeder.Tests
             }
         }
 
-        internal sealed class DelegateScenario : SeedScenario
+        internal sealed class DelegateScenario : ISeedScenario
         {
             private readonly Func<SeedContext, Task> _run;
 
@@ -106,11 +106,11 @@ namespace TimeForCode.Seeder.Tests
                 _run = run;
             }
 
-            public override string Name { get; }
+            public string Name { get; }
 
-            public override IReadOnlyList<Persona> Personas { get; }
+            public IReadOnlyList<Persona> Personas { get; }
 
-            public override Task RunAsync(SeedContext context) => _run(context);
+            public Task RunAsync(SeedContext context) => _run(context);
         }
     }
 }

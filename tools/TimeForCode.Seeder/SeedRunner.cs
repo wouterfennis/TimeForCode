@@ -11,11 +11,11 @@ namespace TimeForCode.Seeder
             _log = log;
         }
 
-        public async Task RunAsync(IEnumerable<SeedScenario> scenarios)
+        public async Task RunAsync(IEnumerable<ISeedScenario> scenarios)
         {
             var ids = new Dictionary<string, string>();
 
-            foreach (SeedScenario scenario in scenarios)
+            foreach (ISeedScenario scenario in scenarios)
             {
                 _log($"Seeding {scenario.Name}");
                 var context = new SeedContext(scenario.Name, scenario.Personas, _session, ids);

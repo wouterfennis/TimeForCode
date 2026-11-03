@@ -20,12 +20,12 @@ namespace TimeForCode.Seeder
             }
             catch (SeederException exception)
             {
-                Console.Error.WriteLine($"Seeding failed: {exception.Message}");
+                await Console.Error.WriteLineAsync($"Seeding failed: {exception.Message}");
                 return 1;
             }
             catch (Exception exception) when (exception is HttpRequestException or InvalidOperationException or ApiException)
             {
-                Console.Error.WriteLine($"Seeding failed: {exception.Message}");
+                await Console.Error.WriteLineAsync($"Seeding failed: {exception.Message}");
                 return 1;
             }
         }

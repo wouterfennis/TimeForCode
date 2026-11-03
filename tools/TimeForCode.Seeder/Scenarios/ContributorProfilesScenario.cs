@@ -2,13 +2,13 @@ using TimeForCode.Donation.Api.Client;
 
 namespace TimeForCode.Seeder.Scenarios
 {
-    internal sealed class ContributorProfilesScenario : SeedScenario
+    internal sealed class ContributorProfilesScenario : ISeedScenario
     {
-        public override string Name => "contributor-profiles";
+        public string Name => "contributor-profiles";
 
-        public override IReadOnlyList<Persona> Personas { get; } = [Seeder.Personas.Alice, Seeder.Personas.Bob, Seeder.Personas.Dana, Seeder.Personas.Dirk];
+        public IReadOnlyList<Persona> Personas { get; } = [Seeder.Personas.Alice, Seeder.Personas.Bob, Seeder.Personas.Dana, Seeder.Personas.Dirk];
 
-        public override async Task RunAsync(SeedContext context)
+        public async Task RunAsync(SeedContext context)
         {
             string acme = context.IdOf(SeedIds.AcmeOrganization);
             string globex = context.IdOf(SeedIds.GlobexOrganization);

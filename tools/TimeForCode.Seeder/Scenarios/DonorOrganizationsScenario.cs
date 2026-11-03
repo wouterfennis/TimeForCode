@@ -2,20 +2,20 @@ using TimeForCode.Donation.Api.Client;
 
 namespace TimeForCode.Seeder.Scenarios
 {
-    internal sealed class DonorOrganizationsScenario : SeedScenario
+    internal sealed class DonorOrganizationsScenario : ISeedScenario
     {
-        public override string Name => "donor-organizations";
+        public string Name => "donor-organizations";
 
-        public override IReadOnlyList<Persona> Personas { get; } = [Seeder.Personas.Dana, Seeder.Personas.Dirk];
+        public IReadOnlyList<Persona> Personas { get; } = [Seeder.Personas.Dana, Seeder.Personas.Dirk];
 
-        public override async Task RunAsync(SeedContext context)
+        public async Task RunAsync(SeedContext context)
         {
             SeedClients dana = await context.ClientsFor(Seeder.Personas.Dana);
             DonorOrganizationResponse acme = await dana.Donation.CreateDonorOrganizationAsync(new CreateDonorOrganizationRequest
             {
                 Name = "Acme Software",
                 ContactEmail = "open-source@acme.example",
-                Website = new Uri("https://acme.example")
+                Website = ExampleSite("acme.example")
             });
             context.Remember(SeedIds.AcmeOrganization, acme.Id);
 
@@ -24,9 +24,11 @@ namespace TimeForCode.Seeder.Scenarios
             {
                 Name = "Globex Engineering",
                 ContactEmail = "community@globex.example",
-                Website = new Uri("https://globex.example")
+                Website = ExampleSite("globex.example")
             });
             context.Remember(SeedIds.GlobexOrganization, globex.Id);
         }
+
+        private static Uri ExampleSite(string host) => new UriBuilder(Uri.UriSchemeHttps, host).Uri;
     }
 }

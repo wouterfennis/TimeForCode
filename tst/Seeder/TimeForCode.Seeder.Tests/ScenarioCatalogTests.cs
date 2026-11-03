@@ -5,7 +5,7 @@ using TimeForCode.Seeder;
 namespace TimeForCode.Seeder.Tests
 {
     [TestClass]
-    public class ScenarioCatalogTests
+    public partial class ScenarioCatalogTests
     {
         [TestMethod]
         public void All_Order_IsFixed()
@@ -42,7 +42,7 @@ namespace TimeForCode.Seeder.Tests
         {
             Personas.All.Select(p => p.Name.ToLowerInvariant()).Should().OnlyHaveUniqueItems();
             Personas.All.Where(p => p.Role != PersonaRole.Admin)
-                .Should().OnlyContain(p => p.Name.Length <= 64 && Regex.IsMatch(p.Name, "^[A-Za-z0-9._ -]+$"));
+                .Should().OnlyContain(p => p.Name.Length <= 64 && AcceptedName().IsMatch(p.Name));
         }
 
         [TestMethod]
@@ -60,5 +60,8 @@ namespace TimeForCode.Seeder.Tests
             ScenarioCatalog.All.Where(s => s.Personas.Contains(Personas.Admin)).Select(s => s.Name)
                 .Should().Equal("project-lifecycle");
         }
+
+        [GeneratedRegex("^[A-Za-z0-9._ -]+$")]
+        private static partial Regex AcceptedName();
     }
 }
