@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.OpenApi;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using TimeForCode.Shared.Api.Extensions;
 
 namespace TimeForCode.Shared.Tests.Api
@@ -56,6 +57,71 @@ namespace TimeForCode.Shared.Tests.Api
             await OpenApiTransformers.AddEmailFormat(schema, context, CancellationToken.None);
 
             schema.Format.Should().BeNull();
+        }
+
+        [TestMethod]
+        public async Task AddStringEnumValues_EnumSchema_DocumentsTheEnumAsItsNames()
+        {
+            var schema = new OpenApiSchema { Type = JsonSchemaType.Integer, Format = "int32" };
+            var context = BuildTypeSchemaContext(typeof(SampleEnum));
+
+            await OpenApiTransformers.AddStringEnumValues(schema, context, CancellationToken.None);
+
+            schema.Type.Should().Be(JsonSchemaType.String);
+            schema.Format.Should().BeNull();
+            schema.Enum!.Select(v => v!.GetValue<string>()).Should().Equal("First", "Second");
+        }
+
+        [TestMethod]
+        public async Task AddStringEnumValues_EnumSchemaAlreadyDocumentedAsStrings_LeavesItUnchanged()
+        {
+            var schema = new OpenApiSchema { Enum = [JsonValue.Create("Second")!, JsonValue.Create("First")!] };
+            var context = BuildTypeSchemaContext(typeof(SampleEnum));
+
+            await OpenApiTransformers.AddStringEnumValues(schema, context, CancellationToken.None);
+
+            schema.Enum.Select(v => v!.GetValue<string>()).Should().Equal("Second", "First");
+        }
+
+        [TestMethod]
+        public async Task AddStringEnumValues_NullableEnumSchema_DocumentsTheEnumAsItsNames()
+        {
+            var schema = new OpenApiSchema { Type = JsonSchemaType.Integer };
+            var context = BuildTypeSchemaContext(typeof(SampleEnum?));
+
+            await OpenApiTransformers.AddStringEnumValues(schema, context, CancellationToken.None);
+
+            schema.Enum!.Select(v => v!.GetValue<string>()).Should().Equal("First", "Second");
+        }
+
+        [TestMethod]
+        public async Task AddStringEnumValues_NonEnumSchema_LeavesItUntouched()
+        {
+            var schema = new OpenApiSchema { Type = JsonSchemaType.Integer };
+            var context = BuildTypeSchemaContext(typeof(int));
+
+            await OpenApiTransformers.AddStringEnumValues(schema, context, CancellationToken.None);
+
+            schema.Type.Should().Be(JsonSchemaType.Integer);
+            schema.Enum.Should().BeNullOrEmpty();
+        }
+
+        private static OpenApiSchemaTransformerContext BuildTypeSchemaContext(Type type)
+        {
+            return new OpenApiSchemaTransformerContext
+            {
+                DocumentName = "v1",
+                JsonTypeInfo = JsonSerializerOptions.Default.GetTypeInfo(type),
+                JsonPropertyInfo = null,
+                ParameterDescription = null,
+                ApplicationServices = null!
+            };
+        }
+
+        private enum SampleEnum
+        {
+            First,
+            Second
         }
 
         private static OpenApiOperationTransformerContext BuildOperationContext(params object[] endpointMetadata)

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.OpenApi;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.OpenApi;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Nodes;
 
 namespace TimeForCode.Shared.Api.Extensions
 {
@@ -60,6 +61,32 @@ namespace TimeForCode.Shared.Api.Extensions
             {
                 schema.Format = "email";
             }
+
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Documents every enum as a string schema listing its names, matching the string converter the APIs serialize with.
+        /// </summary>
+        internal static Task AddStringEnumValues(
+            OpenApiSchema schema,
+            OpenApiSchemaTransformerContext context,
+            CancellationToken cancellationToken)
+        {
+            // Property schemas only reference the enum schema; only the schema of the type itself is rewritten.
+            Type? enumType = context.JsonPropertyInfo is null
+                ? Nullable.GetUnderlyingType(context.JsonTypeInfo.Type) ?? context.JsonTypeInfo.Type
+                : null;
+
+            if (enumType is not { IsEnum: true } || schema.Enum is { Count: > 0 })
+            {
+                return Task.CompletedTask;
+            }
+
+            schema.Type = JsonSchemaType.String;
+            schema.Format = null;
+            schema.Pattern = null;
+            schema.Enum = Enum.GetNames(enumType).Select(name => (JsonNode)JsonValue.Create(name)).ToList();
 
             return Task.CompletedTask;
         }

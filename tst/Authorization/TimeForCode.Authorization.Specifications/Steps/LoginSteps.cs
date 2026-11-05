@@ -5,6 +5,7 @@ using TimeForCode.Authorization.Api.Client;
 using TimeForCode.Authorization.Api.Client.Extensions;
 using TimeForCode.Authorization.Specifications.Mocking;
 using TimeForCode.Authorization.Values;
+using IdentityProvider = TimeForCode.Authorization.Values.IdentityProvider;
 
 namespace TimeForCode.Authorization.Specifications.Steps
 {

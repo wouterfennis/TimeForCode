@@ -195,6 +195,7 @@ The Reporting API runs the check in `SwaggerTests.Verify_GeneratedSwaggerFile_Sh
 To satisfy the check:
 
 - Give every response type and request/response property an XML `<summary>`, and every action parameter a `<param>`. Enums need their own `<summary>` and a `<summary>` per member, and the project that declares them needs `GenerateDocumentationFile` (the Reporting `Values` project sets it).
+- Enums need no converter attribute for their documentation: every API is configured with the shared `AddStringEnumValues` schema transformer (`CreateDefaultOpenApiOptions`), so each enum is documented as a string schema listing its names, matching the `JsonStringEnumConverter` that `AddDefaultControllers` registers for the wire format.
 - Describe every status an operation declares with `[ProducesResponseType]` using `<response code="..."> ... </response>` on the action, stating what the status means for that endpoint.
 - Rebuild the Api project so the `.json` is regenerated, then review the snapshot diff as above.
 

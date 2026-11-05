@@ -654,8 +654,11 @@ export interface components {
             issuer: string;
             jwks_uri: string;
         };
-        /** @description Represents the identity providers supported by the application. */
-        IdentityProvider: number;
+        /**
+         * @description Represents the identity providers supported by the application.
+         * @enum {string}
+         */
+        IdentityProvider: "Github";
         JwkResponse: {
             kty: string;
             kid: string;

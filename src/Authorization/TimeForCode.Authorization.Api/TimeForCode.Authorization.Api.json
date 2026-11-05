@@ -833,7 +833,10 @@
         }
       },
       "IdentityProvider": {
-        "type": "integer",
+        "enum": [
+          "Github"
+        ],
+        "type": "string",
         "description": "Represents the identity providers supported by the application."
       },
       "JwkResponse": {
