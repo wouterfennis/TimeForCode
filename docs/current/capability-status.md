@@ -83,6 +83,7 @@ This document provides an explicit, feature-level view of what is implemented, p
 | --- | --- | --- |
 | Hours donated per organization | ✅ | Impact report: `GET /api/v1/reporting/donororganization/{id}/impact-report` (hours pledged and logged, projects supported, breakdown per project); back-end only, no dashboard yet |
 | Contribution history export | ✅ | `GET /api/v1/reporting/donororganization/{id}/contribution-history?format=Json\|Csv`; back-end only; reads every page of the Donation lists, only the cap on affiliated contributors can leave contributions out (DEBT-21) |
+| Project donation report | ✅ | `GET /api/v1/reporting/project/{id}/donation-report` for the maintainer and administrators (hours received and logged, progress, donations per status, contributors with hours) and `GET /api/v1/reporting/project/{id}/public-summary` without an account (totals only, no personal data); back-end only, no dashboard yet |
 | Hours spent per project | ⚠️ | Contributions can be logged, listed, corrected and soft deleted per project (`POST`/`GET /api/v1/project/{id}/contribution`, `PUT`/`DELETE .../{contributionId}`); no total field or dashboard yet |
 | Contribution history for a user | ❌ | Not implemented |
 | Impact dashboard | ❌ | Not implemented |

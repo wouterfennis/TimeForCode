@@ -156,12 +156,12 @@ graph LR
 
 | Component | Responsibility |
 | --- | --- |
-| `TimeForCode.Reporting.Api` | `ReportingController` with the impact report and the contribution history export (policy `ApiUserOrAdmin`); takes the caller's bearer token from the request and hands it to the query; maps failures to problem details (`401`, `403`, `404`, `502`) |
-| `TimeForCode.Reporting.Application` | `GetImpactReportHandler`, `GetContributionHistoryExportHandler`, `ContributionHistoryFormatter` (CSV with RFC 4180 quoting and spreadsheet formula guard, JSON) and the `IDonationDataSource` interface |
-| `TimeForCode.Reporting.Domain` | `ImpactReport` and `ProjectImpact` (only `Active` and `Completed` donations count), `OrganizationDonation` and `OrganizationContribution` as read from Donation |
+| `TimeForCode.Reporting.Api` | `ReportingController` with the impact report and the contribution history export, and `ProjectReportingController` with the detailed project donation report (policy `ApiUserOrAdmin`) and the anonymous public summary, both on `ReportingControllerBase`; takes the caller's bearer token from the request and hands it to the query; maps failures to problem details (`401`, `403`, `404`, `502`) |
+| `TimeForCode.Reporting.Application` | `GetImpactReportHandler`, `GetContributionHistoryExportHandler`, `GetProjectDonationReportHandler` (maintainer check for non-administrators, then donations and contributions), `GetProjectPublicSummaryHandler`, `ContributionHistoryFormatter` (CSV with RFC 4180 quoting and spreadsheet formula guard, JSON) and the `IDonationDataSource` interface |
+| `TimeForCode.Reporting.Domain` | `ImpactReport` and `ProjectImpact` (only `Active` and `Completed` donations count), `OrganizationDonation` and `OrganizationContribution` as read from Donation; `ProjectDonationReport` with `ProjectDonation`, `ProjectContribution` and `ProjectContributor` (same counting rule, progress, donors and contributors) |
 | `TimeForCode.Reporting.Commands` | Queries and results; `Result<T>` (duplicated per context on purpose) |
 | `TimeForCode.Reporting.Values` | `DonationStatus` (duplicated from Donation on purpose) and `ExportFormat` |
-| `TimeForCode.Reporting.Infrastructure` | `DonationApiDataSource` on the generated `TimeForCode.Donation.Api.Client` with a bearer header per call; `DonationApiOptions` (`BaseUri`); the only place that may reference the Donation client |
+| `TimeForCode.Reporting.Infrastructure` | `DonationApiDataSource` on the generated `TimeForCode.Donation.Api.Client` with a bearer header per call for the organization reads and the maintainer check (`GET /api/v1/Project/{id}/manage`, which answers `200` only for the project's maintainer), and without a token for the anonymous project donation and contribution reads; `DonationApiOptions` (`BaseUri`); the only place that may reference the Donation client |
 
 Architecture tests (`TimeForCode.Reporting.Architecture.Tests`) enforce the layer rules and the context boundary: Reporting may use nothing of Donation except the generated client, only from Infrastructure, never anything of Authorization, and Donation and Authorization must not know Reporting.
 

@@ -7,6 +7,8 @@ namespace TimeForCode.Reporting.Specifications.Steps
     {
         public string? DonorOrganizationId { get; set; }
 
+        public string? ProjectId { get; set; }
+
         public HttpStatusCode? LastStatusCode { get; private set; }
 
         public string? LastContentType { get; private set; }

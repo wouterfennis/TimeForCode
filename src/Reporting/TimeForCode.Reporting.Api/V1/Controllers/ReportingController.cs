@@ -21,10 +21,8 @@ namespace TimeForCode.Reporting.Api.V1.Controllers
     [Produces(MediaTypeNames.Application.Json)]
     [Route("api/v1/reporting/donororganization/{id}")]
     [EnableRateLimiting("api")]
-    public class ReportingController : ControllerBase
+    public class ReportingController : ReportingControllerBase
     {
-        private const string BearerScheme = "Bearer";
-
         private readonly IMediator _mediator;
 
         /// <summary>
@@ -107,45 +105,6 @@ namespace TimeForCode.Reporting.Api.V1.Controllers
             return result.IsFailure
                 ? ToProblem(result.FailureStatusCode, "Cannot export contribution history", result.ErrorMessage)
                 : File(Encoding.UTF8.GetBytes(result.Value.Content), result.Value.ContentType, result.Value.FileName);
-        }
-
-        private bool TryGetAccessToken(out string accessToken)
-        {
-            accessToken = string.Empty;
-
-            if (!AuthenticationHeaderValue.TryParse(Request.Headers.Authorization.ToString(), out var header)
-                || !string.Equals(header.Scheme, BearerScheme, StringComparison.OrdinalIgnoreCase)
-                || string.IsNullOrEmpty(header.Parameter))
-            {
-                return false;
-            }
-
-            accessToken = header.Parameter;
-            return true;
-        }
-
-        private BadRequestObjectResult MissingToken()
-        {
-            return BadRequest(new ProblemDetails
-            {
-                Title = "Access token could not be determined",
-                Detail = "The request does not carry a bearer access token.",
-                Status = StatusCodes.Status400BadRequest
-            });
-        }
-
-        private ObjectResult ToProblem(HttpStatusCode? statusCode, string title, string detail)
-        {
-            var status = statusCode switch
-            {
-                HttpStatusCode.Unauthorized => StatusCodes.Status401Unauthorized,
-                HttpStatusCode.Forbidden => StatusCodes.Status403Forbidden,
-                HttpStatusCode.NotFound => StatusCodes.Status404NotFound,
-                HttpStatusCode.BadGateway => StatusCodes.Status502BadGateway,
-                _ => StatusCodes.Status400BadRequest
-            };
-
-            return StatusCode(status, new ProblemDetails { Title = title, Detail = detail, Status = status });
         }
     }
 }

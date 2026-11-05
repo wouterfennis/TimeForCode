@@ -6,6 +6,197 @@
     "version": "v1"
   },
   "paths": {
+    "/api/v1/reporting/project/{id}/donation-report": {
+      "get": {
+        "tags": [
+          "ProjectReporting"
+        ],
+        "summary": "Returns the detailed donation report of a project: hours received and logged, progress, the donations with their statuses and\r\nthe contributors with their hours. Allowed for the maintainer of the project and for administrators.",
+        "description": "Only Active and Completed donations count as received; Pending and Cancelled ones are listed and counted per status.\r\nOnly published projects can be reported on; an unpublished project answers 404, also for its maintainer.",
+        "operationId": "GetDonationReport",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The project identifier.",
+            "required": true,
+            "schema": {
+              "pattern": "^[0-9a-fA-F]{24}$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectDonationReportResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Bad Gateway",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. Retry after the number of seconds given in the Retry-After header.",
+            "headers": {
+              "Retry-After": {
+                "description": "Number of seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reporting/project/{id}/public-summary": {
+      "get": {
+        "tags": [
+          "ProjectReporting"
+        ],
+        "summary": "Returns the public summary of a project (anonymous): aggregate totals only, without any personal data.",
+        "operationId": "GetPublicSummary",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The project identifier.",
+            "required": true,
+            "schema": {
+              "pattern": "^[0-9a-fA-F]{24}$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectPublicSummaryResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Bad Gateway",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. Retry after the number of seconds given in the Retry-After header.",
+            "headers": {
+              "Retry-After": {
+                "description": "Number of seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/reporting/donororganization/{id}/impact-report": {
       "get": {
         "tags": [
@@ -292,6 +483,9 @@
         },
         "description": "The JSON shape of the contribution history export. The CSV export has the same values in the columns\r\nContributionId, ProjectId, ContributorLogin, Hours, GithubReference and LoggedAt."
       },
+      "DonationStatus": {
+        "type": "integer"
+      },
       "ExportFormat": {
         "enum": [
           "Json",
@@ -382,6 +576,199 @@
           }
         }
       },
+      "ProjectContributorResponse": {
+        "required": [
+          "contributorId",
+          "contributorLogin",
+          "hours"
+        ],
+        "type": "object",
+        "properties": {
+          "contributorId": {
+            "type": "string",
+            "description": "The contributor identifier."
+          },
+          "contributorLogin": {
+            "type": "string",
+            "description": "The GitHub login of the contributor at the time of logging."
+          },
+          "hours": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The total hours the contributor logged on the project.",
+            "format": "int32"
+          }
+        },
+        "description": "The hours a contributor logged on the project."
+      },
+      "ProjectDonationReportResponse": {
+        "required": [
+          "hoursReceived",
+          "hoursLogged",
+          "progressPercentage",
+          "donorCount",
+          "contributorCount",
+          "pendingDonations",
+          "activeDonations",
+          "completedDonations",
+          "cancelledDonations",
+          "donations",
+          "contributors"
+        ],
+        "type": "object",
+        "properties": {
+          "hoursReceived": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "Hours committed by the Active and Completed donations of the project.",
+            "format": "int32"
+          },
+          "hoursLogged": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "Hours logged on those donations.",
+            "format": "int32"
+          },
+          "progressPercentage": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "Hours logged against hours received, in whole percent (0 to 100); 0 when nothing was received.",
+            "format": "int32"
+          },
+          "donorCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "Number of donors of the Active and Completed donations: an organization counts once, an individual pledge counts as one donor.",
+            "format": "int32"
+          },
+          "contributorCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "Number of different contributors who logged hours on the project.",
+            "format": "int32"
+          },
+          "pendingDonations": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "Number of Pending donations.",
+            "format": "int32"
+          },
+          "activeDonations": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "Number of Active donations.",
+            "format": "int32"
+          },
+          "completedDonations": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "Number of Completed donations.",
+            "format": "int32"
+          },
+          "cancelledDonations": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "Number of Cancelled donations.",
+            "format": "int32"
+          },
+          "donations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProjectDonationResponse"
+            },
+            "description": "Every donation of the project, whatever its status, oldest pledge first."
+          },
+          "contributors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProjectContributorResponse"
+            },
+            "description": "The contributors with their total hours, in the order of their first contribution."
+          }
+        },
+        "description": "The detailed donation report of a project: what it received, who contributed and how far it has progressed."
+      },
+      "ProjectDonationResponse": {
+        "required": [
+          "id",
+          "status",
+          "hoursCommitted",
+          "hoursLogged",
+          "createdAt"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The donation identifier."
+          },
+          "donorOrganizationId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "The donor organization of the pledge; absent when pledged as an individual."
+          },
+          "status": {
+            "description": "The lifecycle state: Pending, Active, Completed or Cancelled.",
+            "$ref": "#/components/schemas/DonationStatus"
+          },
+          "hoursCommitted": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The number of hours pledged.",
+            "format": "int32"
+          },
+          "hoursLogged": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The number of pledged hours that were logged on the project.",
+            "format": "int32"
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "The moment the pledge was made.",
+            "format": "date-time"
+          }
+        },
+        "description": "A donation pledged to the project."
+      },
       "ProjectImpactResponse": {
         "required": [
           "projectId",
@@ -414,10 +801,71 @@
           }
         },
         "description": "The hours a project received from the organization."
+      },
+      "ProjectPublicSummaryResponse": {
+        "required": [
+          "hoursReceived",
+          "hoursLogged",
+          "progressPercentage",
+          "donorCount",
+          "contributorCount"
+        ],
+        "type": "object",
+        "properties": {
+          "hoursReceived": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "Hours committed by the Active and Completed donations of the project.",
+            "format": "int32"
+          },
+          "hoursLogged": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "Hours logged on those donations.",
+            "format": "int32"
+          },
+          "progressPercentage": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "Hours logged against hours received, in whole percent (0 to 100); 0 when nothing was received.",
+            "format": "int32"
+          },
+          "donorCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "Number of donors of the Active and Completed donations.",
+            "format": "int32"
+          },
+          "contributorCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "Number of different contributors who logged hours on the project.",
+            "format": "int32"
+          }
+        },
+        "description": "The aggregate totals of a project. Holds no personal data: no names, logins or identifiers of donors or contributors."
       }
     }
   },
   "tags": [
+    {
+      "name": "ProjectReporting"
+    },
     {
       "name": "Reporting"
     }
