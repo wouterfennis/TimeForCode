@@ -194,6 +194,8 @@ The Reporting API (`:8083` locally) is back-end only. It reads the donations and
 
 ### Reporting Endpoints
 
+Every schema, property and declared response status of the Reporting API is described in its OpenAPI document; a test fails when one is missing (see `docs/current/testing.md`, documentation completeness check).
+
 | Method | Endpoint | Status | Notes |
 | --- | --- | --- | --- |
 | `GET` | `/api/v1/reporting/donororganization/{id}/impact-report` | ✅ | Impact report of a donor organization (user or admin JWT); `200` with `{ "hoursPledged": 10, "hoursLogged": 4, "projectsSupported": 1, "projects": [ { "projectId": "...", "hoursPledged": 10, "hoursLogged": 4 } ] }`; only `Active` and `Completed` donations count, projects are listed in the order of their first donation, an organization without counted donations gets zeros and an empty list; `400` for a malformed id or a missing bearer token, `401` without a token, `403` when the caller is neither a member nor an administrator, `404` for an unknown organization, `502` when the Donation API fails or cannot be reached |

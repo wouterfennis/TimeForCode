@@ -25,6 +25,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\Reporting\TimeForCode.Reporting.Api\TimeForCode.Reporting.Api.csproj" />
+    <ProjectReference Include="..\..\Shared\TimeForCode.Shared.ApiDocs\TimeForCode.Shared.ApiDocs.csproj" />
   </ItemGroup>
 
   <ItemGroup>

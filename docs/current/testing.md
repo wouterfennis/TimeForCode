@@ -139,10 +139,11 @@ Unit tests for the Donation Infrastructure layer, covering:
 
 ## Swagger Snapshot Tests — API Contract Gate
 
-The `Api.Tests` project in both the Authorization and Donation bounded contexts contains a single snapshot test:
+The `Api.Tests` project in the Authorization, Donation and Reporting bounded contexts contains a snapshot test:
 
 - `tst/Authorization/TimeForCode.Authorization.Api.Tests/SwaggerTests.cs`
 - `tst/Donation/TimeForCode.Donation.Api.Tests/SwaggerTests.cs`
+- `tst/Reporting/TimeForCode.Reporting.Api.Tests/SwaggerTests.cs`
 
 Each test reads the generated OpenAPI specification (`.json`) and uses the [Verify](https://github.com/VerifyTests/Verify) library to compare it against a committed `.verified.txt` snapshot. When the API surface changes, the test fails and writes a `.received.txt` diff file next to the snapshot.
 
@@ -177,6 +178,24 @@ Copy-Item `
 ```
 
 Commit the updated `.verified.txt` alongside the code change that caused it, so the diff is reviewable in the pull request.
+
+### Documentation completeness check
+
+`OpenApiDocumentationCheck.FindGaps(openApiJson)` in `tst/Shared/TimeForCode.Shared.ApiDocs/` reads a generated OpenAPI document and returns one line per gap. It reports:
+
+- a schema without a description,
+- a schema property without a description,
+- a documented response whose description is missing or only the HTTP reason phrase the generator fills in (`OK`, `Bad Request`, ...).
+
+The framework's own `ProblemDetails` schemas are exempt. The rules are tested in `tst/Shared/TimeForCode.Shared.Tests/ApiDocs/OpenApiDocumentationCheckTests.cs` against a deliberately undocumented sample document.
+
+The Reporting API runs the check in `SwaggerTests.Verify_GeneratedSwaggerFile_ShouldBeFullyDocumented`. To switch it on for another API, reference `TimeForCode.Shared.ApiDocs` from its `Api.Tests` project and add the same test with that API's `.json` file; the check is not copied.
+
+To satisfy the check:
+
+- Give every response type and request/response property an XML `<summary>`. Enums need their own `<summary>` and a `<summary>` per member, and the project that declares them needs `GenerateDocumentationFile` (the Reporting `Values` project sets it).
+- Describe every status an operation declares with `[ProducesResponseType]` using `<response code="..."> ... </response>` on the action, stating what the status means for that endpoint.
+- Rebuild the Api project so the `.json` is regenerated, then review the snapshot diff as above.
 
 ---
 

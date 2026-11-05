@@ -28,7 +28,7 @@
         ],
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "The detailed report; zeros and empty lists when the project has no donations or contributions.",
             "content": {
               "application/json": {
                 "schema": {
@@ -38,7 +38,7 @@
             }
           },
           "400": {
-            "description": "Bad Request",
+            "description": "The project identifier is not a valid identifier.",
             "content": {
               "application/json": {
                 "schema": {
@@ -48,7 +48,7 @@
             }
           },
           "401": {
-            "description": "Unauthorized",
+            "description": "The access token is missing, invalid or expired.",
             "content": {
               "application/json": {
                 "schema": {
@@ -58,7 +58,7 @@
             }
           },
           "403": {
-            "description": "Forbidden",
+            "description": "The caller is neither the maintainer of the project nor an administrator.",
             "content": {
               "application/json": {
                 "schema": {
@@ -68,7 +68,7 @@
             }
           },
           "404": {
-            "description": "Not Found",
+            "description": "The project does not exist or is not published.",
             "content": {
               "application/json": {
                 "schema": {
@@ -78,7 +78,7 @@
             }
           },
           "500": {
-            "description": "Internal Server Error",
+            "description": "The report could not be built because of an unexpected error.",
             "content": {
               "application/json": {
                 "schema": {
@@ -88,7 +88,7 @@
             }
           },
           "502": {
-            "description": "Bad Gateway",
+            "description": "The Donation API could not be reached or answered with an error.",
             "content": {
               "application/json": {
                 "schema": {
@@ -133,7 +133,7 @@
         ],
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "The aggregate totals of the project.",
             "content": {
               "application/json": {
                 "schema": {
@@ -143,7 +143,7 @@
             }
           },
           "400": {
-            "description": "Bad Request",
+            "description": "The project identifier is not a valid identifier.",
             "content": {
               "application/json": {
                 "schema": {
@@ -153,7 +153,7 @@
             }
           },
           "404": {
-            "description": "Not Found",
+            "description": "The project does not exist or is not published.",
             "content": {
               "application/json": {
                 "schema": {
@@ -163,7 +163,7 @@
             }
           },
           "500": {
-            "description": "Internal Server Error",
+            "description": "The summary could not be built because of an unexpected error.",
             "content": {
               "application/json": {
                 "schema": {
@@ -173,7 +173,7 @@
             }
           },
           "502": {
-            "description": "Bad Gateway",
+            "description": "The Donation API could not be reached or answered with an error.",
             "content": {
               "application/json": {
                 "schema": {
@@ -219,7 +219,7 @@
         ],
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "The impact report; zeros and an empty breakdown when the organization has no counted donations.",
             "content": {
               "application/json": {
                 "schema": {
@@ -229,7 +229,7 @@
             }
           },
           "400": {
-            "description": "Bad Request",
+            "description": "The organization identifier is not a valid identifier.",
             "content": {
               "application/json": {
                 "schema": {
@@ -239,7 +239,7 @@
             }
           },
           "401": {
-            "description": "Unauthorized",
+            "description": "The access token is missing, invalid or expired.",
             "content": {
               "application/json": {
                 "schema": {
@@ -249,7 +249,7 @@
             }
           },
           "403": {
-            "description": "Forbidden",
+            "description": "The caller is neither affiliated with the organization nor an administrator.",
             "content": {
               "application/json": {
                 "schema": {
@@ -259,7 +259,7 @@
             }
           },
           "404": {
-            "description": "Not Found",
+            "description": "The donor organization does not exist.",
             "content": {
               "application/json": {
                 "schema": {
@@ -269,7 +269,7 @@
             }
           },
           "500": {
-            "description": "Internal Server Error",
+            "description": "The report could not be built because of an unexpected error.",
             "content": {
               "application/json": {
                 "schema": {
@@ -279,7 +279,7 @@
             }
           },
           "502": {
-            "description": "Bad Gateway",
+            "description": "The Donation API could not be reached or answered with an error.",
             "content": {
               "application/json": {
                 "schema": {
@@ -334,7 +334,7 @@
         ],
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "The export as a file download in the requested format.",
             "content": {
               "application/json": {
                 "schema": {
@@ -344,7 +344,7 @@
             }
           },
           "400": {
-            "description": "Bad Request",
+            "description": "The organization identifier or the format is not valid.",
             "content": {
               "application/json": {
                 "schema": {
@@ -354,7 +354,7 @@
             }
           },
           "401": {
-            "description": "Unauthorized",
+            "description": "The access token is missing, invalid or expired.",
             "content": {
               "application/json": {
                 "schema": {
@@ -364,7 +364,7 @@
             }
           },
           "403": {
-            "description": "Forbidden",
+            "description": "The caller is neither affiliated with the organization nor an administrator.",
             "content": {
               "application/json": {
                 "schema": {
@@ -374,7 +374,7 @@
             }
           },
           "404": {
-            "description": "Not Found",
+            "description": "The donor organization does not exist.",
             "content": {
               "application/json": {
                 "schema": {
@@ -384,7 +384,7 @@
             }
           },
           "500": {
-            "description": "Internal Server Error",
+            "description": "The export could not be built because of an unexpected error.",
             "content": {
               "application/json": {
                 "schema": {
@@ -394,7 +394,7 @@
             }
           },
           "502": {
-            "description": "Bad Gateway",
+            "description": "The Donation API could not be reached or answered with an error.",
             "content": {
               "application/json": {
                 "schema": {
@@ -484,13 +484,15 @@
         "description": "The JSON shape of the contribution history export. The CSV export has the same values in the columns\nContributionId, ProjectId, ContributorLogin, Hours, GithubReference and LoggedAt."
       },
       "DonationStatus": {
-        "type": "integer"
+        "type": "integer",
+        "description": "Lifecycle state of a donation as the Donation context reports it; duplicated here on purpose (ADR-010)."
       },
       "ExportFormat": {
         "enum": [
           "Json",
           "Csv"
-        ]
+        ],
+        "description": "File format of the contribution history export."
       },
       "ImpactReportResponse": {
         "required": [

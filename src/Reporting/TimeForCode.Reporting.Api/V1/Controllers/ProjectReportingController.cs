@@ -42,6 +42,13 @@ namespace TimeForCode.Reporting.Api.V1.Controllers
         /// </remarks>
         /// <param name="id">The project identifier.</param>
         /// <returns>The detailed report; zeros and empty lists when the project has no donations or contributions.</returns>
+        /// <response code="200">The detailed report; zeros and empty lists when the project has no donations or contributions.</response>
+        /// <response code="400">The project identifier is not a valid identifier.</response>
+        /// <response code="401">The access token is missing, invalid or expired.</response>
+        /// <response code="403">The caller is neither the maintainer of the project nor an administrator.</response>
+        /// <response code="404">The project does not exist or is not published.</response>
+        /// <response code="500">The report could not be built because of an unexpected error.</response>
+        /// <response code="502">The Donation API could not be reached or answered with an error.</response>
         [HttpGet("donation-report", Name = nameof(GetDonationReport))]
         [ProducesResponseType(typeof(ProjectDonationReportResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
@@ -100,6 +107,11 @@ namespace TimeForCode.Reporting.Api.V1.Controllers
         /// </summary>
         /// <param name="id">The project identifier.</param>
         /// <returns>Hours received and logged, the progress and the number of donors and contributors.</returns>
+        /// <response code="200">The aggregate totals of the project.</response>
+        /// <response code="400">The project identifier is not a valid identifier.</response>
+        /// <response code="404">The project does not exist or is not published.</response>
+        /// <response code="500">The summary could not be built because of an unexpected error.</response>
+        /// <response code="502">The Donation API could not be reached or answered with an error.</response>
         [HttpGet("public-summary", Name = nameof(GetPublicSummary))]
         [ProducesResponseType(typeof(ProjectPublicSummaryResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
