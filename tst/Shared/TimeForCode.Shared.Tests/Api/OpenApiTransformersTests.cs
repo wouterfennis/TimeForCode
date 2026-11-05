@@ -106,6 +106,45 @@ namespace TimeForCode.Shared.Tests.Api
             schema.Enum.Should().BeNullOrEmpty();
         }
 
+        [TestMethod]
+        public async Task AddStringEnumValues_EnumPropertySchema_DocumentsTheEnumAsItsNames()
+        {
+            var schema = new OpenApiSchema { Type = JsonSchemaType.Integer, Description = "The state." };
+            var context = BuildEnumPropertySchemaContext(nameof(Sample.State));
+
+            await OpenApiTransformers.AddStringEnumValues(schema, context, CancellationToken.None);
+
+            schema.Type.Should().Be(JsonSchemaType.String);
+            schema.Enum!.Select(v => v!.GetValue<string>()).Should().Equal("First", "Second");
+            schema.Description.Should().Be("The state.");
+        }
+
+        [TestMethod]
+        public async Task AddStringEnumValues_NullableEnumPropertySchema_KeepsItNullable()
+        {
+            var schema = new OpenApiSchema { Type = JsonSchemaType.Integer | JsonSchemaType.Null };
+            var context = BuildEnumPropertySchemaContext(nameof(Sample.OptionalState));
+
+            await OpenApiTransformers.AddStringEnumValues(schema, context, CancellationToken.None);
+
+            schema.Type.Should().Be(JsonSchemaType.String | JsonSchemaType.Null);
+        }
+
+        private static OpenApiSchemaTransformerContext BuildEnumPropertySchemaContext(string propertyName)
+        {
+            var propertyInfo = JsonSerializerOptions.Default.GetTypeInfo(typeof(Sample)).Properties
+                .Single(p => p.Name.Equals(propertyName, StringComparison.OrdinalIgnoreCase));
+
+            return new OpenApiSchemaTransformerContext
+            {
+                DocumentName = "v1",
+                JsonTypeInfo = JsonSerializerOptions.Default.GetTypeInfo(propertyInfo.PropertyType),
+                JsonPropertyInfo = propertyInfo,
+                ParameterDescription = null,
+                ApplicationServices = null!
+            };
+        }
+
         private static OpenApiSchemaTransformerContext BuildTypeSchemaContext(Type type)
         {
             return new OpenApiSchemaTransformerContext
@@ -158,6 +197,10 @@ namespace TimeForCode.Shared.Tests.Api
             public string? Email { get; init; }
 
             public string? Name { get; init; }
+
+            public SampleEnum State { get; init; }
+
+            public SampleEnum? OptionalState { get; init; }
         }
     }
 }

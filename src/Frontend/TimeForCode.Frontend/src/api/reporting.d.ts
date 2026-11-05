@@ -120,12 +120,12 @@ export interface components {
         };
         /**
          * @description Lifecycle state of a donation as the Donation context reports it; duplicated here on purpose (ADR-010).
-         * @enum {unknown}
+         * @enum {string}
          */
         DonationStatus: "Pending" | "Active" | "Completed" | "Cancelled";
         /**
          * @description File format of the contribution history export.
-         * @enum {unknown}
+         * @enum {string}
          */
         ExportFormat: "Json" | "Csv";
         /** @description What a donor organization pledged and delivered. Only Active and Completed donations count. */

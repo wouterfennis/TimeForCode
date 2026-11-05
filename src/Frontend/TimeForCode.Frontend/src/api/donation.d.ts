@@ -581,7 +581,7 @@ export interface components {
              */
             updatedAt?: null | string;
         };
-        /** @enum {unknown} */
+        /** @enum {string} */
         DonationStatus: "Pending" | "Active" | "Completed" | "Cancelled";
         /** @description Represents a donor organization response. */
         DonorOrganizationResponse: {
@@ -841,7 +841,7 @@ export interface components {
             /** @description The publication status. */
             status: components["schemas"]["ProjectStatus"];
         };
-        /** @enum {unknown} */
+        /** @enum {string} */
         ProjectStatus: "Active" | "Archived" | "Draft" | "PendingApproval";
         /** @description Represents a summary of a published project for list views. */
         ProjectSummaryResponse: {

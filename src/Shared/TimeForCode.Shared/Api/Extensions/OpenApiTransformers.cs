@@ -73,17 +73,15 @@ namespace TimeForCode.Shared.Api.Extensions
             OpenApiSchemaTransformerContext context,
             CancellationToken cancellationToken)
         {
-            // Property schemas only reference the enum schema; only the schema of the type itself is rewritten.
-            Type? enumType = context.JsonPropertyInfo is null
-                ? Nullable.GetUnderlyingType(context.JsonTypeInfo.Type) ?? context.JsonTypeInfo.Type
-                : null;
+            // The generator moves an enum schema it first meets on a property into the components, so property context must be handled too.
+            Type enumType = Nullable.GetUnderlyingType(context.JsonTypeInfo.Type) ?? context.JsonTypeInfo.Type;
 
-            if (enumType is not { IsEnum: true } || schema.Enum is { Count: > 0 })
+            if (!enumType.IsEnum || schema.Enum is { Count: > 0 })
             {
                 return Task.CompletedTask;
             }
 
-            schema.Type = JsonSchemaType.String;
+            schema.Type = JsonSchemaType.String | ((schema.Type ?? JsonSchemaType.String) & JsonSchemaType.Null);
             schema.Format = null;
             schema.Pattern = null;
             schema.Enum = Enum.GetNames(enumType).Select(name => (JsonNode)JsonValue.Create(name)).ToList();

@@ -327,7 +327,7 @@
             "in": "query",
             "description": "The file format, `Json` (default) or `Csv`.",
             "schema": {
-              "default": "Json",
+              "default": 0,
               "$ref": "#/components/schemas/ExportFormat"
             }
           }
@@ -490,6 +490,7 @@
           "Completed",
           "Cancelled"
         ],
+        "type": "string",
         "description": "Lifecycle state of a donation as the Donation context reports it; duplicated here on purpose (ADR-010)."
       },
       "ExportFormat": {
@@ -497,6 +498,7 @@
           "Json",
           "Csv"
         ],
+        "type": "string",
         "description": "File format of the contribution history export."
       },
       "ImpactReportResponse": {
