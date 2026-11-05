@@ -4,6 +4,45 @@
  */
 
 export interface paths {
+    "/api/v1/reporting/project/{id}/donation-report": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Returns the detailed donation report of a project: hours received and logged, progress, the donations with their statuses and
+         *     the contributors with their hours. Allowed for the maintainer of the project and for administrators.
+         * @description Only Active and Completed donations count as received; Pending and Cancelled ones are listed and counted per status.
+         *     Only published projects can be reported on; an unpublished project answers 404, also for its maintainer.
+         */
+        get: operations["GetDonationReport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/reporting/project/{id}/public-summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Returns the public summary of a project (anonymous): aggregate totals only, without any personal data. */
+        get: operations["GetPublicSummary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/reporting/donororganization/{id}/impact-report": {
         parameters: {
             query?: never;
@@ -79,6 +118,7 @@ export interface components {
             /** @description The contributions, earliest first. */
             contributions: components["schemas"]["ContributionHistoryItemResponse"][];
         };
+        DonationStatus: number;
         /** @enum {unknown} */
         ExportFormat: "Json" | "Csv";
         /** @description What a donor organization pledged and delivered. Only Active and Completed donations count. */
@@ -109,6 +149,94 @@ export interface components {
             detail?: null | string;
             instance?: null | string;
         };
+        /** @description The hours a contributor logged on the project. */
+        ProjectContributorResponse: {
+            /** @description The contributor identifier. */
+            contributorId: string;
+            /** @description The GitHub login of the contributor at the time of logging. */
+            contributorLogin: string;
+            /**
+             * Format: int32
+             * @description The total hours the contributor logged on the project.
+             */
+            hours: number | string;
+        };
+        /** @description The detailed donation report of a project: what it received, who contributed and how far it has progressed. */
+        ProjectDonationReportResponse: {
+            /**
+             * Format: int32
+             * @description Hours committed by the Active and Completed donations of the project.
+             */
+            hoursReceived: number | string;
+            /**
+             * Format: int32
+             * @description Hours logged on those donations.
+             */
+            hoursLogged: number | string;
+            /**
+             * Format: int32
+             * @description Hours logged against hours received, in whole percent (0 to 100); 0 when nothing was received.
+             */
+            progressPercentage: number | string;
+            /**
+             * Format: int32
+             * @description Number of donors of the Active and Completed donations: an organization counts once, an individual pledge counts as one donor.
+             */
+            donorCount: number | string;
+            /**
+             * Format: int32
+             * @description Number of different contributors who logged hours on the project.
+             */
+            contributorCount: number | string;
+            /**
+             * Format: int32
+             * @description Number of Pending donations.
+             */
+            pendingDonations: number | string;
+            /**
+             * Format: int32
+             * @description Number of Active donations.
+             */
+            activeDonations: number | string;
+            /**
+             * Format: int32
+             * @description Number of Completed donations.
+             */
+            completedDonations: number | string;
+            /**
+             * Format: int32
+             * @description Number of Cancelled donations.
+             */
+            cancelledDonations: number | string;
+            /** @description Every donation of the project, whatever its status, oldest pledge first. */
+            donations: components["schemas"]["ProjectDonationResponse"][];
+            /** @description The contributors with their total hours, in the order of their first contribution. */
+            contributors: components["schemas"]["ProjectContributorResponse"][];
+        };
+        /** @description A donation pledged to the project. */
+        ProjectDonationResponse: {
+            /** @description The donation identifier. */
+            id: string;
+            /** @description The donor organization of the pledge; absent when pledged as an individual. */
+            donorOrganizationId?: null | string;
+            /** @description The lifecycle state: Pending, Active, Completed or Cancelled. */
+            status: components["schemas"]["DonationStatus"];
+            /**
+             * Format: int32
+             * @description The number of hours pledged.
+             */
+            hoursCommitted: number | string;
+            /**
+             * Format: int32
+             * @description The number of pledged hours that were logged on the project.
+             */
+            hoursLogged: number | string;
+            /**
+             * Format: date-time
+             * @description The moment the pledge was made.
+             */
+            createdAt: string;
+        };
         /** @description The hours a project received from the organization. */
         ProjectImpactResponse: {
             /** @description The project identifier. */
@@ -124,6 +252,34 @@ export interface components {
              */
             hoursLogged: number | string;
         };
+        /** @description The aggregate totals of a project. Holds no personal data: no names, logins or identifiers of donors or contributors. */
+        ProjectPublicSummaryResponse: {
+            /**
+             * Format: int32
+             * @description Hours committed by the Active and Completed donations of the project.
+             */
+            hoursReceived: number | string;
+            /**
+             * Format: int32
+             * @description Hours logged on those donations.
+             */
+            hoursLogged: number | string;
+            /**
+             * Format: int32
+             * @description Hours logged against hours received, in whole percent (0 to 100); 0 when nothing was received.
+             */
+            progressPercentage: number | string;
+            /**
+             * Format: int32
+             * @description Number of donors of the Active and Completed donations.
+             */
+            donorCount: number | string;
+            /**
+             * Format: int32
+             * @description Number of different contributors who logged hours on the project.
+             */
+            contributorCount: number | string;
+        };
     };
     responses: never;
     parameters: never;
@@ -133,6 +289,160 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    GetDonationReport: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The project identifier. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectDonationReportResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Too many requests. Retry after the number of seconds given in the Retry-After header. */
+            429: {
+                headers: {
+                    /** @description Number of seconds to wait before retrying. */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Bad Gateway */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    GetPublicSummary: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The project identifier. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectPublicSummaryResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Too many requests. Retry after the number of seconds given in the Retry-After header. */
+            429: {
+                headers: {
+                    /** @description Number of seconds to wait before retrying. */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Bad Gateway */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     GetImpactReport: {
         parameters: {
             query?: never;
