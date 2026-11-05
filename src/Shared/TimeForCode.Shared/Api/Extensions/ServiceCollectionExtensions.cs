@@ -90,6 +90,7 @@ namespace TimeForCode.Shared.Api.Extensions
 
                 options.AddOperationTransformer(OpenApiTransformers.AddRateLimitResponse);
                 options.AddSchemaTransformer(OpenApiTransformers.AddEmailFormat);
+                options.AddSchemaTransformer(OpenApiTransformers.AddStringEnumValues);
             };
         }
     }

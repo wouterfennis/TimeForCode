@@ -42,6 +42,13 @@ namespace TimeForCode.Reporting.Api.V1.Controllers
         /// </remarks>
         /// <param name="id">The donor organization identifier.</param>
         /// <returns>The impact report; zeros and an empty breakdown when the organization has no counted donations.</returns>
+        /// <response code="200">The impact report; zeros and an empty breakdown when the organization has no counted donations.</response>
+        /// <response code="400">The organization identifier is not a valid identifier.</response>
+        /// <response code="401">The access token is missing, invalid or expired.</response>
+        /// <response code="403">The caller is neither affiliated with the organization nor an administrator.</response>
+        /// <response code="404">The donor organization does not exist.</response>
+        /// <response code="500">The report could not be built because of an unexpected error.</response>
+        /// <response code="502">The Donation API could not be reached or answered with an error.</response>
         [HttpGet("impact-report", Name = nameof(GetImpactReport))]
         [ProducesResponseType(typeof(ImpactReportResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
@@ -84,6 +91,13 @@ namespace TimeForCode.Reporting.Api.V1.Controllers
         /// <param name="id">The donor organization identifier.</param>
         /// <param name="format">The file format, <c>Json</c> (default) or <c>Csv</c>.</param>
         /// <returns>The export as a file download.</returns>
+        /// <response code="200">The export as a file download in the requested format.</response>
+        /// <response code="400">The organization identifier or the format is not valid.</response>
+        /// <response code="401">The access token is missing, invalid or expired.</response>
+        /// <response code="403">The caller is neither affiliated with the organization nor an administrator.</response>
+        /// <response code="404">The donor organization does not exist.</response>
+        /// <response code="500">The export could not be built because of an unexpected error.</response>
+        /// <response code="502">The Donation API could not be reached or answered with an error.</response>
         [HttpGet("contribution-history", Name = nameof(GetContributionHistory))]
         [ProducesResponseType(typeof(ContributionHistoryResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]

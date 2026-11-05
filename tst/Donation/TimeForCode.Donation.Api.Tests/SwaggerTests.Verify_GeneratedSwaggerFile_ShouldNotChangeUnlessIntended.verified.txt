@@ -3369,7 +3369,8 @@
           "Active",
           "Completed",
           "Cancelled"
-        ]
+        ],
+        "type": "string"
       },
       "DonorOrganizationResponse": {
         "required": [
@@ -4079,7 +4080,8 @@
           "Archived",
           "Draft",
           "PendingApproval"
-        ]
+        ],
+        "type": "string"
       },
       "ProjectSummaryResponse": {
         "required": [
