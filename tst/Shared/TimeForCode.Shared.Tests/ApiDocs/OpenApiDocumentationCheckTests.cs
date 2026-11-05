@@ -8,9 +8,10 @@ namespace TimeForCode.Shared.Tests.ApiDocs
     {
         private const string DocumentedDocument = """
             {
-              "paths": { "/a": { "get": { "responses": {
+              "paths": { "/a": { "get": { "parameters": [ { "name": "id", "in": "path", "description": "The identifier." } ], "responses": {
                 "200": { "description": "The report." },
-                "400": { "description": "The identifier is malformed." } } } } },
+                "400": { "description": "The identifier is malformed." } } } },
+                "/b": { "post": { "requestBody": { "description": "The payload." }, "responses": { "204": { "description": "Stored." } } } } },
               "components": { "schemas": {
                 "Report": { "description": "A report.", "properties": { "hours": { "description": "The hours." } } },
                 "ProblemDetails": { "properties": { "title": { "type": "string" } } } } }
@@ -77,6 +78,32 @@ namespace TimeForCode.Shared.Tests.ApiDocs
 
             // Assert
             gaps.Should().ContainSingle().Which.Should().Contain("GET /a").And.Contain("400");
+        }
+
+        [TestMethod]
+        public void FindGaps_ParameterWithoutDescription_ReportsTheOperationAndParameter()
+        {
+            // Arrange
+            string document = DocumentedDocument.Replace(", \"description\": \"The identifier.\"", string.Empty);
+
+            // Act
+            IReadOnlyList<string> gaps = OpenApiDocumentationCheck.FindGaps(document);
+
+            // Assert
+            gaps.Should().ContainSingle().Which.Should().Contain("GET /a").And.Contain("'id'");
+        }
+
+        [TestMethod]
+        public void FindGaps_RequestBodyWithoutDescription_ReportsTheOperation()
+        {
+            // Arrange
+            string document = DocumentedDocument.Replace("{ \"description\": \"The payload.\" }", "{ }");
+
+            // Act
+            IReadOnlyList<string> gaps = OpenApiDocumentationCheck.FindGaps(document);
+
+            // Assert
+            gaps.Should().ContainSingle().Which.Should().Contain("POST /b").And.Contain("request body");
         }
 
         [TestMethod]

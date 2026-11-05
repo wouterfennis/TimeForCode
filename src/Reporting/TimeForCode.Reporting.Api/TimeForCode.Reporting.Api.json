@@ -484,7 +484,12 @@
         "description": "The JSON shape of the contribution history export. The CSV export has the same values in the columns\r\nContributionId, ProjectId, ContributorLogin, Hours, GithubReference and LoggedAt."
       },
       "DonationStatus": {
-        "type": "integer",
+        "enum": [
+          "Pending",
+          "Active",
+          "Completed",
+          "Cancelled"
+        ],
         "description": "Lifecycle state of a donation as the Donation context reports it; duplicated here on purpose (ADR-010)."
       },
       "ExportFormat": {

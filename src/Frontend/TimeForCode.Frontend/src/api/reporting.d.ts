@@ -118,8 +118,15 @@ export interface components {
             /** @description The contributions, earliest first. */
             contributions: components["schemas"]["ContributionHistoryItemResponse"][];
         };
-        DonationStatus: number;
-        /** @enum {unknown} */
+        /**
+         * @description Lifecycle state of a donation as the Donation context reports it; duplicated here on purpose (ADR-010).
+         * @enum {unknown}
+         */
+        DonationStatus: "Pending" | "Active" | "Completed" | "Cancelled";
+        /**
+         * @description File format of the contribution history export.
+         * @enum {unknown}
+         */
         ExportFormat: "Json" | "Csv";
         /** @description What a donor organization pledged and delivered. Only Active and Completed donations count. */
         ImpactReportResponse: {
@@ -301,7 +308,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description OK */
+            /** @description The detailed report; zeros and empty lists when the project has no donations or contributions. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -310,7 +317,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProjectDonationReportResponse"];
                 };
             };
-            /** @description Bad Request */
+            /** @description The project identifier is not a valid identifier. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -319,7 +326,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Unauthorized */
+            /** @description The access token is missing, invalid or expired. */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -328,7 +335,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Forbidden */
+            /** @description The caller is neither the maintainer of the project nor an administrator. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -337,7 +344,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Not Found */
+            /** @description The project does not exist or is not published. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -355,7 +362,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Internal Server Error */
+            /** @description The report could not be built because of an unexpected error. */
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -364,7 +371,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Bad Gateway */
+            /** @description The Donation API could not be reached or answered with an error. */
             502: {
                 headers: {
                     [name: string]: unknown;
@@ -387,7 +394,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description OK */
+            /** @description The aggregate totals of the project. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -396,7 +403,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProjectPublicSummaryResponse"];
                 };
             };
-            /** @description Bad Request */
+            /** @description The project identifier is not a valid identifier. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -405,7 +412,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Not Found */
+            /** @description The project does not exist or is not published. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -423,7 +430,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Internal Server Error */
+            /** @description The summary could not be built because of an unexpected error. */
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -432,7 +439,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Bad Gateway */
+            /** @description The Donation API could not be reached or answered with an error. */
             502: {
                 headers: {
                     [name: string]: unknown;
@@ -455,7 +462,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description OK */
+            /** @description The impact report; zeros and an empty breakdown when the organization has no counted donations. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -464,7 +471,7 @@ export interface operations {
                     "application/json": components["schemas"]["ImpactReportResponse"];
                 };
             };
-            /** @description Bad Request */
+            /** @description The organization identifier is not a valid identifier. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -473,7 +480,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Unauthorized */
+            /** @description The access token is missing, invalid or expired. */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -482,7 +489,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Forbidden */
+            /** @description The caller is neither affiliated with the organization nor an administrator. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -491,7 +498,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Not Found */
+            /** @description The donor organization does not exist. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -509,7 +516,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Internal Server Error */
+            /** @description The report could not be built because of an unexpected error. */
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -518,7 +525,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Bad Gateway */
+            /** @description The Donation API could not be reached or answered with an error. */
             502: {
                 headers: {
                     [name: string]: unknown;
@@ -544,7 +551,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description OK */
+            /** @description The export as a file download in the requested format. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -553,7 +560,7 @@ export interface operations {
                     "application/json": components["schemas"]["ContributionHistoryResponse"];
                 };
             };
-            /** @description Bad Request */
+            /** @description The organization identifier or the format is not valid. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -562,7 +569,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Unauthorized */
+            /** @description The access token is missing, invalid or expired. */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -571,7 +578,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Forbidden */
+            /** @description The caller is neither affiliated with the organization nor an administrator. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -580,7 +587,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Not Found */
+            /** @description The donor organization does not exist. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -598,7 +605,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Internal Server Error */
+            /** @description The export could not be built because of an unexpected error. */
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -607,7 +614,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Bad Gateway */
+            /** @description The Donation API could not be reached or answered with an error. */
             502: {
                 headers: {
                     [name: string]: unknown;

@@ -13,7 +13,8 @@ namespace TimeForCode.Shared.ApiDocs
         private static readonly string[] ExemptSchemas = ["ProblemDetails", "HttpValidationProblemDetails"];
 
         /// <summary>
-        /// Lists every TimeForCode-owned schema, schema property and documented response that lacks a description.
+        /// Lists every TimeForCode-owned schema, schema property, operation parameter, request body and documented response that lacks a description.
+        /// A response description equal to the HTTP reason phrase (for example "Bad Request") counts as missing, because it says nothing about the endpoint; describe what the status means for the operation instead.
         /// </summary>
         /// <param name="openApiJson">The OpenAPI document as JSON.</param>
         /// <returns>One line per gap; empty when the document is complete.</returns>
@@ -37,7 +38,10 @@ namespace TimeForCode.Shared.ApiDocs
                 {
                     foreach (JsonProperty operation in path.Value.EnumerateObject().Where(o => o.Value.ValueKind == JsonValueKind.Object))
                     {
-                        CheckResponses(path.Name, operation, gaps);
+                        string label = $"{operation.Name.ToUpperInvariant()} {path.Name}";
+                        CheckParameters(label, operation, gaps);
+                        CheckRequestBody(label, operation, gaps);
+                        CheckResponses(label, operation, gaps);
                     }
                 }
             }
@@ -61,7 +65,29 @@ namespace TimeForCode.Shared.ApiDocs
             }
         }
 
-        private static void CheckResponses(string path, JsonProperty operation, List<string> gaps)
+        private static void CheckParameters(string label, JsonProperty operation, List<string> gaps)
+        {
+            if (!operation.Value.TryGetProperty("parameters", out JsonElement parameters) || parameters.ValueKind != JsonValueKind.Array)
+            {
+                return;
+            }
+
+            // A parameter given as a reference has no name here and is documented where it is defined.
+            foreach (JsonElement parameter in parameters.EnumerateArray().Where(p => p.TryGetProperty("name", out _) && !HasDescription(p)))
+            {
+                gaps.Add($"Parameter '{parameter.GetProperty("name").GetString()}' of {label} has no description.");
+            }
+        }
+
+        private static void CheckRequestBody(string label, JsonProperty operation, List<string> gaps)
+        {
+            if (operation.Value.TryGetProperty("requestBody", out JsonElement body) && !body.TryGetProperty("$ref", out _) && !HasDescription(body))
+            {
+                gaps.Add($"The request body of {label} has no description.");
+            }
+        }
+
+        private static void CheckResponses(string label, JsonProperty operation, List<string> gaps)
         {
             if (!operation.Value.TryGetProperty("responses", out JsonElement responses))
             {
@@ -70,7 +96,7 @@ namespace TimeForCode.Shared.ApiDocs
 
             foreach (JsonProperty response in responses.EnumerateObject().Where(r => !HasSpecificResponseDescription(r)))
             {
-                gaps.Add($"Response {response.Name} of {operation.Name.ToUpperInvariant()} {path} has no description.");
+                gaps.Add($"Response {response.Name} of {label} has no description.");
             }
         }
 
