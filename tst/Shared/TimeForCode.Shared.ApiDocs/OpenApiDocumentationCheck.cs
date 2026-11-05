@@ -1,6 +1,6 @@
 using System.Net;
 using System.Text.Json;
-using System.Text.RegularExpressions;
+using System.Text;
 
 namespace TimeForCode.Shared.ApiDocs
 {
@@ -115,7 +115,20 @@ namespace TimeForCode.Shared.ApiDocs
         private static string ReasonPhrase(int status)
         {
             string name = ((HttpStatusCode)status).ToString();
-            return name == "OK" ? name : Regex.Replace(name, "(?<=[a-z])(?=[A-Z])", " ");
+            StringBuilder phrase = new(name.Length + 2);
+
+            for (int i = 0; i < name.Length; i++)
+            {
+                // "BadRequest" becomes "Bad Request"; "OK" has no lower-to-upper boundary and stays as it is.
+                if (i > 0 && char.IsUpper(name[i]) && char.IsLower(name[i - 1]))
+                {
+                    phrase.Append(' ');
+                }
+
+                phrase.Append(name[i]);
+            }
+
+            return phrase.ToString();
         }
 
         private static bool HasDescription(JsonElement element)

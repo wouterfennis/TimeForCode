@@ -107,6 +107,24 @@ namespace TimeForCode.Shared.Tests.ApiDocs
         }
 
         [TestMethod]
+        [DataRow("200", "OK")]
+        [DataRow("500", "Internal Server Error")]
+        [DataRow("502", "Bad Gateway")]
+        public void FindGaps_ResponseWithOnlyTheDefaultReasonPhrase_ReportsEveryStatus(string status, string reasonPhrase)
+        {
+            // Arrange
+            string document = $$"""
+                { "paths": { "/a": { "get": { "responses": { "{{status}}": { "description": "{{reasonPhrase}}" } } } } } }
+                """;
+
+            // Act
+            IReadOnlyList<string> gaps = OpenApiDocumentationCheck.FindGaps(document);
+
+            // Assert
+            gaps.Should().ContainSingle().Which.Should().Contain(status);
+        }
+
+        [TestMethod]
         public void FindGaps_ProblemDetailsWithoutDescriptions_IsExempt()
         {
             // Act
