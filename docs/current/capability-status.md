@@ -96,7 +96,7 @@ This document provides an explicit, feature-level view of what is implemented, p
 | Capability | Status | Notes |
 | --- | --- | --- |
 | SPA scaffold (Vite, React, TypeScript) | ⚠️ | One page: the project list |
-| Public project list | ⚠️ | Unstyled first page of active projects with loading, empty and error states, read through nginx at `/api/donation/*`; no search, paging controls or detail page |
+| Public project list | ⚠️ | Unstyled first page of active projects with loading, empty and error states, read through the BFF at `/api/donation/*`; no search, paging controls or detail page |
 | Generated API types | ✅ | `src/api/donation.d.ts`, `authorization.d.ts` and `reporting.d.ts` are generated from the OpenAPI snapshots and committed; CI fails when it is stale |
 | Front-end quality gates in CI | ✅ | API types check, lint (oxlint), typecheck, Vitest with axe, coverage to SonarCloud and build run in the `frontend` job |
 | Login, project and donation screens | ❌ | Not implemented |

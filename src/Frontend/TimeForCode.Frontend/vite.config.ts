@@ -5,13 +5,13 @@ import { defineConfig } from 'vite'
 export default defineConfig({
   plugins: [react()],
   build: {
-    // The nginx CSP (`default-src 'self'`) blocks `data:` URLs, so never inline assets.
+    // The BFF's CSP (`default-src 'self'`) blocks `data:` URLs, so never inline assets.
     assetsInlineLimit: 0,
   },
   server: {
-    // Same route as nginx in the image: /api/donation/v1/Project -> the local Donation API's /api/v1/Project.
+    // Same route as the BFF in the image: /api/donation/v1/Project -> the local Donation API's /api/v1/Project.
     proxy: {
-      // Trailing slash as in nginx's `location /api/donation/`, so `/api/donationfoo` is not proxied.
+      // Trailing slash as in the BFF's route `/api/donation/{**rest}`, so `/api/donationfoo` is not proxied.
       '/api/donation/': {
         target: 'http://localhost:8082',
         rewrite: (path) => path.replace(/^\/api\/donation\//, '/api/'),

@@ -63,8 +63,8 @@ model {
     description 'Connects donated time to open-source projects'
 
     frontend = container 'Front-end' {
-      description 'React single-page application, built to static files and served by nginx; holds no business logic'
-      technology 'React, TypeScript, Vite, nginx'
+      description 'React single-page application, built to static files and served by the BFF; holds no business logic'
+      technology 'React, TypeScript, Vite'
 
       appShell = component 'App shell' {
         description 'Application shell, routing and providers (src/app)'
@@ -93,25 +93,15 @@ model {
           border dashed
         }
       }
-      nginx = component 'nginx' {
-        description 'Serves the static build, falls back to index.html for client routes, adds the security headers (src/Frontend/nginx.conf)'
-        technology 'nginx'
-      }
-
       appShell -> features 'routes to'
       features -> designSystem 'renders with'
       features -> messages 'reads strings from'
       features -> apiClients 'calls the APIs with'
-      nginx -> appShell 'serves the build of'
     }
 
     bff = container 'Backend for frontend' {
-      #planned
-      description 'Proposed same-origin host that turns the HttpOnly token cookies into bearer tokens for the Donation API (ADR-012, front-end architecture)'
-      technology 'ASP.NET Core'
-      style {
-        border dashed
-      }
+      description 'Same-origin host: serves the SPA build with the security headers, forwards /api/auth/* and /api/donation/* with YARP, turns the HttpOnly access-token cookie into a bearer token and checks the CSRF header (src/Frontend/TimeForCode.Frontend.Bff, ADR-012)'
+      technology 'ASP.NET Core, YARP'
     }
 
     authorization = container 'Authorization' {
@@ -469,12 +459,13 @@ model {
     }
 
     // Containers
-    frontend -> bff 'calls the APIs through (proposed)' 'HTTPS'
-    bff -> authorization 'login, refresh, session' 'HTTPS, cookies'
+    bff -> frontend 'serves the build of'
+    frontend -> bff 'calls the APIs through (same origin, /api/*)' 'HTTPS'
+    bff -> authorization 'forwards /api/auth/* with the cookies and the bearer token from the cookie' 'HTTPS, cookies'
     bff -> donation 'REST with bearer token from the cookie' 'HTTPS'
     authorization -> donation 'anonymises contributor on account deletion' 'HTTPS, service token'
     donation -> authorization 'fetches the signing keys (OpenID configuration, JWKS)' 'HTTPS'
-    bff -> reporting 'REST with bearer token from the cookie (proposed)' 'HTTPS'
+    bff -> reporting 'REST with bearer token from the cookie (proposed, no route yet)' 'HTTPS'
     reporting -> donation 'reads donations and contributions with the bearer token of the caller' 'HTTPS'
     reporting -> authorization 'fetches the signing keys (OpenID configuration, JWKS)' 'HTTPS'
     authorization -> shared 'uses'
