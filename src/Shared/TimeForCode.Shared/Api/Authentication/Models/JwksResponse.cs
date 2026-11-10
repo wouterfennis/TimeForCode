@@ -9,7 +9,7 @@ namespace TimeForCode.Shared.Api.Authentication.Models
     public class JwksResponse
     {
         /// <summary>
-        /// JWK keys
+        /// The published signing keys: the current key and, during rotation, the previous one
         /// </summary>
         [JsonPropertyName("keys")]
         [Required]

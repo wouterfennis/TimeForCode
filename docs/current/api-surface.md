@@ -194,7 +194,7 @@ The Reporting API (`:8083` locally) is back-end only. It reads the donations and
 
 ### Reporting Endpoints
 
-Every schema, property and declared response status of the Reporting API is described in its OpenAPI document; a test fails when one is missing (see `docs/current/testing.md`, documentation completeness check).
+Every schema, property and declared response status of the Reporting, Donation and Authorization APIs is described in its OpenAPI document; a test fails when one is missing (see `docs/current/testing.md`, documentation completeness check).
 
 | Method | Endpoint | Status | Notes |
 | --- | --- | --- | --- |

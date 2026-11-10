@@ -14,6 +14,7 @@
         "summary": "Begins the one-time admin passkey registration ceremony. Only available while no admin credential has been claimed yet.",
         "operationId": "AdminRegistrationOptions",
         "requestBody": {
+          "description": "The bootstrap secret that proves the caller may claim the admin role.",
           "content": {
             "application/json": {
               "schema": {
@@ -35,7 +36,7 @@
         },
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "The passkey creation options (JSON) for the browser; the ceremony state is set in a short-lived cookie.",
             "content": {
               "application/json": {
                 "schema": {
@@ -45,7 +46,7 @@
             }
           },
           "400": {
-            "description": "Bad Request",
+            "description": "The bootstrap secret is wrong or an admin credential has already been claimed.",
             "content": {
               "application/json": {
                 "schema": {
@@ -77,6 +78,7 @@
         "summary": "Completes the one-time admin passkey registration ceremony. Only the first successful completion permanently claims the admin role.",
         "operationId": "AdminCompleteRegistration",
         "requestBody": {
+          "description": "The bootstrap secret and the credential (JSON) created by the browser.",
           "content": {
             "application/json": {
               "schema": {
@@ -98,7 +100,7 @@
         },
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "The admin credential was claimed; the access token and refresh token are returned and set as cookies.",
             "content": {
               "application/json": {
                 "schema": {
@@ -108,7 +110,7 @@
             }
           },
           "400": {
-            "description": "Bad Request",
+            "description": "No registration ceremony is in progress or the registration was rejected.",
             "content": {
               "application/json": {
                 "schema": {
@@ -141,7 +143,7 @@
         "operationId": "AdminAuthenticationOptions",
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "The passkey request options (JSON) for the browser; the ceremony state is set in a short-lived cookie.",
             "content": {
               "application/json": {
                 "schema": {
@@ -151,7 +153,7 @@
             }
           },
           "400": {
-            "description": "Bad Request",
+            "description": "No admin credential has been registered yet.",
             "content": {
               "application/json": {
                 "schema": {
@@ -183,6 +185,7 @@
         "summary": "Completes the admin passkey authentication ceremony.",
         "operationId": "AdminCompleteAuthentication",
         "requestBody": {
+          "description": "The assertion credential (JSON) produced by the browser.",
           "content": {
             "application/json": {
               "schema": {
@@ -204,7 +207,7 @@
         },
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "The admin signed in; the access token and refresh token are returned and set as cookies.",
             "content": {
               "application/json": {
                 "schema": {
@@ -214,7 +217,7 @@
             }
           },
           "400": {
-            "description": "Bad Request",
+            "description": "No authentication ceremony is in progress or the assertion was rejected.",
             "content": {
               "application/json": {
                 "schema": {
@@ -265,13 +268,13 @@
         ],
         "responses": {
           "302": {
-            "description": "Found",
+            "description": "Redirect to the external identity provider's sign-in page.",
             "content": {
               "application/json": { }
             }
           },
           "400": {
-            "description": "Bad Request",
+            "description": "The redirect uri is not on the list of allowed redirect uris or the request is not valid.",
             "content": {
               "application/json": {
                 "schema": {
@@ -281,7 +284,7 @@
             }
           },
           "500": {
-            "description": "Internal Server Error",
+            "description": "The login could not be started because of an unexpected server error.",
             "content": {
               "application/json": { }
             }
@@ -329,7 +332,7 @@
         ],
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "The access token and refresh token; both are also set as cookies.",
             "content": {
               "application/json": {
                 "schema": {
@@ -339,13 +342,13 @@
             }
           },
           "302": {
-            "description": "Found",
+            "description": "Sign-in succeeded and the browser is redirected to the redirect uri given at login; the tokens are set as cookies.",
             "content": {
               "application/json": { }
             }
           },
           "400": {
-            "description": "Bad Request",
+            "description": "The authorization code or state is missing, invalid or expired.",
             "content": {
               "application/json": {
                 "schema": {
@@ -355,7 +358,7 @@
             }
           },
           "500": {
-            "description": "Internal Server Error",
+            "description": "The sign-in could not be completed because of an unexpected server error.",
             "content": {
               "application/json": { }
             }
@@ -383,13 +386,13 @@
         "summary": "Logout endpoint.",
         "responses": {
           "204": {
-            "description": "No Content",
+            "description": "The refresh token was revoked, if present, and the token cookies were removed.",
             "content": {
               "application/json": { }
             }
           },
           "500": {
-            "description": "Internal Server Error",
+            "description": "The logout failed because of an unexpected server error.",
             "content": {
               "application/json": { }
             }
@@ -405,7 +408,7 @@
         "summary": "Refresh endpoint.",
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "A new access token and refresh token; both are also set as cookies.",
             "content": {
               "application/json": {
                 "schema": {
@@ -415,7 +418,7 @@
             }
           },
           "400": {
-            "description": "Bad Request",
+            "description": "The refresh token is missing, unknown or expired.",
             "content": {
               "application/json": {
                 "schema": {
@@ -425,7 +428,7 @@
             }
           },
           "500": {
-            "description": "Internal Server Error",
+            "description": "The refresh failed because of an unexpected server error.",
             "content": {
               "application/json": { }
             }
@@ -453,7 +456,7 @@
         "summary": "Returns the JSON Web Key Set (JWKS) for the application.",
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "The public keys that verify the signature of issued access tokens.",
             "content": {
               "application/json": {
                 "schema": {
@@ -463,7 +466,7 @@
             }
           },
           "500": {
-            "description": "Internal Server Error",
+            "description": "The key set could not be produced because of an unexpected server error.",
             "content": {
               "application/json": { }
             }
@@ -479,7 +482,7 @@
         "summary": "Retrieves the OpenID Connect configuration document.",
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "The OpenID Connect discovery document of this issuer.",
             "content": {
               "application/json": {
                 "schema": {
@@ -489,7 +492,7 @@
             }
           },
           "500": {
-            "description": "Internal Server Error",
+            "description": "The document could not be produced because of an unexpected server error.",
             "content": {
               "application/json": { }
             }
@@ -505,7 +508,7 @@
         "summary": "Get user information.",
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "The profile of the signed-in user.",
             "content": {
               "application/json": {
                 "schema": {
@@ -515,7 +518,7 @@
             }
           },
           "404": {
-            "description": "Not Found",
+            "description": "The signed-in user no longer exists.",
             "content": {
               "application/json": {
                 "schema": {
@@ -525,7 +528,7 @@
             }
           },
           "500": {
-            "description": "Internal Server Error",
+            "description": "The profile could not be read because of an unexpected server error.",
             "content": {
               "application/json": { }
             }
@@ -540,13 +543,13 @@
         "operationId": "DeleteAccount",
         "responses": {
           "204": {
-            "description": "No Content",
+            "description": "The account and its data were deleted and the token cookies were removed.",
             "content": {
               "application/json": { }
             }
           },
           "401": {
-            "description": "Unauthorized",
+            "description": "The caller is not signed in.",
             "content": {
               "application/json": {
                 "schema": {
@@ -556,7 +559,7 @@
             }
           },
           "404": {
-            "description": "Not Found",
+            "description": "The signed-in user no longer exists.",
             "content": {
               "application/json": {
                 "schema": {
@@ -566,7 +569,7 @@
             }
           },
           "502": {
-            "description": "Bad Gateway",
+            "description": "The external identity provider could not be reached to revoke the grant.",
             "content": {
               "application/json": {
                 "schema": {
@@ -576,7 +579,7 @@
             }
           },
           "500": {
-            "description": "Internal Server Error",
+            "description": "The account could not be deleted because of an unexpected server error.",
             "content": {
               "application/json": { }
             }
@@ -592,7 +595,7 @@
         "summary": "Get user's public repositories from GitHub.",
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "The GitHub repositories of the signed-in user.",
             "content": {
               "application/json": {
                 "schema": {
@@ -605,7 +608,7 @@
             }
           },
           "404": {
-            "description": "Not Found",
+            "description": "The signed-in user no longer exists.",
             "content": {
               "application/json": {
                 "schema": {
@@ -615,7 +618,7 @@
             }
           },
           "502": {
-            "description": "Bad Gateway",
+            "description": "GitHub could not be reached or rejected the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -625,7 +628,7 @@
             }
           },
           "500": {
-            "description": "Internal Server Error",
+            "description": "The repositories could not be read because of an unexpected server error.",
             "content": {
               "application/json": { }
             }
@@ -667,7 +670,7 @@
         ],
         "responses": {
           "400": {
-            "description": "Bad Request",
+            "description": "The owner or repository name is not valid.",
             "content": {
               "application/json": {
                 "schema": {
@@ -677,7 +680,7 @@
             }
           },
           "200": {
-            "description": "OK",
+            "description": "The requested repository.",
             "content": {
               "application/json": {
                 "schema": {
@@ -687,7 +690,7 @@
             }
           },
           "404": {
-            "description": "Not Found",
+            "description": "The repository does not exist or the signed-in user cannot see it.",
             "content": {
               "application/json": {
                 "schema": {
@@ -697,7 +700,7 @@
             }
           },
           "502": {
-            "description": "Bad Gateway",
+            "description": "GitHub could not be reached or rejected the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -707,7 +710,7 @@
             }
           },
           "500": {
-            "description": "Internal Server Error",
+            "description": "The repository could not be read because of an unexpected server error.",
             "content": {
               "application/json": { }
             }
@@ -726,13 +729,16 @@
         "type": "object",
         "properties": {
           "token": {
-            "type": "string"
+            "type": "string",
+            "description": "The signed JSON Web Token (JWT, RS256); send it as a bearer token. Verify it with the keys of the JWKS endpoint."
           },
           "expiresAfter": {
             "type": "string",
+            "description": "The moment the token expires, as an ISO 8601 date and time with offset; the token is invalid after this instant.",
             "format": "date-time"
           }
-        }
+        },
+        "description": "A short-lived access token issued by the Authorization API."
       },
       "AdminCompleteAuthenticationRequestModel": {
         "required": [
@@ -825,12 +831,15 @@
         "type": "object",
         "properties": {
           "issuer": {
-            "type": "string"
+            "type": "string",
+            "description": "The issuer URL that appears in the `iss` claim of issued tokens"
           },
           "jwks_uri": {
-            "type": "string"
+            "type": "string",
+            "description": "Absolute URL of the JSON Web Key Set that holds the public keys for verifying token signatures"
           }
-        }
+        },
+        "description": "Response model for the discovery document endpoint."
       },
       "IdentityProvider": {
         "enum": [
@@ -851,24 +860,31 @@
         "type": "object",
         "properties": {
           "kty": {
-            "type": "string"
+            "type": "string",
+            "description": "Key type; `RSA`"
           },
           "kid": {
-            "type": "string"
+            "type": "string",
+            "description": "Key identifier, matched against the `kid` header of issued tokens"
           },
           "use": {
-            "type": "string"
+            "type": "string",
+            "description": "Intended use of the key (`sig` for signature verification)"
           },
           "alg": {
-            "type": "string"
+            "type": "string",
+            "description": "Signing algorithm the key is used with"
           },
           "e": {
-            "type": "string"
+            "type": "string",
+            "description": "RSA public exponent, Base64url encoded"
           },
           "n": {
-            "type": "string"
+            "type": "string",
+            "description": "RSA modulus, Base64url encoded"
           }
-        }
+        },
+        "description": "Response model for JSON Web Key (JWK)."
       },
       "JwksResponse": {
         "required": [
@@ -880,9 +896,11 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/JwkResponse"
-            }
+            },
+            "description": "The published signing keys: the current key and, during rotation, the previous one"
           }
-        }
+        },
+        "description": "Response model for JSON Web Key Set (JWKS)."
       },
       "ProblemDetails": {
         "type": "object",
@@ -930,13 +948,16 @@
         "type": "object",
         "properties": {
           "token": {
-            "type": "string"
+            "type": "string",
+            "description": "The opaque refresh token value; single use, it is replaced by a new one on every refresh."
           },
           "expiresAfter": {
             "type": "string",
+            "description": "The moment the refresh token expires, as an ISO 8601 date and time with offset; the token is invalid after this instant.",
             "format": "date-time"
           }
-        }
+        },
+        "description": "A long-lived refresh token that is exchanged for a new access token and a new refresh token."
       },
       "RepositoryResponse": {
         "required": [

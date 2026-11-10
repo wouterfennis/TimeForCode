@@ -6,6 +6,10 @@ using TimeForCode.Shared.Api.Authentication.Models;
 
 namespace TimeForCode.Shared.Api.Handlers
 {
+    /// <summary>
+    /// Adds the access token from the incoming request's cookie as a bearer token to outgoing requests.
+    /// </summary>
+    /// <param name="httpContextAccessor">Gives access to the incoming request.</param>
     public class CookieAuthorizationHandler(IHttpContextAccessor httpContextAccessor) : DelegatingHandler
     {
         private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;

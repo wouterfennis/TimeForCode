@@ -55,6 +55,9 @@ namespace TimeForCode.Authorization.Api.Controllers
         /// <summary>
         /// Begins the one-time admin passkey registration ceremony. Only available while no admin credential has been claimed yet.
         /// </summary>
+        /// <param name="model">The bootstrap secret that proves the caller may claim the admin role.</param>
+        /// <response code="200">The passkey creation options (JSON) for the browser; the ceremony state is set in a short-lived cookie.</response>
+        /// <response code="400">The bootstrap secret is wrong or an admin credential has already been claimed.</response>
         [HttpPost]
         [Route("registration/options", Name = "AdminRegistrationOptions")]
         [EnableRateLimiting("admin-auth")]
@@ -78,6 +81,9 @@ namespace TimeForCode.Authorization.Api.Controllers
         /// <summary>
         /// Completes the one-time admin passkey registration ceremony. Only the first successful completion permanently claims the admin role.
         /// </summary>
+        /// <param name="model">The bootstrap secret and the credential (JSON) created by the browser.</param>
+        /// <response code="200">The admin credential was claimed; the access token and refresh token are returned and set as cookies.</response>
+        /// <response code="400">No registration ceremony is in progress or the registration was rejected.</response>
         [HttpPost]
         [Route("registration", Name = "AdminCompleteRegistration")]
         [EnableRateLimiting("admin-auth")]
@@ -113,6 +119,8 @@ namespace TimeForCode.Authorization.Api.Controllers
         /// <summary>
         /// Begins the admin passkey authentication ceremony. Requires an admin credential to already exist.
         /// </summary>
+        /// <response code="200">The passkey request options (JSON) for the browser; the ceremony state is set in a short-lived cookie.</response>
+        /// <response code="400">No admin credential has been registered yet.</response>
         [HttpGet]
         [Route("authentication/options", Name = "AdminAuthenticationOptions")]
         [EnableRateLimiting("admin-auth")]
@@ -135,6 +143,9 @@ namespace TimeForCode.Authorization.Api.Controllers
         /// <summary>
         /// Completes the admin passkey authentication ceremony.
         /// </summary>
+        /// <param name="model">The assertion credential (JSON) produced by the browser.</param>
+        /// <response code="200">The admin signed in; the access token and refresh token are returned and set as cookies.</response>
+        /// <response code="400">No authentication ceremony is in progress or the assertion was rejected.</response>
         [HttpPost]
         [Route("authentication", Name = "AdminCompleteAuthentication")]
         [EnableRateLimiting("admin-auth")]

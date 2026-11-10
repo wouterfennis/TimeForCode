@@ -4,12 +4,22 @@ using Microsoft.Extensions.Logging;
 
 namespace TimeForCode.Shared.Behaviours
 {
+    /// <summary>
+    /// MediatR pipeline behaviour that runs the registered validators before the handler.
+    /// </summary>
+    /// <typeparam name="TRequest">The request type.</typeparam>
+    /// <typeparam name="TResponse">The response type.</typeparam>
     public class ValidationBehaviour<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
         where TRequest : IRequest<TResponse>
     {
         private readonly IEnumerable<IValidator<TRequest>> _validators;
         private readonly ILogger<ValidationBehaviour<TRequest, TResponse>> _logger;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ValidationBehaviour{TRequest, TResponse}"/> class.
+        /// </summary>
+        /// <param name="validators">The validators for the request type.</param>
+        /// <param name="logger">The logger.</param>
         public ValidationBehaviour(IEnumerable<IValidator<TRequest>> validators,
             ILogger<ValidationBehaviour<TRequest, TResponse>> logger)
         {
@@ -17,6 +27,7 @@ namespace TimeForCode.Shared.Behaviours
             _logger = logger;
         }
 
+        /// <inheritdoc />
         public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
         {
             if (!_validators.Any())
