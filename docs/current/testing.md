@@ -190,11 +190,13 @@ Commit the updated `.verified.txt` alongside the code change that caused it, so 
 
 The framework's own `ProblemDetails` schemas are exempt. The rules are tested in `tst/Shared/TimeForCode.Shared.Tests/ApiDocs/OpenApiDocumentationCheckTests.cs` against a deliberately undocumented sample document.
 
-The Reporting API runs the check in `SwaggerTests.Verify_GeneratedSwaggerFile_ShouldBeFullyDocumented`. To switch it on for another API, reference `TimeForCode.Shared.ApiDocs` from its `Api.Tests` project and add the same test with that API's `.json` file; the check is not copied.
+The Reporting and Donation APIs run the check in `SwaggerTests.Verify_GeneratedSwaggerFile_ShouldBeFullyDocumented`. To switch it on for another API, reference `TimeForCode.Shared.ApiDocs` from its `Api.Tests` project and add the same test with that API's `.json` file; the check is not copied.
+
+The Donation API also has an architecture rule (`ApiLayerTests`): every type a controller action declares with `[ProducesResponseType]` must be defined in the Donation API project (framework types such as `ProblemDetails` are allowed). Controllers map the `*Result` and `*Dto` types of the Commands project to response models in `V1/Models` instead of returning them, so the API contract does not follow internal types.
 
 To satisfy the check:
 
-- Give every response type and request/response property an XML `<summary>`, and every action parameter a `<param>`. Enums need their own `<summary>` and a `<summary>` per member, and the project that declares them needs `GenerateDocumentationFile` (the Reporting `Values` project sets it).
+- Give every response type and request/response property an XML `<summary>`, and every action parameter a `<param>`. Enums need their own `<summary>` and a `<summary>` per member, and the project that declares them needs `GenerateDocumentationFile` (the Reporting and Donation `Values` projects set it).
 - Enums need no converter attribute for their documentation: every API is configured with the shared `AddStringEnumValues` schema transformer (`CreateDefaultOpenApiOptions`), so each enum is documented as a string schema listing its names, matching the `JsonStringEnumConverter` that `AddDefaultControllers` registers for the wire format.
 - Describe every status an operation declares with `[ProducesResponseType]` using `<response code="..."> ... </response>` on the action, stating what the status means for that endpoint.
 - Rebuild the Api project so the `.json` is regenerated, then review the snapshot diff as above.

@@ -48,7 +48,7 @@ namespace TimeForCode.Seeder.Scenarios
 
         private static async Task<string> RegisterAsync(SeedContext context, SeedClients maintainer, string key, string repository)
         {
-            RegisterProjectResult result = await maintainer.Donation.RegisterProjectAsync(new RegisterProjectRequest
+            RegisterProjectResponse result = await maintainer.Donation.RegisterProjectAsync(new RegisterProjectRequest
             {
                 GithubRepositoryUrl = new Uri(RepositoryOwner + repository)
             });

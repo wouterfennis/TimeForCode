@@ -41,6 +41,11 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         /// <param name="id">The project identifier.</param>
         /// <param name="request">The hours spent and an optional GitHub pull request or commit link.</param>
         /// <returns>The created contribution.</returns>
+        /// <response code="201">The contribution was logged and is returned.</response>
+        /// <response code="400">An identifier in the request is not valid, or the token does not identify the user.</response>
+        /// <response code="401">The access token is missing, invalid or expired.</response>
+        /// <response code="404">The project does not exist or is not published.</response>
+        /// <response code="500">The request could not be processed because of an unexpected error.</response>
         [HttpPost(Name = nameof(AddContribution))]
         [ProducesResponseType(typeof(ContributionResponse), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
@@ -94,6 +99,10 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         /// </summary>
         /// <param name="id">The project identifier.</param>
         /// <returns>The contributions of the project; an empty list when none were logged.</returns>
+        /// <response code="200">The contributions of the project, earliest first; an empty list when none were logged.</response>
+        /// <response code="400">An identifier in the request is not valid.</response>
+        /// <response code="404">The project does not exist or is not published.</response>
+        /// <response code="500">The request could not be processed because of an unexpected error.</response>
         [HttpGet(Name = nameof(GetContributions))]
         [ProducesResponseType(typeof(GetContributionsResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
@@ -131,6 +140,12 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         /// <param name="pageNumber">The page number (1 to 10000, default 1).</param>
         /// <param name="pageSize">The number of items per page (1 to 100, default 20).</param>
         /// <returns>The requested page of contributions and the total count; an empty list when none were logged.</returns>
+        /// <response code="200">The requested page of contributions and the total count.</response>
+        /// <response code="400">An identifier or a paging value is not valid.</response>
+        /// <response code="401">The access token is missing, invalid or expired.</response>
+        /// <response code="403">The caller is neither affiliated with the donor organization nor an administrator.</response>
+        /// <response code="404">The donor organization does not exist.</response>
+        /// <response code="500">The request could not be processed because of an unexpected error.</response>
         [HttpGet("~/api/v1/donororganization/{id}/contribution", Name = nameof(GetDonorOrganizationContributions))]
         [ProducesResponseType(typeof(GetDonorOrganizationContributionsResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
@@ -178,6 +193,13 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         /// <param name="contributionId">The contribution identifier.</param>
         /// <param name="request">The corrected hours and the optional GitHub reference (omitted removes it).</param>
         /// <returns>The corrected contribution.</returns>
+        /// <response code="200">The corrected contribution.</response>
+        /// <response code="400">An identifier or the request body is not valid.</response>
+        /// <response code="401">The access token is missing, invalid or expired.</response>
+        /// <response code="403">The caller is neither the contributor who logged the contribution nor an administrator.</response>
+        /// <response code="404">The project or the contribution does not exist.</response>
+        /// <response code="409">The contribution was changed by someone else; reload it and try again.</response>
+        /// <response code="500">The request could not be processed because of an unexpected error.</response>
         [HttpPut("{contributionId}", Name = nameof(CorrectContribution))]
         [ProducesResponseType(typeof(ContributionResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
@@ -216,6 +238,13 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         /// </summary>
         /// <param name="id">The project identifier.</param>
         /// <param name="contributionId">The contribution identifier.</param>
+        /// <response code="204">The contribution was deleted.</response>
+        /// <response code="400">An identifier in the request is not valid, or the token does not identify the user.</response>
+        /// <response code="401">The access token is missing, invalid or expired.</response>
+        /// <response code="403">The caller is neither the contributor who logged the contribution nor an administrator.</response>
+        /// <response code="404">The project or the contribution does not exist.</response>
+        /// <response code="409">The contribution was changed by someone else; reload it and try again.</response>
+        /// <response code="500">The request could not be processed because of an unexpected error.</response>
         [HttpDelete("{contributionId}", Name = nameof(DeleteContribution))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]

@@ -36,7 +36,7 @@ namespace TimeForCode.Seeder.Tests
             var client = new Mock<IDonationClient>();
 
             client.Setup(c => c.RegisterProjectAsync(It.IsAny<RegisterProjectRequest>()))
-                .ReturnsAsync(() => new RegisterProjectResult { ProjectId = NextId("project") })
+                .ReturnsAsync(() => new RegisterProjectResponse { ProjectId = NextId("project") })
                 .Callback((RegisterProjectRequest r) => Calls.Add($"{persona}:RegisterProject:{r.GithubRepositoryUrl}"));
             client.Setup(c => c.SubmitProjectForReviewAsync(It.IsAny<string>()))
                 .Callback((string id) => Calls.Add($"{persona}:Submit:{id}"));

@@ -581,7 +581,10 @@ export interface components {
              */
             updatedAt?: null | string;
         };
-        /** @enum {string} */
+        /**
+         * @description Lifecycle state of a donation pledge. The numeric values are persisted, so existing values must not change.
+         * @enum {string}
+         */
         DonationStatus: "Pending" | "Active" | "Completed" | "Cancelled";
         /** @description Represents a donor organization response. */
         DonorOrganizationResponse: {
@@ -689,12 +692,17 @@ export interface components {
              */
             pageSize: number | string;
         };
-        GetMaintainedProjectResult: {
-            project: components["schemas"]["ProjectDto"];
+        /** @description Represents a project of the maintainer in any lifecycle state, with the reviewer reason. */
+        GetMaintainedProjectResponse: {
+            /** @description The project details. */
+            project: components["schemas"]["ProjectResponse"];
+            /** @description The reason an administrator gave when requesting changes; empty when no changes were requested. */
             reviewerReason?: null | string;
         };
-        GetMyProjectsResult: {
-            projects: components["schemas"]["MaintainedProjectDto"][];
+        /** @description Represents the projects published by the caller. */
+        GetMyProjectsResponse: {
+            /** @description The projects of the caller in any lifecycle state, oldest first; empty when there are none. */
+            projects: components["schemas"]["MaintainedProjectResponse"][];
         };
         /** @description Represents a paginated list of published projects. */
         GetProjectsResponse: {
@@ -716,9 +724,14 @@ export interface components {
              */
             pageSize: number | string;
         };
-        MaintainedProjectDto: {
-            project: components["schemas"]["ProjectDto"];
-            /** Format: int32 */
+        /** @description Represents a project of the maintainer together with the hours donated to it. */
+        MaintainedProjectResponse: {
+            /** @description The project details. */
+            project: components["schemas"]["ProjectResponse"];
+            /**
+             * Format: int32
+             * @description The hours committed by Active and Completed donations to the project.
+             */
             hoursDonated: number | string;
         };
         /** @description Represents the profile of a maintainer, the owner of one or more projects. */
@@ -750,36 +763,13 @@ export interface components {
             detail?: null | string;
             instance?: null | string;
         };
-        ProjectDto: {
-            id: string;
-            name: string;
-            fullName: string;
-            description?: null | string;
-            githubUrl: string;
-            language?: null | string;
-            topics: string[];
-            /** Format: int32 */
-            stargazersCount?: number | string;
-            /** Format: int32 */
-            forksCount?: number | string;
-            /** Format: int32 */
-            openIssuesCount?: number | string;
-            homepage?: null | string;
-            defaultBranch: string;
-            license?: null | string;
-            ownerLogin: string;
-            ownerAvatarUrl: string;
-            /** Format: date-time */
-            createdAt: string;
-            /** Format: date-time */
-            updatedAt: string;
-            /** Format: date-time */
-            pushedAt: string;
-            status: components["schemas"]["ProjectStatus"];
-        };
-        ProjectLifecycleResult: {
+        /** @description Represents the lifecycle state of a project after a transition. */
+        ProjectLifecycleResponse: {
+            /** @description The project identifier. */
             projectId: string;
+            /** @description The lifecycle state the project is in now. */
             status: components["schemas"]["ProjectStatus"];
+            /** @description The reason an administrator gave when requesting changes; empty when no changes were requested. */
             reviewerReason?: null | string;
         };
         /** @description Represents full project details. */
@@ -841,7 +831,11 @@ export interface components {
             /** @description The publication status. */
             status: components["schemas"]["ProjectStatus"];
         };
-        /** @enum {string} */
+        /**
+         * @description Lifecycle state of a project. The numeric values are persisted, so existing values must not change:
+         *     `Active` and `Archived` keep the values of the former `Published` and `Archived` states.
+         * @enum {string}
+         */
         ProjectStatus: "Active" | "Archived" | "Draft" | "PendingApproval";
         /** @description Represents a summary of a published project for list views. */
         ProjectSummaryResponse: {
@@ -885,7 +879,9 @@ export interface components {
              */
             githubRepositoryUrl: string;
         };
-        RegisterProjectResult: {
+        /** @description Represents the outcome of publishing a project. */
+        RegisterProjectResponse: {
+            /** @description The identifier of the newly created project; it starts in the draft state. */
             projectId: string;
         };
         /** @description Represents an administrator's request for changes to a project under review. */
@@ -962,7 +958,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description OK */
+            /** @description The contributions of the project, earliest first; an empty list when none were logged. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -971,7 +967,7 @@ export interface operations {
                     "application/json": components["schemas"]["GetContributionsResponse"];
                 };
             };
-            /** @description Bad Request */
+            /** @description An identifier in the request is not valid. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -980,7 +976,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Not Found */
+            /** @description The project does not exist or is not published. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -998,7 +994,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Internal Server Error */
+            /** @description The request could not be processed because of an unexpected error. */
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -1028,7 +1024,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Created */
+            /** @description The contribution was logged and is returned. */
             201: {
                 headers: {
                     [name: string]: unknown;
@@ -1037,7 +1033,7 @@ export interface operations {
                     "application/json": components["schemas"]["ContributionResponse"];
                 };
             };
-            /** @description Bad Request */
+            /** @description An identifier in the request is not valid, or the token does not identify the user. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -1046,7 +1042,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Unauthorized */
+            /** @description The access token is missing, invalid or expired. */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -1055,7 +1051,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Not Found */
+            /** @description The project does not exist or is not published. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -1073,7 +1069,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Internal Server Error */
+            /** @description The request could not be processed because of an unexpected error. */
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -1101,7 +1097,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description OK */
+            /** @description The requested page of contributions and the total count. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1110,7 +1106,7 @@ export interface operations {
                     "application/json": components["schemas"]["GetDonorOrganizationContributionsResponse"];
                 };
             };
-            /** @description Bad Request */
+            /** @description An identifier or a paging value is not valid. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -1119,7 +1115,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Unauthorized */
+            /** @description The access token is missing, invalid or expired. */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -1128,7 +1124,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Forbidden */
+            /** @description The caller is neither affiliated with the donor organization nor an administrator. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -1137,7 +1133,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Not Found */
+            /** @description The donor organization does not exist. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -1155,7 +1151,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Internal Server Error */
+            /** @description The request could not be processed because of an unexpected error. */
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -1187,7 +1183,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description OK */
+            /** @description The corrected contribution. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1196,7 +1192,7 @@ export interface operations {
                     "application/json": components["schemas"]["ContributionResponse"];
                 };
             };
-            /** @description Bad Request */
+            /** @description An identifier or the request body is not valid. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -1205,7 +1201,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Unauthorized */
+            /** @description The access token is missing, invalid or expired. */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -1214,7 +1210,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Forbidden */
+            /** @description The caller is neither the contributor who logged the contribution nor an administrator. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -1223,7 +1219,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Not Found */
+            /** @description The project or the contribution does not exist. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -1232,7 +1228,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Conflict */
+            /** @description The contribution was changed by someone else; reload it and try again. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -1250,7 +1246,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Internal Server Error */
+            /** @description The request could not be processed because of an unexpected error. */
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -1275,7 +1271,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description No Content */
+            /** @description The contribution was deleted. */
             204: {
                 headers: {
                     [name: string]: unknown;
@@ -1284,7 +1280,7 @@ export interface operations {
                     "application/json": unknown;
                 };
             };
-            /** @description Bad Request */
+            /** @description An identifier in the request is not valid, or the token does not identify the user. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -1293,7 +1289,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Unauthorized */
+            /** @description The access token is missing, invalid or expired. */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -1302,7 +1298,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Forbidden */
+            /** @description The caller is neither the contributor who logged the contribution nor an administrator. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -1311,7 +1307,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Not Found */
+            /** @description The project or the contribution does not exist. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -1320,7 +1316,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Conflict */
+            /** @description The contribution was changed by someone else; reload it and try again. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -1338,7 +1334,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Internal Server Error */
+            /** @description The request could not be processed because of an unexpected error. */
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -1361,7 +1357,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description No Content */
+            /** @description The contributor was anonymised, had no contributions, or was already anonymised. */
             204: {
                 headers: {
                     [name: string]: unknown;
@@ -1370,7 +1366,7 @@ export interface operations {
                     "application/json": unknown;
                 };
             };
-            /** @description Bad Request */
+            /** @description An identifier in the request is not valid. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -1379,7 +1375,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Unauthorized */
+            /** @description The access token is missing, invalid or expired. */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -1388,7 +1384,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Forbidden */
+            /** @description The caller is not a trusted service. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -1406,7 +1402,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Internal Server Error */
+            /** @description The request could not be processed because of an unexpected error. */
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -1426,7 +1422,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description OK */
+            /** @description The contributor profile of the caller. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1435,7 +1431,7 @@ export interface operations {
                     "application/json": components["schemas"]["ContributorProfileResponse"];
                 };
             };
-            /** @description Bad Request */
+            /** @description The token does not identify the user. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -1444,7 +1440,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Unauthorized */
+            /** @description The access token is missing, invalid or expired. */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -1453,7 +1449,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Not Found */
+            /** @description The caller never became a contributor. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -1471,7 +1467,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Internal Server Error */
+            /** @description The request could not be processed because of an unexpected error. */
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -1498,7 +1494,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description OK */
+            /** @description The updated contributor profile of the caller. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1507,7 +1503,7 @@ export interface operations {
                     "application/json": components["schemas"]["ContributorProfileResponse"];
                 };
             };
-            /** @description Bad Request */
+            /** @description The request body is not valid, or the token does not identify the user. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -1516,7 +1512,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Unauthorized */
+            /** @description The access token is missing, invalid or expired. */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -1525,7 +1521,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Not Found */
+            /** @description The donor organization named in the profile does not exist. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -1543,7 +1539,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Internal Server Error */
+            /** @description The request could not be processed because of an unexpected error. */
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -1566,7 +1562,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description OK */
+            /** @description The contributor profile. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1575,7 +1571,7 @@ export interface operations {
                     "application/json": components["schemas"]["ContributorProfileResponse"];
                 };
             };
-            /** @description Bad Request */
+            /** @description An identifier in the request is not valid. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -1584,7 +1580,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Unauthorized */
+            /** @description The access token is missing, invalid or expired. */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -1593,7 +1589,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Forbidden */
+            /** @description The caller is neither this contributor nor an administrator. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -1602,7 +1598,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Not Found */
+            /** @description The contributor does not exist. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -1620,7 +1616,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Internal Server Error */
+            /** @description The request could not be processed because of an unexpected error. */
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -1650,7 +1646,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description OK */
+            /** @description The updated contributor profile. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1659,7 +1655,7 @@ export interface operations {
                     "application/json": components["schemas"]["ContributorProfileResponse"];
                 };
             };
-            /** @description Bad Request */
+            /** @description An identifier or the request body is not valid. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -1668,7 +1664,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Unauthorized */
+            /** @description The access token is missing, invalid or expired. */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -1677,7 +1673,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Forbidden */
+            /** @description The caller is neither this contributor nor an administrator. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -1686,7 +1682,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Not Found */
+            /** @description The contributor or the donor organization named in the profile does not exist. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -1704,7 +1700,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Internal Server Error */
+            /** @description The request could not be processed because of an unexpected error. */
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -1727,7 +1723,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description OK */
+            /** @description The affiliated contributors ordered by GitHub login; an empty list when there are none. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1736,7 +1732,7 @@ export interface operations {
                     "application/json": components["schemas"]["GetDonorOrganizationContributorsResponse"];
                 };
             };
-            /** @description Bad Request */
+            /** @description An identifier in the request is not valid. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -1745,7 +1741,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Unauthorized */
+            /** @description The access token is missing, invalid or expired. */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -1754,7 +1750,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Forbidden */
+            /** @description The caller is not an administrator. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -1763,7 +1759,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Not Found */
+            /** @description The donor organization does not exist. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -1781,7 +1777,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Internal Server Error */
+            /** @description The request could not be processed because of an unexpected error. */
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -1804,7 +1800,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description OK */
+            /** @description The donations of the project, oldest first; an empty list when there are none. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1813,7 +1809,7 @@ export interface operations {
                     "application/json": components["schemas"]["GetDonationsResponse"];
                 };
             };
-            /** @description Bad Request */
+            /** @description An identifier in the request is not valid. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -1822,7 +1818,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Not Found */
+            /** @description The project does not exist or is not published. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -1840,7 +1836,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Internal Server Error */
+            /** @description The request could not be processed because of an unexpected error. */
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -1870,7 +1866,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Created */
+            /** @description The donation was pledged and is returned in the Pending state. */
             201: {
                 headers: {
                     [name: string]: unknown;
@@ -1879,7 +1875,7 @@ export interface operations {
                     "application/json": components["schemas"]["DonationResponse"];
                 };
             };
-            /** @description Bad Request */
+            /** @description An identifier or the request body is not valid. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -1888,7 +1884,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Unauthorized */
+            /** @description The access token is missing, invalid or expired. */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -1897,7 +1893,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Not Found */
+            /** @description The project or the donor organization does not exist. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -1906,7 +1902,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Conflict */
+            /** @description The project is not active and cannot receive pledges. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -1924,7 +1920,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Internal Server Error */
+            /** @description The request could not be processed because of an unexpected error. */
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -1952,7 +1948,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description OK */
+            /** @description The requested page of donations and the total count. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1961,7 +1957,7 @@ export interface operations {
                     "application/json": components["schemas"]["GetDonorOrganizationDonationsResponse"];
                 };
             };
-            /** @description Bad Request */
+            /** @description An identifier or a paging value is not valid. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -1970,7 +1966,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Unauthorized */
+            /** @description The access token is missing, invalid or expired. */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -1979,7 +1975,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Forbidden */
+            /** @description The caller is neither affiliated with the donor organization nor an administrator. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -1988,7 +1984,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Not Found */
+            /** @description The donor organization does not exist. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -2006,7 +2002,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Internal Server Error */
+            /** @description The request could not be processed because of an unexpected error. */
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -2026,7 +2022,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description OK */
+            /** @description The donations pledged by the caller, oldest first; an empty list when there are none. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -2035,7 +2031,7 @@ export interface operations {
                     "application/json": components["schemas"]["GetDonationsResponse"];
                 };
             };
-            /** @description Bad Request */
+            /** @description The token does not identify the user. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -2044,7 +2040,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Unauthorized */
+            /** @description The access token is missing, invalid or expired. */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -2062,7 +2058,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Internal Server Error */
+            /** @description The request could not be processed because of an unexpected error. */
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -2085,7 +2081,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description OK */
+            /** @description The donation is now active. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -2094,7 +2090,7 @@ export interface operations {
                     "application/json": components["schemas"]["DonationResponse"];
                 };
             };
-            /** @description Bad Request */
+            /** @description An identifier in the request is not valid, or the token does not identify the user. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -2103,7 +2099,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Unauthorized */
+            /** @description The access token is missing, invalid or expired. */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -2112,7 +2108,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Forbidden */
+            /** @description The caller is neither the donor who pledged the donation nor an administrator. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -2121,7 +2117,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Not Found */
+            /** @description The donation does not exist. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -2130,7 +2126,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Conflict */
+            /** @description The donation is not in a state that allows this change, or it was changed by someone else; reload it and try again. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -2148,7 +2144,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Internal Server Error */
+            /** @description The request could not be processed because of an unexpected error. */
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -2171,7 +2167,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description OK */
+            /** @description The donation is now cancelled. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -2180,7 +2176,7 @@ export interface operations {
                     "application/json": components["schemas"]["DonationResponse"];
                 };
             };
-            /** @description Bad Request */
+            /** @description An identifier in the request is not valid, or the token does not identify the user. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -2189,7 +2185,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Unauthorized */
+            /** @description The access token is missing, invalid or expired. */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -2198,7 +2194,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Forbidden */
+            /** @description The caller is neither the donor who pledged the donation nor an administrator. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -2207,7 +2203,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Not Found */
+            /** @description The donation does not exist. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -2216,7 +2212,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Conflict */
+            /** @description The donation is not in a state that allows this change, or it was changed by someone else; reload it and try again. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -2234,7 +2230,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Internal Server Error */
+            /** @description The request could not be processed because of an unexpected error. */
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -2259,7 +2255,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description OK */
+            /** @description The requested page of donor organizations and the total count. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -2268,7 +2264,7 @@ export interface operations {
                     "application/json": components["schemas"]["GetDonorOrganizationsResponse"];
                 };
             };
-            /** @description Bad Request */
+            /** @description A paging value is not valid. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -2304,7 +2300,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Created */
+            /** @description The donor organization was created and is returned. */
             201: {
                 headers: {
                     [name: string]: unknown;
@@ -2313,7 +2309,7 @@ export interface operations {
                     "application/json": components["schemas"]["DonorOrganizationResponse"];
                 };
             };
-            /** @description Bad Request */
+            /** @description The request body is not valid. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -2322,7 +2318,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Conflict */
+            /** @description A donor organization with this name already exists. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -2354,7 +2350,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description OK */
+            /** @description The donor organization. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -2363,7 +2359,7 @@ export interface operations {
                     "application/json": components["schemas"]["DonorOrganizationResponse"];
                 };
             };
-            /** @description Not Found */
+            /** @description The donor organization does not exist. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -2402,7 +2398,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description OK */
+            /** @description The updated donor organization. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -2411,7 +2407,7 @@ export interface operations {
                     "application/json": components["schemas"]["DonorOrganizationResponse"];
                 };
             };
-            /** @description Bad Request */
+            /** @description An identifier or the request body is not valid. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -2420,7 +2416,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Not Found */
+            /** @description The donor organization does not exist. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -2429,7 +2425,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Conflict */
+            /** @description Another donor organization already has this name. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -2461,7 +2457,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description No Content */
+            /** @description The donor organization was deleted. */
             204: {
                 headers: {
                     [name: string]: unknown;
@@ -2470,7 +2466,7 @@ export interface operations {
                     "application/json": unknown;
                 };
             };
-            /** @description Not Found */
+            /** @description The donor organization does not exist. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -2499,7 +2495,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description OK */
+            /** @description The maintainer profile of the caller. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -2508,7 +2504,7 @@ export interface operations {
                     "application/json": components["schemas"]["MaintainerProfileResponse"];
                 };
             };
-            /** @description Bad Request */
+            /** @description The token does not identify the user. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -2517,7 +2513,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Unauthorized */
+            /** @description The access token is missing, invalid or expired. */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -2526,7 +2522,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Not Found */
+            /** @description The caller never published a project. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -2544,7 +2540,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Internal Server Error */
+            /** @description The request could not be processed because of an unexpected error. */
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -2564,16 +2560,16 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description OK */
+            /** @description The projects of the caller with the hours donated to each, oldest first; an empty list when there are none. */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["GetMyProjectsResult"];
+                    "application/json": components["schemas"]["GetMyProjectsResponse"];
                 };
             };
-            /** @description Bad Request */
+            /** @description The token does not identify the user. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -2582,7 +2578,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Unauthorized */
+            /** @description The access token is missing, invalid or expired. */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -2600,7 +2596,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Internal Server Error */
+            /** @description The request could not be processed because of an unexpected error. */
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -2631,7 +2627,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description OK */
+            /** @description The requested page of active projects matching all criteria, and the total match count. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -2640,7 +2636,7 @@ export interface operations {
                     "application/json": components["schemas"]["GetProjectsResponse"];
                 };
             };
-            /** @description Bad Request */
+            /** @description A paging value or search criterion is not valid. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -2658,7 +2654,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Internal Server Error */
+            /** @description The request could not be processed because of an unexpected error. */
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -2685,16 +2681,16 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Created */
+            /** @description The project was created in the draft state; its identifier is returned. */
             201: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["RegisterProjectResult"];
+                    "application/json": components["schemas"]["RegisterProjectResponse"];
                 };
             };
-            /** @description Bad Request */
+            /** @description The repository cannot be published, or the token lacks the user identity. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -2703,7 +2699,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Conflict */
+            /** @description The repository is already published. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -2721,7 +2717,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Internal Server Error */
+            /** @description The request could not be processed because of an unexpected error. */
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -2744,7 +2740,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description OK */
+            /** @description The project details. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -2753,7 +2749,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProjectResponse"];
                 };
             };
-            /** @description Not Found */
+            /** @description The project does not exist or is not published. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -2771,7 +2767,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Internal Server Error */
+            /** @description The request could not be processed because of an unexpected error. */
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -2794,16 +2790,16 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description OK */
+            /** @description The project in any lifecycle state, with the reviewer reason. */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["GetMaintainedProjectResult"];
+                    "application/json": components["schemas"]["GetMaintainedProjectResponse"];
                 };
             };
-            /** @description Bad Request */
+            /** @description An identifier in the request is not valid, or the token does not identify the user. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -2812,7 +2808,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Unauthorized */
+            /** @description The access token is missing, invalid or expired. */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -2821,7 +2817,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Forbidden */
+            /** @description The caller is not the maintainer of the project. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -2830,7 +2826,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Not Found */
+            /** @description The project does not exist. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -2848,7 +2844,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Internal Server Error */
+            /** @description The request could not be processed because of an unexpected error. */
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -2871,16 +2867,16 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description OK */
+            /** @description The project is now pending approval. */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ProjectLifecycleResult"];
+                    "application/json": components["schemas"]["ProjectLifecycleResponse"];
                 };
             };
-            /** @description Bad Request */
+            /** @description An identifier in the request is not valid, or the token does not identify the user. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -2889,7 +2885,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Unauthorized */
+            /** @description The access token is missing, invalid or expired. */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -2898,7 +2894,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Forbidden */
+            /** @description The caller is not the maintainer of the project. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -2907,7 +2903,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Not Found */
+            /** @description The project does not exist. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -2916,7 +2912,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Conflict */
+            /** @description The project is not in a state that allows this transition. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -2934,7 +2930,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Internal Server Error */
+            /** @description The request could not be processed because of an unexpected error. */
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -2957,16 +2953,16 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description OK */
+            /** @description The project is now active. */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ProjectLifecycleResult"];
+                    "application/json": components["schemas"]["ProjectLifecycleResponse"];
                 };
             };
-            /** @description Unauthorized */
+            /** @description The access token is missing, invalid or expired. */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -2975,7 +2971,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Forbidden */
+            /** @description The caller is not an administrator. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -2984,7 +2980,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Not Found */
+            /** @description The project does not exist. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -2993,7 +2989,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Conflict */
+            /** @description The project is not in a state that allows this transition. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -3011,7 +3007,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Internal Server Error */
+            /** @description The request could not be processed because of an unexpected error. */
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -3041,16 +3037,16 @@ export interface operations {
             };
         };
         responses: {
-            /** @description OK */
+            /** @description The project is back in draft with the reviewer reason. */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ProjectLifecycleResult"];
+                    "application/json": components["schemas"]["ProjectLifecycleResponse"];
                 };
             };
-            /** @description Bad Request */
+            /** @description The project identifier or the reason is not valid. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -3059,7 +3055,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Unauthorized */
+            /** @description The access token is missing, invalid or expired. */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -3068,7 +3064,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Forbidden */
+            /** @description The caller is not an administrator. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -3077,7 +3073,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Not Found */
+            /** @description The project does not exist. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -3086,7 +3082,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Conflict */
+            /** @description The project is not in a state that allows this transition. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -3104,7 +3100,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Internal Server Error */
+            /** @description The request could not be processed because of an unexpected error. */
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -3127,16 +3123,16 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description OK */
+            /** @description The project is now archived. */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ProjectLifecycleResult"];
+                    "application/json": components["schemas"]["ProjectLifecycleResponse"];
                 };
             };
-            /** @description Bad Request */
+            /** @description An identifier in the request is not valid. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -3145,7 +3141,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Unauthorized */
+            /** @description The access token is missing, invalid or expired. */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -3154,7 +3150,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Forbidden */
+            /** @description The caller is not the maintainer of the project. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -3163,7 +3159,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Not Found */
+            /** @description The project does not exist. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -3172,7 +3168,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Conflict */
+            /** @description The project is not in a state that allows this transition. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -3190,7 +3186,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Internal Server Error */
+            /** @description The request could not be processed because of an unexpected error. */
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -3213,16 +3209,16 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description OK */
+            /** @description The project is active again. */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ProjectLifecycleResult"];
+                    "application/json": components["schemas"]["ProjectLifecycleResponse"];
                 };
             };
-            /** @description Bad Request */
+            /** @description An identifier in the request is not valid. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -3231,7 +3227,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Unauthorized */
+            /** @description The access token is missing, invalid or expired. */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -3240,7 +3236,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Forbidden */
+            /** @description The caller is not the maintainer of the project. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -3249,7 +3245,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Not Found */
+            /** @description The project does not exist. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -3258,7 +3254,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Conflict */
+            /** @description The project is not in a state that allows this transition. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -3276,7 +3272,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Internal Server Error */
+            /** @description The request could not be processed because of an unexpected error. */
             500: {
                 headers: {
                     [name: string]: unknown;

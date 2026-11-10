@@ -33,6 +33,11 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         /// </summary>
         /// <param name="userId">The platform user identifier of the deleted account.</param>
         /// <returns>No content on success.</returns>
+        /// <response code="204">The contributor was anonymised, had no contributions, or was already anonymised.</response>
+        /// <response code="400">An identifier in the request is not valid.</response>
+        /// <response code="401">The access token is missing, invalid or expired.</response>
+        /// <response code="403">The caller is not a trusted service.</response>
+        /// <response code="500">The request could not be processed because of an unexpected error.</response>
         [HttpPost("{userId}/anonymise", Name = nameof(AnonymiseContributor))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]

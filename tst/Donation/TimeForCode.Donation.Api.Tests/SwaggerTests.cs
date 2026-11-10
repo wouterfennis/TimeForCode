@@ -1,4 +1,5 @@
 using AwesomeAssertions;
+using TimeForCode.Shared.ApiDocs;
 
 namespace TimeForCode.Donation.Api.Tests
 {
@@ -18,6 +19,19 @@ namespace TimeForCode.Donation.Api.Tests
             // Assert
             swagger.Should().NotBeNull();
             await Verify(swagger);
+        }
+
+        [TestMethod]
+        public async Task Verify_GeneratedSwaggerFile_ShouldBeFullyDocumented()
+        {
+            // Arrange
+            var swagger = await File.ReadAllTextAsync("TimeForCode.Donation.Api.json", CancellationToken.None);
+
+            // Act
+            var gaps = OpenApiDocumentationCheck.FindGaps(swagger);
+
+            // Assert
+            gaps.Should().BeEmpty();
         }
     }
 }

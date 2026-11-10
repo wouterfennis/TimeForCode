@@ -48,7 +48,7 @@
         },
         "responses": {
           "201": {
-            "description": "Created",
+            "description": "The contribution was logged and is returned.",
             "content": {
               "application/json": {
                 "schema": {
@@ -58,7 +58,7 @@
             }
           },
           "400": {
-            "description": "Bad Request",
+            "description": "An identifier in the request is not valid, or the token does not identify the user.",
             "content": {
               "application/json": {
                 "schema": {
@@ -68,7 +68,7 @@
             }
           },
           "401": {
-            "description": "Unauthorized",
+            "description": "The access token is missing, invalid or expired.",
             "content": {
               "application/json": {
                 "schema": {
@@ -78,7 +78,7 @@
             }
           },
           "404": {
-            "description": "Not Found",
+            "description": "The project does not exist or is not published.",
             "content": {
               "application/json": {
                 "schema": {
@@ -88,7 +88,7 @@
             }
           },
           "500": {
-            "description": "Internal Server Error",
+            "description": "The request could not be processed because of an unexpected error.",
             "content": {
               "application/json": {
                 "schema": {
@@ -131,7 +131,7 @@
         ],
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "The contributions of the project, earliest first; an empty list when none were logged.",
             "content": {
               "application/json": {
                 "schema": {
@@ -141,7 +141,7 @@
             }
           },
           "400": {
-            "description": "Bad Request",
+            "description": "An identifier in the request is not valid.",
             "content": {
               "application/json": {
                 "schema": {
@@ -151,7 +151,7 @@
             }
           },
           "404": {
-            "description": "Not Found",
+            "description": "The project does not exist or is not published.",
             "content": {
               "application/json": {
                 "schema": {
@@ -161,7 +161,7 @@
             }
           },
           "500": {
-            "description": "Internal Server Error",
+            "description": "The request could not be processed because of an unexpected error.",
             "content": {
               "application/json": {
                 "schema": {
@@ -239,7 +239,7 @@
         ],
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "The requested page of contributions and the total count.",
             "content": {
               "application/json": {
                 "schema": {
@@ -249,7 +249,7 @@
             }
           },
           "400": {
-            "description": "Bad Request",
+            "description": "An identifier or a paging value is not valid.",
             "content": {
               "application/json": {
                 "schema": {
@@ -259,7 +259,7 @@
             }
           },
           "401": {
-            "description": "Unauthorized",
+            "description": "The access token is missing, invalid or expired.",
             "content": {
               "application/json": {
                 "schema": {
@@ -269,7 +269,7 @@
             }
           },
           "403": {
-            "description": "Forbidden",
+            "description": "The caller is neither affiliated with the donor organization nor an administrator.",
             "content": {
               "application/json": {
                 "schema": {
@@ -279,7 +279,7 @@
             }
           },
           "404": {
-            "description": "Not Found",
+            "description": "The donor organization does not exist.",
             "content": {
               "application/json": {
                 "schema": {
@@ -289,7 +289,7 @@
             }
           },
           "500": {
-            "description": "Internal Server Error",
+            "description": "The request could not be processed because of an unexpected error.",
             "content": {
               "application/json": {
                 "schema": {
@@ -365,7 +365,7 @@
         },
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "The corrected contribution.",
             "content": {
               "application/json": {
                 "schema": {
@@ -375,7 +375,7 @@
             }
           },
           "400": {
-            "description": "Bad Request",
+            "description": "An identifier or the request body is not valid.",
             "content": {
               "application/json": {
                 "schema": {
@@ -385,7 +385,7 @@
             }
           },
           "401": {
-            "description": "Unauthorized",
+            "description": "The access token is missing, invalid or expired.",
             "content": {
               "application/json": {
                 "schema": {
@@ -395,7 +395,7 @@
             }
           },
           "403": {
-            "description": "Forbidden",
+            "description": "The caller is neither the contributor who logged the contribution nor an administrator.",
             "content": {
               "application/json": {
                 "schema": {
@@ -405,7 +405,7 @@
             }
           },
           "404": {
-            "description": "Not Found",
+            "description": "The project or the contribution does not exist.",
             "content": {
               "application/json": {
                 "schema": {
@@ -415,7 +415,7 @@
             }
           },
           "409": {
-            "description": "Conflict",
+            "description": "The contribution was changed by someone else; reload it and try again.",
             "content": {
               "application/json": {
                 "schema": {
@@ -425,7 +425,7 @@
             }
           },
           "500": {
-            "description": "Internal Server Error",
+            "description": "The request could not be processed because of an unexpected error.",
             "content": {
               "application/json": {
                 "schema": {
@@ -478,13 +478,13 @@
         ],
         "responses": {
           "204": {
-            "description": "No Content",
+            "description": "The contribution was deleted.",
             "content": {
               "application/json": { }
             }
           },
           "400": {
-            "description": "Bad Request",
+            "description": "An identifier in the request is not valid, or the token does not identify the user.",
             "content": {
               "application/json": {
                 "schema": {
@@ -494,7 +494,7 @@
             }
           },
           "401": {
-            "description": "Unauthorized",
+            "description": "The access token is missing, invalid or expired.",
             "content": {
               "application/json": {
                 "schema": {
@@ -504,7 +504,7 @@
             }
           },
           "403": {
-            "description": "Forbidden",
+            "description": "The caller is neither the contributor who logged the contribution nor an administrator.",
             "content": {
               "application/json": {
                 "schema": {
@@ -514,7 +514,7 @@
             }
           },
           "404": {
-            "description": "Not Found",
+            "description": "The project or the contribution does not exist.",
             "content": {
               "application/json": {
                 "schema": {
@@ -524,7 +524,7 @@
             }
           },
           "409": {
-            "description": "Conflict",
+            "description": "The contribution was changed by someone else; reload it and try again.",
             "content": {
               "application/json": {
                 "schema": {
@@ -534,7 +534,7 @@
             }
           },
           "500": {
-            "description": "Internal Server Error",
+            "description": "The request could not be processed because of an unexpected error.",
             "content": {
               "application/json": {
                 "schema": {
@@ -579,13 +579,13 @@
         ],
         "responses": {
           "204": {
-            "description": "No Content",
+            "description": "The contributor was anonymised, had no contributions, or was already anonymised.",
             "content": {
               "application/json": { }
             }
           },
           "400": {
-            "description": "Bad Request",
+            "description": "An identifier in the request is not valid.",
             "content": {
               "application/json": {
                 "schema": {
@@ -595,7 +595,7 @@
             }
           },
           "401": {
-            "description": "Unauthorized",
+            "description": "The access token is missing, invalid or expired.",
             "content": {
               "application/json": {
                 "schema": {
@@ -605,7 +605,7 @@
             }
           },
           "403": {
-            "description": "Forbidden",
+            "description": "The caller is not a trusted service.",
             "content": {
               "application/json": {
                 "schema": {
@@ -615,7 +615,7 @@
             }
           },
           "500": {
-            "description": "Internal Server Error",
+            "description": "The request could not be processed because of an unexpected error.",
             "content": {
               "application/json": {
                 "schema": {
@@ -648,7 +648,7 @@
         "operationId": "GetMyContributorProfile",
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "The contributor profile of the caller.",
             "content": {
               "application/json": {
                 "schema": {
@@ -658,7 +658,7 @@
             }
           },
           "400": {
-            "description": "Bad Request",
+            "description": "The token does not identify the user.",
             "content": {
               "application/json": {
                 "schema": {
@@ -668,7 +668,7 @@
             }
           },
           "401": {
-            "description": "Unauthorized",
+            "description": "The access token is missing, invalid or expired.",
             "content": {
               "application/json": {
                 "schema": {
@@ -678,7 +678,7 @@
             }
           },
           "404": {
-            "description": "Not Found",
+            "description": "The caller never became a contributor.",
             "content": {
               "application/json": {
                 "schema": {
@@ -688,7 +688,7 @@
             }
           },
           "500": {
-            "description": "Internal Server Error",
+            "description": "The request could not be processed because of an unexpected error.",
             "content": {
               "application/json": {
                 "schema": {
@@ -740,7 +740,7 @@
         },
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "The updated contributor profile of the caller.",
             "content": {
               "application/json": {
                 "schema": {
@@ -750,7 +750,7 @@
             }
           },
           "400": {
-            "description": "Bad Request",
+            "description": "The request body is not valid, or the token does not identify the user.",
             "content": {
               "application/json": {
                 "schema": {
@@ -760,7 +760,7 @@
             }
           },
           "401": {
-            "description": "Unauthorized",
+            "description": "The access token is missing, invalid or expired.",
             "content": {
               "application/json": {
                 "schema": {
@@ -770,7 +770,7 @@
             }
           },
           "404": {
-            "description": "Not Found",
+            "description": "The donor organization named in the profile does not exist.",
             "content": {
               "application/json": {
                 "schema": {
@@ -780,7 +780,7 @@
             }
           },
           "500": {
-            "description": "Internal Server Error",
+            "description": "The request could not be processed because of an unexpected error.",
             "content": {
               "application/json": {
                 "schema": {
@@ -825,7 +825,7 @@
         ],
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "The contributor profile.",
             "content": {
               "application/json": {
                 "schema": {
@@ -835,7 +835,7 @@
             }
           },
           "400": {
-            "description": "Bad Request",
+            "description": "An identifier in the request is not valid.",
             "content": {
               "application/json": {
                 "schema": {
@@ -845,7 +845,7 @@
             }
           },
           "401": {
-            "description": "Unauthorized",
+            "description": "The access token is missing, invalid or expired.",
             "content": {
               "application/json": {
                 "schema": {
@@ -855,7 +855,7 @@
             }
           },
           "403": {
-            "description": "Forbidden",
+            "description": "The caller is neither this contributor nor an administrator.",
             "content": {
               "application/json": {
                 "schema": {
@@ -865,7 +865,7 @@
             }
           },
           "404": {
-            "description": "Not Found",
+            "description": "The contributor does not exist.",
             "content": {
               "application/json": {
                 "schema": {
@@ -875,7 +875,7 @@
             }
           },
           "500": {
-            "description": "Internal Server Error",
+            "description": "The request could not be processed because of an unexpected error.",
             "content": {
               "application/json": {
                 "schema": {
@@ -939,7 +939,7 @@
         },
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "The updated contributor profile.",
             "content": {
               "application/json": {
                 "schema": {
@@ -949,7 +949,7 @@
             }
           },
           "400": {
-            "description": "Bad Request",
+            "description": "An identifier or the request body is not valid.",
             "content": {
               "application/json": {
                 "schema": {
@@ -959,7 +959,7 @@
             }
           },
           "401": {
-            "description": "Unauthorized",
+            "description": "The access token is missing, invalid or expired.",
             "content": {
               "application/json": {
                 "schema": {
@@ -969,7 +969,7 @@
             }
           },
           "403": {
-            "description": "Forbidden",
+            "description": "The caller is neither this contributor nor an administrator.",
             "content": {
               "application/json": {
                 "schema": {
@@ -979,7 +979,7 @@
             }
           },
           "404": {
-            "description": "Not Found",
+            "description": "The contributor or the donor organization named in the profile does not exist.",
             "content": {
               "application/json": {
                 "schema": {
@@ -989,7 +989,7 @@
             }
           },
           "500": {
-            "description": "Internal Server Error",
+            "description": "The request could not be processed because of an unexpected error.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1035,7 +1035,7 @@
         ],
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "The affiliated contributors ordered by GitHub login; an empty list when there are none.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1045,7 +1045,7 @@
             }
           },
           "400": {
-            "description": "Bad Request",
+            "description": "An identifier in the request is not valid.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1055,7 +1055,7 @@
             }
           },
           "401": {
-            "description": "Unauthorized",
+            "description": "The access token is missing, invalid or expired.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1065,7 +1065,7 @@
             }
           },
           "403": {
-            "description": "Forbidden",
+            "description": "The caller is not an administrator.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1075,7 +1075,7 @@
             }
           },
           "404": {
-            "description": "Not Found",
+            "description": "The donor organization does not exist.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1085,7 +1085,7 @@
             }
           },
           "500": {
-            "description": "Internal Server Error",
+            "description": "The request could not be processed because of an unexpected error.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1151,7 +1151,7 @@
         },
         "responses": {
           "201": {
-            "description": "Created",
+            "description": "The donation was pledged and is returned in the Pending state.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1161,7 +1161,7 @@
             }
           },
           "400": {
-            "description": "Bad Request",
+            "description": "An identifier or the request body is not valid.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1171,7 +1171,7 @@
             }
           },
           "401": {
-            "description": "Unauthorized",
+            "description": "The access token is missing, invalid or expired.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1181,7 +1181,7 @@
             }
           },
           "404": {
-            "description": "Not Found",
+            "description": "The project or the donor organization does not exist.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1191,7 +1191,7 @@
             }
           },
           "409": {
-            "description": "Conflict",
+            "description": "The project is not active and cannot receive pledges.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1201,7 +1201,7 @@
             }
           },
           "500": {
-            "description": "Internal Server Error",
+            "description": "The request could not be processed because of an unexpected error.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1244,7 +1244,7 @@
         ],
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "The donations of the project, oldest first; an empty list when there are none.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1254,7 +1254,7 @@
             }
           },
           "400": {
-            "description": "Bad Request",
+            "description": "An identifier in the request is not valid.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1264,7 +1264,7 @@
             }
           },
           "404": {
-            "description": "Not Found",
+            "description": "The project does not exist or is not published.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1274,7 +1274,7 @@
             }
           },
           "500": {
-            "description": "Internal Server Error",
+            "description": "The request could not be processed because of an unexpected error.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1351,7 +1351,7 @@
         ],
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "The requested page of donations and the total count.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1361,7 +1361,7 @@
             }
           },
           "400": {
-            "description": "Bad Request",
+            "description": "An identifier or a paging value is not valid.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1371,7 +1371,7 @@
             }
           },
           "401": {
-            "description": "Unauthorized",
+            "description": "The access token is missing, invalid or expired.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1381,7 +1381,7 @@
             }
           },
           "403": {
-            "description": "Forbidden",
+            "description": "The caller is neither affiliated with the donor organization nor an administrator.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1391,7 +1391,7 @@
             }
           },
           "404": {
-            "description": "Not Found",
+            "description": "The donor organization does not exist.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1401,7 +1401,7 @@
             }
           },
           "500": {
-            "description": "Internal Server Error",
+            "description": "The request could not be processed because of an unexpected error.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1434,7 +1434,7 @@
         "operationId": "GetMyDonations",
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "The donations pledged by the caller, oldest first; an empty list when there are none.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1444,7 +1444,7 @@
             }
           },
           "400": {
-            "description": "Bad Request",
+            "description": "The token does not identify the user.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1454,7 +1454,7 @@
             }
           },
           "401": {
-            "description": "Unauthorized",
+            "description": "The access token is missing, invalid or expired.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1464,7 +1464,7 @@
             }
           },
           "500": {
-            "description": "Internal Server Error",
+            "description": "The request could not be processed because of an unexpected error.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1509,7 +1509,7 @@
         ],
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "The donation is now active.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1519,7 +1519,7 @@
             }
           },
           "400": {
-            "description": "Bad Request",
+            "description": "An identifier in the request is not valid, or the token does not identify the user.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1529,7 +1529,7 @@
             }
           },
           "401": {
-            "description": "Unauthorized",
+            "description": "The access token is missing, invalid or expired.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1539,7 +1539,7 @@
             }
           },
           "403": {
-            "description": "Forbidden",
+            "description": "The caller is neither the donor who pledged the donation nor an administrator.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1549,7 +1549,7 @@
             }
           },
           "404": {
-            "description": "Not Found",
+            "description": "The donation does not exist.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1559,7 +1559,7 @@
             }
           },
           "409": {
-            "description": "Conflict",
+            "description": "The donation is not in a state that allows this change, or it was changed by someone else; reload it and try again.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1569,7 +1569,7 @@
             }
           },
           "500": {
-            "description": "Internal Server Error",
+            "description": "The request could not be processed because of an unexpected error.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1614,7 +1614,7 @@
         ],
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "The donation is now cancelled.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1624,7 +1624,7 @@
             }
           },
           "400": {
-            "description": "Bad Request",
+            "description": "An identifier in the request is not valid, or the token does not identify the user.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1634,7 +1634,7 @@
             }
           },
           "401": {
-            "description": "Unauthorized",
+            "description": "The access token is missing, invalid or expired.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1644,7 +1644,7 @@
             }
           },
           "403": {
-            "description": "Forbidden",
+            "description": "The caller is neither the donor who pledged the donation nor an administrator.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1654,7 +1654,7 @@
             }
           },
           "404": {
-            "description": "Not Found",
+            "description": "The donation does not exist.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1664,7 +1664,7 @@
             }
           },
           "409": {
-            "description": "Conflict",
+            "description": "The donation is not in a state that allows this change, or it was changed by someone else; reload it and try again.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1674,7 +1674,7 @@
             }
           },
           "500": {
-            "description": "Internal Server Error",
+            "description": "The request could not be processed because of an unexpected error.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1728,7 +1728,7 @@
         },
         "responses": {
           "201": {
-            "description": "Created",
+            "description": "The donor organization was created and is returned.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1738,7 +1738,7 @@
             }
           },
           "400": {
-            "description": "Bad Request",
+            "description": "The request body is not valid.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1748,7 +1748,7 @@
             }
           },
           "409": {
-            "description": "Conflict",
+            "description": "A donor organization with this name already exists.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1813,7 +1813,7 @@
         ],
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "The requested page of donor organizations and the total count.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1823,7 +1823,7 @@
             }
           },
           "400": {
-            "description": "Bad Request",
+            "description": "A paging value is not valid.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1868,7 +1868,7 @@
         ],
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "The donor organization.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1878,7 +1878,7 @@
             }
           },
           "404": {
-            "description": "Not Found",
+            "description": "The donor organization does not exist.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1942,7 +1942,7 @@
         },
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "The updated donor organization.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1952,7 +1952,7 @@
             }
           },
           "400": {
-            "description": "Bad Request",
+            "description": "An identifier or the request body is not valid.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1962,7 +1962,7 @@
             }
           },
           "404": {
-            "description": "Not Found",
+            "description": "The donor organization does not exist.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1972,7 +1972,7 @@
             }
           },
           "409": {
-            "description": "Conflict",
+            "description": "Another donor organization already has this name.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2015,13 +2015,13 @@
         ],
         "responses": {
           "204": {
-            "description": "No Content",
+            "description": "The donor organization was deleted.",
             "content": {
               "application/json": { }
             }
           },
           "404": {
-            "description": "Not Found",
+            "description": "The donor organization does not exist.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2054,7 +2054,7 @@
         "operationId": "GetMyMaintainerProfile",
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "The maintainer profile of the caller.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2064,7 +2064,7 @@
             }
           },
           "400": {
-            "description": "Bad Request",
+            "description": "The token does not identify the user.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2074,7 +2074,7 @@
             }
           },
           "401": {
-            "description": "Unauthorized",
+            "description": "The access token is missing, invalid or expired.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2084,7 +2084,7 @@
             }
           },
           "404": {
-            "description": "Not Found",
+            "description": "The caller never published a project.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2094,7 +2094,7 @@
             }
           },
           "500": {
-            "description": "Internal Server Error",
+            "description": "The request could not be processed because of an unexpected error.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2127,17 +2127,17 @@
         "operationId": "GetMyProjects",
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "The projects of the caller with the hours donated to each, oldest first; an empty list when there are none.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/GetMyProjectsResult"
+                  "$ref": "#/components/schemas/GetMyProjectsResponse"
                 }
               }
             }
           },
           "400": {
-            "description": "Bad Request",
+            "description": "The token does not identify the user.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2147,7 +2147,7 @@
             }
           },
           "401": {
-            "description": "Unauthorized",
+            "description": "The access token is missing, invalid or expired.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2157,7 +2157,7 @@
             }
           },
           "500": {
-            "description": "Internal Server Error",
+            "description": "The request could not be processed because of an unexpected error.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2211,17 +2211,17 @@
         },
         "responses": {
           "201": {
-            "description": "Created",
+            "description": "The project was created in the draft state; its identifier is returned.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/RegisterProjectResult"
+                  "$ref": "#/components/schemas/RegisterProjectResponse"
                 }
               }
             }
           },
           "400": {
-            "description": "Bad Request",
+            "description": "The repository cannot be published, or the token lacks the user identity.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2231,7 +2231,7 @@
             }
           },
           "409": {
-            "description": "Conflict",
+            "description": "The repository is already published.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2241,7 +2241,7 @@
             }
           },
           "500": {
-            "description": "Internal Server Error",
+            "description": "The request could not be processed because of an unexpected error.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2334,7 +2334,7 @@
         ],
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "The requested page of active projects matching all criteria, and the total match count.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2344,7 +2344,7 @@
             }
           },
           "400": {
-            "description": "Bad Request",
+            "description": "A paging value or search criterion is not valid.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2354,7 +2354,7 @@
             }
           },
           "500": {
-            "description": "Internal Server Error",
+            "description": "The request could not be processed because of an unexpected error.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2399,7 +2399,7 @@
         ],
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "The project details.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2409,7 +2409,7 @@
             }
           },
           "404": {
-            "description": "Not Found",
+            "description": "The project does not exist or is not published.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2419,7 +2419,7 @@
             }
           },
           "500": {
-            "description": "Internal Server Error",
+            "description": "The request could not be processed because of an unexpected error.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2464,17 +2464,17 @@
         ],
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "The project in any lifecycle state, with the reviewer reason.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/GetMaintainedProjectResult"
+                  "$ref": "#/components/schemas/GetMaintainedProjectResponse"
                 }
               }
             }
           },
           "400": {
-            "description": "Bad Request",
+            "description": "An identifier in the request is not valid, or the token does not identify the user.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2484,7 +2484,7 @@
             }
           },
           "401": {
-            "description": "Unauthorized",
+            "description": "The access token is missing, invalid or expired.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2494,7 +2494,7 @@
             }
           },
           "403": {
-            "description": "Forbidden",
+            "description": "The caller is not the maintainer of the project.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2504,7 +2504,7 @@
             }
           },
           "404": {
-            "description": "Not Found",
+            "description": "The project does not exist.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2514,7 +2514,7 @@
             }
           },
           "500": {
-            "description": "Internal Server Error",
+            "description": "The request could not be processed because of an unexpected error.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2559,17 +2559,17 @@
         ],
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "The project is now pending approval.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProjectLifecycleResult"
+                  "$ref": "#/components/schemas/ProjectLifecycleResponse"
                 }
               }
             }
           },
           "400": {
-            "description": "Bad Request",
+            "description": "An identifier in the request is not valid, or the token does not identify the user.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2579,7 +2579,7 @@
             }
           },
           "401": {
-            "description": "Unauthorized",
+            "description": "The access token is missing, invalid or expired.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2589,7 +2589,7 @@
             }
           },
           "403": {
-            "description": "Forbidden",
+            "description": "The caller is not the maintainer of the project.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2599,7 +2599,7 @@
             }
           },
           "404": {
-            "description": "Not Found",
+            "description": "The project does not exist.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2609,7 +2609,7 @@
             }
           },
           "409": {
-            "description": "Conflict",
+            "description": "The project is not in a state that allows this transition.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2619,7 +2619,7 @@
             }
           },
           "500": {
-            "description": "Internal Server Error",
+            "description": "The request could not be processed because of an unexpected error.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2664,17 +2664,17 @@
         ],
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "The project is now active.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProjectLifecycleResult"
+                  "$ref": "#/components/schemas/ProjectLifecycleResponse"
                 }
               }
             }
           },
           "401": {
-            "description": "Unauthorized",
+            "description": "The access token is missing, invalid or expired.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2684,7 +2684,7 @@
             }
           },
           "403": {
-            "description": "Forbidden",
+            "description": "The caller is not an administrator.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2694,7 +2694,7 @@
             }
           },
           "404": {
-            "description": "Not Found",
+            "description": "The project does not exist.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2704,7 +2704,7 @@
             }
           },
           "409": {
-            "description": "Conflict",
+            "description": "The project is not in a state that allows this transition.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2714,7 +2714,7 @@
             }
           },
           "500": {
-            "description": "Internal Server Error",
+            "description": "The request could not be processed because of an unexpected error.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2780,17 +2780,17 @@
         },
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "The project is back in draft with the reviewer reason.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProjectLifecycleResult"
+                  "$ref": "#/components/schemas/ProjectLifecycleResponse"
                 }
               }
             }
           },
           "400": {
-            "description": "Bad Request",
+            "description": "The project identifier or the reason is not valid.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2800,7 +2800,7 @@
             }
           },
           "401": {
-            "description": "Unauthorized",
+            "description": "The access token is missing, invalid or expired.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2810,7 +2810,7 @@
             }
           },
           "403": {
-            "description": "Forbidden",
+            "description": "The caller is not an administrator.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2820,7 +2820,7 @@
             }
           },
           "404": {
-            "description": "Not Found",
+            "description": "The project does not exist.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2830,7 +2830,7 @@
             }
           },
           "409": {
-            "description": "Conflict",
+            "description": "The project is not in a state that allows this transition.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2840,7 +2840,7 @@
             }
           },
           "500": {
-            "description": "Internal Server Error",
+            "description": "The request could not be processed because of an unexpected error.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2885,17 +2885,17 @@
         ],
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "The project is now archived.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProjectLifecycleResult"
+                  "$ref": "#/components/schemas/ProjectLifecycleResponse"
                 }
               }
             }
           },
           "400": {
-            "description": "Bad Request",
+            "description": "An identifier in the request is not valid.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2905,7 +2905,7 @@
             }
           },
           "401": {
-            "description": "Unauthorized",
+            "description": "The access token is missing, invalid or expired.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2915,7 +2915,7 @@
             }
           },
           "403": {
-            "description": "Forbidden",
+            "description": "The caller is not the maintainer of the project.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2925,7 +2925,7 @@
             }
           },
           "404": {
-            "description": "Not Found",
+            "description": "The project does not exist.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2935,7 +2935,7 @@
             }
           },
           "409": {
-            "description": "Conflict",
+            "description": "The project is not in a state that allows this transition.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2945,7 +2945,7 @@
             }
           },
           "500": {
-            "description": "Internal Server Error",
+            "description": "The request could not be processed because of an unexpected error.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2990,17 +2990,17 @@
         ],
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "The project is active again.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProjectLifecycleResult"
+                  "$ref": "#/components/schemas/ProjectLifecycleResponse"
                 }
               }
             }
           },
           "400": {
-            "description": "Bad Request",
+            "description": "An identifier in the request is not valid.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3010,7 +3010,7 @@
             }
           },
           "401": {
-            "description": "Unauthorized",
+            "description": "The access token is missing, invalid or expired.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3020,7 +3020,7 @@
             }
           },
           "403": {
-            "description": "Forbidden",
+            "description": "The caller is not the maintainer of the project.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3030,7 +3030,7 @@
             }
           },
           "404": {
-            "description": "Not Found",
+            "description": "The project does not exist.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3040,7 +3040,7 @@
             }
           },
           "409": {
-            "description": "Conflict",
+            "description": "The project is not in a state that allows this transition.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3050,7 +3050,7 @@
             }
           },
           "500": {
-            "description": "Internal Server Error",
+            "description": "The request could not be processed because of an unexpected error.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3370,7 +3370,8 @@
           "Completed",
           "Cancelled"
         ],
-        "type": "string"
+        "type": "string",
+        "description": "Lifecycle state of a donation pledge. The numeric values are persisted, so existing values must not change."
       },
       "DonorOrganizationResponse": {
         "required": [
@@ -3624,24 +3625,27 @@
         },
         "description": "Represents a paginated list of donor organizations."
       },
-      "GetMaintainedProjectResult": {
+      "GetMaintainedProjectResponse": {
         "required": [
           "project"
         ],
         "type": "object",
         "properties": {
           "project": {
-            "$ref": "#/components/schemas/ProjectDto"
+            "description": "The project details.",
+            "$ref": "#/components/schemas/ProjectResponse"
           },
           "reviewerReason": {
             "type": [
               "null",
               "string"
-            ]
+            ],
+            "description": "The reason an administrator gave when requesting changes; empty when no changes were requested."
           }
-        }
+        },
+        "description": "Represents a project of the maintainer in any lifecycle state, with the reviewer reason."
       },
-      "GetMyProjectsResult": {
+      "GetMyProjectsResponse": {
         "required": [
           "projects"
         ],
@@ -3650,10 +3654,12 @@
           "projects": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/MaintainedProjectDto"
-            }
+              "$ref": "#/components/schemas/MaintainedProjectResponse"
+            },
+            "description": "The projects of the caller in any lifecycle state, oldest first; empty when there are none."
           }
-        }
+        },
+        "description": "Represents the projects published by the caller."
       },
       "GetProjectsResponse": {
         "required": [
@@ -3701,7 +3707,7 @@
         },
         "description": "Represents a paginated list of published projects."
       },
-      "MaintainedProjectDto": {
+      "MaintainedProjectResponse": {
         "required": [
           "project",
           "hoursDonated"
@@ -3709,7 +3715,8 @@
         "type": "object",
         "properties": {
           "project": {
-            "$ref": "#/components/schemas/ProjectDto"
+            "description": "The project details.",
+            "$ref": "#/components/schemas/ProjectResponse"
           },
           "hoursDonated": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
@@ -3717,9 +3724,11 @@
               "integer",
               "string"
             ],
+            "description": "The hours committed by Active and Completed donations to the project.",
             "format": "int32"
           }
-        }
+        },
+        "description": "Represents a project of the maintainer together with the hours donated to it."
       },
       "MaintainerProfileResponse": {
         "required": [
@@ -3815,116 +3824,7 @@
           }
         }
       },
-      "ProjectDto": {
-        "required": [
-          "id",
-          "name",
-          "fullName",
-          "githubUrl",
-          "topics",
-          "defaultBranch",
-          "ownerLogin",
-          "ownerAvatarUrl",
-          "createdAt",
-          "updatedAt",
-          "pushedAt",
-          "status"
-        ],
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "fullName": {
-            "type": "string"
-          },
-          "description": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "githubUrl": {
-            "type": "string"
-          },
-          "language": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "topics": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "stargazersCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
-            "format": "int32"
-          },
-          "forksCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
-            "format": "int32"
-          },
-          "openIssuesCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
-            "format": "int32"
-          },
-          "homepage": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "defaultBranch": {
-            "type": "string"
-          },
-          "license": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "ownerLogin": {
-            "type": "string"
-          },
-          "ownerAvatarUrl": {
-            "type": "string"
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "updatedAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "pushedAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "status": {
-            "$ref": "#/components/schemas/ProjectStatus"
-          }
-        }
-      },
-      "ProjectLifecycleResult": {
+      "ProjectLifecycleResponse": {
         "required": [
           "projectId",
           "status"
@@ -3932,18 +3832,22 @@
         "type": "object",
         "properties": {
           "projectId": {
-            "type": "string"
+            "type": "string",
+            "description": "The project identifier."
           },
           "status": {
+            "description": "The lifecycle state the project is in now.",
             "$ref": "#/components/schemas/ProjectStatus"
           },
           "reviewerReason": {
             "type": [
               "null",
               "string"
-            ]
+            ],
+            "description": "The reason an administrator gave when requesting changes; empty when no changes were requested."
           }
-        }
+        },
+        "description": "Represents the lifecycle state of a project after a transition."
       },
       "ProjectResponse": {
         "required": [
@@ -4081,7 +3985,8 @@
           "Draft",
           "PendingApproval"
         ],
-        "type": "string"
+        "type": "string",
+        "description": "Lifecycle state of a project. The numeric values are persisted, so existing values must not change:\n`Active` and `Archived` keep the values of the former `Published` and `Archived` states."
       },
       "ProjectSummaryResponse": {
         "required": [
@@ -4176,16 +4081,18 @@
         },
         "description": "Represents a request to register a project."
       },
-      "RegisterProjectResult": {
+      "RegisterProjectResponse": {
         "required": [
           "projectId"
         ],
         "type": "object",
         "properties": {
           "projectId": {
-            "type": "string"
+            "type": "string",
+            "description": "The identifier of the newly created project; it starts in the draft state."
           }
-        }
+        },
+        "description": "Represents the outcome of publishing a project."
       },
       "RequestProjectChangesRequest": {
         "required": [

@@ -34,6 +34,11 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         /// Returns the maintainer profile of the caller. The profile is created when the caller publishes their first project.
         /// </summary>
         /// <returns>The profile; not found when the caller never published a project.</returns>
+        /// <response code="200">The maintainer profile of the caller.</response>
+        /// <response code="400">The token does not identify the user.</response>
+        /// <response code="401">The access token is missing, invalid or expired.</response>
+        /// <response code="404">The caller never published a project.</response>
+        /// <response code="500">The request could not be processed because of an unexpected error.</response>
         [HttpGet("me", Name = nameof(GetMyMaintainerProfile))]
         [ProducesResponseType(typeof(MaintainerProfileResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
@@ -68,8 +73,12 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         /// Hours donated add up the hours committed by Active and Completed donations.
         /// </summary>
         /// <returns>The projects of the caller; an empty list when there are none.</returns>
+        /// <response code="200">The projects of the caller with the hours donated to each, oldest first; an empty list when there are none.</response>
+        /// <response code="400">The token does not identify the user.</response>
+        /// <response code="401">The access token is missing, invalid or expired.</response>
+        /// <response code="500">The request could not be processed because of an unexpected error.</response>
         [HttpGet("me/projects", Name = nameof(GetMyProjects))]
-        [ProducesResponseType(typeof(GetMyProjectsResult), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(GetMyProjectsResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
@@ -83,9 +92,19 @@ namespace TimeForCode.Donation.Api.V1.Controllers
 
             var result = await _mediator.Send(new GetMyProjectsQuery { UserId = userId });
 
-            return result.IsFailure
-                ? ToProblem(result.FailureStatusCode, "Cannot get projects", result.ErrorMessage)
-                : Ok(result.Value);
+            if (result.IsFailure)
+            {
+                return ToProblem(result.FailureStatusCode, "Cannot get projects", result.ErrorMessage);
+            }
+
+            return Ok(new GetMyProjectsResponse
+            {
+                Projects = result.Value.Projects.Select(p => new MaintainedProjectResponse
+                {
+                    Project = ProjectResponse.From(p.Project),
+                    HoursDonated = p.HoursDonated
+                }).ToList()
+            });
         }
 
         private bool TryGetUserId(out string userId)
