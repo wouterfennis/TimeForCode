@@ -38,6 +38,11 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         /// Returns the contributor profile of the caller.
         /// </summary>
         /// <returns>The profile; not found when the caller never became a contributor.</returns>
+        /// <response code="200">The contributor profile of the caller.</response>
+        /// <response code="400">The token does not identify the user.</response>
+        /// <response code="401">The access token is missing, invalid or expired.</response>
+        /// <response code="404">The caller never became a contributor.</response>
+        /// <response code="500">The request could not be processed because of an unexpected error.</response>
         [HttpGet("contributor/me", Name = nameof(GetMyContributorProfile))]
         [ProducesResponseType(typeof(ContributorProfileResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
@@ -65,6 +70,11 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         /// </summary>
         /// <param name="request">The role, skills, hours available and optional donor organization.</param>
         /// <returns>The updated profile.</returns>
+        /// <response code="200">The updated contributor profile of the caller.</response>
+        /// <response code="400">The request body is not valid, or the token does not identify the user.</response>
+        /// <response code="401">The access token is missing, invalid or expired.</response>
+        /// <response code="404">The donor organization named in the profile does not exist.</response>
+        /// <response code="500">The request could not be processed because of an unexpected error.</response>
         [HttpPut("contributor/me", Name = nameof(UpdateMyContributorProfile))]
         [ProducesResponseType(typeof(ContributorProfileResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
@@ -93,6 +103,12 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         /// </summary>
         /// <param name="id">The contributor identifier.</param>
         /// <returns>The profile.</returns>
+        /// <response code="200">The contributor profile.</response>
+        /// <response code="400">An identifier in the request is not valid.</response>
+        /// <response code="401">The access token is missing, invalid or expired.</response>
+        /// <response code="403">The caller is neither this contributor nor an administrator.</response>
+        /// <response code="404">The contributor does not exist.</response>
+        /// <response code="500">The request could not be processed because of an unexpected error.</response>
         [HttpGet("contributor/{id}", Name = nameof(GetContributorProfile))]
         [ProducesResponseType(typeof(ContributorProfileResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
@@ -127,6 +143,12 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         /// <param name="id">The contributor identifier.</param>
         /// <param name="request">The role, skills, hours available and optional donor organization.</param>
         /// <returns>The updated profile.</returns>
+        /// <response code="200">The updated contributor profile.</response>
+        /// <response code="400">An identifier or the request body is not valid.</response>
+        /// <response code="401">The access token is missing, invalid or expired.</response>
+        /// <response code="403">The caller is neither this contributor nor an administrator.</response>
+        /// <response code="404">The contributor or the donor organization named in the profile does not exist.</response>
+        /// <response code="500">The request could not be processed because of an unexpected error.</response>
         [HttpPut("contributor/{id}", Name = nameof(UpdateContributorProfile))]
         [ProducesResponseType(typeof(ContributorProfileResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
@@ -164,6 +186,12 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         /// </remarks>
         /// <param name="id">The donor organization identifier.</param>
         /// <returns>The affiliated contributors; an empty list when there are none.</returns>
+        /// <response code="200">The affiliated contributors ordered by GitHub login; an empty list when there are none.</response>
+        /// <response code="400">An identifier in the request is not valid.</response>
+        /// <response code="401">The access token is missing, invalid or expired.</response>
+        /// <response code="403">The caller is not an administrator.</response>
+        /// <response code="404">The donor organization does not exist.</response>
+        /// <response code="500">The request could not be processed because of an unexpected error.</response>
         [HttpGet("donororganization/{id}/contributor", Name = nameof(GetDonorOrganizationContributors))]
         [ProducesResponseType(typeof(GetDonorOrganizationContributorsResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]

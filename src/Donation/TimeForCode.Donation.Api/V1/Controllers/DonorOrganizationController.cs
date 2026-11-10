@@ -36,6 +36,9 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         /// </summary>
         /// <param name="request">The creation request.</param>
         /// <returns>The created donor organization.</returns>
+        /// <response code="201">The donor organization was created and is returned.</response>
+        /// <response code="400">The request body is not valid.</response>
+        /// <response code="409">A donor organization with this name already exists.</response>
         [HttpPost(Name = nameof(CreateDonorOrganization))]
         [ProducesResponseType(typeof(DonorOrganizationResponse), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
@@ -81,6 +84,8 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         /// <param name="pageNumber">The page number (1 to 10000, default 1).</param>
         /// <param name="pageSize">The number of items per page (1 to 100, default 20).</param>
         /// <returns>A paginated list of donor organizations.</returns>
+        /// <response code="200">The requested page of donor organizations and the total count.</response>
+        /// <response code="400">A paging value is not valid.</response>
         [HttpGet(Name = nameof(GetDonorOrganizations))]
         [ProducesResponseType(typeof(GetDonorOrganizationsResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
@@ -117,6 +122,8 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         /// </summary>
         /// <param name="id">The donor organization identifier.</param>
         /// <returns>Full donor organization details.</returns>
+        /// <response code="200">The donor organization.</response>
+        /// <response code="404">The donor organization does not exist.</response>
         [HttpGet("{id}", Name = nameof(GetDonorOrganizationById))]
         [ProducesResponseType(typeof(DonorOrganizationResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
@@ -144,6 +151,10 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         /// <param name="id">The donor organization identifier.</param>
         /// <param name="request">The update request.</param>
         /// <returns>The updated donor organization.</returns>
+        /// <response code="200">The updated donor organization.</response>
+        /// <response code="400">An identifier or the request body is not valid.</response>
+        /// <response code="404">The donor organization does not exist.</response>
+        /// <response code="409">Another donor organization already has this name.</response>
         [HttpPut("{id}", Name = nameof(UpdateDonorOrganization))]
         [ProducesResponseType(typeof(DonorOrganizationResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
@@ -189,6 +200,8 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         /// </summary>
         /// <param name="id">The donor organization identifier.</param>
         /// <returns>No content on success.</returns>
+        /// <response code="204">The donor organization was deleted.</response>
+        /// <response code="404">The donor organization does not exist.</response>
         [HttpDelete("{id}", Name = nameof(DeleteDonorOrganization))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]

@@ -39,6 +39,12 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         /// <param name="id">The project identifier.</param>
         /// <param name="request">The hours and the donor.</param>
         /// <returns>The created donation.</returns>
+        /// <response code="201">The donation was pledged and is returned in the Pending state.</response>
+        /// <response code="400">An identifier or the request body is not valid.</response>
+        /// <response code="401">The access token is missing, invalid or expired.</response>
+        /// <response code="404">The project or the donor organization does not exist.</response>
+        /// <response code="409">The project is not active and cannot receive pledges.</response>
+        /// <response code="500">The request could not be processed because of an unexpected error.</response>
         [HttpPost("project/{id}/donation", Name = nameof(PledgeDonation))]
         [ProducesResponseType(typeof(DonationResponse), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
@@ -76,6 +82,10 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         /// </summary>
         /// <param name="id">The project identifier.</param>
         /// <returns>The donations of the project; an empty list when there are none.</returns>
+        /// <response code="200">The donations of the project, oldest first; an empty list when there are none.</response>
+        /// <response code="400">An identifier in the request is not valid.</response>
+        /// <response code="404">The project does not exist or is not published.</response>
+        /// <response code="500">The request could not be processed because of an unexpected error.</response>
         [HttpGet("project/{id}/donation", Name = nameof(GetProjectDonations))]
         [ProducesResponseType(typeof(GetDonationsResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
@@ -102,6 +112,12 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         /// <param name="pageNumber">The page number (1 to 10000, default 1).</param>
         /// <param name="pageSize">The number of items per page (1 to 100, default 20).</param>
         /// <returns>The requested page of donations and the total count; an empty list when there are none.</returns>
+        /// <response code="200">The requested page of donations and the total count.</response>
+        /// <response code="400">An identifier or a paging value is not valid.</response>
+        /// <response code="401">The access token is missing, invalid or expired.</response>
+        /// <response code="403">The caller is neither affiliated with the donor organization nor an administrator.</response>
+        /// <response code="404">The donor organization does not exist.</response>
+        /// <response code="500">The request could not be processed because of an unexpected error.</response>
         [HttpGet("donororganization/{id}/donation", Name = nameof(GetDonorOrganizationDonations))]
         [ProducesResponseType(typeof(GetDonorOrganizationDonationsResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
@@ -144,6 +160,10 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         /// Returns the donations the caller pledged, oldest first, with their progress.
         /// </summary>
         /// <returns>The caller's donations; an empty list when there are none.</returns>
+        /// <response code="200">The donations pledged by the caller, oldest first; an empty list when there are none.</response>
+        /// <response code="400">The token does not identify the user.</response>
+        /// <response code="401">The access token is missing, invalid or expired.</response>
+        /// <response code="500">The request could not be processed because of an unexpected error.</response>
         [HttpGet("donation", Name = nameof(GetMyDonations))]
         [ProducesResponseType(typeof(GetDonationsResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
@@ -167,6 +187,13 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         /// </summary>
         /// <param name="id">The donation identifier.</param>
         /// <returns>The activated donation.</returns>
+        /// <response code="200">The donation is now active.</response>
+        /// <response code="400">An identifier in the request is not valid, or the token does not identify the user.</response>
+        /// <response code="401">The access token is missing, invalid or expired.</response>
+        /// <response code="403">The caller is neither the donor who pledged the donation nor an administrator.</response>
+        /// <response code="404">The donation does not exist.</response>
+        /// <response code="409">The donation is not in a state that allows this change, or it was changed by someone else; reload it and try again.</response>
+        /// <response code="500">The request could not be processed because of an unexpected error.</response>
         [HttpPost("donation/{id}/activate", Name = nameof(ActivateDonation))]
         [ProducesResponseType(typeof(DonationResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
@@ -200,6 +227,13 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         /// </summary>
         /// <param name="id">The donation identifier.</param>
         /// <returns>The cancelled donation.</returns>
+        /// <response code="200">The donation is now cancelled.</response>
+        /// <response code="400">An identifier in the request is not valid, or the token does not identify the user.</response>
+        /// <response code="401">The access token is missing, invalid or expired.</response>
+        /// <response code="403">The caller is neither the donor who pledged the donation nor an administrator.</response>
+        /// <response code="404">The donation does not exist.</response>
+        /// <response code="409">The donation is not in a state that allows this change, or it was changed by someone else; reload it and try again.</response>
+        /// <response code="500">The request could not be processed because of an unexpected error.</response>
         [HttpPost("donation/{id}/cancel", Name = nameof(CancelDonation))]
         [ProducesResponseType(typeof(DonationResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]

@@ -37,8 +37,12 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         /// </summary>
         /// <param name="request">The project registration request containing the GitHub repository URL.</param>
         /// <returns>A response indicating the result of the registration process.</returns>
+        /// <response code="201">The project was created in the draft state; its identifier is returned.</response>
+        /// <response code="400">The repository cannot be published, or the token lacks the user identity.</response>
+        /// <response code="409">The repository is already published.</response>
+        /// <response code="500">The request could not be processed because of an unexpected error.</response>
         [HttpPost(Name = nameof(RegisterProject))]
-        [ProducesResponseType(typeof(RegisterProjectResult), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(RegisterProjectResponse), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
@@ -88,7 +92,7 @@ namespace TimeForCode.Donation.Api.V1.Controllers
                 });
             }
 
-            return CreatedAtAction(nameof(GetProjectById), new { id = result.Value.ProjectId }, result.Value);
+            return CreatedAtAction(nameof(GetProjectById), new { id = result.Value.ProjectId }, new RegisterProjectResponse { ProjectId = result.Value.ProjectId });
         }
 
         /// <summary>
@@ -101,6 +105,9 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         /// <param name="language">Optional exact programming language, for example <c>C#</c>.</param>
         /// <param name="tag">Optional topic (case-insensitive); only projects with this topic are returned.</param>
         /// <returns>A paginated list of active projects matching all supplied criteria, with the total match count.</returns>
+        /// <response code="200">The requested page of active projects matching all criteria, and the total match count.</response>
+        /// <response code="400">A paging value or search criterion is not valid.</response>
+        /// <response code="500">The request could not be processed because of an unexpected error.</response>
         [HttpGet(Name = nameof(GetProjects))]
         [ProducesResponseType(typeof(GetProjectsResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
@@ -161,6 +168,9 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         /// </summary>
         /// <param name="id">The project identifier.</param>
         /// <returns>Full project details.</returns>
+        /// <response code="200">The project details.</response>
+        /// <response code="404">The project does not exist or is not published.</response>
+        /// <response code="500">The request could not be processed because of an unexpected error.</response>
         [HttpGet("{id}", Name = nameof(GetProjectById))]
         [ProducesResponseType(typeof(ProjectResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
@@ -180,31 +190,7 @@ namespace TimeForCode.Donation.Api.V1.Controllers
                 });
             }
 
-            var p = result.Value.Project;
-            var response = new ProjectResponse
-            {
-                Id = p.Id,
-                Name = p.Name,
-                FullName = p.FullName,
-                Description = p.Description,
-                GithubUrl = p.GithubUrl,
-                Language = p.Language,
-                Topics = p.Topics,
-                StargazersCount = p.StargazersCount,
-                ForksCount = p.ForksCount,
-                OpenIssuesCount = p.OpenIssuesCount,
-                Homepage = p.Homepage,
-                DefaultBranch = p.DefaultBranch,
-                License = p.License,
-                OwnerLogin = p.OwnerLogin,
-                OwnerAvatarUrl = p.OwnerAvatarUrl,
-                CreatedAt = p.CreatedAt,
-                UpdatedAt = p.UpdatedAt,
-                PushedAt = p.PushedAt,
-                Status = p.Status
-            };
-
-            return Ok(response);
+            return Ok(ProjectResponse.From(result.Value.Project));
         }
 
         /// <summary>
@@ -212,8 +198,14 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         /// </summary>
         /// <param name="id">The project identifier.</param>
         /// <returns>The project details, its lifecycle state and the reviewer reason when changes were requested.</returns>
+        /// <response code="200">The project in any lifecycle state, with the reviewer reason.</response>
+        /// <response code="400">An identifier in the request is not valid, or the token does not identify the user.</response>
+        /// <response code="401">The access token is missing, invalid or expired.</response>
+        /// <response code="403">The caller is not the maintainer of the project.</response>
+        /// <response code="404">The project does not exist.</response>
+        /// <response code="500">The request could not be processed because of an unexpected error.</response>
         [HttpGet("{id}/manage", Name = nameof(GetMaintainedProject))]
-        [ProducesResponseType(typeof(GetMaintainedProjectResult), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(GetMaintainedProjectResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
@@ -237,7 +229,11 @@ namespace TimeForCode.Donation.Api.V1.Controllers
 
             if (result.IsSuccess)
             {
-                return Ok(result.Value);
+                return Ok(new GetMaintainedProjectResponse
+                {
+                    Project = ProjectResponse.From(result.Value.Project),
+                    ReviewerReason = result.Value.ReviewerReason
+                });
             }
 
             if (result.FailureStatusCode == HttpStatusCode.Forbidden)
@@ -263,8 +259,15 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         /// </summary>
         /// <param name="id">The project identifier.</param>
         /// <returns>The new lifecycle state of the project.</returns>
+        /// <response code="200">The project is now pending approval.</response>
+        /// <response code="400">An identifier in the request is not valid, or the token does not identify the user.</response>
+        /// <response code="401">The access token is missing, invalid or expired.</response>
+        /// <response code="403">The caller is not the maintainer of the project.</response>
+        /// <response code="404">The project does not exist.</response>
+        /// <response code="409">The project is not in a state that allows this transition.</response>
+        /// <response code="500">The request could not be processed because of an unexpected error.</response>
         [HttpPost("{id}/submit", Name = nameof(SubmitProjectForReview))]
-        [ProducesResponseType(typeof(ProjectLifecycleResult), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProjectLifecycleResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
@@ -282,8 +285,14 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         /// </summary>
         /// <param name="id">The project identifier.</param>
         /// <returns>The new lifecycle state of the project.</returns>
+        /// <response code="200">The project is now active.</response>
+        /// <response code="401">The access token is missing, invalid or expired.</response>
+        /// <response code="403">The caller is not an administrator.</response>
+        /// <response code="404">The project does not exist.</response>
+        /// <response code="409">The project is not in a state that allows this transition.</response>
+        /// <response code="500">The request could not be processed because of an unexpected error.</response>
         [HttpPost("{id}/approve", Name = nameof(ApproveProject))]
-        [ProducesResponseType(typeof(ProjectLifecycleResult), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProjectLifecycleResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
@@ -302,8 +311,15 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         /// <param name="id">The project identifier.</param>
         /// <param name="request">The reason the changes are requested.</param>
         /// <returns>The new lifecycle state of the project including the reviewer reason.</returns>
+        /// <response code="200">The project is back in draft with the reviewer reason.</response>
+        /// <response code="400">The project identifier or the reason is not valid.</response>
+        /// <response code="401">The access token is missing, invalid or expired.</response>
+        /// <response code="403">The caller is not an administrator.</response>
+        /// <response code="404">The project does not exist.</response>
+        /// <response code="409">The project is not in a state that allows this transition.</response>
+        /// <response code="500">The request could not be processed because of an unexpected error.</response>
         [HttpPost("{id}/request-changes", Name = nameof(RequestProjectChanges))]
-        [ProducesResponseType(typeof(ProjectLifecycleResult), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProjectLifecycleResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
@@ -322,8 +338,15 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         /// </summary>
         /// <param name="id">The project identifier.</param>
         /// <returns>The new lifecycle state of the project.</returns>
+        /// <response code="200">The project is now archived.</response>
+        /// <response code="400">An identifier in the request is not valid.</response>
+        /// <response code="401">The access token is missing, invalid or expired.</response>
+        /// <response code="403">The caller is not the maintainer of the project.</response>
+        /// <response code="404">The project does not exist.</response>
+        /// <response code="409">The project is not in a state that allows this transition.</response>
+        /// <response code="500">The request could not be processed because of an unexpected error.</response>
         [HttpPost("{id}/archive", Name = nameof(ArchiveProject))]
-        [ProducesResponseType(typeof(ProjectLifecycleResult), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProjectLifecycleResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
@@ -341,8 +364,15 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         /// </summary>
         /// <param name="id">The project identifier.</param>
         /// <returns>The new lifecycle state of the project.</returns>
+        /// <response code="200">The project is active again.</response>
+        /// <response code="400">An identifier in the request is not valid.</response>
+        /// <response code="401">The access token is missing, invalid or expired.</response>
+        /// <response code="403">The caller is not the maintainer of the project.</response>
+        /// <response code="404">The project does not exist.</response>
+        /// <response code="409">The project is not in a state that allows this transition.</response>
+        /// <response code="500">The request could not be processed because of an unexpected error.</response>
         [HttpPost("{id}/reactivate", Name = nameof(ReactivateProject))]
-        [ProducesResponseType(typeof(ProjectLifecycleResult), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProjectLifecycleResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
@@ -376,7 +406,12 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         {
             if (result.IsSuccess)
             {
-                return Ok(result.Value);
+                return Ok(new ProjectLifecycleResponse
+                {
+                    ProjectId = result.Value.ProjectId,
+                    Status = result.Value.Status,
+                    ReviewerReason = result.Value.ReviewerReason
+                });
             }
 
             return result.FailureStatusCode switch

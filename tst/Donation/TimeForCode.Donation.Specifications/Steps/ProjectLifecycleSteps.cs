@@ -4,7 +4,6 @@ using Moq;
 using Reqnroll;
 using TimeForCode.Donation.Api.Client;
 using TimeForCode.Donation.Domain;
-using ProjectLifecycleResponse = TimeForCode.Donation.Api.Client.ProjectLifecycleResult;
 using ProjectStatus = TimeForCode.Donation.Values.ProjectStatus;
 
 namespace TimeForCode.Donation.Specifications.Steps
@@ -21,7 +20,7 @@ namespace TimeForCode.Donation.Specifications.Steps
         private readonly DonationFixtures _fixtures;
 
         private ProjectLifecycleResponse? _lifecycleResult;
-        private GetMaintainedProjectResult? _maintainedProject;
+        private GetMaintainedProjectResponse? _maintainedProject;
         private ProjectTransitionResult? _donationCheck;
 
         public ProjectLifecycleSteps(IDonationClient donationClient, DonationContext context, DonationFixtures fixtures)

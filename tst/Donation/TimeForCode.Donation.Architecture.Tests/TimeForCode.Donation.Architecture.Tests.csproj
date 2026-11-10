@@ -21,6 +21,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\..\src\Donation\TimeForCode.Donation.Api\TimeForCode.Donation.Api.csproj" />
     <ProjectReference Include="..\..\..\src\Donation\TimeForCode.Donation.Application\TimeForCode.Donation.Application.csproj" />
     <ProjectReference Include="..\..\..\src\Donation\TimeForCode.Donation.Domain\TimeForCode.Donation.Domain.csproj" />

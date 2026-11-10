@@ -1,3 +1,4 @@
+using TimeForCode.Donation.Commands;
 using TimeForCode.Donation.Values;
 
 namespace TimeForCode.Donation.Api.V1.Models
@@ -63,5 +64,31 @@ namespace TimeForCode.Donation.Api.V1.Models
 
         /// <summary>The publication status.</summary>
         public required ProjectStatus Status { get; init; }
+
+        internal static ProjectResponse From(ProjectDto p)
+        {
+            return new ProjectResponse
+            {
+                Id = p.Id,
+                Name = p.Name,
+                FullName = p.FullName,
+                Description = p.Description,
+                GithubUrl = p.GithubUrl,
+                Language = p.Language,
+                Topics = p.Topics,
+                StargazersCount = p.StargazersCount,
+                ForksCount = p.ForksCount,
+                OpenIssuesCount = p.OpenIssuesCount,
+                Homepage = p.Homepage,
+                DefaultBranch = p.DefaultBranch,
+                License = p.License,
+                OwnerLogin = p.OwnerLogin,
+                OwnerAvatarUrl = p.OwnerAvatarUrl,
+                CreatedAt = p.CreatedAt,
+                UpdatedAt = p.UpdatedAt,
+                PushedAt = p.PushedAt,
+                Status = p.Status
+            };
+        }
     }
 }

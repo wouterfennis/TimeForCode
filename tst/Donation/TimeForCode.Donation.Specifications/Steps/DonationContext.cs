@@ -29,7 +29,7 @@ namespace TimeForCode.Donation.Specifications.Steps
 
         public GetProjectsResponse? ProjectsResult { get; set; }
 
-        public GetMyProjectsResult? MyProjects { get; set; }
+        public GetMyProjectsResponse? MyProjects { get; set; }
 
         public GetContributionsResponse? ContributionsResult { get; set; }
 

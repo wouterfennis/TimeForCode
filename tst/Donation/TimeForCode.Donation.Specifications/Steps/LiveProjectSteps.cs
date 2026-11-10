@@ -113,7 +113,7 @@ namespace TimeForCode.Donation.Specifications.Steps
 
             await _context.CaptureAsync(async () =>
             {
-                RegisterProjectResult registerResult = await _donationClient.RegisterProjectAsync(new RegisterProjectRequest
+                RegisterProjectResponse registerResult = await _donationClient.RegisterProjectAsync(new RegisterProjectRequest
                 {
                     GithubRepositoryUrl = new Uri(repositoryUrl)
                 });
