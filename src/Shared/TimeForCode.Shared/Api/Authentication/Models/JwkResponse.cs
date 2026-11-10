@@ -9,7 +9,7 @@ namespace TimeForCode.Shared.Api.Authentication.Models
     public class JwkResponse
     {
         /// <summary>
-        /// Key type
+        /// Key type; <c>RSA</c>
         /// </summary>
         [JsonPropertyName("kty")]
         [Required]
@@ -37,14 +37,14 @@ namespace TimeForCode.Shared.Api.Authentication.Models
         public required string Algorithm { get; init; }
 
         /// <summary>
-        /// JWKS Uri
+        /// RSA public exponent, Base64url encoded
         /// </summary>
         [JsonPropertyName("e")]
         [Required]
         public required string Exponent { get; init; }
 
         /// <summary>
-        /// Modulus
+        /// RSA modulus, Base64url encoded
         /// </summary>
         [JsonPropertyName("n")]
         [Required]

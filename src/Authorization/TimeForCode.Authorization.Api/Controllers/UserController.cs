@@ -42,6 +42,9 @@ namespace TimeForCode.Authorization.Api.Controllers
         /// Get user information.
         /// </summary>
         /// <returns></returns>
+        /// <response code="200">The profile of the signed-in user.</response>
+        /// <response code="404">The signed-in user no longer exists.</response>
+        /// <response code="500">The profile could not be read because of an unexpected server error.</response>
         [HttpGet("")]
         [ProducesResponseType(typeof(UserResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
@@ -76,6 +79,11 @@ namespace TimeForCode.Authorization.Api.Controllers
         /// Delete the account of the user: removes the profile and refresh tokens and anonymises the contributions.
         /// </summary>
         /// <returns></returns>
+        /// <response code="204">The account and its data were deleted and the token cookies were removed.</response>
+        /// <response code="401">The caller is not signed in.</response>
+        /// <response code="404">The signed-in user no longer exists.</response>
+        /// <response code="500">The account could not be deleted because of an unexpected server error.</response>
+        /// <response code="502">The external identity provider could not be reached to revoke the grant.</response>
         [HttpDelete("", Name = "DeleteAccount")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -111,6 +119,10 @@ namespace TimeForCode.Authorization.Api.Controllers
         /// Get user's public repositories from GitHub.
         /// </summary>
         /// <returns></returns>
+        /// <response code="200">The GitHub repositories of the signed-in user.</response>
+        /// <response code="404">The signed-in user no longer exists.</response>
+        /// <response code="500">The repositories could not be read because of an unexpected server error.</response>
+        /// <response code="502">GitHub could not be reached or rejected the request.</response>
         [HttpGet("repositories")]
         [ProducesResponseType(typeof(IEnumerable<RepositoryResponse>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
@@ -157,6 +169,11 @@ namespace TimeForCode.Authorization.Api.Controllers
         /// <param name="owner">The GitHub username or organisation that owns the repository (at most 39 characters; letters, digits and single hyphens).</param>
         /// <param name="repo">The repository name (at most 100 characters; letters, digits, dots, underscores and hyphens).</param>
         /// <returns></returns>
+        /// <response code="200">The requested repository.</response>
+        /// <response code="400">The owner or repository name is not valid.</response>
+        /// <response code="404">The repository does not exist or the signed-in user cannot see it.</response>
+        /// <response code="500">The repository could not be read because of an unexpected server error.</response>
+        /// <response code="502">GitHub could not be reached or rejected the request.</response>
         [HttpGet("repositories/{owner}/{repo}")]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(RepositoryResponse), StatusCodes.Status200OK)]

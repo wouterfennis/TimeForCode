@@ -25,6 +25,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\Authorization\TimeForCode.Authorization.Api\TimeForCode.Authorization.Api.csproj" />
+    <ProjectReference Include="..\..\Shared\TimeForCode.Shared.ApiDocs\TimeForCode.Shared.ApiDocs.csproj" />
   </ItemGroup>
 
   <ItemGroup>

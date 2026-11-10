@@ -9,14 +9,14 @@ namespace TimeForCode.Shared.Api.Authentication.Models
     public class DiscoveryDocumentResponse
     {
         /// <summary>
-        /// Token issuer
+        /// The issuer URL that appears in the <c>iss</c> claim of issued tokens
         /// </summary>
         [JsonPropertyName("issuer")]
         [Required]
         public required string Issuer { get; init; }
 
         /// <summary>
-        /// JWKS Uri
+        /// Absolute URL of the JSON Web Key Set that holds the public keys for verifying token signatures
         /// </summary>
         [JsonPropertyName("jwks_uri")]
         [Required]

@@ -33,6 +33,8 @@ namespace TimeForCode.Authorization.Api.Controllers
         /// Returns the JSON Web Key Set (JWKS) for the application.
         /// </summary>
         /// <returns>A JSON object containing the JWKS.</returns>
+        /// <response code="200">The public keys that verify the signature of issued access tokens.</response>
+        /// <response code="500">The key set could not be produced because of an unexpected server error.</response>
         [HttpGet("jwks.json")]
         [ProducesResponseType(typeof(JwksResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]

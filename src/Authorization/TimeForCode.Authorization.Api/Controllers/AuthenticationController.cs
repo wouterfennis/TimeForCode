@@ -45,6 +45,9 @@ namespace TimeForCode.Authorization.Api.Controllers
         /// <returns> 
         /// The redirect URL towards an external identity provider.
         /// </returns>
+        /// <response code="302">Redirect to the external identity provider's sign-in page.</response>
+        /// <response code="400">The redirect uri is not on the list of allowed redirect uris or the request is not valid.</response>
+        /// <response code="500">The login could not be started because of an unexpected server error.</response>
         [HttpGet]
         [Route("login")]
         [EnableRateLimiting("auth")]
@@ -71,6 +74,10 @@ namespace TimeForCode.Authorization.Api.Controllers
         /// <returns> 
         /// The internal access token.
         /// </returns>
+        /// <response code="200">The access token and refresh token; both are also set as cookies.</response>
+        /// <response code="302">Sign-in succeeded and the browser is redirected to the redirect uri given at login; the tokens are set as cookies.</response>
+        /// <response code="400">The authorization code or state is missing, invalid or expired.</response>
+        /// <response code="500">The sign-in could not be completed because of an unexpected server error.</response>
         [HttpGet]
         [Route("callback")]
         [EnableRateLimiting("auth")]
@@ -102,6 +109,8 @@ namespace TimeForCode.Authorization.Api.Controllers
         /// Logout endpoint.
         /// </summary>
         /// <returns></returns>
+        /// <response code="204">The refresh token was revoked, if present, and the token cookies were removed.</response>
+        /// <response code="500">The logout failed because of an unexpected server error.</response>
         [HttpPost]
         [Route("logout")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -135,6 +144,9 @@ namespace TimeForCode.Authorization.Api.Controllers
         /// Refresh endpoint.
         /// </summary>
         /// <returns>New access token and refresh token</returns>
+        /// <response code="200">A new access token and refresh token; both are also set as cookies.</response>
+        /// <response code="400">The refresh token is missing, unknown or expired.</response>
+        /// <response code="500">The refresh failed because of an unexpected server error.</response>
         [HttpPost]
         [Route("refresh")]
         [EnableRateLimiting("auth")]

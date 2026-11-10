@@ -94,7 +94,7 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
-                /** @description Found */
+                /** @description Redirect to the external identity provider's sign-in page. */
                 302: {
                     headers: {
                         [name: string]: unknown;
@@ -103,7 +103,7 @@ export interface paths {
                         "application/json": unknown;
                     };
                 };
-                /** @description Bad Request */
+                /** @description The redirect uri is not on the list of allowed redirect uris or the request is not valid. */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -121,7 +121,7 @@ export interface paths {
                     };
                     content?: never;
                 };
-                /** @description Internal Server Error */
+                /** @description The login could not be started because of an unexpected server error. */
                 500: {
                     headers: {
                         [name: string]: unknown;
@@ -162,7 +162,7 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
-                /** @description OK */
+                /** @description The access token and refresh token; both are also set as cookies. */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -171,7 +171,7 @@ export interface paths {
                         "application/json": components["schemas"]["CallbackResponseModel"];
                     };
                 };
-                /** @description Found */
+                /** @description Sign-in succeeded and the browser is redirected to the redirect uri given at login; the tokens are set as cookies. */
                 302: {
                     headers: {
                         [name: string]: unknown;
@@ -180,7 +180,7 @@ export interface paths {
                         "application/json": unknown;
                     };
                 };
-                /** @description Bad Request */
+                /** @description The authorization code or state is missing, invalid or expired. */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -198,7 +198,7 @@ export interface paths {
                     };
                     content?: never;
                 };
-                /** @description Internal Server Error */
+                /** @description The sign-in could not be completed because of an unexpected server error. */
                 500: {
                     headers: {
                         [name: string]: unknown;
@@ -236,7 +236,7 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
-                /** @description No Content */
+                /** @description The refresh token was revoked, if present, and the token cookies were removed. */
                 204: {
                     headers: {
                         [name: string]: unknown;
@@ -245,7 +245,7 @@ export interface paths {
                         "application/json": unknown;
                     };
                 };
-                /** @description Internal Server Error */
+                /** @description The logout failed because of an unexpected server error. */
                 500: {
                     headers: {
                         [name: string]: unknown;
@@ -281,7 +281,7 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
-                /** @description OK */
+                /** @description A new access token and refresh token; both are also set as cookies. */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -290,7 +290,7 @@ export interface paths {
                         "application/json": components["schemas"]["CallbackResponseModel"];
                     };
                 };
-                /** @description Bad Request */
+                /** @description The refresh token is missing, unknown or expired. */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -308,7 +308,7 @@ export interface paths {
                     };
                     content?: never;
                 };
-                /** @description Internal Server Error */
+                /** @description The refresh failed because of an unexpected server error. */
                 500: {
                     headers: {
                         [name: string]: unknown;
@@ -342,7 +342,7 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
-                /** @description OK */
+                /** @description The public keys that verify the signature of issued access tokens. */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -351,7 +351,7 @@ export interface paths {
                         "application/json": components["schemas"]["JwksResponse"];
                     };
                 };
-                /** @description Internal Server Error */
+                /** @description The key set could not be produced because of an unexpected server error. */
                 500: {
                     headers: {
                         [name: string]: unknown;
@@ -387,7 +387,7 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
-                /** @description OK */
+                /** @description The OpenID Connect discovery document of this issuer. */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -396,7 +396,7 @@ export interface paths {
                         "application/json": components["schemas"]["DiscoveryDocumentResponse"];
                     };
                 };
-                /** @description Internal Server Error */
+                /** @description The document could not be produced because of an unexpected server error. */
                 500: {
                     headers: {
                         [name: string]: unknown;
@@ -432,7 +432,7 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
-                /** @description OK */
+                /** @description The profile of the signed-in user. */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -441,7 +441,7 @@ export interface paths {
                         "application/json": components["schemas"]["UserResponse"];
                     };
                 };
-                /** @description Not Found */
+                /** @description The signed-in user no longer exists. */
                 404: {
                     headers: {
                         [name: string]: unknown;
@@ -450,7 +450,7 @@ export interface paths {
                         "application/json": components["schemas"]["ProblemDetails"];
                     };
                 };
-                /** @description Internal Server Error */
+                /** @description The profile could not be read because of an unexpected server error. */
                 500: {
                     headers: {
                         [name: string]: unknown;
@@ -487,7 +487,7 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
-                /** @description OK */
+                /** @description The GitHub repositories of the signed-in user. */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -496,7 +496,7 @@ export interface paths {
                         "application/json": components["schemas"]["RepositoryResponse"][];
                     };
                 };
-                /** @description Not Found */
+                /** @description The signed-in user no longer exists. */
                 404: {
                     headers: {
                         [name: string]: unknown;
@@ -505,7 +505,7 @@ export interface paths {
                         "application/json": components["schemas"]["ProblemDetails"];
                     };
                 };
-                /** @description Internal Server Error */
+                /** @description The repositories could not be read because of an unexpected server error. */
                 500: {
                     headers: {
                         [name: string]: unknown;
@@ -514,7 +514,7 @@ export interface paths {
                         "application/json": unknown;
                     };
                 };
-                /** @description Bad Gateway */
+                /** @description GitHub could not be reached or rejected the request. */
                 502: {
                     headers: {
                         [name: string]: unknown;
@@ -555,7 +555,7 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
-                /** @description OK */
+                /** @description The requested repository. */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -564,7 +564,7 @@ export interface paths {
                         "application/json": components["schemas"]["RepositoryResponse"];
                     };
                 };
-                /** @description Bad Request */
+                /** @description The owner or repository name is not valid. */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -573,7 +573,7 @@ export interface paths {
                         "application/json": components["schemas"]["ProblemDetails"];
                     };
                 };
-                /** @description Not Found */
+                /** @description The repository does not exist or the signed-in user cannot see it. */
                 404: {
                     headers: {
                         [name: string]: unknown;
@@ -582,7 +582,7 @@ export interface paths {
                         "application/json": components["schemas"]["ProblemDetails"];
                     };
                 };
-                /** @description Internal Server Error */
+                /** @description The repository could not be read because of an unexpected server error. */
                 500: {
                     headers: {
                         [name: string]: unknown;
@@ -591,7 +591,7 @@ export interface paths {
                         "application/json": unknown;
                     };
                 };
-                /** @description Bad Gateway */
+                /** @description GitHub could not be reached or rejected the request. */
                 502: {
                     headers: {
                         [name: string]: unknown;
@@ -614,9 +614,14 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** @description A short-lived access token issued by the Authorization API. */
         AccessToken: {
+            /** @description The signed JSON Web Token (JWT, RS256); send it as a bearer token. Verify it with the keys of the JWKS endpoint. */
             token: string;
-            /** Format: date-time */
+            /**
+             * Format: date-time
+             * @description The moment the token expires, as an ISO 8601 date and time with offset; the token is invalid after this instant.
+             */
             expiresAfter: string;
         };
         /** @description Completes the admin passkey authentication ceremony. */
@@ -650,8 +655,11 @@ export interface components {
             /** @description Indicates whether this is the user's first login (new account was created). */
             isNewUser?: boolean;
         };
+        /** @description Response model for the discovery document endpoint. */
         DiscoveryDocumentResponse: {
+            /** @description The issuer URL that appears in the `iss` claim of issued tokens */
             issuer: string;
+            /** @description Absolute URL of the JSON Web Key Set that holds the public keys for verifying token signatures */
             jwks_uri: string;
         };
         /**
@@ -659,15 +667,24 @@ export interface components {
          * @enum {string}
          */
         IdentityProvider: "Github";
+        /** @description Response model for JSON Web Key (JWK). */
         JwkResponse: {
+            /** @description Key type; `RSA` */
             kty: string;
+            /** @description Key identifier, matched against the `kid` header of issued tokens */
             kid: string;
+            /** @description Intended use of the key (`sig` for signature verification) */
             use: string;
+            /** @description Signing algorithm the key is used with */
             alg: string;
+            /** @description RSA public exponent, Base64url encoded */
             e: string;
+            /** @description RSA modulus, Base64url encoded */
             n: string;
         };
+        /** @description Response model for JSON Web Key Set (JWKS). */
         JwksResponse: {
+            /** @description The published signing keys: the current key and, during rotation, the previous one */
             keys: components["schemas"]["JwkResponse"][];
         };
         ProblemDetails: {
@@ -678,9 +695,14 @@ export interface components {
             detail?: null | string;
             instance?: null | string;
         };
+        /** @description A long-lived refresh token that is exchanged for a new access token and a new refresh token. */
         RefreshToken: {
+            /** @description The opaque refresh token value; single use, it is replaced by a new one on every refresh. */
             token: string;
-            /** Format: date-time */
+            /**
+             * Format: date-time
+             * @description The moment the refresh token expires, as an ISO 8601 date and time with offset; the token is invalid after this instant.
+             */
             expiresAfter: string;
         };
         /** @description Repository response model */
@@ -736,6 +758,7 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
+        /** @description The bootstrap secret that proves the caller may claim the admin role. */
         requestBody: {
             content: {
                 "application/json": components["schemas"]["AdminRegistrationOptionsRequestModel"];
@@ -744,7 +767,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description OK */
+            /** @description The passkey creation options (JSON) for the browser; the ceremony state is set in a short-lived cookie. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -753,7 +776,7 @@ export interface operations {
                     "application/json": components["schemas"]["AdminPasskeyOptionsResponseModel"];
                 };
             };
-            /** @description Bad Request */
+            /** @description The bootstrap secret is wrong or an admin credential has already been claimed. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -780,6 +803,7 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
+        /** @description The bootstrap secret and the credential (JSON) created by the browser. */
         requestBody: {
             content: {
                 "application/json": components["schemas"]["AdminCompleteRegistrationRequestModel"];
@@ -788,7 +812,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description OK */
+            /** @description The admin credential was claimed; the access token and refresh token are returned and set as cookies. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -797,7 +821,7 @@ export interface operations {
                     "application/json": components["schemas"]["CallbackResponseModel"];
                 };
             };
-            /** @description Bad Request */
+            /** @description No registration ceremony is in progress or the registration was rejected. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -826,7 +850,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description OK */
+            /** @description The passkey request options (JSON) for the browser; the ceremony state is set in a short-lived cookie. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -835,7 +859,7 @@ export interface operations {
                     "application/json": components["schemas"]["AdminPasskeyOptionsResponseModel"];
                 };
             };
-            /** @description Bad Request */
+            /** @description No admin credential has been registered yet. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -862,6 +886,7 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
+        /** @description The assertion credential (JSON) produced by the browser. */
         requestBody: {
             content: {
                 "application/json": components["schemas"]["AdminCompleteAuthenticationRequestModel"];
@@ -870,7 +895,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description OK */
+            /** @description The admin signed in; the access token and refresh token are returned and set as cookies. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -879,7 +904,7 @@ export interface operations {
                     "application/json": components["schemas"]["CallbackResponseModel"];
                 };
             };
-            /** @description Bad Request */
+            /** @description No authentication ceremony is in progress or the assertion was rejected. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -908,7 +933,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description No Content */
+            /** @description The account and its data were deleted and the token cookies were removed. */
             204: {
                 headers: {
                     [name: string]: unknown;
@@ -917,7 +942,7 @@ export interface operations {
                     "application/json": unknown;
                 };
             };
-            /** @description Unauthorized */
+            /** @description The caller is not signed in. */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -926,7 +951,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Not Found */
+            /** @description The signed-in user no longer exists. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -935,7 +960,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Internal Server Error */
+            /** @description The account could not be deleted because of an unexpected server error. */
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -944,7 +969,7 @@ export interface operations {
                     "application/json": unknown;
                 };
             };
-            /** @description Bad Gateway */
+            /** @description The external identity provider could not be reached to revoke the grant. */
             502: {
                 headers: {
                     [name: string]: unknown;

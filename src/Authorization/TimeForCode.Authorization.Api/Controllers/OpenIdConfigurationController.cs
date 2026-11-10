@@ -33,6 +33,8 @@ namespace TimeForCode.Authorization.Api.Controllers
         /// Retrieves the OpenID Connect configuration document.
         /// </summary>
         /// <returns>A discovery document containing OpenID Connect configuration details.</returns>
+        /// <response code="200">The OpenID Connect discovery document of this issuer.</response>
+        /// <response code="500">The document could not be produced because of an unexpected server error.</response>
         [HttpGet("openid-configuration")]
         [ProducesResponseType(typeof(DiscoveryDocumentResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
