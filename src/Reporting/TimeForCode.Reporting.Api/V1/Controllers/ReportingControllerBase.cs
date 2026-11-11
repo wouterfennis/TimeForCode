@@ -38,7 +38,7 @@ namespace TimeForCode.Reporting.Api.V1.Controllers
             });
         }
 
-        /// <summary>Answers with the status the Donation context gave (401, 403, 404, 502); any other failure becomes a 400.</summary>
+        /// <summary>Answers with the status the failure carries (401, 403, 404, 409, 502); any other failure becomes a 400.</summary>
         protected ObjectResult ToProblem(HttpStatusCode? statusCode, string title, string detail)
         {
             var status = statusCode switch
@@ -46,6 +46,7 @@ namespace TimeForCode.Reporting.Api.V1.Controllers
                 HttpStatusCode.Unauthorized => StatusCodes.Status401Unauthorized,
                 HttpStatusCode.Forbidden => StatusCodes.Status403Forbidden,
                 HttpStatusCode.NotFound => StatusCodes.Status404NotFound,
+                HttpStatusCode.Conflict => StatusCodes.Status409Conflict,
                 HttpStatusCode.BadGateway => StatusCodes.Status502BadGateway,
                 _ => StatusCodes.Status400BadRequest
             };

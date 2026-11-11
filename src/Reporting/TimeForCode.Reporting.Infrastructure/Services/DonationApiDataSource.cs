@@ -113,6 +113,40 @@ namespace TimeForCode.Reporting.Infrastructure.Services
                 ProjectRefusal);
         }
 
+        public Task<Result<int>> GetOrganizationHoursAsync(string donorOrganizationId, CancellationToken cancellationToken)
+        {
+            return ReadAsync<int>(
+                null,
+                async client => (await client.GetDonorOrganizationHoursAsync(donorOrganizationId, cancellationToken)).HoursLogged,
+                "hours",
+                $"donor organization {donorOrganizationId}",
+                _ => "Donor organization not found.");
+        }
+
+        public Task<Result<int>> GetContributorHoursAsync(string contributorId, CancellationToken cancellationToken)
+        {
+            return ReadAsync<int>(
+                null,
+                async client => (await client.GetContributorHoursAsync(contributorId, cancellationToken)).TotalHours,
+                "hours",
+                $"contributor {contributorId}",
+                _ => "Contributor not found.");
+        }
+
+        public Task<Result<PlatformStatistics>> GetPlatformStatisticsAsync(CancellationToken cancellationToken)
+        {
+            return ReadAsync<PlatformStatistics>(
+                null,
+                async client =>
+                {
+                    PlatformStatisticsResponse response = await client.GetPlatformStatisticsAsync(cancellationToken);
+                    return new PlatformStatistics(response.TotalHoursLogged, response.OrganizationsSupported);
+                },
+                "statistics",
+                "the platform",
+                _ => "The Donation service could not provide the statistics.");
+        }
+
         /// <summary>
         /// Reads page after page until the total the Donation API reports is collected. An empty page ends the loop as well, so a
         /// total that shrinks while reading cannot keep it running. Paging is by offset, so rows added or deleted while reading can

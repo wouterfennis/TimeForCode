@@ -37,6 +37,7 @@ namespace TimeForCode.Reporting.Api
             services.AddJwtBearerAuthentication(_configuration);
 
             services.AddAuthorizationBuilder()
+                    .AddPolicy("ApiAdmin", policy => policy.RequireClaim(AuthenticationExtensions.ScopeClaim, "admin"))
                     .AddPolicy("ApiUserOrAdmin", policy => policy.RequireClaim(AuthenticationExtensions.ScopeClaim, "user", "admin"));
 
             services.AddApplicationLayer();

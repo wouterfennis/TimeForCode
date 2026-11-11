@@ -106,6 +106,17 @@ namespace TimeForCode.Donation.Infrastructure.Persistence.Database
             return (contributions, totalCount);
         }
 
+        public async Task<int> GetTotalHoursByContributorIdAsync(ObjectId contributorId, CancellationToken cancellationToken)
+        {
+            var totals = await _collection
+                .Aggregate()
+                .Match(ContributionDefinitions.ContributorsFilter([contributorId]))
+                .Group(c => c.ContributorId, g => new { Hours = g.Sum(c => c.Hours) })
+                .ToListAsync(cancellationToken);
+
+            return totals.Count == 0 ? 0 : totals[0].Hours;
+        }
+
         public async Task<IReadOnlyList<Contribution>> GetByProjectIdAsync(string projectId, CancellationToken cancellationToken)
         {
             if (!ObjectId.TryParse(projectId, out var objectId))

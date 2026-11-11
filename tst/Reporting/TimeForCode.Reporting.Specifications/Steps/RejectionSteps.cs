@@ -21,6 +21,12 @@ namespace TimeForCode.Reporting.Specifications.Steps
         [Then("The request is rejected as forbidden")]
         public void ThenTheRequestIsRejectedAsForbidden() => AssertRejectedWith(HttpStatusCode.Forbidden);
 
+        [Then("The request is rejected as invalid")]
+        public void ThenTheRequestIsRejectedAsInvalid() => AssertRejectedWith(HttpStatusCode.BadRequest);
+
+        [Then("The request is rejected as a conflict")]
+        public void ThenTheRequestIsRejectedAsAConflict() => AssertRejectedWith(HttpStatusCode.Conflict);
+
         [Then("The request is rejected as not found")]
         public void ThenTheRequestIsRejectedAsNotFound() => AssertRejectedWith(HttpStatusCode.NotFound);
 

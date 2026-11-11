@@ -24,6 +24,11 @@ namespace TimeForCode.Donation.Specifications.Mocking
             return Task.CompletedTask;
         }
 
+        public Task<int> GetTotalHoursByContributorIdAsync(ObjectId contributorId, CancellationToken cancellationToken)
+        {
+            return Task.FromResult(_contributions.Where(c => c.ContributorId == contributorId && !c.IsDeleted).Sum(c => c.Hours));
+        }
+
         public Task AnonymiseByContributorIdAsync(ObjectId contributorId, CancellationToken cancellationToken)
         {
             for (var i = 0; i < _contributions.Count; i++)

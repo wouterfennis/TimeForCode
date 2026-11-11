@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 using System.Diagnostics.CodeAnalysis;
 using TimeForCode.Reporting.Application.Interfaces;
 using TimeForCode.Reporting.Infrastructure.Options;
+using TimeForCode.Reporting.Infrastructure.Persistence;
 using TimeForCode.Reporting.Infrastructure.Services;
 
 namespace TimeForCode.Reporting.Infrastructure.Extensions
@@ -29,6 +30,11 @@ namespace TimeForCode.Reporting.Infrastructure.Extensions
                     client.BaseAddress = address;
                 });
             services.AddScoped<IDonationDataSource, DonationApiDataSource>();
+
+            services.Configure<DbOptions>(configuration.GetSection(DbOptions.SectionName));
+            services.AddSingleton<ReportingMongoContext>();
+            services.AddScoped<IBadgeTierRepository, BadgeTierRepository>();
+            services.AddScoped<IBadgeAwardRepository, BadgeAwardRepository>();
 
             return services;
         }

@@ -47,6 +47,8 @@ namespace TimeForCode.Reporting.Specifications.Steps
 
                 // A live stack holds its own data; the in-memory fake only absorbs the arrange steps that have no live meaning.
                 _objectContainer.RegisterInstanceAs(new InMemoryDonationDataSource());
+                _objectContainer.RegisterInstanceAs(new InMemoryBadgeTierRepository());
+                _objectContainer.RegisterInstanceAs(new InMemoryBadgeAwardRepository());
                 return;
             }
 
@@ -56,6 +58,8 @@ namespace TimeForCode.Reporting.Specifications.Steps
 
             _objectContainer.RegisterInstanceAs(factory.CreateDefaultClient(bearerTokenHandler));
             _objectContainer.RegisterInstanceAs(factory.Services.GetRequiredService<InMemoryDonationDataSource>());
+            _objectContainer.RegisterInstanceAs(factory.Services.GetRequiredService<InMemoryBadgeTierRepository>());
+            _objectContainer.RegisterInstanceAs(factory.Services.GetRequiredService<InMemoryBadgeAwardRepository>());
         }
 
         [AfterTestRun]

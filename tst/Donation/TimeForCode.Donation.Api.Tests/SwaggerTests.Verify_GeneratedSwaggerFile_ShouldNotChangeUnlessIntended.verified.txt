@@ -3073,6 +3073,199 @@
           }
         }
       }
+    },
+    "/api/v1/contributor/{id}/hours": {
+      "get": {
+        "tags": [
+          "PublicStatistics"
+        ],
+        "summary": "Returns the total hours a contributor logged (anonymous). Only the total is exposed.",
+        "operationId": "GetContributorHours",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The contributor identifier.",
+            "required": true,
+            "schema": {
+              "pattern": "^[0-9a-fA-F]{24}$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The total hours of the contributor.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContributorHoursResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The identifier is not valid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The contributor does not exist.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "The request could not be processed because of an unexpected error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. Retry after the number of seconds given in the Retry-After header.",
+            "headers": {
+              "Retry-After": {
+                "description": "Number of seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/donororganization/{id}/hours": {
+      "get": {
+        "tags": [
+          "PublicStatistics"
+        ],
+        "summary": "Returns the hours logged towards the donations of a donor organization (anonymous). Only the total is exposed.",
+        "operationId": "GetDonorOrganizationHours",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The donor organization identifier.",
+            "required": true,
+            "schema": {
+              "pattern": "^[0-9a-fA-F]{24}$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The hours logged towards the donations of the organization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DonorOrganizationHoursResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The identifier is not valid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The donor organization does not exist.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "The request could not be processed because of an unexpected error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. Retry after the number of seconds given in the Retry-After header.",
+            "headers": {
+              "Retry-After": {
+                "description": "Number of seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/statistics": {
+      "get": {
+        "tags": [
+          "PublicStatistics"
+        ],
+        "summary": "Returns the platform-wide totals (anonymous): hours logged and donor organizations supported.",
+        "operationId": "GetPlatformStatistics",
+        "responses": {
+          "200": {
+            "description": "The platform-wide totals; zeros when no hours were logged.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformStatisticsResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "The request could not be processed because of an unexpected error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. Retry after the number of seconds given in the Retry-After header.",
+            "headers": {
+              "Retry-After": {
+                "description": "Number of seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -3160,6 +3353,24 @@
           }
         },
         "description": "Represents a time contribution logged on a project."
+      },
+      "ContributorHoursResponse": {
+        "required": [
+          "totalHours"
+        ],
+        "type": "object",
+        "properties": {
+          "totalHours": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The total hours of all non-deleted contributions of the contributor.",
+            "format": "int32"
+          }
+        },
+        "description": "The total hours a contributor logged."
       },
       "ContributorProfileResponse": {
         "required": [
@@ -3372,6 +3583,24 @@
         ],
         "type": "string",
         "description": "Lifecycle state of a donation pledge. The numeric values are persisted, so existing values must not change."
+      },
+      "DonorOrganizationHoursResponse": {
+        "required": [
+          "hoursLogged"
+        ],
+        "type": "object",
+        "properties": {
+          "hoursLogged": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The hours logged on the Active and Completed donations of the organization.",
+            "format": "int32"
+          }
+        },
+        "description": "The hours logged towards the donations of a donor organization."
       },
       "DonorOrganizationResponse": {
         "required": [
@@ -3752,6 +3981,34 @@
           }
         },
         "description": "Represents the profile of a maintainer, the owner of one or more projects."
+      },
+      "PlatformStatisticsResponse": {
+        "required": [
+          "totalHoursLogged",
+          "organizationsSupported"
+        ],
+        "type": "object",
+        "properties": {
+          "totalHoursLogged": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The hours logged on all Active and Completed donations of donor organizations.",
+            "format": "int64"
+          },
+          "organizationsSupported": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The number of donor organizations with an Active or Completed donation.",
+            "format": "int32"
+          }
+        },
+        "description": "Platform-wide totals; no personal data."
       },
       "PledgeDonationRequest": {
         "required": [
@@ -4236,6 +4493,9 @@
     },
     {
       "name": "Project"
+    },
+    {
+      "name": "PublicStatistics"
     }
   ]
 }
