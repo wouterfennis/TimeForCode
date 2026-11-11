@@ -1,0 +1,71 @@
+{
+  "info": {
+    "name": "TimeForCode local (Reporting, badges)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "authUrl", "value": "http://localhost:8080" },
+    { "key": "donationUrl", "value": "http://localhost:8082" },
+    { "key": "reportingUrl", "value": "http://localhost:8083" },
+    { "key": "adminSecret", "value": "" },
+    { "key": "token", "value": "" },
+    { "key": "orgId", "value": "" },
+    { "key": "projectId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "1. Admin token (test-only)",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "const t = pm.response.json().token;",
+        "if (t) { pm.collectionVariables.set('token', t); }"
+      ] } }],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{ \"secret\": \"{{adminSecret}}\" }" },
+        "url": "{{authUrl}}/api/v1/test-admin-access/token"
+      }
+    },
+    {
+      "name": "2. Statistics (anonymous)",
+      "request": { "method": "GET", "url": "{{reportingUrl}}/api/v1/reporting/statistics" }
+    },
+    {
+      "name": "3. Organization badges (anonymous)",
+      "request": { "method": "GET", "url": "{{reportingUrl}}/api/v1/reporting/donororganization/{{orgId}}/badges" }
+    },
+    {
+      "name": "4. Organization impact report",
+      "request": {
+        "method": "GET",
+        "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+        "url": "{{reportingUrl}}/api/v1/reporting/donororganization/{{orgId}}/impact-report"
+      }
+    },
+    {
+      "name": "5. Contribution history (CSV)",
+      "request": {
+        "method": "GET",
+        "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+        "url": {
+          "raw": "{{reportingUrl}}/api/v1/reporting/donororganization/{{orgId}}/contribution-history?format=Csv",
+          "host": ["{{reportingUrl}}"],
+          "path": ["api", "v1", "reporting", "donororganization", "{{orgId}}", "contribution-history"],
+          "query": [{ "key": "format", "value": "Csv" }]
+        }
+      }
+    },
+    {
+      "name": "6. Project public summary (anonymous)",
+      "request": { "method": "GET", "url": "{{reportingUrl}}/api/v1/reporting/project/{{projectId}}/public-summary" }
+    },
+    {
+      "name": "7. Project donation report",
+      "request": {
+        "method": "GET",
+        "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+        "url": "{{reportingUrl}}/api/v1/reporting/project/{{projectId}}/donation-report"
+      }
+    }
+  ]
+}

@@ -1,0 +1,2899 @@
+{
+  "info": {
+    "name": "TimeForCode local (all APIs)",
+    "description": "Every endpoint of the Authorization, Donation and Reporting APIs, converted from their OpenAPI documents by scripts/generate-postman-collection.ps1. Fill the collection variables, run the Setup request for an admin token, then the rest. Requests inherit bearer authentication with `{{token}}`; anonymous endpoints ignore it.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "adminSecret",
+      "value": ""
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "authorizationUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "githubOwner",
+      "value": ""
+    },
+    {
+      "key": "githubRepository",
+      "value": ""
+    },
+    {
+      "key": "donationUrl",
+      "value": "http://localhost:8082"
+    },
+    {
+      "key": "projectId",
+      "value": ""
+    },
+    {
+      "key": "organizationId",
+      "value": ""
+    },
+    {
+      "key": "contributionId",
+      "value": ""
+    },
+    {
+      "key": "userId",
+      "value": ""
+    },
+    {
+      "key": "contributorId",
+      "value": ""
+    },
+    {
+      "key": "donationId",
+      "value": ""
+    },
+    {
+      "key": "reportingUrl",
+      "value": "http://localhost:8083"
+    }
+  ],
+  "item": [
+    {
+      "name": "Setup",
+      "item": [
+        {
+          "name": "POST /api/v1/test-admin-access/token (test-only)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const token = pm.response.json().token;",
+                  "if (token) { pm.collectionVariables.set('token', token); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"secret\": \"{{adminSecret}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{authorizationUrl}}/api/v1/test-admin-access/token",
+              "host": [
+                "{{authorizationUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "test-admin-access",
+                "token"
+              ]
+            },
+            "description": "Not part of the OpenAPI documents: the endpoint is hidden and only answers when the stack was started with TEST_ADMIN_ACCESS_SECRET (ADR-017). Stores the admin access token in the collection variable `token`."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Authorization API",
+      "item": [
+        {
+          "name": "AdminAuthentication",
+          "item": [
+            {
+              "name": "POST /api/v1/admin-authentication/registration/options",
+              "request": {
+                "description": {},
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin-authentication",
+                    "registration",
+                    "options"
+                  ],
+                  "host": [
+                    "{{authorizationUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"bootstrapSecret\": \"<string>\"\n}",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              }
+            },
+            {
+              "name": "POST /api/v1/admin-authentication/registration",
+              "request": {
+                "description": {},
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin-authentication",
+                    "registration"
+                  ],
+                  "host": [
+                    "{{authorizationUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"bootstrapSecret\": \"<string>\",\n  \"credentialJson\": \"<string>\"\n}",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              }
+            },
+            {
+              "name": "GET /api/v1/admin-authentication/authentication/options",
+              "request": {
+                "description": {},
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin-authentication",
+                    "authentication",
+                    "options"
+                  ],
+                  "host": [
+                    "{{authorizationUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "event": [],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              }
+            },
+            {
+              "name": "POST /api/v1/admin-authentication/authentication",
+              "request": {
+                "description": {},
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin-authentication",
+                    "authentication"
+                  ],
+                  "host": [
+                    "{{authorizationUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"credentialJson\": \"<string>\"\n}",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              }
+            }
+          ]
+        },
+        {
+          "name": "Authentication",
+          "item": [
+            {
+              "name": "GET /api/v1/Authentication/login",
+              "request": {
+                "description": {},
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "Authentication",
+                    "login"
+                  ],
+                  "host": [
+                    "{{authorizationUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "Gets or sets the identity provider for the login request. (This can only be one of Github)",
+                        "type": "text/plain"
+                      },
+                      "key": "IdentityProvider",
+                      "value": "Github"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "Gets or sets the redirect URI for the login request.",
+                        "type": "text/plain"
+                      },
+                      "key": "RedirectUri",
+                      "value": "<uri>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "event": [],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              }
+            },
+            {
+              "name": "GET /api/v1/Authentication/callback",
+              "request": {
+                "description": {},
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "Authentication",
+                    "callback"
+                  ],
+                  "host": [
+                    "{{authorizationUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "Gets or sets the authorization code.",
+                        "type": "text/plain"
+                      },
+                      "key": "Code",
+                      "value": "<string>"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "Gets or sets the state parameter.",
+                        "type": "text/plain"
+                      },
+                      "key": "State",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "event": [],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              }
+            },
+            {
+              "name": "POST /api/v1/Authentication/logout",
+              "request": {
+                "description": {},
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "Authentication",
+                    "logout"
+                  ],
+                  "host": [
+                    "{{authorizationUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "method": "POST",
+                "body": {}
+              },
+              "event": [],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              }
+            },
+            {
+              "name": "POST /api/v1/Authentication/refresh",
+              "request": {
+                "description": {},
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "Authentication",
+                    "refresh"
+                  ],
+                  "host": [
+                    "{{authorizationUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {}
+              },
+              "event": [],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              }
+            }
+          ]
+        },
+        {
+          "name": "Jwks",
+          "item": [
+            {
+              "name": "GET /.well-known/jwks.json",
+              "request": {
+                "description": {},
+                "url": {
+                  "path": [
+                    ".well-known",
+                    "jwks.json"
+                  ],
+                  "host": [
+                    "{{authorizationUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "event": [],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              }
+            }
+          ]
+        },
+        {
+          "name": "OpenIdConfiguration",
+          "item": [
+            {
+              "name": "GET /.well-known/openid-configuration",
+              "request": {
+                "description": {},
+                "url": {
+                  "path": [
+                    ".well-known",
+                    "openid-configuration"
+                  ],
+                  "host": [
+                    "{{authorizationUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "event": [],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              }
+            }
+          ]
+        },
+        {
+          "name": "User",
+          "item": [
+            {
+              "name": "GET /api/v1/User",
+              "request": {
+                "description": {},
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "User"
+                  ],
+                  "host": [
+                    "{{authorizationUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "event": [],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              }
+            },
+            {
+              "name": "DELETE /api/v1/User",
+              "request": {
+                "description": {},
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "User"
+                  ],
+                  "host": [
+                    "{{authorizationUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {}
+              },
+              "event": [],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              }
+            },
+            {
+              "name": "GET /api/v1/User/repositories",
+              "request": {
+                "description": {},
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "User",
+                    "repositories"
+                  ],
+                  "host": [
+                    "{{authorizationUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "event": [],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              }
+            },
+            {
+              "name": "GET /api/v1/User/repositories/:owner/:repo",
+              "request": {
+                "description": {},
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "User",
+                    "repositories",
+                    ":owner",
+                    ":repo"
+                  ],
+                  "host": [
+                    "{{authorizationUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "type": "any",
+                      "value": "{{githubOwner}}",
+                      "key": "owner",
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) The GitHub username or organisation that owns the repository (at most 39 characters; letters, digits and single hyphens).",
+                        "type": "text/plain"
+                      }
+                    },
+                    {
+                      "type": "any",
+                      "value": "{{githubRepository}}",
+                      "key": "repo",
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) The repository name (at most 100 characters; letters, digits, dots, underscores and hyphens).",
+                        "type": "text/plain"
+                      }
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "event": [],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Donation API",
+      "item": [
+        {
+          "name": "Contribution",
+          "item": [
+            {
+              "name": "POST /api/v1/project/:id/contribution",
+              "request": {
+                "description": {},
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "project",
+                    ":id",
+                    "contribution"
+                  ],
+                  "host": [
+                    "{{donationUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "type": "any",
+                      "value": "{{projectId}}",
+                      "key": "id",
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) The project identifier.",
+                        "type": "text/plain"
+                      }
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"hours\": 1,\n  \"githubReference\": \"<null,string-uri>\"\n}",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              }
+            },
+            {
+              "name": "GET /api/v1/project/:id/contribution",
+              "request": {
+                "description": {},
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "project",
+                    ":id",
+                    "contribution"
+                  ],
+                  "host": [
+                    "{{donationUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "type": "any",
+                      "value": "{{projectId}}",
+                      "key": "id",
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) The project identifier.",
+                        "type": "text/plain"
+                      }
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "event": [],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              }
+            },
+            {
+              "name": "GET /api/v1/donororganization/:id/contribution",
+              "request": {
+                "description": {
+                  "content": "Contributions are attributed by the contributor's current affiliation, so a contributor who moves to another organization\r\ntakes their history along. Deleted contributions are left out.",
+                  "type": "text/plain"
+                },
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "donororganization",
+                    ":id",
+                    "contribution"
+                  ],
+                  "host": [
+                    "{{donationUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "The page number (1 to 10000, default 1).",
+                        "type": "text/plain"
+                      },
+                      "key": "pageNumber",
+                      "value": "1"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "The number of items per page (1 to 100, default 20).",
+                        "type": "text/plain"
+                      },
+                      "key": "pageSize",
+                      "value": "20"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "type": "any",
+                      "value": "{{organizationId}}",
+                      "key": "id",
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) The donor organization identifier.",
+                        "type": "text/plain"
+                      }
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "event": [],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              }
+            },
+            {
+              "name": "PUT /api/v1/project/:id/contribution/:contributionId",
+              "request": {
+                "description": {},
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "project",
+                    ":id",
+                    "contribution",
+                    ":contributionId"
+                  ],
+                  "host": [
+                    "{{donationUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "type": "any",
+                      "value": "{{projectId}}",
+                      "key": "id",
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) The project identifier.",
+                        "type": "text/plain"
+                      }
+                    },
+                    {
+                      "type": "any",
+                      "value": "{{contributionId}}",
+                      "key": "contributionId",
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) The contribution identifier.",
+                        "type": "text/plain"
+                      }
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PUT",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"hours\": 1,\n  \"githubReference\": \"<null,string-uri>\"\n}",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              }
+            },
+            {
+              "name": "DELETE /api/v1/project/:id/contribution/:contributionId",
+              "request": {
+                "description": {},
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "project",
+                    ":id",
+                    "contribution",
+                    ":contributionId"
+                  ],
+                  "host": [
+                    "{{donationUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "type": "any",
+                      "value": "{{projectId}}",
+                      "key": "id",
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) The project identifier.",
+                        "type": "text/plain"
+                      }
+                    },
+                    {
+                      "type": "any",
+                      "value": "{{contributionId}}",
+                      "key": "contributionId",
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) The contribution identifier.",
+                        "type": "text/plain"
+                      }
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {}
+              },
+              "event": [],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              }
+            }
+          ]
+        },
+        {
+          "name": "Contributor",
+          "item": [
+            {
+              "name": "POST /api/v1/contributor/:userId/anonymise",
+              "request": {
+                "description": {},
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "contributor",
+                    ":userId",
+                    "anonymise"
+                  ],
+                  "host": [
+                    "{{donationUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "type": "any",
+                      "value": "{{userId}}",
+                      "key": "userId",
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) The platform user identifier of the deleted account.",
+                        "type": "text/plain"
+                      }
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {}
+              },
+              "event": [],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              }
+            }
+          ]
+        },
+        {
+          "name": "ContributorProfile",
+          "item": [
+            {
+              "name": "GET /api/v1/contributor/me",
+              "request": {
+                "description": {},
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "contributor",
+                    "me"
+                  ],
+                  "host": [
+                    "{{donationUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "event": [],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              }
+            },
+            {
+              "name": "PUT /api/v1/contributor/me",
+              "request": {
+                "description": {},
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "contributor",
+                    "me"
+                  ],
+                  "host": [
+                    "{{donationUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PUT",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"role\": \"<null,string>\",\n  \"skills\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"hoursAvailable\": 1,\n  \"donorOrganizationId\": \"8Fd798FDf2BEf15eBBFAFA60\"\n}",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              }
+            },
+            {
+              "name": "GET /api/v1/contributor/:id",
+              "request": {
+                "description": {},
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "contributor",
+                    ":id"
+                  ],
+                  "host": [
+                    "{{donationUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "type": "any",
+                      "value": "{{contributorId}}",
+                      "key": "id",
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) The contributor identifier.",
+                        "type": "text/plain"
+                      }
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "event": [],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              }
+            },
+            {
+              "name": "PUT /api/v1/contributor/:id",
+              "request": {
+                "description": {},
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "contributor",
+                    ":id"
+                  ],
+                  "host": [
+                    "{{donationUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "type": "any",
+                      "value": "{{contributorId}}",
+                      "key": "id",
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) The contributor identifier.",
+                        "type": "text/plain"
+                      }
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PUT",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"role\": \"<null,string>\",\n  \"skills\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"hoursAvailable\": 1,\n  \"donorOrganizationId\": \"8Fd798FDf2BEf15eBBFAFA60\"\n}",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              }
+            },
+            {
+              "name": "GET /api/v1/donororganization/:id/contributor",
+              "request": {
+                "description": {
+                  "content": "The list is not paged and holds at most 1000 contributors; there is no indication when more exist.",
+                  "type": "text/plain"
+                },
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "donororganization",
+                    ":id",
+                    "contributor"
+                  ],
+                  "host": [
+                    "{{donationUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "type": "any",
+                      "value": "{{organizationId}}",
+                      "key": "id",
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) The donor organization identifier.",
+                        "type": "text/plain"
+                      }
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "event": [],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              }
+            }
+          ]
+        },
+        {
+          "name": "Donation",
+          "item": [
+            {
+              "name": "POST /api/v1/project/:id/donation",
+              "request": {
+                "description": {},
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "project",
+                    ":id",
+                    "donation"
+                  ],
+                  "host": [
+                    "{{donationUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "type": "any",
+                      "value": "{{projectId}}",
+                      "key": "id",
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) The project identifier.",
+                        "type": "text/plain"
+                      }
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"hours\": 1,\n  \"asIndividual\": \"<boolean>\",\n  \"donorOrganizationId\": \"73F7bfDaAdb853ed76E18Df1\"\n}",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              }
+            },
+            {
+              "name": "GET /api/v1/project/:id/donation",
+              "request": {
+                "description": {},
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "project",
+                    ":id",
+                    "donation"
+                  ],
+                  "host": [
+                    "{{donationUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "type": "any",
+                      "value": "{{projectId}}",
+                      "key": "id",
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) The project identifier.",
+                        "type": "text/plain"
+                      }
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "event": [],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              }
+            },
+            {
+              "name": "GET /api/v1/donororganization/:id/donation",
+              "request": {
+                "description": {},
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "donororganization",
+                    ":id",
+                    "donation"
+                  ],
+                  "host": [
+                    "{{donationUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "The page number (1 to 10000, default 1).",
+                        "type": "text/plain"
+                      },
+                      "key": "pageNumber",
+                      "value": "1"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "The number of items per page (1 to 100, default 20).",
+                        "type": "text/plain"
+                      },
+                      "key": "pageSize",
+                      "value": "20"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "type": "any",
+                      "value": "{{organizationId}}",
+                      "key": "id",
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) The donor organization identifier.",
+                        "type": "text/plain"
+                      }
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "event": [],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              }
+            },
+            {
+              "name": "GET /api/v1/donation",
+              "request": {
+                "description": {},
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "donation"
+                  ],
+                  "host": [
+                    "{{donationUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "event": [],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              }
+            },
+            {
+              "name": "POST /api/v1/donation/:id/activate",
+              "request": {
+                "description": {},
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "donation",
+                    ":id",
+                    "activate"
+                  ],
+                  "host": [
+                    "{{donationUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "type": "any",
+                      "value": "{{donationId}}",
+                      "key": "id",
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) The donation identifier.",
+                        "type": "text/plain"
+                      }
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {}
+              },
+              "event": [],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              }
+            },
+            {
+              "name": "POST /api/v1/donation/:id/cancel",
+              "request": {
+                "description": {},
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "donation",
+                    ":id",
+                    "cancel"
+                  ],
+                  "host": [
+                    "{{donationUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "type": "any",
+                      "value": "{{donationId}}",
+                      "key": "id",
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) The donation identifier.",
+                        "type": "text/plain"
+                      }
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {}
+              },
+              "event": [],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              }
+            }
+          ]
+        },
+        {
+          "name": "DonorOrganization",
+          "item": [
+            {
+              "name": "POST /api/v1/DonorOrganization",
+              "request": {
+                "description": {},
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "DonorOrganization"
+                  ],
+                  "host": [
+                    "{{donationUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"t*3fhO\",\n  \"contactEmail\": \"<null,string-email>\",\n  \"website\": \"<null,string-uri>\"\n}",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              }
+            },
+            {
+              "name": "GET /api/v1/DonorOrganization",
+              "request": {
+                "description": {},
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "DonorOrganization"
+                  ],
+                  "host": [
+                    "{{donationUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "The page number (1 to 10000, default 1).",
+                        "type": "text/plain"
+                      },
+                      "key": "pageNumber",
+                      "value": "1"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "The number of items per page (1 to 100, default 20).",
+                        "type": "text/plain"
+                      },
+                      "key": "pageSize",
+                      "value": "20"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "event": [],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              }
+            },
+            {
+              "name": "GET /api/v1/DonorOrganization/:id",
+              "request": {
+                "description": {},
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "DonorOrganization",
+                    ":id"
+                  ],
+                  "host": [
+                    "{{donationUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "type": "any",
+                      "value": "{{organizationId}}",
+                      "key": "id",
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) The donor organization identifier.",
+                        "type": "text/plain"
+                      }
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "event": [],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              }
+            },
+            {
+              "name": "PUT /api/v1/DonorOrganization/:id",
+              "request": {
+                "description": {},
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "DonorOrganization",
+                    ":id"
+                  ],
+                  "host": [
+                    "{{donationUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "type": "any",
+                      "value": "{{organizationId}}",
+                      "key": "id",
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) The donor organization identifier.",
+                        "type": "text/plain"
+                      }
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PUT",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"(glWlU7-u'\",\n  \"contactEmail\": \"<null,string-email>\",\n  \"website\": \"<null,string-uri>\"\n}",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              }
+            },
+            {
+              "name": "DELETE /api/v1/DonorOrganization/:id",
+              "request": {
+                "description": {},
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "DonorOrganization",
+                    ":id"
+                  ],
+                  "host": [
+                    "{{donationUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "type": "any",
+                      "value": "{{organizationId}}",
+                      "key": "id",
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) The donor organization identifier.",
+                        "type": "text/plain"
+                      }
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {}
+              },
+              "event": [],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              }
+            }
+          ]
+        },
+        {
+          "name": "Maintainer",
+          "item": [
+            {
+              "name": "GET /api/v1/maintainer/me",
+              "request": {
+                "description": {},
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "maintainer",
+                    "me"
+                  ],
+                  "host": [
+                    "{{donationUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "event": [],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              }
+            },
+            {
+              "name": "GET /api/v1/maintainer/me/projects",
+              "request": {
+                "description": {},
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "maintainer",
+                    "me",
+                    "projects"
+                  ],
+                  "host": [
+                    "{{donationUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "event": [],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              }
+            }
+          ]
+        },
+        {
+          "name": "Project",
+          "item": [
+            {
+              "name": "POST /api/v1/Project",
+              "request": {
+                "description": {},
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "Project"
+                  ],
+                  "host": [
+                    "{{donationUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"githubRepositoryUrl\": \"<uri>\"\n}",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              }
+            },
+            {
+              "name": "GET /api/v1/Project",
+              "request": {
+                "description": {
+                  "content": "Results are sorted by publication date, newest first, with the project id (descending) as tie-breaker.",
+                  "type": "text/plain"
+                },
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "Project"
+                  ],
+                  "host": [
+                    "{{donationUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "The page number (1 to 10000, default 1).",
+                        "type": "text/plain"
+                      },
+                      "key": "pageNumber",
+                      "value": "1"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "The number of items per page (1 to 100, default 20).",
+                        "type": "text/plain"
+                      },
+                      "key": "pageSize",
+                      "value": "20"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "Optional text (at most 100 characters); matches the project name, full name or description (case-insensitive, literal substring).",
+                        "type": "text/plain"
+                      },
+                      "key": "searchText",
+                      "value": "<string>"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "Optional exact programming language, for example `C#`.",
+                        "type": "text/plain"
+                      },
+                      "key": "language",
+                      "value": "<string>"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "Optional topic (case-insensitive); only projects with this topic are returned.",
+                        "type": "text/plain"
+                      },
+                      "key": "tag",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "event": [],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              }
+            },
+            {
+              "name": "GET /api/v1/Project/:id",
+              "request": {
+                "description": {},
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "Project",
+                    ":id"
+                  ],
+                  "host": [
+                    "{{donationUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "type": "any",
+                      "value": "{{projectId}}",
+                      "key": "id",
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) The project identifier.",
+                        "type": "text/plain"
+                      }
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "event": [],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              }
+            },
+            {
+              "name": "GET /api/v1/Project/:id/manage",
+              "request": {
+                "description": {},
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "Project",
+                    ":id",
+                    "manage"
+                  ],
+                  "host": [
+                    "{{donationUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "type": "any",
+                      "value": "{{projectId}}",
+                      "key": "id",
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) The project identifier.",
+                        "type": "text/plain"
+                      }
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "event": [],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              }
+            },
+            {
+              "name": "POST /api/v1/Project/:id/submit",
+              "request": {
+                "description": {},
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "Project",
+                    ":id",
+                    "submit"
+                  ],
+                  "host": [
+                    "{{donationUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "type": "any",
+                      "value": "{{projectId}}",
+                      "key": "id",
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) The project identifier.",
+                        "type": "text/plain"
+                      }
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {}
+              },
+              "event": [],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              }
+            },
+            {
+              "name": "POST /api/v1/Project/:id/approve",
+              "request": {
+                "description": {},
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "Project",
+                    ":id",
+                    "approve"
+                  ],
+                  "host": [
+                    "{{donationUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "type": "any",
+                      "value": "{{projectId}}",
+                      "key": "id",
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) The project identifier.",
+                        "type": "text/plain"
+                      }
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {}
+              },
+              "event": [],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              }
+            },
+            {
+              "name": "POST /api/v1/Project/:id/request-changes",
+              "request": {
+                "description": {},
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "Project",
+                    ":id",
+                    "request-changes"
+                  ],
+                  "host": [
+                    "{{donationUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "type": "any",
+                      "value": "{{projectId}}",
+                      "key": "id",
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) The project identifier.",
+                        "type": "text/plain"
+                      }
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"reason\": \"FI$Dn{2\"\n}",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              }
+            },
+            {
+              "name": "POST /api/v1/Project/:id/archive",
+              "request": {
+                "description": {},
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "Project",
+                    ":id",
+                    "archive"
+                  ],
+                  "host": [
+                    "{{donationUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "type": "any",
+                      "value": "{{projectId}}",
+                      "key": "id",
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) The project identifier.",
+                        "type": "text/plain"
+                      }
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {}
+              },
+              "event": [],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              }
+            },
+            {
+              "name": "POST /api/v1/Project/:id/reactivate",
+              "request": {
+                "description": {},
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "Project",
+                    ":id",
+                    "reactivate"
+                  ],
+                  "host": [
+                    "{{donationUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "type": "any",
+                      "value": "{{projectId}}",
+                      "key": "id",
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) The project identifier.",
+                        "type": "text/plain"
+                      }
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {}
+              },
+              "event": [],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              }
+            }
+          ]
+        },
+        {
+          "name": "PublicStatistics",
+          "item": [
+            {
+              "name": "GET /api/v1/contributor/:id/hours",
+              "request": {
+                "description": {},
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "contributor",
+                    ":id",
+                    "hours"
+                  ],
+                  "host": [
+                    "{{donationUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "type": "any",
+                      "value": "{{contributorId}}",
+                      "key": "id",
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) The contributor identifier.",
+                        "type": "text/plain"
+                      }
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "event": [],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              }
+            },
+            {
+              "name": "GET /api/v1/donororganization/:id/hours",
+              "request": {
+                "description": {},
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "donororganization",
+                    ":id",
+                    "hours"
+                  ],
+                  "host": [
+                    "{{donationUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "type": "any",
+                      "value": "{{organizationId}}",
+                      "key": "id",
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) The donor organization identifier.",
+                        "type": "text/plain"
+                      }
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "event": [],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              }
+            },
+            {
+              "name": "GET /api/v1/statistics",
+              "request": {
+                "description": {},
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "statistics"
+                  ],
+                  "host": [
+                    "{{donationUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "event": [],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Reporting API",
+      "item": [
+        {
+          "name": "Badge",
+          "item": [
+            {
+              "name": "GET /api/v1/reporting/donororganization/:id/badges",
+              "request": {
+                "description": {
+                  "content": "An organization is measured on the hours logged on its Active and Completed donations and earns the badges of the\r\ntiers with recipient type `Organization`.",
+                  "type": "text/plain"
+                },
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "reporting",
+                    "donororganization",
+                    ":id",
+                    "badges"
+                  ],
+                  "host": [
+                    "{{reportingUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "type": "any",
+                      "value": "{{organizationId}}",
+                      "key": "id",
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) The donor organization identifier.",
+                        "type": "text/plain"
+                      }
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "event": [],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              }
+            },
+            {
+              "name": "GET /api/v1/reporting/contributor/:id/badges",
+              "request": {
+                "description": {
+                  "content": "A contributor is measured on the total hours they logged themselves and earns the badges of the tiers with recipient\r\ntype `Contributor`. Only badge names and award dates are exposed, no other personal data.",
+                  "type": "text/plain"
+                },
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "reporting",
+                    "contributor",
+                    ":id",
+                    "badges"
+                  ],
+                  "host": [
+                    "{{reportingUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "type": "any",
+                      "value": "{{contributorId}}",
+                      "key": "id",
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) The contributor identifier.",
+                        "type": "text/plain"
+                      }
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "event": [],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              }
+            },
+            {
+              "name": "GET /api/v1/reporting/statistics",
+              "request": {
+                "description": {},
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "reporting",
+                    "statistics"
+                  ],
+                  "host": [
+                    "{{reportingUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "event": [],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              }
+            },
+            {
+              "name": "GET /api/v1/reporting/badge-tier",
+              "request": {
+                "description": {},
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "reporting",
+                    "badge-tier"
+                  ],
+                  "host": [
+                    "{{reportingUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "Only the tiers of this recipient type; all tiers when omitted. (This can only be one of Organization,Contributor)",
+                        "type": "text/plain"
+                      },
+                      "key": "recipientType",
+                      "value": "Organization"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "event": [],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              }
+            },
+            {
+              "name": "PUT /api/v1/reporting/badge-tier/:recipientType/:name",
+              "request": {
+                "description": {
+                  "content": "Badges already awarded stay when a threshold is raised. A tier added or lowered is awarded to recipients who already\r\nqualify the next time their badges are requested.",
+                  "type": "text/plain"
+                },
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "reporting",
+                    "badge-tier",
+                    ":recipientType",
+                    ":name"
+                  ],
+                  "host": [
+                    "{{reportingUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "type": "any",
+                      "value": "Organization",
+                      "key": "recipientType",
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Who the tier is for: `Organization` or `Contributor`. (This can only be one of Organization,Contributor)",
+                        "type": "text/plain"
+                      }
+                    },
+                    {
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "name",
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) The tier name, 1 to 100 characters, unique per recipient type.",
+                        "type": "text/plain"
+                      }
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PUT",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"thresholdHours\": 1\n}",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              }
+            },
+            {
+              "name": "DELETE /api/v1/reporting/badge-tier/:recipientType/:name",
+              "request": {
+                "description": {},
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "reporting",
+                    "badge-tier",
+                    ":recipientType",
+                    ":name"
+                  ],
+                  "host": [
+                    "{{reportingUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "type": "any",
+                      "value": "Organization",
+                      "key": "recipientType",
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Who the tier is for: `Organization` or `Contributor`. (This can only be one of Organization,Contributor)",
+                        "type": "text/plain"
+                      }
+                    },
+                    {
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "name",
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) The tier name.",
+                        "type": "text/plain"
+                      }
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {}
+              },
+              "event": [],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              }
+            }
+          ]
+        },
+        {
+          "name": "ProjectReporting",
+          "item": [
+            {
+              "name": "GET /api/v1/reporting/project/:id/donation-report",
+              "request": {
+                "description": {
+                  "content": "Only Active and Completed donations count as received; Pending and Cancelled ones are listed and counted per status.\r\nOnly published projects can be reported on; an unpublished project answers 404, also for its maintainer.",
+                  "type": "text/plain"
+                },
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "reporting",
+                    "project",
+                    ":id",
+                    "donation-report"
+                  ],
+                  "host": [
+                    "{{reportingUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "type": "any",
+                      "value": "{{projectId}}",
+                      "key": "id",
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) The project identifier.",
+                        "type": "text/plain"
+                      }
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "event": [],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              }
+            },
+            {
+              "name": "GET /api/v1/reporting/project/:id/public-summary",
+              "request": {
+                "description": {},
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "reporting",
+                    "project",
+                    ":id",
+                    "public-summary"
+                  ],
+                  "host": [
+                    "{{reportingUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "type": "any",
+                      "value": "{{projectId}}",
+                      "key": "id",
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) The project identifier.",
+                        "type": "text/plain"
+                      }
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "event": [],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reporting",
+          "item": [
+            {
+              "name": "GET /api/v1/reporting/donororganization/:id/impact-report",
+              "request": {
+                "description": {
+                  "content": "Only Active and Completed donations count: a Pending donation is not yet committed and a Cancelled one no longer is.",
+                  "type": "text/plain"
+                },
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "reporting",
+                    "donororganization",
+                    ":id",
+                    "impact-report"
+                  ],
+                  "host": [
+                    "{{reportingUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "type": "any",
+                      "value": "{{organizationId}}",
+                      "key": "id",
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) The donor organization identifier.",
+                        "type": "text/plain"
+                      }
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "event": [],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              }
+            },
+            {
+              "name": "GET /api/v1/reporting/donororganization/:id/contribution-history",
+              "request": {
+                "description": {
+                  "content": "CSV columns: ContributionId, ProjectId, ContributorLogin, Hours, GithubReference, LoggedAt (UTC, ISO 8601). JSON has the same\r\nvalues as camel case fields in a `contributions` list. Contributions are attributed by the contributor's current\r\naffiliation, so a contributor who moves to another organization takes their history along. Deleted contributions are left out.",
+                  "type": "text/plain"
+                },
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "reporting",
+                    "donororganization",
+                    ":id",
+                    "contribution-history"
+                  ],
+                  "host": [
+                    "{{reportingUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "The file format, `Json` (default) or `Csv`. (This can only be one of Json,Csv)",
+                        "type": "text/plain"
+                      },
+                      "key": "format",
+                      "value": "Json"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "type": "any",
+                      "value": "{{organizationId}}",
+                      "key": "id",
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) The donor organization identifier.",
+                        "type": "text/plain"
+                      }
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "event": [],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
