@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using System.ComponentModel.DataAnnotations;
 using System.Net.Mime;
 using TimeForCode.Reporting.Api.V1.Models;
 using TimeForCode.Reporting.Commands;
@@ -175,7 +176,7 @@ namespace TimeForCode.Reporting.Api.V1.Controllers
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         [Authorize(Policy = "ApiAdmin")]
         [EnableRateLimiting("api")]
-        public async Task<IActionResult> DefineBadgeTier(BadgeRecipientType recipientType, string name, [FromBody] DefineBadgeTierRequest request)
+        public async Task<IActionResult> DefineBadgeTier(BadgeRecipientType recipientType, [StringLength(ApiConstraints.MaxTierNameLength, MinimumLength = 1)] string name, [FromBody] DefineBadgeTierRequest request)
         {
             var result = await _mediator.Send(new DefineBadgeTierCommand { RecipientType = recipientType, Name = name, ThresholdHours = request.ThresholdHours });
 
@@ -203,7 +204,7 @@ namespace TimeForCode.Reporting.Api.V1.Controllers
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         [Authorize(Policy = "ApiAdmin")]
         [EnableRateLimiting("api")]
-        public async Task<IActionResult> RemoveBadgeTier(BadgeRecipientType recipientType, string name)
+        public async Task<IActionResult> RemoveBadgeTier(BadgeRecipientType recipientType, [StringLength(ApiConstraints.MaxTierNameLength, MinimumLength = 1)] string name)
         {
             var result = await _mediator.Send(new RemoveBadgeTierCommand { RecipientType = recipientType, Name = name });
 

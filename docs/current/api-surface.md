@@ -188,7 +188,7 @@ The maintainer profile is created (or its GitHub login and avatar refreshed) whe
 
 ### Public totals
 
-Anonymous, aggregate-only reads that the Reporting API uses for badges and statistics. They expose hour totals, never personal data.
+Anonymous, aggregate-only reads that the Reporting API uses for badges and statistics. They expose hour totals, never personal data. A contributor's total only adds up what `GET /api/v1/project/{id}/contribution` already returns publicly; the `404` for an unknown contributor does confirm that an identifier exists (see arc42 chapter 08, public aggregate reads).
 
 | Method | Endpoint | Status | Notes |
 | --- | --- | --- | --- |
@@ -221,7 +221,7 @@ Badges, tiers and statistics:
 | `GET` | `/api/v1/reporting/contributor/{id}/badges` | ✅ | Badges of a contributor, anonymous; same response, measured on the total hours the contributor logged themselves against the tiers of recipient type `Contributor`. Only badge names and award dates are exposed. `400`, `404` for an unknown contributor, `429`, `502` |
 | `GET` | `/api/v1/reporting/statistics` | ✅ | Public impact statistics, anonymous; `200` with `{ "totalHoursLogged": 20, "organizationsSupported": 2 }`: the hours logged on the Active and Completed donations of all donor organizations and the number of organizations with such a donation; zeros on a new platform; totals only; `429`, `502` |
 | `GET` | `/api/v1/reporting/badge-tier?recipientType=Organization\|Contributor` | ✅ | Configured badge tiers, anonymous; `200` with `{ "tiers": [ { "name": "Bronze", "recipientType": "Organization", "thresholdHours": 10 } ] }` ordered by recipient type and threshold; `recipientType` is optional, `400` when invalid |
-| `PUT` | `/api/v1/reporting/badge-tier/{recipientType}/{name}` | ✅ | Defines a badge tier or changes the threshold of the tier with that recipient type and name (admin JWT only); body `{ "thresholdHours": 10 }`; `200` with the tier; `400` for a threshold below 1 or a name of 0 or more than 100 characters, `409` when another tier of the recipient type already has the threshold, `401` without a token, `403` for a user token. Name and threshold are unique per recipient type; the two recipient types are independent and may share a threshold |
+| `PUT` | `/api/v1/reporting/badge-tier/{recipientType}/{name}` | ✅ | Defines a badge tier or changes the threshold of the tier with that recipient type and name (admin JWT only); body `{ "thresholdHours": 10 }`; `200` with the tier; `400` for a threshold below 1 or a name of 0 or more than 100 characters (the name limit is declared on the route parameter in the OpenAPI document), `409` when another tier of the recipient type already has the threshold, `401` without a token, `403` for a user token. Name and threshold are unique per recipient type; the two recipient types are independent and may share a threshold |
 | `DELETE` | `/api/v1/reporting/badge-tier/{recipientType}/{name}` | ✅ | Removes a badge tier (admin JWT only); `204`, `404` for an unknown tier, `401`, `403`; badges already awarded stay |
 
 Badges are awarded when they are requested, so a tier added or lowered reaches recipients who already qualify the next time their badges are read; a raised or removed tier takes no badge away. An award is stored once per recipient type, recipient and tier (unique index), so requests at the same time store one award and keep the first award date. The hours come from three anonymous, totals-only endpoints of the Donation API (see Public totals), read without a token.

@@ -55,9 +55,23 @@ namespace TimeForCode.Reporting.Application.Tests.Handlers
 
             result.IsSuccess.Should().BeTrue();
             result.Value.Should().ContainSingle().Which.Name.Should().Be("Bronze");
-            _awards.Verify(a => a.AwardAsync(It.Is<BadgeAward>(b => b.TierName == "Bronze" && b.RecipientId == RecipientId && b.RecipientType == BadgeRecipientType.Organization), It.IsAny<CancellationToken>()), Times.Once);
-            _awards.Verify(a => a.AwardAsync(It.Is<BadgeAward>(b => b.TierName == "Silver"), It.IsAny<CancellationToken>()), Times.Once);
+            _awards.Verify(a => a.AwardAsync(It.Is<BadgeAward>(b => b.TierName == "Silver" && b.RecipientId == RecipientId && b.RecipientType == BadgeRecipientType.Organization), It.IsAny<CancellationToken>()), Times.Once);
+            _awards.Verify(a => a.AwardAsync(It.Is<BadgeAward>(b => b.TierName == "Bronze"), It.IsAny<CancellationToken>()), Times.Never);
             _awards.Verify(a => a.AwardAsync(It.Is<BadgeAward>(b => b.TierName == "Gold"), It.IsAny<CancellationToken>()), Times.Never);
+        }
+
+        [TestMethod]
+        public async Task Organization_AllReachedBadgesAlreadyHeld_WritesNothing()
+        {
+            _donationData.Setup(d => d.GetOrganizationHoursAsync(RecipientId, It.IsAny<CancellationToken>())).ReturnsAsync(Result<int>.Success(25));
+            GivenTiers(BadgeRecipientType.Organization, new BadgeTier("Bronze", BadgeRecipientType.Organization, 10));
+            GivenAwarded(BadgeRecipientType.Organization, new BadgeAward("Bronze", BadgeRecipientType.Organization, RecipientId, Now));
+
+            var result = await OrganizationHandler().Handle(new GetOrganizationBadgesQuery { DonorOrganizationId = RecipientId }, CancellationToken.None);
+
+            result.Value.Should().ContainSingle().Which.Name.Should().Be("Bronze");
+            _awards.Verify(a => a.AwardAsync(It.IsAny<BadgeAward>(), It.IsAny<CancellationToken>()), Times.Never);
+            _awards.Verify(a => a.ListAsync(BadgeRecipientType.Organization, RecipientId, It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [TestMethod]

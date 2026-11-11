@@ -36,6 +36,7 @@ namespace TimeForCode.Reporting.Api
 
             services.AddJwtBearerAuthentication(_configuration);
 
+            // Like the other contexts, the policies check the "scope" claim of the token ("admin" for administrators), not a role claim.
             services.AddAuthorizationBuilder()
                     .AddPolicy("ApiAdmin", policy => policy.RequireClaim(AuthenticationExtensions.ScopeClaim, "admin"))
                     .AddPolicy("ApiUserOrAdmin", policy => policy.RequireClaim(AuthenticationExtensions.ScopeClaim, "user", "admin"));

@@ -26,6 +26,8 @@ namespace TimeForCode.Reporting.Infrastructure.Persistence
             EnsureIndexes(_collection);
         }
 
+        // Runs on the first request that needs the repository. If creating the index fails (database down) that request fails with a 500,
+        // the flag stays unset and the next request tries again.
         private static void EnsureIndexes(IMongoCollection<AwardDocument> collection)
         {
             if (_indexesCreated)

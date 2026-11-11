@@ -26,6 +26,8 @@ namespace TimeForCode.Reporting.Infrastructure.Persistence
             EnsureIndexes(_collection);
         }
 
+        // Runs on the first request that needs the repository. If creating the indexes fails (database down) that request fails with a 500,
+        // the flag stays unset and the next request tries again.
         private static void EnsureIndexes(IMongoCollection<TierDocument> collection)
         {
             if (_indexesCreated)
@@ -86,6 +88,8 @@ namespace TimeForCode.Reporting.Infrastructure.Persistence
             }
             catch (MongoWriteException exception) when (exception.WriteError.Category == ServerErrorCategory.DuplicateKey)
             {
+                // The upsert is keyed on recipient type and name, so the one unique index it can still violate is the threshold index.
+                // Revisit this when another unique index is added to the collection.
                 return false;
             }
         }

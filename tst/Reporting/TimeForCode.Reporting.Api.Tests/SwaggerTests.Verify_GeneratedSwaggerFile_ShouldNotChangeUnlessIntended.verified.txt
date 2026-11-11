@@ -318,6 +318,8 @@
             "description": "The tier name, 1 to 100 characters, unique per recipient type.",
             "required": true,
             "schema": {
+              "maxLength": 100,
+              "minLength": 1,
               "type": "string"
             }
           }
@@ -440,6 +442,8 @@
             "description": "The tier name.",
             "required": true,
             "schema": {
+              "maxLength": 100,
+              "minLength": 1,
               "type": "string"
             }
           }

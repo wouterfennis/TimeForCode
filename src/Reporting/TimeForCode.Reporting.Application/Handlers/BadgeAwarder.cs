@@ -25,13 +25,24 @@ namespace TimeForCode.Reporting.Application.Handlers
 
         public async Task<IReadOnlyList<BadgeDto>> AwardAsync(BadgeRecipientType recipientType, string recipientId, int hoursLogged, CancellationToken cancellationToken)
         {
+            IReadOnlyList<BadgeAward> held = await _awards.ListAsync(recipientType, recipientId, cancellationToken);
             IReadOnlyList<BadgeTier> tiers = await _tiers.ListAsync(recipientType, cancellationToken);
-            foreach (BadgeTier tier in tiers.Where(t => t.ThresholdHours <= hoursLogged))
+
+            // Only the tiers not yet held are written, so a read that finds nothing new (the usual case) writes nothing.
+            // A request at the same time may still award the same tier; the unique index of the award repository settles that.
+            List<BadgeTier> missing = tiers
+                .Where(t => t.ThresholdHours <= hoursLogged && held.All(a => a.TierName != t.Name))
+                .ToList();
+            if (missing.Count > 0)
             {
-                await _awards.AwardAsync(new BadgeAward(tier.Name, recipientType, recipientId, _timeProvider.GetUtcNow()), cancellationToken);
+                foreach (BadgeTier tier in missing)
+                {
+                    await _awards.AwardAsync(new BadgeAward(tier.Name, recipientType, recipientId, _timeProvider.GetUtcNow()), cancellationToken);
+                }
+
+                held = await _awards.ListAsync(recipientType, recipientId, cancellationToken);
             }
 
-            IReadOnlyList<BadgeAward> held = await _awards.ListAsync(recipientType, recipientId, cancellationToken);
             return held.Select(a => new BadgeDto { Name = a.TierName, AwardedAt = a.AwardedAt }).ToList();
         }
     }
