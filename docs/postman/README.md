@@ -23,19 +23,12 @@ Add `-ResetData` after a breaking data change (ADR-014). Ports: Authorization 80
 
 Each API also serves its OpenAPI document (for example `http://localhost:8083/openapi/v1.json`), which Postman can import directly.
 
-## Full collection: every endpoint of the three APIs
+## Every endpoint: import the OpenAPI documents
 
-`TimeForCode-all-endpoints.postman_collection.json` holds all 60 operations of the Authorization, Donation and Reporting APIs, one folder per API and per tag, each request named `METHOD /path`. It is converted from the OpenAPI documents the API projects commit (`src/<Module>/TimeForCode.<Module>.Api/TimeForCode.<Module>.Api.json`), not written by hand, so it covers what the contract documents and nothing else.
+The API projects commit their OpenAPI documents, which describe every endpoint and stay current when the solution is built. In Postman choose Import and add the three files, which gives one collection per API:
 
-1. Import the file and fill the collection variables: `adminSecret` (your `TEST_ADMIN_ACCESS_SECRET`), and the ids you need (`organizationId`, `projectId`, `contributorId`, `donationId`, `contributionId`, `userId`, `githubOwner`, `githubRepository`). The base URLs (`authorizationUrl`, `donationUrl`, `reportingUrl`) default to the local ports.
-2. Run `Setup` first. That request is the one thing not taken from an OpenAPI document, because the test-only admin endpoint is hidden from it (ADR-017). It stores the admin token in `token`.
-3. Every other request inherits bearer authentication with `{{token}}`. Anonymous endpoints ignore it. Endpoints that use the login cookies (`/api/v1/Authentication/...`) need a browser sign-in; Postman keeps the cookies it receives.
-4. Body fields and unbound parameters hold placeholders (`<string>`, `1`); replace them before sending.
+- `src/Authorization/TimeForCode.Authorization.Api/TimeForCode.Authorization.Api.json`
+- `src/Donation/TimeForCode.Donation.Api/TimeForCode.Donation.Api.json`
+- `src/Reporting/TimeForCode.Reporting.Api/TimeForCode.Reporting.Api.json`
 
-The sample responses are left out: the OpenAPI documents describe them. To refresh the collection after an API change, build the solution (it rewrites the OpenAPI documents) and run:
-
-```powershell
-pwsh scripts/generate-postman-collection.ps1
-```
-
-The script needs Node and fetches the pinned `openapi-to-postmanv2` converter through `npx`.
+The documents declare no server, so set the `baseUrl` variable of each imported collection to its local address (Authorization `http://localhost:8080`, Donation `http://localhost:8082`, Reporting `http://localhost:8083`) and use a bearer token from request 1 above. The test-only admin token endpoint is hidden from the OpenAPI documents (ADR-017), so only the collection in this folder has it.
