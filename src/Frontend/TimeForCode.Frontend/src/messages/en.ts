@@ -1,6 +1,12 @@
 // All user-facing strings live here, so translations can be added later without touching components.
 export const messages = {
   title: 'TimeForCode',
+  session: {
+    signIn: 'Sign in with GitHub',
+    signedInAs: (login: string) => `Signed in as ${login}`,
+    signOut: 'Sign out',
+    signOutFailed: 'Signing out failed. Try again.',
+  },
   projects: {
     listLabel: 'Projects',
     loading: 'Loading projects…',

@@ -23,6 +23,12 @@ describe('App', () => {
     expect(main).toContainElement(await screen.findByText('There are no active projects yet.'))
   })
 
+  it('shows the sign-in action in the page header', async () => {
+    render(<App />)
+
+    expect(screen.getByRole('banner')).toContainElement(await screen.findByRole('link', { name: 'Sign in with GitHub' }))
+  })
+
   it('has no automated accessibility violations', async () => {
     const { container } = render(<App />)
     await screen.findByText('There are no active projects yet.')
