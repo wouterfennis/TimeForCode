@@ -284,6 +284,9 @@ A Reqnroll scenario tagged `@live` runs unchanged in two hosts. By default it ru
 | Authorization | `TIMEFORCODE_LIVE_AUTHORIZATION_URL` | `http://localhost:8080` |
 | Donation | `TIMEFORCODE_LIVE_DONATION_URL` | `http://localhost:8082` |
 | Reporting | `TIMEFORCODE_LIVE_REPORTING_URL` | `http://localhost:8083` |
+| Frontend | `TIMEFORCODE_LIVE_FRONTEND_URL` | `http://localhost:8084` |
+
+The Frontend project differs: its `@live` scenarios only run against the stack and are reported inconclusive (skipped) without the variable, see [Front-end live scenarios](#front-end-live-scenarios).
 
 ```powershell
 podman compose up -d
@@ -308,7 +311,7 @@ The Donation Specifications run real scenarios against the compose stack with re
 
 #### CI job
 
-The `live` job in `.github/workflows/pullRequest.yaml` runs on every pull request to `main`, in parallel with `build`. It builds and starts the backend services of the compose stack (not the front end) in the background, polls the Authorization API, identity provider mock, Donation API and Reporting API until each answers (three minutes per service at most; the Reporting API counts as up on a 401 from its report endpoint), then runs `scripts/smoke-test.ps1 -ContainerCli docker` and `dotnet test` on the Donation and Reporting Specifications with `TestCategory=live`. A failing smoke check or live scenario fails the job. The stack's admin secret is random per run and masked in the log, so no repository secret is needed.
+The `live` job in `.github/workflows/pullRequest.yaml` runs on every pull request to `main`, in parallel with `build`. It builds and starts the compose stack, front end (BFF) included, in the background, polls the Authorization API, identity provider mock, Donation API, Reporting API and the front end's `/api/session` until each answers (three minutes per service at most; the Reporting API counts as up on a 401 from its report endpoint), then runs `scripts/smoke-test.ps1 -ContainerCli docker` and `dotnet test` on the Donation, Reporting and Frontend Specifications with `TestCategory=live`. A failing smoke check or live scenario fails the job. The stack's admin secret is random per run and masked in the log, so no repository secret is needed.
 
 On failure the job uploads the artifact `live-tier-diagnostics` with the container logs (`compose-logs.txt`) and the `.trx` results. The stack is always torn down, volumes included.
 
@@ -333,9 +336,27 @@ Covered live: contributor profile (including the Auth-issued JWT), project publi
 
 The Reporting Specifications reuse the live sign-in through the shared `TimeForCode.Shared.Live` library (`LiveAuthentication`, `LiveTokenCache`; its tests are in `TimeForCode.Shared.Tests`) and need the same variables plus `TIMEFORCODE_LIVE_REPORTING_URL` and `TIMEFORCODE_LIVE_DONATION_URL`. On a live host `There is a donor organization on the time for code platform` registers a unique organization through the Donation API with its own token and an `@live` clean-up deletes it as administrator. Covered live: the anonymous 401, the unknown organization 404, the non-member 403 relayed from the Donation API, the administrator export of a registered organization, and the administrator impact report of a registered organization (`@liveonly`). Scenarios that need a membership, donations or logged hours stay in-process, because membership is self-declared in the Donation context and cannot be arranged through its API without further steps.
 
+#### Front-end live scenarios
+
+The Frontend Specifications (`tst/Frontend/TimeForCode.Frontend.Bff.Specifications`, #113) sign in through the front end's address like a browser: login and callback via the BFF, the identity provider mock's confirm form, then `/api/session`, the profile at `/api/auth/v1/user` and sign-out. `Mocking/Browser.cs` keeps the cookies by name, because `CookieContainer` does not send `Secure` cookies to `http://localhost` (browsers do), and records every address and body so the scenarios can assert that no token appears in them. They check that the callback is on the front end's address, the token cookies are `HttpOnly`, and sign-out revokes the refresh token. Only `TIMEFORCODE_LIVE_FRONTEND_URL` is needed.
+
+```powershell
+podman compose up -d
+$env:TIMEFORCODE_LIVE_FRONTEND_URL = 'http://localhost:8084'
+dotnet test tst/Frontend/TimeForCode.Frontend.Bff.Specifications --filter "TestCategory=live"
+```
+
+One run signs in three times and uses about 8 of the Authorization API's 20 sign-in requests per minute, a limit shared by all callers (RISK-12 in arc42 chapter 11). Rerunning within a minute, or right after the smoke test and the other live tiers, can get `429 Too Many Requests`; wait a minute and run again.
+
+### Front-end — BFF tests and Specifications
+
+**Paths**: `tst/Frontend/TimeForCode.Frontend.Bff.Tests`, `tst/Frontend/TimeForCode.Frontend.Bff.Specifications`
+
+`Bff.Tests` (MSTest) start the BFF in memory with a stub instead of the APIs (`BffFactory`, `UpstreamStub`) and cover serving the SPA, forwarding with the bearer token from the cookie, the CSRF check, the security headers and the session endpoint (#182, #113). The Specifications (Reqnroll) hold the `SignIn` feature: the in-process scenarios check `/api/session` for anonymous, expired, malformed, user and admin tokens, signed with a test key while issuer, audience and lifetime are validated as configured (`BffWebApplicationFactory`, `TestTokens`); the `@live` scenarios run the real sign-in (see [Front-end live scenarios](#front-end-live-scenarios)). `pwsh scripts/step-catalog.ps1 -Module Frontend -Steps` lists its steps.
+
 ### Front-end tests
 
-The React SPA (`src/Frontend/TimeForCode.Frontend`) is tested with Vitest, Testing Library and axe (accessibility assertions) in a jsdom environment. Run from that directory: `npm run lint`, `npm run typecheck`, `npm run test:coverage` and `npm run build`, or `npm run verify` for `check:api`, lint, typecheck, tests and build in one go. Components that call the API are tested against a stubbed `fetch` (loading, empty and error states of the project list). `npm run check:api` regenerates `src/api/donation.d.ts` from the Donation OpenAPI snapshot and fails when the committed copy differs. Coverage is written as `coverage/lcov.info` (v8 provider); `src/main.tsx` and the test files are excluded.
+The React SPA (`src/Frontend/TimeForCode.Frontend`) is tested with Vitest, Testing Library and axe (accessibility assertions) in a jsdom environment. Run from that directory: `npm run lint`, `npm run typecheck`, `npm run test:coverage` and `npm run build`, or `npm run verify` for `check:api`, lint, typecheck, tests and build in one go. Components that call the API are tested against a stubbed `fetch` (loading, empty and error states of the project list; the sign-in link, signed-in state and sign-out of `SessionControl`). `npm run check:api` regenerates `src/api/donation.d.ts` from the Donation OpenAPI snapshot and fails when the committed copy differs. Coverage is written as `coverage/lcov.info` (v8 provider); `src/main.tsx` and the test files are excluded.
 
 ### Documentation site build
 

@@ -6,7 +6,7 @@ Measured baseline of the Reqnroll specification projects, the reference point fo
 
 ## Method
 
-The counts come from `pwsh scripts/step-catalog.ps1 -Markdown`. It reads the step attributes in `tst/<Module>/TimeForCode.<Module>.Specifications` and the `.feature` files, and counts:
+The counts come from `pwsh scripts/step-catalog.ps1 -Markdown`. It reads the step attributes in each `tst/<Module>/*.Specifications` project (Authorization, Donation, Reporting and Frontend) and the `.feature` files, and counts:
 
 - **Scenarios**: every `Scenario` plus every row of an `Examples` table.
 - **Step lines**: step lines in the feature files as written (`Background` steps once).
@@ -26,6 +26,8 @@ Measured on 2026-10-24.
 | Authorization | 75 | 312 | 134 | 133 | 2016 | 541 |
 | Donation | 182 | 573 | 260 | 231 | 3417 | 1073 |
 | Total | 257 | 885 | 394 | 364 | 5433 | 1614 |
+
+The Frontend project (`tst/Frontend/TimeForCode.Frontend.Bff.Specifications`, #113) came after this baseline and is not part of it. On 2026-11-12 it had 9 scenarios, 29 step lines, 23 distinct step texts and 23 step attributes, and no unused step definitions. Its 4 `@live` scenarios are skipped in a plain run.
 
 ## Passing scenarios
 

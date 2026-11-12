@@ -4,12 +4,12 @@
 
 .DESCRIPTION
     Reads the step attributes in the C# step classes and the steps in the .feature files of
-    every tst/<Module>/TimeForCode.<Module>.Specifications project. Reports the summary counts,
+    every tst/<Module>/*.Specifications project. Reports the summary counts,
     step definitions without usages, feature steps without a definition or with several, and
     optionally every step definition with its file and usage count.
 
 .PARAMETER Module
-    Module to catalogue (Authorization, Donation, Reporting) or All (default).
+    Module to catalogue (Authorization, Donation, Reporting, Frontend) or All (default).
 
 .PARAMETER Steps
     Also list every step definition with its definition file and usage count.
@@ -22,7 +22,7 @@
 #>
 [CmdletBinding()]
 param(
-    [ValidateSet('All', 'Authorization', 'Donation', 'Reporting')]
+    [ValidateSet('All', 'Authorization', 'Donation', 'Reporting', 'Frontend')]
     [string]$Module = 'All',
     [switch]$Steps,
     [switch]$Markdown
@@ -143,7 +143,8 @@ function Get-FeatureSteps([string]$specRoot) {
 }
 
 function Measure-Specification([string]$name) {
-    $specRoot = Join-Path $root "tst/$name/TimeForCode.$name.Specifications"
+    # One specification project per module folder, e.g. tst/Frontend/TimeForCode.Frontend.Bff.Specifications.
+    $specRoot = (Get-ChildItem -Directory -Path (Join-Path $root "tst/$name") -Filter '*.Specifications' | Select-Object -First 1).FullName
     $definitions = @(Get-StepDefinitions $specRoot)
     $feature = Get-FeatureSteps $specRoot
     $featureSteps = $feature.Steps
@@ -238,6 +239,6 @@ function Write-Report($results) {
     }
 }
 
-$modules = if ($Module -eq 'All') { 'Authorization', 'Donation', 'Reporting' } else { @($Module) }
+$modules = if ($Module -eq 'All') { 'Authorization', 'Donation', 'Reporting', 'Frontend' } else { @($Module) }
 $results = foreach ($name in $modules) { Measure-Specification $name }
 Write-Report $results
