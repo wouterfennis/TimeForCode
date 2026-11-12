@@ -58,5 +58,15 @@ namespace TimeForCode.Frontend.Bff.Tests
 
             response.StatusCode.Should().Be(HttpStatusCode.NotFound);
         }
+
+        [TestMethod]
+        [DataRow("/api/unknown/v1/x")]
+        [DataRow("/api/donations/v1/Project")]
+        public async Task Get_ApiPathWithoutARoute_ReturnsNotFoundInsteadOfTheSpa(string path)
+        {
+            var response = await _browser.GetAsync(path);
+
+            response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        }
     }
 }

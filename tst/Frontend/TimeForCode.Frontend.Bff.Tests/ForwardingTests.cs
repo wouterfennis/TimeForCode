@@ -81,6 +81,7 @@ namespace TimeForCode.Frontend.Bff.Tests
         [TestMethod]
         [DataRow("/api/donation/v1/Project", "http://donation-api:8080/api/v1/Project/42", "/api/donation/v1/Project/42")]
         [DataRow("/api/auth/v1/user", "http://authorization-api:8080/api/v1/user", "/api/auth/v1/user")]
+        [DataRow("/api/donation/v1/Project", "/api/v1/Project/42", "/api/donation/v1/Project/42")]
         [DataRow("/api/auth/v1/authentication/login", "http://localhost:8081/login/oauth/authorize?client_id=test", "http://localhost:8081/login/oauth/authorize?client_id=test")]
         [DataRow("/api/auth/v1/authentication/callback", "http://localhost:8084/", "http://localhost:8084/")]
         public async Task Get_ApiAnswersWithALocation_OnlyTheApisOwnPathsPointAtTheRoute(string path, string location, string expectedLocation)
@@ -88,7 +89,7 @@ namespace TimeForCode.Frontend.Bff.Tests
             _factory.Upstream.Respond = () =>
             {
                 var response = new HttpResponseMessage(HttpStatusCode.Redirect);
-                response.Headers.Location = new Uri(location);
+                response.Headers.Location = new Uri(location, UriKind.RelativeOrAbsolute);
                 return response;
             };
 

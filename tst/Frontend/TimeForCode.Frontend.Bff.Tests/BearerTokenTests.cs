@@ -56,6 +56,30 @@ namespace TimeForCode.Frontend.Bff.Tests
         }
 
         [TestMethod]
+        public async Task Get_BrowserSendsItsOwnAuthorizationHeaderWithoutACookie_ForwardsNoAuthorizationHeader()
+        {
+            using var request = new HttpRequestMessage(HttpMethod.Get, "/api/auth/v1/user");
+            request.Headers.Add("Authorization", "Bearer forged-by-a-script");
+
+            await _browser.SendAsync(request);
+
+            _factory.Upstream.Requests.Should().ContainSingle().Which.Headers.Should().NotContainKey("Authorization");
+        }
+
+        [TestMethod]
+        public async Task Get_BrowserSendsItsOwnAuthorizationHeaderAndACookie_ForwardsOnlyTheCookieToken()
+        {
+            var cookie = JsonSerializer.Serialize(new AccessToken { Token = "jwt-value", ExpiresAfter = DateTimeOffset.UnixEpoch });
+            using var request = new HttpRequestMessage(HttpMethod.Get, "/api/auth/v1/user");
+            request.Headers.Add("Authorization", "Bearer forged-by-a-script");
+            request.Headers.Add("Cookie", $"AccessToken={Uri.EscapeDataString(cookie)}");
+
+            await _browser.SendAsync(request);
+
+            _factory.Upstream.Requests.Should().ContainSingle().Which.Headers["Authorization"].Should().Be("Bearer jwt-value");
+        }
+
+        [TestMethod]
         public async Task Get_ApiAnswersUnauthorized_TheBrowserGetsUnauthorized()
         {
             _factory.Upstream.Respond = () => new HttpResponseMessage(HttpStatusCode.Unauthorized);
