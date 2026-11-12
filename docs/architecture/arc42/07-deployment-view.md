@@ -16,7 +16,7 @@ All services run in Docker containers orchestrated by Docker Compose. The Identi
 graph LR
     subgraph Developer Machine
         subgraph Docker Compose Network
-            Frontend["Frontend SPA\nnginx :8084"]
+            Frontend["Frontend BFF + SPA\n:8084"]
             AuthAPI["Authorization API\n:8080"]
             IdpMock["Identity Provider Mock\n:8081"]
             DonationAPI["Donation API\n:8082"]
@@ -32,6 +32,8 @@ graph LR
     ReportingAPI -->|HTTP, caller's token| DonationAPI
     AuthAPI -->|HTTP :8081| IdpMock
     DonationAPI -->|HTTP :8081| IdpMock
+    Frontend -->|/api/auth/*| AuthAPI
+    Frontend -->|/api/donation/*| DonationAPI
     AuthAPI -->|MongoDB wire protocol| MongoDB
     DonationAPI -->|MongoDB wire protocol| MongoDB
 ```
@@ -102,7 +104,7 @@ graph LR
 
 | Component | Technology | Notes |
 | --- | --- | --- |
-| Frontend | Azure App Service (container) | Static SPA assets served by nginx |
+| Frontend | Azure App Service (container) | The BFF serving the SPA and forwarding the API routes (one container, `Dockerfile.frontend`) |
 | Authorization API | Azure App Service (container) | Current deployment extended |
 | Donation API | Azure App Service (container) | Not yet deployed |
 | Reporting API | Azure App Service (container) | Not yet deployed; stateless, needs only the Donation API address (`DonationApiOptions__BaseUri`) and the token settings |

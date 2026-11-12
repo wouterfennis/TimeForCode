@@ -77,10 +77,10 @@ This is the most important design constraint. Read it before writing any code.
 
 A **BFF** (backend for frontend) is a small server that exists only to serve one front-end and sits between it and the backend APIs. An **SPA** (single-page application) is a website that loads once and then updates itself with JavaScript, fetching data from APIs.
 
-**Decision (proposed)**: serve the SPA from, and call all APIs through, a thin **backend-for-frontend (BFF)** on the same origin. The BFF is a new, thin ASP.NET host that does only the following:
+**Decision**: serve the SPA from, and call all APIs through, a thin **backend-for-frontend (BFF)** on the same origin. The BFF is a thin ASP.NET host, `src/Frontend/TimeForCode.Frontend.Bff` (added in #182, tests in `tst/Frontend/TimeForCode.Frontend.Bff.Tests`), that does only the following:
 
-1. Serve the built SPA static files, with a fallback to `index.html` for client routes.
-2. Reverse-proxy `/api/auth/*` to the Authorization API and `/api/donation/*` to the Donation API (for example with YARP), reusing the existing cookie-to-bearer and refresh-forwarding handlers.
+1. Serve the built SPA static files, with a fallback to `index.html` for client routes, and set the security headers.
+2. Reverse-proxy `/api/auth/*` to the Authorization API and `/api/donation/*` to the Donation API with [YARP](https://github.com/dotnet/yarp), adding the bearer token from the access-token cookie with the shared `CookieAuthorizationHandler`. Cookies pass through in both directions, so refresh and logout work without the refresh-forwarding handler.
 3. Optionally render meta tags for public pages (see below).
 
 ```mermaid
@@ -97,20 +97,20 @@ graph LR
 
 The diagram shows that the browser only ever talks to one origin. The BFF translates cookies into bearer tokens so the backend APIs stay unchanged. Because everything is same-origin, the CORS configuration added for the admin flow is not needed for the SPA, and `SameSite=Strict` keeps working.
 
-**When the BFF arrives** ([ADR-012 amendment](../reference/adr/0012-react-spa-frontend.md#amendment-2026-10-21-nginx-first-the-bff-with-sign-in), 2026-10-21): until sign-in, nginx serves the SPA and sets the security headers. The BFF is introduced with sign-in (#113), the first slice whose API calls need the cookie turned into a bearer header. The SPA only calls relative paths on its own origin, so it does not change when the BFF arrives:
+**History** ([ADR-012 amendments](../reference/adr/0012-react-spa-frontend.md#amendment-2026-11-08-the-bff-replaces-nginx)): nginx served the SPA and the Donation route until #182, when the BFF replaced it, just before sign-in (#113) needs the cookie turned into a bearer header. The SPA only calls relative paths on its own origin, so it did not change:
 
-| SPA path | Forwarded to | Until #113 | From #113 on |
-| --- | --- | --- | --- |
-| `/api/auth/*` | Authorization API `/api/*` | Not used | BFF |
-| `/api/donation/*` | Donation API `/api/*` | nginx (added in #112) | BFF |
+| SPA path | Forwarded to | Route in the BFF |
+| --- | --- | --- |
+| `/api/auth/*` | Authorization API `/api/*` | `auth` |
+| `/api/donation/*` | Donation API `/api/*` | `donation` |
 
-For example, `/api/donation/v1/Project` goes to the Donation API's `/api/v1/Project`.
+For example, `/api/donation/v1/Project` goes to the Donation API's `/api/v1/Project`. The routes and their destinations are in the BFF's `appsettings.json` (`ReverseProxy`); `docker-compose.yaml` sets the destinations with `ReverseProxy__Clusters__<route>__Destinations__api__Address`. Forwarded responses get `Cache-Control: no-store`, and an API's own absolute `Location` (`http://donation-api:8080/api/v1/Project/42`) is rewritten to the route (`/api/donation/v1/Project/42`); other locations, such as the GitHub login or the SPA redirect, stay as they are.
 
 Alternatives considered (recorded in the ADR): changing the Donation API to accept cookies (backend change, wider CSRF surface), or hosting the SPA on a sibling subdomain with a shared cookie domain (weakens `SameSite=Strict`). Both widen the scope of this work.
 
 ### CSRF
 
-Cookie authentication means state-changing requests need CSRF protection. `SameSite=Strict` is the first layer. Add a second: the BFF requires a custom header (for example `X-Requested-With`) on `POST`, `PUT`, `PATCH`, and `DELETE`, which the generated client always sends. Note the decision in the ADR when implemented.
+Cookie authentication means state-changing requests need CSRF protection. `SameSite=Strict` is the first layer. The second (#182): the BFF answers 403 to any request other than `GET`, `HEAD` and `OPTIONS` that lacks the `X-Requested-With` header (any value), before it reaches an API. A cross-site form cannot set the header, and a cross-origin script that tries needs a CORS preflight the BFF does not approve. The SPA's API clients send the header from the first state-changing call (sign-out, #113).
 
 ### Login redirect
 
@@ -128,7 +128,7 @@ Login starts with a browser navigation to the Authorization API login endpoint (
 - `npm run generate:api` generates `src/api/donation.d.ts` (and the Authorization and Reporting files, see below) from the snapshots with `openapi-typescript`. It runs through `npx` with exact versions of `openapi-typescript` and TypeScript 5, because `openapi-typescript` needs the JavaScript compiler API that the native TypeScript 7 compiler of this project does not have. The requests go through `openapi-fetch`, so request and response types come from the generated file only.
 - **Decision (#112): the generated output is committed**, and CI fails when it is stale. `npm run check:api` regenerates it and fails on any `git diff` (step "API types up to date" in the `frontend` job). Committing keeps the Docker build free of files outside the front-end folder and shows API changes in the pull request diff.
 - When a backend change alters a snapshot, `check:api` fails until the types are regenerated and committed; after that `typecheck` shows what the front-end must change. That is the contract gate for the front-end.
-- The Authorization and Reporting snapshots have their own generated files (`authorization.d.ts`, `reporting.d.ts`, scripts `generate:api:<name>`). No typed client exists for them yet: it is added with the first feature that calls them, together with the BFF route (#113).
+- The Authorization and Reporting snapshots have their own generated files (`authorization.d.ts`, `reporting.d.ts`, scripts `generate:api:<name>`). No typed client exists for them yet: it is added with the first feature that calls them (sign-in, #113); the BFF route `/api/auth/*` exists since #182.
 - The generated paths are the API's own (`/api/v1/Project`); `src/api/donationClient.ts` adds the `/api/donation` prefix of the front-end origin to each request.
 
 ## Dev server against the local stack
@@ -136,7 +136,7 @@ Login starts with a browser navigation to the Authorization API login endpoint (
 1. Start the stack: `scripts/start-local.ps1` (Donation API on `http://localhost:8082`).
 2. In `src/Frontend/TimeForCode.Frontend`: `npm run dev` and open the printed URL.
 
-`vite.config.ts` proxies `/api/donation/*` to `http://localhost:8082/api/*`, the same route nginx has in the image, so the SPA code is identical in both setups. The front-end container (`http://localhost:8084`) needs the Donation API container to be running.
+`vite.config.ts` proxies `/api/donation/*` to `http://localhost:8082/api/*`, the same route the BFF has in the image, so the SPA code is identical in both setups. The front-end container (`http://localhost:8084`) needs the Donation API container to be running.
 
 ## Rendering strategy
 
@@ -151,11 +151,13 @@ Login starts with a browser navigation to the Authorization API login endpoint (
 
 ## Build and deployment
 
-- `Dockerfile.frontend` builds the SPA and serves it with nginx (`src/Frontend/nginx.conf`). `nginx.conf` is a template that the nginx image entrypoint renders with `envsubst` at start. The image build renders it the same way and runs `nginx -t`, so an invalid configuration fails the build, and then deletes the rendered file, so a container that cannot render the template at start fails instead of serving a stale build-time configuration. Deep links fall back to `index.html`; a missing file under `/assets/` returns 404.
-- **Donation API route (#112)**: nginx forwards `GET` and `HEAD` requests for `/api/donation/*` to the Donation API's `/api/*` (`/api/donation/v1/Project` becomes `/api/v1/Project`); other methods get 403 until the BFF of #113. The browser only talks to the front-end origin, so the Donation API needs no CORS. The upstream comes from `DONATION_API_UPSTREAM` (default `donation-api:8080`, set in `docker-compose.yaml`) and is used as a variable in `proxy_pass` with the container's DNS resolver (`NGINX_LOCAL_RESOLVERS`), so nginx resolves it per request. A literal hostname would make `nginx -t` fail at image build, where the compose network does not exist. Because of that variable nginx does not rewrite the API's `Location` headers by itself, so `proxy_redirect` maps `http://<upstream>/api/` back to `/api/donation/`; `X-Forwarded-For`, `-Host` and `-Proto` are sent for when the API reads them.
-- When the BFF host is added (#113), either the BFF serves the SPA build output or nginx keeps serving it and forwards `/api/*` to the BFF. Decide in #113 and record it here.
+- `Dockerfile.frontend` builds the SPA (Node), publishes the BFF (.NET SDK) and runs the BFF on the ASP.NET runtime image as its non-root user, port 8080, with the SPA build output as its web root (`/app/wwwroot`). Deep links fall back to `index.html` (`Cache-Control: no-cache`); files under `/assets/` are cached for a year (`immutable`), and a missing file returns 404.
+- The browser only talks to the front-end origin, so the APIs need no CORS. YARP sends `X-Forwarded-For`, `-Host` and `-Proto` for when an API reads them.
+- The CSRF check (`X-Requested-With` on every write) relies on that: it is only safe while the APIs allow no cross-origin requests. Enabling CORS on an API, for example for a second front-end, means revisiting the check first.
+- The BFF drops any `Authorization` header the browser sends; the bearer token comes only from the HttpOnly cookie. An `/api/...` path without a proxy route returns 404, not the SPA.
+- Every forwarded API response carries `Cache-Control: no-store`, because the answers depend on the signed-in user and must not be kept by a browser or a shared cache. The price is that public data, such as the project list, is fetched again on every request.
 - The front-end build, lint, type-check, and unit tests run in the `frontend` job of the pull request and main-branch workflows (`.github/workflows/`). The same job builds the front-end image from `Dockerfile.frontend`; it is not pushed until the front-end has a deployment. A failing check fails the job; on `main` it also blocks Release Please.
-- `scripts/smoke-test.ps1` (section 5) checks the running front-end in the local stack: the SPA at `/` and on a deep link, a built asset, the 404 for a missing asset, the security headers on each of those responses, the forwarding route `/api/donation/v1/Project`, and that writes on it are refused.
+- `scripts/smoke-test.ps1` (section 5) checks the running front-end in the local stack: the SPA at `/` and on a deep link, a built asset, the 404 for a missing asset, the security headers on each of those responses, the routes `/api/donation/v1/Project` and `/api/auth/v1/user` (anonymous 401), and that a write without the CSRF header is refused. Section 3 calls `/api/auth/v1/user` through the front-end with only the login's access-token cookie, which proves the cookie-to-bearer forwarding.
 - Target topology: one front-end container hosting the SPA. See [Deployment Status](../current/deployment-status.md).
 
 ## Testing strategy
@@ -173,8 +175,8 @@ Follow [testing-strategy](../current/testing.md) and ADR-008: E2E tests stay out
 - No tokens in JavaScript-accessible storage; no tokens in URLs.
 - Never render API-provided HTML. React escapes by default; do not use `dangerouslySetInnerHTML`.
 - External links use `rel="noopener noreferrer"`.
-- Security headers on every response, set by nginx (by the BFF if it takes over serving the files):
-  - `Content-Security-Policy` that allows only the SPA's own origin and no framing: `default-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'`. No inline scripts or styles and no `data:` URLs; React's `style` prop is allowed because it sets styles from script. Allowing another source (for example GitHub avatars) is a deliberate change to `src/Frontend/nginx.conf` and to the smoke test's check.
+- Security headers on every response, forwarded API responses and errors included, set by the BFF (`BrowserSecurityHeaders.cs`):
+  - `Content-Security-Policy` that allows only the SPA's own origin and no framing: `default-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'`. No inline scripts or styles and no `data:` URLs; React's `style` prop is allowed because it sets styles from script. Allowing another source (for example GitHub avatars) is a deliberate change to `src/Frontend/TimeForCode.Frontend.Bff/BrowserSecurityHeaders.cs`, its tests and the smoke test's check.
   - `X-Content-Type-Options: nosniff`.
   - `Referrer-Policy: strict-origin-when-cross-origin`.
 - Dependencies are pinned, and Dependabot or the existing dependency-update skill keeps them current.

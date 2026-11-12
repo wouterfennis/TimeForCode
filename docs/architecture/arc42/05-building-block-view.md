@@ -169,7 +169,7 @@ Architecture tests (`TimeForCode.Reporting.Architecture.Tests`) enforce the laye
 
 ## Level 2 — Front-end
 
-The front-end is a React single-page application written in TypeScript and built with Vite (`src/Frontend/TimeForCode.Frontend`). It is the user-facing shell and contains no business logic. It reaches the Authorization API and the Donation API through a same-origin backend-for-frontend (BFF) that turns the `HttpOnly` token cookies into bearer tokens (target state, [ADR-012](../../reference/adr/0012-react-spa-frontend.md)). Stack, folder layout and testing strategy: [front-end architecture](../../frontend/architecture.md).
+The front-end is a React single-page application written in TypeScript and built with Vite (`src/Frontend/TimeForCode.Frontend`). It is the user-facing shell and contains no business logic. It reaches the Authorization API and the Donation API through the same-origin backend-for-frontend (BFF) `src/Frontend/TimeForCode.Frontend.Bff`, which also serves the build: an ASP.NET host that sets the security headers, forwards `/api/auth/*` and `/api/donation/*` with YARP, turns the `HttpOnly` access-token cookie into a bearer token and checks the CSRF header ([ADR-012](../../reference/adr/0012-react-spa-frontend.md), #182). Stack, folder layout and testing strategy: [front-end architecture](../../frontend/architecture.md).
 
 | Folder | Responsibility |
 | --- | --- |

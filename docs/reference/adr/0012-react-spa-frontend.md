@@ -2,7 +2,7 @@
 
 **Date**: 2026-10-06
 **Status**: Proposed
-**Amended**: 2026-10-21 (nginx serves the SPA until the BFF arrives with sign-in, see [Amendment](#amendment-2026-10-21-nginx-first-the-bff-with-sign-in))
+**Amended**: 2026-10-21 (nginx serves the SPA until the BFF arrives, see [Amendment](#amendment-2026-10-21-nginx-first-the-bff-with-sign-in)); 2026-11-08 (the BFF replaces nginx, see [Amendment](#amendment-2026-11-08-the-bff-replaces-nginx))
 
 ## Context
 
@@ -55,6 +55,14 @@ Decided in [#111](https://github.com/wouterfennis/TimeForCode/issues/111): the B
 | `/api/donation/*` | Donation API `/api/*` |
 
 For example, `/api/donation/v1/Project` goes to the Donation API's `/api/v1/Project`.
+
+## Amendment (2026-11-08): the BFF replaces nginx
+
+Decided in [#182](https://github.com/wouterfennis/TimeForCode/issues/182), split from sign-in (#113) so the BFF lands as its own, behaviour-neutral step:
+
+- **The BFF serves everything**: `src/Frontend/TimeForCode.Frontend.Bff` serves the SPA files, sets the security headers (the same Content Security Policy, `nosniff` and `Referrer-Policy` as before) and forwards both API routes. nginx and `src/Frontend/nginx.conf` are removed; `Dockerfile.frontend` builds one ASP.NET image. Considered: nginx keeps the files and forwards `/api/*` to the BFF, which keeps #111's configuration but adds a container and splits the headers over two places.
+- **Forwarding with YARP**, configured in the BFF's `appsettings.json`. The bearer token comes from the shared `CookieAuthorizationHandler`, plugged into YARP's outgoing client.
+- **CSRF**: requests other than `GET`, `HEAD` and `OPTIONS` need the `X-Requested-With` header, or the BFF answers 403 without calling an API.
 
 ## Follow-up when accepted
 

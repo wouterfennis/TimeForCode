@@ -10,7 +10,6 @@ Before adding an entry, check whether it belongs in a rule (`.claude/rules/`), a
 - Solution-wide format churn: `.claude/hooks/format-solution.ps1`, skill `dotnet-format`
 - Approval markers: `scripts/check-approval.ps1`, skill `agent-handoffs`
 - Stale local Mongo volume: `scripts/start-local.ps1 -ResetData`
-- `nginx -t` at image build: comment in `Dockerfile.frontend`
 - Project status numbers: comment on the enum plus `ProjectStatusTests`
 
 ## Entries
