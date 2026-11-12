@@ -6,6 +6,8 @@ namespace TimeForCode.Frontend.Bff.Tests
     [TestClass]
     public sealed class ForwardingTests
     {
+        public TestContext TestContext { get; set; } = null!;
+
         private BffFactory _factory = null!;
         private HttpClient _browser = null!;
 
@@ -28,7 +30,7 @@ namespace TimeForCode.Frontend.Bff.Tests
         [DataRow("/api/auth/v1/user", "http://authorization-api:8080/api/v1/user")]
         public async Task Get_ApiRoute_ReachesTheApiWithoutTheRoutePrefix(string path, string expectedUri)
         {
-            await _browser.GetAsync(path);
+            await _browser.GetAsync(path, TestContext.CancellationToken);
 
             _factory.Upstream.Requests.Should().ContainSingle().Which.Uri.Should().Be(new Uri(expectedUri));
         }
@@ -36,9 +38,9 @@ namespace TimeForCode.Frontend.Bff.Tests
         [TestMethod]
         public async Task Get_DonationRoute_ReturnsTheApiResponse()
         {
-            var response = await _browser.GetAsync("/api/donation/v1/Project");
+            var response = await _browser.GetAsync("/api/donation/v1/Project", TestContext.CancellationToken);
 
-            (await response.Content.ReadAsStringAsync()).Should().Be("{\"projects\":[]}");
+            (await response.Content.ReadAsStringAsync(TestContext.CancellationToken)).Should().Be("{\"projects\":[]}");
         }
 
         [TestMethod]
@@ -46,7 +48,7 @@ namespace TimeForCode.Frontend.Bff.Tests
         [DataRow("/api/auth/v1/user")]
         public async Task Get_ApiRoute_IsNeverCached(string path)
         {
-            var response = await _browser.GetAsync(path);
+            var response = await _browser.GetAsync(path, TestContext.CancellationToken);
 
             response.Headers.CacheControl!.NoStore.Should().BeTrue();
         }
@@ -57,7 +59,7 @@ namespace TimeForCode.Frontend.Bff.Tests
             using var request = new HttpRequestMessage(HttpMethod.Get, "/api/auth/v1/user");
             request.Headers.Add("Cookie", "RefreshToken=refresh-value");
 
-            await _browser.SendAsync(request);
+            await _browser.SendAsync(request, TestContext.CancellationToken);
 
             _factory.Upstream.Requests.Should().ContainSingle().Which.Headers["Cookie"].Should().Be("RefreshToken=refresh-value");
         }
@@ -72,7 +74,7 @@ namespace TimeForCode.Frontend.Bff.Tests
                 return response;
             };
 
-            var response = await _browser.GetAsync("/api/auth/v1/authentication/callback");
+            var response = await _browser.GetAsync("/api/auth/v1/authentication/callback", TestContext.CancellationToken);
 
             response.Headers.GetValues("Set-Cookie").Should().ContainSingle()
                 .Which.Should().Be("AccessToken=value; path=/; secure; samesite=strict; httponly");
@@ -92,7 +94,7 @@ namespace TimeForCode.Frontend.Bff.Tests
                 return response;
             };
 
-            var response = await _browser.GetAsync(path);
+            var response = await _browser.GetAsync(path, TestContext.CancellationToken);
 
             response.Headers.Location!.OriginalString.Should().Be(expectedLocation);
         }

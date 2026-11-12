@@ -6,6 +6,8 @@ namespace TimeForCode.Frontend.Bff.Tests
     [TestClass]
     public sealed class StaticFilesTests
     {
+        public TestContext TestContext { get; set; } = null!;
+
         private BffFactory _factory = null!;
         private HttpClient _browser = null!;
 
@@ -28,9 +30,9 @@ namespace TimeForCode.Frontend.Bff.Tests
         [DataRow("/projects/abc")]
         public async Task Get_SpaRoute_ReturnsIndexHtml(string path)
         {
-            var response = await _browser.GetAsync(path);
+            var response = await _browser.GetAsync(path, TestContext.CancellationToken);
 
-            (await response.Content.ReadAsStringAsync()).Should().Contain("<div id=\"root\"></div>");
+            (await response.Content.ReadAsStringAsync(TestContext.CancellationToken)).Should().Contain("<div id=\"root\"></div>");
         }
 
         [TestMethod]
@@ -38,7 +40,7 @@ namespace TimeForCode.Frontend.Bff.Tests
         [DataRow("/projects/abc")]
         public async Task Get_SpaRoute_IsRevalidatedOnEveryLoad(string path)
         {
-            var response = await _browser.GetAsync(path);
+            var response = await _browser.GetAsync(path, TestContext.CancellationToken);
 
             response.Headers.CacheControl!.NoCache.Should().BeTrue();
         }
@@ -46,7 +48,7 @@ namespace TimeForCode.Frontend.Bff.Tests
         [TestMethod]
         public async Task Get_BuiltAsset_IsCachedForAYear()
         {
-            var response = await _browser.GetAsync("/assets/app.js");
+            var response = await _browser.GetAsync("/assets/app.js", TestContext.CancellationToken);
 
             response.Headers.CacheControl!.ToString().Should().Be("public, max-age=31536000, immutable");
         }
@@ -54,7 +56,7 @@ namespace TimeForCode.Frontend.Bff.Tests
         [TestMethod]
         public async Task Get_MissingAsset_ReturnsNotFound()
         {
-            var response = await _browser.GetAsync("/assets/missing.js");
+            var response = await _browser.GetAsync("/assets/missing.js", TestContext.CancellationToken);
 
             response.StatusCode.Should().Be(HttpStatusCode.NotFound);
         }
@@ -64,7 +66,7 @@ namespace TimeForCode.Frontend.Bff.Tests
         [DataRow("/api/donations/v1/Project")]
         public async Task Get_ApiPathWithoutARoute_ReturnsNotFoundInsteadOfTheSpa(string path)
         {
-            var response = await _browser.GetAsync(path);
+            var response = await _browser.GetAsync(path, TestContext.CancellationToken);
 
             response.StatusCode.Should().Be(HttpStatusCode.NotFound);
         }

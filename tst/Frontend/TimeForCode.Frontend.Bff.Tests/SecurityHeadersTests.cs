@@ -5,6 +5,8 @@ namespace TimeForCode.Frontend.Bff.Tests
     [TestClass]
     public sealed class SecurityHeadersTests
     {
+        public TestContext TestContext { get; set; } = null!;
+
         private BffFactory _factory = null!;
         private HttpClient _browser = null!;
 
@@ -34,7 +36,7 @@ namespace TimeForCode.Frontend.Bff.Tests
         [DataRow("/api/donation/v1/Project", "Referrer-Policy", "strict-origin-when-cross-origin")]
         public async Task Get_AnyResponse_CarriesSecurityHeader(string path, string header, string value)
         {
-            var response = await _browser.GetAsync(path);
+            var response = await _browser.GetAsync(path, TestContext.CancellationToken);
 
             response.Headers.GetValues(header).Should().ContainSingle().Which.Should().Be(value);
         }

@@ -6,6 +6,8 @@ namespace TimeForCode.Frontend.Bff.Tests
     [TestClass]
     public sealed class CsrfTests
     {
+        public TestContext TestContext { get; set; } = null!;
+
         private BffFactory _factory = null!;
         private HttpClient _browser = null!;
 
@@ -32,7 +34,7 @@ namespace TimeForCode.Frontend.Bff.Tests
         {
             using var request = new HttpRequestMessage(new HttpMethod(method), "/api/donation/v1/Project");
 
-            var response = await _browser.SendAsync(request);
+            var response = await _browser.SendAsync(request, TestContext.CancellationToken);
 
             response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
         }
@@ -44,7 +46,7 @@ namespace TimeForCode.Frontend.Bff.Tests
         {
             using var request = new HttpRequestMessage(new HttpMethod(method), "/api/auth/v1/authentication/logout");
 
-            await _browser.SendAsync(request);
+            await _browser.SendAsync(request, TestContext.CancellationToken);
 
             _factory.Upstream.Requests.Should().BeEmpty();
         }
@@ -59,7 +61,7 @@ namespace TimeForCode.Frontend.Bff.Tests
             using var request = new HttpRequestMessage(new HttpMethod(method), "/api/donation/v1/Project");
             request.Headers.Add("X-Requested-With", "XMLHttpRequest");
 
-            await _browser.SendAsync(request);
+            await _browser.SendAsync(request, TestContext.CancellationToken);
 
             _factory.Upstream.Requests.Should().ContainSingle().Which.Method.Method.Should().Be(method);
         }
@@ -71,7 +73,7 @@ namespace TimeForCode.Frontend.Bff.Tests
         {
             using var request = new HttpRequestMessage(new HttpMethod(method), "/api/donation/v1/Project");
 
-            await _browser.SendAsync(request);
+            await _browser.SendAsync(request, TestContext.CancellationToken);
 
             _factory.Upstream.Requests.Should().ContainSingle().Which.Method.Method.Should().Be(method);
         }

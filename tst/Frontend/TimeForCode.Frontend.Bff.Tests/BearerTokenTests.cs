@@ -8,6 +8,8 @@ namespace TimeForCode.Frontend.Bff.Tests
     [TestClass]
     public sealed class BearerTokenTests
     {
+        public TestContext TestContext { get; set; } = null!;
+
         private BffFactory _factory = null!;
         private HttpClient _browser = null!;
 
@@ -34,7 +36,7 @@ namespace TimeForCode.Frontend.Bff.Tests
             using var request = new HttpRequestMessage(HttpMethod.Get, path);
             request.Headers.Add("Cookie", $"AccessToken={Uri.EscapeDataString(cookie)}");
 
-            await _browser.SendAsync(request);
+            await _browser.SendAsync(request, TestContext.CancellationToken);
 
             _factory.Upstream.Requests.Should().ContainSingle().Which.Headers["Authorization"].Should().Be("Bearer jwt-value");
         }
@@ -50,7 +52,7 @@ namespace TimeForCode.Frontend.Bff.Tests
                 request.Headers.Add("Cookie", cookie);
             }
 
-            await _browser.SendAsync(request);
+            await _browser.SendAsync(request, TestContext.CancellationToken);
 
             _factory.Upstream.Requests.Should().ContainSingle().Which.Headers.Should().NotContainKey("Authorization");
         }
@@ -61,7 +63,7 @@ namespace TimeForCode.Frontend.Bff.Tests
             using var request = new HttpRequestMessage(HttpMethod.Get, "/api/auth/v1/user");
             request.Headers.Add("Authorization", "Bearer forged-by-a-script");
 
-            await _browser.SendAsync(request);
+            await _browser.SendAsync(request, TestContext.CancellationToken);
 
             _factory.Upstream.Requests.Should().ContainSingle().Which.Headers.Should().NotContainKey("Authorization");
         }
@@ -74,7 +76,7 @@ namespace TimeForCode.Frontend.Bff.Tests
             request.Headers.Add("Authorization", "Bearer forged-by-a-script");
             request.Headers.Add("Cookie", $"AccessToken={Uri.EscapeDataString(cookie)}");
 
-            await _browser.SendAsync(request);
+            await _browser.SendAsync(request, TestContext.CancellationToken);
 
             _factory.Upstream.Requests.Should().ContainSingle().Which.Headers["Authorization"].Should().Be("Bearer jwt-value");
         }
@@ -84,7 +86,7 @@ namespace TimeForCode.Frontend.Bff.Tests
         {
             _factory.Upstream.Respond = () => new HttpResponseMessage(HttpStatusCode.Unauthorized);
 
-            var response = await _browser.GetAsync("/api/auth/v1/user");
+            var response = await _browser.GetAsync("/api/auth/v1/user", TestContext.CancellationToken);
 
             response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }

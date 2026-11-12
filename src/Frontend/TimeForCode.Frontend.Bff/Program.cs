@@ -16,7 +16,4 @@ app.UseCsrfHeaderCheck();
 app.MapReverseProxy();
 app.MapSpaFiles();
 
-app.Run();
-
-/// <summary>Entry point; public so the tests can start the host.</summary>
-public partial class Program;
+await app.RunAsync();

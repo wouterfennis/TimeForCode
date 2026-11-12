@@ -20,7 +20,7 @@ namespace TimeForCode.Frontend.Bff
         {
             app.UseStaticFiles(Options);
             // An API path without a proxy route is a 404, not the SPA's index.html.
-            app.Map("/api/{**rest}", () => Results.NotFound());
+            app.MapGroup("/api").MapFallback(() => Results.NotFound());
             app.MapFallbackToFile("index.html", Options);
         }
     }
