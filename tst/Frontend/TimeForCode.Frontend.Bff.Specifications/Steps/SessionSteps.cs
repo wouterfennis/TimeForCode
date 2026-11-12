@@ -7,26 +7,28 @@ using TimeForCode.Frontend.Bff.Specifications.Mocking;
 namespace TimeForCode.Frontend.Bff.Specifications.Steps
 {
     [Binding]
-    public sealed class SessionSteps : IDisposable
+    public sealed class SessionSteps(Browser browser)
     {
         private const string SessionPath = "/api/session";
+        private const string AccessTokenCookie = "AccessToken";
 
-        private readonly HttpClient _browser = Hooks.CreateInProcessBrowser();
         private string? _accessToken;
-        private string? _cookie;
         private HttpResponseMessage? _response;
         private string _body = string.Empty;
 
         [Given("^The user has (no|an expired|a malformed) access token$")]
         public void GivenTheUserHasAnUnusableAccessToken(string kind)
         {
-            _cookie = kind switch
+            switch (kind)
             {
-                // Past the 5 minutes of clock skew that the BFF, like the APIs, allows.
-                "an expired" => "AccessToken=" + TestTokens.CookieValue(TestTokens.User(DateTime.UtcNow.AddMinutes(-10))),
-                "a malformed" => "AccessToken=" + TestTokens.CookieValue("not-a-jwt"),
-                _ => null,
-            };
+                case "an expired":
+                    // Past the 5 minutes of clock skew that the BFF, like the APIs, allows.
+                    browser.SetCookie(AccessTokenCookie, TestTokens.CookieValue(TestTokens.User(DateTime.UtcNow.AddMinutes(-10))));
+                    break;
+                case "a malformed":
+                    browser.SetCookie(AccessTokenCookie, TestTokens.CookieValue("not-a-jwt"));
+                    break;
+            }
         }
 
         [Given("The user has an access token")]
@@ -36,21 +38,23 @@ namespace TimeForCode.Frontend.Bff.Specifications.Steps
         public void GivenTheUserHasAnAdministratorAccessToken() => UseToken(TestTokens.Admin());
 
         [When("The time for code website checks who is signed in")]
-        public async Task WhenTheWebsiteChecksWhoIsSignedIn()
-        {
-            using var request = new HttpRequestMessage(HttpMethod.Get, SessionPath);
-            if (_cookie is not null)
-            {
-                request.Headers.Add("Cookie", _cookie);
-            }
+        public Task WhenTheWebsiteChecksWhoIsSignedIn() => CheckSessionAsync();
 
-            _response = await _browser.SendAsync(request);
-            _body = await _response.Content.ReadAsStringAsync();
+        [Then("The time for code website learns that the user is signed in")]
+        public async Task ThenTheWebsiteLearnsThatTheUserIsSignedIn()
+        {
+            await CheckSessionAsync();
+            Session().GetProperty("signedIn").GetBoolean().Should().BeTrue();
         }
 
         [Then("The time for code website learns that nobody is signed in")]
-        public void ThenTheWebsiteLearnsThatNobodyIsSignedIn()
+        public async Task ThenTheWebsiteLearnsThatNobodyIsSignedIn()
         {
+            if (_response is null)
+            {
+                await CheckSessionAsync();
+            }
+
             Session().GetProperty("signedIn").GetBoolean().Should().BeFalse();
         }
 
@@ -79,16 +83,16 @@ namespace TimeForCode.Frontend.Bff.Specifications.Steps
             _body.Should().NotContainEquivalentOf("token");
         }
 
-        public void Dispose()
-        {
-            _response?.Dispose();
-            _browser.Dispose();
-        }
-
         private void UseToken(string token)
         {
             _accessToken = token;
-            _cookie = "AccessToken=" + TestTokens.CookieValue(token);
+            browser.SetCookie(AccessTokenCookie, TestTokens.CookieValue(token));
+        }
+
+        private async Task CheckSessionAsync()
+        {
+            _response = await browser.GetAsync(SessionPath);
+            _body = await _response.Content.ReadAsStringAsync();
         }
 
         private JsonElement Session()
