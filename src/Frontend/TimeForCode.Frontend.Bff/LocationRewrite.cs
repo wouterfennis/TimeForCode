@@ -27,14 +27,8 @@ namespace TimeForCode.Frontend.Bff
             {
                 var headers = transform.HttpContext.Response.Headers;
                 var destination = transform.HttpContext.GetReverseProxyFeature().ProxiedDestination?.Model.Config.Address;
-                var value = headers.Location.ToString();
-                if (value.StartsWith(ApiPath, StringComparison.Ordinal))
-                {
-                    // A relative location, such as the one CreatedAtAction produces, is already the API's own path.
-                    headers.Location = prefix + value[ApiPath.Length..];
-                }
-                else if (Uri.TryCreate(destination, UriKind.Absolute, out var api)
-                    && Uri.TryCreate(value, UriKind.Absolute, out var location))
+                if (Uri.TryCreate(destination, UriKind.Absolute, out var api)
+                    && Uri.TryCreate(headers.Location.ToString(), UriKind.Absolute, out var location))
                 {
                     headers.Location = Rewrite(location, api, prefix);
                 }
