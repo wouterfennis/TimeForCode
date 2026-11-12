@@ -8,11 +8,13 @@ builder.Services.AddReverseProxy()
     .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"))
     .AddTransforms(LocationRewrite.Add);
 builder.Services.AddSingleton<IForwarderHttpClientFactory, BearerTokenForwarderHttpClientFactory>();
+builder.Services.AddSessionEndpoint(builder.Configuration);
 
 var app = builder.Build();
 
 app.UseBrowserSecurityHeaders();
 app.UseCsrfHeaderCheck();
+app.MapSessionEndpoint();
 app.MapReverseProxy();
 app.MapSpaFiles();
 

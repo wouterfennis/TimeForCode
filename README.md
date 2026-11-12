@@ -123,7 +123,7 @@ By default the local stack uses an identity-provider-mock service so no real Git
 ### Setup
 
 1. Create a GitHub OAuth App at <https://github.com/settings/developers>
-   - Set **Authorization callback URL** to `http://localhost:8080/api/v1/authentication/callback`
+   - Set **Authorization callback URL** to `http://localhost:8084/api/auth/v1/authentication/callback` (the front-end's address; the BFF forwards it to the Authorization API)
 2. Copy the example env file and fill in your credentials:
 
 ```powershell

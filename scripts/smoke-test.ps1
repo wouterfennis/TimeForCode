@@ -10,7 +10,7 @@
 
         1. Auth API, IdP Mock and Donation API respond
         2. Auth API OIDC discovery publishes issuer and JWKS
-        3. Login round trip issues access and refresh cookies
+        3. Login round trip through the front-end (callback on the front-end's address) issues access and refresh cookies; the session endpoint names the user without the token
         4. The JWT audiences include the Donation API
         5. The Auth API accepts its own JWT
         6. The Donation API accepts the Auth API JWT and stores a project (Mongo write)
@@ -34,7 +34,7 @@
     Base URL of the Reporting API. Default: http://localhost:8083
 
 .PARAMETER ClientRedirectUri
-    Front-end origin the login redirects back to (must be a configured valid redirect URI). No front-end needs to run. Default: http://localhost:8084
+    Front-end origin the login redirects back to (must be a configured valid redirect URI). Default: http://localhost:8084
 
 .PARAMETER FrontendBaseUrl
     Base URL of the front-end (the SPA and its API routes, served by the BFF). Default: http://localhost:8084
@@ -193,9 +193,9 @@ Write-Section "3. Login round trip and JWT wiring"
 
 $cookieJar = [System.IO.Path]::GetTempFileName()
 try {
-    # Auth API login -> IdP Mock authorize form -> confirm -> Auth API callback
+    # Front-end login -> IdP Mock authorize form -> confirm -> front-end callback; the BFF forwards both to the Auth API (#113)
     $redirectUri = [System.Uri]::EscapeDataString($ClientRedirectUri)
-    $r1 = curl -si --max-redirs 0 -c $cookieJar "$AuthApiBaseUrl/api/v1/authentication/login?IdentityProvider=Github&RedirectUri=$redirectUri" 2>&1
+    $r1 = curl -si --max-redirs 0 -c $cookieJar "$FrontendBaseUrl/api/auth/v1/authentication/login?IdentityProvider=Github&RedirectUri=$redirectUri" 2>&1
     $idpRedirect = Get-HeaderValue $r1 "Location"
     if ((Get-StatusCode $r1) -ne 302 -or $idpRedirect -notmatch [regex]::Escape($IdpMockBaseUrl)) {
         throw "login did not redirect to the IdP Mock (status $(Get-StatusCode $r1), location '$idpRedirect')"
@@ -216,6 +216,12 @@ try {
     $callbackRedirect = Get-HeaderValue $r2b "Location"
     if ((Get-StatusCode $r2b) -ne 302 -or $callbackRedirect -notmatch "callback" -or $callbackRedirect -notmatch "code=") {
         throw "IdP Mock confirm did not redirect to the callback with a code (status $(Get-StatusCode $r2b))"
+    }
+    # The callback must be on the front-end's address, so the cookies are set by the site the user is on.
+    if ($callbackRedirect.StartsWith("$FrontendBaseUrl/api/auth/", [System.StringComparison]::OrdinalIgnoreCase)) {
+        Write-Pass "IdP Mock redirects to a callback on the front-end's address"
+    } else {
+        Write-Fail "Callback address" "Location=$callbackRedirect (expected it under $FrontendBaseUrl/api/auth/)"
     }
 
     $r3 = curl -si --max-redirs 0 -c $cookieJar -b $cookieJar $callbackRedirect 2>&1
@@ -257,6 +263,14 @@ try {
         Write-Pass "Front-end BFF forwards the AccessToken cookie as bearer: GET /api/auth/v1/user -> 200 with profile"
     } else {
         Write-Fail "Front-end BFF GET /api/auth/v1/user with the AccessToken cookie" "Status=$(Get-StatusCode $r5b)"
+    }
+
+    # The session endpoint names the signed-in user and never returns the token.
+    $r5c = curl -si -H "Cookie: AccessToken=$($accessCookie[0].Groups[1].Value)" "$FrontendBaseUrl/api/session" 2>&1
+    if ((Get-StatusCode $r5c) -eq 200 -and ($r5c | Select-String '"signedIn":true') -and -not ($r5c | Select-String -SimpleMatch $bearer)) {
+        Write-Pass "Front-end session endpoint reports the signed-in user without the token: GET /api/session -> 200"
+    } else {
+        Write-Fail "Front-end GET /api/session with the AccessToken cookie" "Status=$(Get-StatusCode $r5c)"
     }
 
     # Donation API accepts the Auth JWT: one Mongo-backed write, then read it back.

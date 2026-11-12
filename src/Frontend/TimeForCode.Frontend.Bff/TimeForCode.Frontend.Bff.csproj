@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="TimeForCode.Frontend.Bff.Tests" />
+    <InternalsVisibleTo Include="TimeForCode.Frontend.Bff.Specifications" />
   </ItemGroup>
 
   <ItemGroup>
