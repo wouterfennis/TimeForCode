@@ -31,7 +31,7 @@ podman compose up --build
 .\scripts\smoke-test.ps1
 ```
 
-The script is a smoke tier of 15 checks: service availability, OIDC discovery, the login round trip, the Auth API JWT accepted by the Donation API, one Mongo-backed write and read (register a project, read it back), the Reporting API (anonymous call refused with 401, and a non-member's call relayed from the Donation API as 403, which proves JWT validation, token forwarding and the Donation call), the data protection key ring in the database, and the front-end (the SPA on `/` and on a deep link, the 404 for a missing asset, and the security headers on those responses). Project lifecycle, role checks and GitHub token handling are covered by the Reqnroll specifications. Each run leaves one new `Draft` project in the local database.
+The script is a smoke tier of 21 checks: service availability, OIDC discovery, the login round trip through the front-end (the identity provider calls back on `http://localhost:8084/api/auth/v1/authentication/callback`, and the BFF's `/api/session` names the user without the token), the Auth API JWT accepted by the Donation API, one Mongo-backed write and read (register a project, read it back), the Reporting API (anonymous call refused with 401, and a non-member's call relayed from the Donation API as 403, which proves JWT validation, token forwarding and the Donation call), the data protection key ring in the database, and the front-end (the SPA on `/` and on a deep link, the 404 for a missing asset, and the security headers on those responses). Project lifecycle, role checks and GitHub token handling are covered by the Reqnroll specifications. Each run leaves one new `Draft` project in the local database.
 
 ### Services and Ports
 
@@ -61,7 +61,7 @@ The Identity Provider Mock replaces GitHub in local development. The Authorizati
 
 | Service | URL | Notes |
 | --- | --- | --- |
-| Frontend (BFF + SPA) | <http://localhost:8084> | The BFF serves the React SPA and forwards `/api/donation/*` and `/api/auth/*` to the APIs, with the access-token cookie as bearer token |
+| Frontend (BFF + SPA) | <http://localhost:8084> | The BFF serves the React SPA and forwards `/api/donation/*` and `/api/auth/*` to the APIs, with the access-token cookie as bearer token; it receives the GitHub (mock) callback and answers `/api/session` |
 | Authorization API | <http://localhost:8080> | OAuth 2.0 + JWT |
 | Identity Provider Mock | <http://localhost:8081> | Simulates GitHub OAuth and GitHub REST API |
 | Donation API | <http://localhost:8082> | Project and donation management |

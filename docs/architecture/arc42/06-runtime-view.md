@@ -12,31 +12,39 @@ Published views of the [LikeC4 architecture model](../likec4/README.md): [GitHub
 
 This is the current, fully implemented authentication flow. See [authentication flow design](../../authentication/authentication_flow_design.md) for the complete step-by-step description.
 
+The browser only talks to the front-end's origin: the BFF forwards `/api/auth/*` to the Authorization API, and GitHub calls back on the front-end's address, so the token cookies are set by the site the user is on (#113). Locally the front-end is `http://localhost:8084` and the identity provider mock stands in for GitHub.
+
 ```mermaid
 sequenceDiagram
     participant Browser
-    participant Frontend
+    participant BFF as Front-end (BFF + SPA)
     participant AuthAPI as Authorization API
     participant GitHub
 
-    Browser->>Frontend: GET / (unauthenticated)
-    Frontend-->>Browser: Login page
-    Browser->>Frontend: Click "Sign in with GitHub"
-    Frontend->>AuthAPI: GET /api/v1/authentication/login
-    AuthAPI-->>Browser: 302 Redirect to GitHub (with state, client_id; no scope, so public profile access only)
+    Browser->>BFF: GET /api/session (no cookie)
+    BFF-->>Browser: { signedIn: false } — SPA shows "Sign in with GitHub"
+    Browser->>BFF: Navigate to /api/auth/v1/authentication/login?RedirectUri=<front-end origin>
+    BFF->>AuthAPI: GET /api/v1/authentication/login
+    AuthAPI-->>Browser: 302 Redirect to GitHub (state, client_id, redirect_uri on the front-end; no scope, so public profile access only)
     Browser->>GitHub: GET /login/oauth/authorize
     GitHub-->>Browser: GitHub login & consent page
     Browser->>GitHub: User approves
-    GitHub-->>AuthAPI: GET /api/v1/authentication/callback?code=...&state=...
+    GitHub-->>Browser: 302 to the front-end's callback
+    Browser->>BFF: GET /api/auth/v1/authentication/callback?code=...&state=...
+    BFF->>AuthAPI: GET /api/v1/authentication/callback?code=...&state=...
     AuthAPI->>GitHub: POST /login/oauth/access_token (exchange code)
     GitHub-->>AuthAPI: External access token
     AuthAPI->>GitHub: GET /user (fetch profile)
     GitHub-->>AuthAPI: User profile (id, login, email)
     AuthAPI->>AuthAPI: Discard the GitHub token; link GitHub account to internal user
     AuthAPI->>AuthAPI: Issue internal JWT + refresh token
-    AuthAPI-->>Browser: 302 Redirect to Frontend (set HttpOnly cookies)
-    Browser->>Frontend: GET / (authenticated, JWT cookie present)
+    AuthAPI-->>Browser: 302 Redirect to the SPA (sets HttpOnly cookies, via the BFF)
+    Browser->>BFF: GET /api/session (AccessToken cookie)
+    BFF->>BFF: Validate the token (published keys, issuer, audience, lifetime)
+    BFF-->>Browser: { signedIn: true, login, avatarUrl, isAdmin } — never the token
 ```
+
+Sign-out: the SPA sends `POST /api/auth/v1/authentication/logout` with the `X-Requested-With` header; the BFF forwards it, the Authorization API revokes the refresh token and expires both cookies, and the SPA shows the anonymous state.
 
 ---
 

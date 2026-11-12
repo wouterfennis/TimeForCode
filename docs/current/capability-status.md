@@ -99,7 +99,8 @@ This document provides an explicit, feature-level view of what is implemented, p
 | Public project list | ⚠️ | Unstyled first page of active projects with loading, empty and error states, read through the BFF at `/api/donation/*`; no search, paging controls or detail page |
 | Generated API types | ✅ | `src/api/donation.d.ts`, `authorization.d.ts` and `reporting.d.ts` are generated from the OpenAPI snapshots and committed; CI fails when it is stale |
 | Front-end quality gates in CI | ✅ | API types check, lint (oxlint), typecheck, Vitest with axe, coverage to SonarCloud and build run in the `frontend` job |
-| Login, project and donation screens | ❌ | Not implemented |
+| Sign in and sign out | ⚠️ | "Sign in with GitHub" and "Signed in as \<login\>" with "Sign out" in the page header, through the BFF (#113); signed-in state from the BFF's `/api/session`. Locally only (production callback and BFF are not deployed); no silent token refresh, no avatar (the CSP allows no external images yet), admin sessions show as signed out (admin tokens carry no login) |
+| Project and donation screens | ❌ | Not implemented |
 | Donation pledge form | ❌ | Not implemented |
 | Organization profile page | ❌ | Not implemented |
 | Contributor profile page | ❌ | Not implemented |

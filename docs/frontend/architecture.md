@@ -103,6 +103,7 @@ The diagram shows that the browser only ever talks to one origin. The BFF transl
 | --- | --- | --- |
 | `/api/auth/*` | Authorization API `/api/*` | `auth` |
 | `/api/donation/*` | Donation API `/api/*` | `donation` |
+| `/api/session` | Not forwarded: the BFF answers it (#113) | `SessionEndpoint.cs` |
 
 For example, `/api/donation/v1/Project` goes to the Donation API's `/api/v1/Project`. The routes and their destinations are in the BFF's `appsettings.json` (`ReverseProxy`); `docker-compose.yaml` sets the destinations with `ReverseProxy__Clusters__<route>__Destinations__api__Address`. Forwarded responses get `Cache-Control: no-store`, and an API's own absolute `Location` (`http://donation-api:8080/api/v1/Project/42`) is rewritten to the route (`/api/donation/v1/Project/42`); other locations, such as the GitHub login or the SPA redirect, stay as they are.
 
@@ -114,13 +115,17 @@ Cookie authentication means state-changing requests need CSRF protection. `SameS
 
 ### Login redirect
 
-Login starts with a browser navigation to the Authorization API login endpoint (through the BFF), which redirects to GitHub and back. The callback sets the cookies and redirects to the SPA. The allowed redirect targets are an allow-list in the Authorization API configuration; add the new front-end origin there. Never accept an arbitrary return URL.
+Login (#113) is a full-page navigation, not a fetch: "Sign in with GitHub" is a link to `/api/auth/v1/Authentication/login?IdentityProvider=Github&RedirectUri=<SPA origin>` (`signInUrl` in `src/api/authClient.ts`). The BFF forwards it to the Authorization API, which redirects to GitHub. GitHub calls back on the **front-end's** address, `/api/auth/v1/authentication/callback` (the Authorization API's `ExternalIdentityProviderOptions:CallbackUri`; locally `http://localhost:8084/...` in `docker-compose.yaml`), so the token cookies are set by the site the user is on. The callback then redirects to the SPA. The allowed redirect targets are an allow-list in the Authorization API configuration (`AuthenticationOptions:ValidRedirectUris`, locally `http://localhost:8084`). Never accept an arbitrary return URL.
+
+Browsers share cookies between ports of the same host, so locally a callback on the Authorization API's own port would also seem to work; only the callback address proves the setup. The smoke test and the `@live` scenarios in `tst/Frontend/TimeForCode.Frontend.Bff.Specifications` check it.
 
 ### Session handling in the SPA
 
-- Determine who is signed in with `GET /api/v1/User` on app start (cache with TanStack Query).
-- On a 401, the API layer tries one refresh (`POST /api/v1/Authentication/refresh`), then retries the request once. If that fails, the user is treated as signed out.
-- Roles for UI decisions come from the user endpoint or token claims exposed by the BFF. The backend remains the enforcer.
+- The SPA cannot read the `HttpOnly` cookies, and the Authorization API's user endpoint rejects admin tokens, so the BFF answers `GET /api/session` (#113): `{ signedIn, login, avatarUrl, isAdmin }` from the claims of the access-token cookie. The BFF validates the token like the APIs do (signature from the Authorization API's published keys, issuer, audience, lifetime, with the same 5 minutes of clock skew); a missing, expired or malformed token, or a token sent only in an `Authorization` header, counts as signed out. It never returns the token.
+- `useSession` (`src/features/session/`) reads it on app start; `SessionControl` in the page header shows "Sign in with GitHub" or "Signed in as \<login\>" with "Sign out". A failed session check counts as signed out.
+- Sign-out sends `POST /api/auth/v1/Authentication/logout` through the typed Authorization client, with the CSRF header. The Authorization API revokes the refresh token and expires both cookies (#104); the SPA then shows the anonymous state. A failed sign-out keeps the signed-in state and shows an error.
+- Not yet: silent refresh. When it comes, on a 401 the API layer tries one refresh (`POST /api/auth/v1/Authentication/refresh`), then retries the request once; if that fails, the user is treated as signed out. TanStack Query is not installed yet; the hooks follow the `useProjects` pattern.
+- The answer only steers the UI. The backend remains the enforcer.
 
 ## API client generation
 
@@ -128,8 +133,8 @@ Login starts with a browser navigation to the Authorization API login endpoint (
 - `npm run generate:api` generates `src/api/donation.d.ts` (and the Authorization and Reporting files, see below) from the snapshots with `openapi-typescript`. It runs through `npx` with exact versions of `openapi-typescript` and TypeScript 5, because `openapi-typescript` needs the JavaScript compiler API that the native TypeScript 7 compiler of this project does not have. The requests go through `openapi-fetch`, so request and response types come from the generated file only.
 - **Decision (#112): the generated output is committed**, and CI fails when it is stale. `npm run check:api` regenerates it and fails on any `git diff` (step "API types up to date" in the `frontend` job). Committing keeps the Docker build free of files outside the front-end folder and shows API changes in the pull request diff.
 - When a backend change alters a snapshot, `check:api` fails until the types are regenerated and committed; after that `typecheck` shows what the front-end must change. That is the contract gate for the front-end.
-- The Authorization and Reporting snapshots have their own generated files (`authorization.d.ts`, `reporting.d.ts`, scripts `generate:api:<name>`). No typed client exists for them yet: it is added with the first feature that calls them (sign-in, #113); the BFF route `/api/auth/*` exists since #182.
-- The generated paths are the API's own (`/api/v1/Project`); `src/api/donationClient.ts` adds the `/api/donation` prefix of the front-end origin to each request.
+- The Authorization and Reporting snapshots have their own generated files (`authorization.d.ts`, `reporting.d.ts`, scripts `generate:api:<name>`). `src/api/authClient.ts` is the typed Authorization client (since #113, for sign-out); Reporting has no client yet.
+- The generated paths are the API's own (`/api/v1/Project`); the clients add the prefix of the front-end origin (`/api/donation/`, `/api/auth/`) to each request, and the `X-Requested-With` header to every state-changing one (middleware in `src/api/frontendOrigin.ts`).
 
 ## Dev server against the local stack
 
@@ -137,6 +142,8 @@ Login starts with a browser navigation to the Authorization API login endpoint (
 2. In `src/Frontend/TimeForCode.Frontend`: `npm run dev` and open the printed URL.
 
 `vite.config.ts` proxies `/api/donation/*` to `http://localhost:8082/api/*`, the same route the BFF has in the image, so the SPA code is identical in both setups. The front-end container (`http://localhost:8084`) needs the Donation API container to be running.
+
+Sign-in only works on the front-end container: the callback and the allowed redirect target are `http://localhost:8084`, and the dev server has no `/api/session` or `/api/auth/*`, so it always shows the anonymous state.
 
 ## Rendering strategy
 

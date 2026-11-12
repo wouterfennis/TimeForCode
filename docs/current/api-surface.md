@@ -236,6 +236,18 @@ When the Donation API refuses the caller (`401`, `403`, `404`) the Reporting API
 
 ---
 
+## Front-end (BFF)
+
+Base URL (local): `http://localhost:8084`
+
+The BFF serves the SPA and forwards `/api/auth/*` to the Authorization API and `/api/donation/*` to the Donation API (`/api/auth/v1/user` reaches the Authorization API's `/api/v1/user`), with the access-token cookie as bearer token. Sign-in runs through it as well: login, and the GitHub callback at `/api/auth/v1/authentication/callback` (#113). Its own endpoint:
+
+| Method | Path | Status | Description |
+| --- | --- | --- | --- |
+| `GET` | `/api/session` | ✅ | Who is signed in, from the `HttpOnly` access-token cookie: `{ "signedIn", "login", "avatarUrl", "isAdmin" }`. The token is validated like the APIs do (published keys, issuer, audience, lifetime); a missing, expired or malformed token gives `signedIn: false`. A token in an `Authorization` header is ignored. Never returns the token; `Cache-Control: no-store` |
+
+---
+
 ## API Standards
 
 All implemented endpoints follow these conventions:

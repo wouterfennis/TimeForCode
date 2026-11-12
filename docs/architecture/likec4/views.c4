@@ -110,13 +110,17 @@ views {
     title 'Scenario 1: GitHub login'
     description 'Runtime scenario 1 in 06-runtime-view.md'
 
-    donor -> timeforcode.authorization.authApi.authController 'GET /api/v1/authentication/login'
+    donor -> timeforcode.bff 'GET /api/session: signed out, so the SPA offers "Sign in with GitHub"'
+    donor -> timeforcode.bff 'navigates to /api/auth/v1/authentication/login'
+    timeforcode.bff -> timeforcode.authorization.authApi.authController 'forwards GET /api/v1/authentication/login'
     timeforcode.authorization.authApi.authController -> timeforcode.authorization.authApplication.authHandlers 'dispatch login command'
     timeforcode.authorization.authApplication.authHandlers -> timeforcode.authorization.authInfrastructure.stateRepository 'store single-use state and PKCE verifier'
     timeforcode.authorization.authInfrastructure.stateRepository -> mongodb.authDb 'persist state'
     timeforcode.authorization.authApi.authController -> donor '302 redirect to GitHub (state, client_id)'
     donor -> github 'authorizes the application'
-    github -> timeforcode.authorization.authApi.authController 'GET /callback?code&state'
+    github -> donor '302 to the callback on the front-end address'
+    donor -> timeforcode.bff 'GET /api/auth/v1/authentication/callback?code&state'
+    timeforcode.bff -> timeforcode.authorization.authApi.authController 'forwards GET /callback?code&state'
     timeforcode.authorization.authApi.authController -> timeforcode.authorization.authApplication.authHandlers 'dispatch callback command'
     timeforcode.authorization.authApplication.authHandlers -> timeforcode.authorization.authApplication.tokenService 'exchange the code'
     timeforcode.authorization.authApplication.tokenService -> timeforcode.authorization.authInfrastructure.githubOAuthClient 'exchange code, fetch profile'
@@ -125,7 +129,10 @@ views {
     timeforcode.authorization.authApplication.accountService -> timeforcode.authorization.authInfrastructure.accountRepository 'save account'
     timeforcode.authorization.authInfrastructure.accountRepository -> mongodb.authDb 'persist'
     timeforcode.authorization.authApplication.authHandlers -> timeforcode.authorization.authApplication.refreshTokenService 'create the refresh token'
-    timeforcode.authorization.authApi.authController -> donor '302 to client, HttpOnly JWT and refresh cookies'
+    timeforcode.authorization.authApi.authController -> timeforcode.bff '302 to the SPA, HttpOnly JWT and refresh cookies'
+    timeforcode.bff -> donor 'passes the redirect and cookies on (front-end origin)'
+    donor -> timeforcode.bff 'GET /api/session with the cookie'
+    timeforcode.bff -> donor 'login, avatar, admin role from the validated token; never the token'
   }
 
   dynamic view tokenRefresh {

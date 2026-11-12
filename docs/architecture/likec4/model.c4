@@ -100,7 +100,7 @@ model {
     }
 
     bff = container 'Backend for frontend' {
-      description 'Same-origin host: serves the SPA build with the security headers, forwards /api/auth/* and /api/donation/* with YARP, turns the HttpOnly access-token cookie into a bearer token and checks the CSRF header (src/Frontend/TimeForCode.Frontend.Bff, ADR-012)'
+      description 'Same-origin host: serves the SPA build with the security headers, forwards /api/auth/* and /api/donation/* with YARP, turns the HttpOnly access-token cookie into a bearer token, checks the CSRF header, receives the GitHub callback and answers /api/session (who is signed in, never the token) (src/Frontend/TimeForCode.Frontend.Bff, ADR-012)'
       technology 'ASP.NET Core, YARP'
     }
 
