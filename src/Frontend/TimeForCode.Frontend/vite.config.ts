@@ -16,6 +16,10 @@ export default defineConfig({
         target: 'http://localhost:8082',
         rewrite: (path) => path.replace(/^\/api\/donation\//, '/api/'),
       },
+      // Sign-in and the session need the BFF (front-end container on 8084): it turns the cookie into a bearer token
+      // and answers /api/session. The GitHub callback stays on 8084; cookies on localhost are shared across ports.
+      '/api/auth/': 'http://localhost:8084',
+      '/api/session': 'http://localhost:8084',
     },
   },
   test: {

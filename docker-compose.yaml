@@ -28,6 +28,8 @@ services:
       - AuthenticationOptions__Issuer=http://authorization-api:8080
       - AuthenticationOptions__Audience=http://authorization-api:8080
       - AuthenticationOptions__ValidRedirectUris__0=http://localhost:8084
+      # The Vite dev server (npm run dev), so sign-in can return there during front-end development.
+      - AuthenticationOptions__ValidRedirectUris__1=http://localhost:5173
       - TokenCreationOptions__Issuer=http://authorization-api:8080
       - TokenCreationOptions__Audiences__0=http://authorization-api:8080
       - TokenCreationOptions__Audiences__1=http://localhost:8082

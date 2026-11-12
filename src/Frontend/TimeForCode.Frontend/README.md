@@ -13,7 +13,7 @@ Run from this folder:
 | Command | What it does |
 | --- | --- |
 | `npm ci` | Install the exact dependencies from `package-lock.json` |
-| `npm run dev` | Start the Vite dev server; it forwards `/api/donation/*` to the Donation API on `localhost:8082` (see [Dev server against the local stack](../../../docs/frontend/architecture.md#dev-server-against-the-local-stack)) |
+| `npm run dev` | Start the Vite dev server; it forwards `/api/donation/*` to the Donation API on `localhost:8082`, and `/api/auth/*` and `/api/session` to the front-end container on `localhost:8084` for sign-in (see [Dev server against the local stack](../../../docs/frontend/architecture.md#dev-server-against-the-local-stack)) |
 | `npm run generate:api` | Regenerate `src/api/{donation,authorization,reporting}.d.ts` from the OpenAPI snapshots (needs network for `npx` the first time) |
 | `npm run check:api` | Regenerate and fail if the committed types differ (CI runs this) |
 | `npm run verify` | Run every check in order: `check:api`, lint, type-check, tests and build |

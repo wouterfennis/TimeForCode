@@ -143,7 +143,7 @@ Browsers share cookies between ports of the same host, so locally a callback on 
 
 `vite.config.ts` proxies `/api/donation/*` to `http://localhost:8082/api/*`, the same route the BFF has in the image, so the SPA code is identical in both setups. The front-end container (`http://localhost:8084`) needs the Donation API container to be running.
 
-Sign-in only works on the front-end container: the callback and the allowed redirect target are `http://localhost:8084`, and the dev server has no `/api/session` or `/api/auth/*`, so it always shows the anonymous state.
+Sign-in on the dev server needs the front-end container too: `vite.config.ts` proxies `/api/auth/*` and `/api/session` to the BFF on `http://localhost:8084`, which turns the cookie into a bearer token and answers the session check. GitHub (the mock) still calls back on `8084`, then the Authorization API redirects to `http://localhost:5173`, which compose allows as a second redirect target (`AuthenticationOptions__ValidRedirectUris__1`). Browsers share cookies between ports of the same host, so the cookies set on `8084` reach the dev server.
 
 ## Rendering strategy
 
