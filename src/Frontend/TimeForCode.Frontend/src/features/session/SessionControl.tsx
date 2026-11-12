@@ -3,7 +3,7 @@ import { messages } from '../../messages/en'
 import { useSession } from './useSession'
 
 export function SessionControl() {
-  const { state, signOutFailed, signOut } = useSession()
+  const { state, signOutFailed, signingOut, signOut } = useSession()
 
   if (state.status === 'loading') {
     return null
@@ -14,7 +14,7 @@ export function SessionControl() {
   return (
     <div>
       <span>{messages.session.signedInAs(state.login)}</span>{' '}
-      <button type="button" onClick={() => void signOut()}>
+      <button type="button" disabled={signingOut} onClick={() => void signOut()}>
         {messages.session.signOut}
       </button>
       {signOutFailed ? <p role="alert">{messages.session.signOutFailed}</p> : null}

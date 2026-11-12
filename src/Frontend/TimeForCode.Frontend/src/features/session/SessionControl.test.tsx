@@ -71,6 +71,20 @@ describe('SessionControl', () => {
     expect(logout.headers.get('X-Requested-With')).toBe('XMLHttpRequest')
   })
 
+  it('sends one sign-out request when the button is clicked twice', async () => {
+    const fetchMock = mockApi((request) =>
+      new URL(request.url).pathname === '/api/session' ? json(signedIn) : Promise.resolve(new Response(null, { status: 204 })),
+    )
+    render(<SessionControl />)
+    const button = await screen.findByRole('button', { name: 'Sign out' })
+
+    fireEvent.click(button)
+    fireEvent.click(button)
+
+    await screen.findByRole('link', { name: 'Sign in with GitHub' })
+    expect(fetchMock.mock.calls.filter(([request]) => request.method === 'POST')).toHaveLength(1)
+  })
+
   it('keeps the user signed in and says so when signing out fails', async () => {
     mockApi((request) =>
       new URL(request.url).pathname === '/api/session' ? json(signedIn) : json({ title: 'Boom' }, 500),

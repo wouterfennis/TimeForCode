@@ -1,9 +1,7 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Security.Claims;
-using System.Text.Json;
 using TimeForCode.Shared.Api.Authentication;
-using TimeForCode.Shared.Api.Authentication.Models;
 using TimeForCode.Shared.Api.Extensions;
 
 namespace TimeForCode.Frontend.Bff
@@ -45,7 +43,7 @@ namespace TimeForCode.Frontend.Bff
         // Only the cookie counts: an Authorization header sent by the browser is ignored.
         private static Task ReadTokenFromCookie(MessageReceivedContext context)
         {
-            string? token = TryReadToken(context.Request.Cookies[CookieConstants.TokenKey]);
+            string? token = AccessTokenCookie.TryReadToken(context.Request.Cookies[CookieConstants.TokenKey]);
             if (token is null)
             {
                 context.NoResult();
@@ -56,24 +54,6 @@ namespace TimeForCode.Frontend.Bff
             }
 
             return Task.CompletedTask;
-        }
-
-        private static string? TryReadToken(string? cookie)
-        {
-            if (string.IsNullOrEmpty(cookie))
-            {
-                return null;
-            }
-
-            try
-            {
-                string? token = JsonSerializer.Deserialize<AccessToken>(cookie)?.Token;
-                return string.IsNullOrEmpty(token) ? null : token;
-            }
-            catch (JsonException)
-            {
-                return null;
-            }
         }
 
         private sealed record Session(bool SignedIn, string? Login, string? AvatarUrl, bool IsAdmin);

@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using System.Net.Http.Headers;
-using System.Text.Json;
 using TimeForCode.Shared.Api.Authentication;
-using TimeForCode.Shared.Api.Authentication.Models;
 
 namespace TimeForCode.Shared.Api.Handlers
 {
@@ -22,21 +20,10 @@ namespace TimeForCode.Shared.Api.Handlers
         /// <returns>A task that represents the asynchronous operation.</returns>
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            var token = _httpContextAccessor.HttpContext?.Request.Cookies[CookieConstants.TokenKey];
-            if (!string.IsNullOrEmpty(token))
+            string? token = AccessTokenCookie.TryReadToken(_httpContextAccessor.HttpContext?.Request.Cookies[CookieConstants.TokenKey]);
+            if (token is not null)
             {
-                try
-                {
-                    var accessToken = JsonSerializer.Deserialize<AccessToken>(token);
-                    if (!string.IsNullOrEmpty(accessToken?.Token))
-                    {
-                        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken.Token);
-                    }
-                }
-                catch (JsonException)
-                {
-                    // Cookie value is not valid JSON; skip setting the Authorization header.
-                }
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
             }
             return base.SendAsync(request, cancellationToken);
         }
