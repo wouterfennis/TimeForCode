@@ -11,7 +11,7 @@ builder.Services.AddSingleton<IForwarderHttpClientFactory, BearerTokenForwarderH
 
 var app = builder.Build();
 
-app.UseSecurityHeaders();
+app.UseBrowserSecurityHeaders();
 app.UseCsrfHeaderCheck();
 app.MapReverseProxy();
 app.MapSpaFiles();

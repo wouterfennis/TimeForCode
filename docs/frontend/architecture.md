@@ -175,8 +175,8 @@ Follow [testing-strategy](../current/testing.md) and ADR-008: E2E tests stay out
 - No tokens in JavaScript-accessible storage; no tokens in URLs.
 - Never render API-provided HTML. React escapes by default; do not use `dangerouslySetInnerHTML`.
 - External links use `rel="noopener noreferrer"`.
-- Security headers on every response, forwarded API responses and errors included, set by the BFF (`SecurityHeaders.cs`):
-  - `Content-Security-Policy` that allows only the SPA's own origin and no framing: `default-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'`. No inline scripts or styles and no `data:` URLs; React's `style` prop is allowed because it sets styles from script. Allowing another source (for example GitHub avatars) is a deliberate change to `src/Frontend/TimeForCode.Frontend.Bff/SecurityHeaders.cs`, its tests and the smoke test's check.
+- Security headers on every response, forwarded API responses and errors included, set by the BFF (`BrowserSecurityHeaders.cs`):
+  - `Content-Security-Policy` that allows only the SPA's own origin and no framing: `default-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'`. No inline scripts or styles and no `data:` URLs; React's `style` prop is allowed because it sets styles from script. Allowing another source (for example GitHub avatars) is a deliberate change to `src/Frontend/TimeForCode.Frontend.Bff/BrowserSecurityHeaders.cs`, its tests and the smoke test's check.
   - `X-Content-Type-Options: nosniff`.
   - `Referrer-Policy: strict-origin-when-cross-origin`.
 - Dependencies are pinned, and Dependabot or the existing dependency-update skill keeps them current.
