@@ -11,7 +11,7 @@ namespace TimeForCode.Donation.Infrastructure.Persistence.Database
     [ExcludeFromCodeCoverage(Justification = "Repository implementation")]
     internal class ProjectRepository : IProjectRepository
     {
-        private static readonly object IndexCreationLock = new();
+        private static readonly Lock IndexCreationLock = new();
         private static bool _indexesCreated;
         private readonly IMongoCollection<Project> _collection;
 

@@ -9,7 +9,7 @@ namespace TimeForCode.Authorization.Infrastructure.Persistence.Database
         internal const string KeyIndexName = "ux_state_key";
         internal const string ExpiryIndexName = "ttl_state_expires_after";
 
-        private static readonly object IndexCreationLock = new();
+        private static readonly Lock IndexCreationLock = new();
         private static bool _indexesCreated;
         private readonly IMongoCollection<StateEntry> _collection;
 
