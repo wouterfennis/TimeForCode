@@ -16,7 +16,7 @@ namespace TimeForCode.Reporting.Infrastructure.Persistence
     internal class BadgeAwardRepository : IBadgeAwardRepository
     {
         private const string CollectionName = "BadgeAwards";
-        private static readonly object IndexCreationLock = new();
+        private static readonly Lock IndexCreationLock = new();
         private static bool _indexesCreated;
         private readonly IMongoCollection<AwardDocument> _collection;
 

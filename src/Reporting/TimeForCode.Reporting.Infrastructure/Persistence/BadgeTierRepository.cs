@@ -16,7 +16,7 @@ namespace TimeForCode.Reporting.Infrastructure.Persistence
     internal class BadgeTierRepository : IBadgeTierRepository
     {
         private const string CollectionName = "BadgeTiers";
-        private static readonly object IndexCreationLock = new();
+        private static readonly Lock IndexCreationLock = new();
         private static bool _indexesCreated;
         private readonly IMongoCollection<TierDocument> _collection;
 

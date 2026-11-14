@@ -66,7 +66,7 @@ namespace TimeForCode.Reporting.Specifications.Steps
         }
 
         [Given("There is no contributor with the given identifier")]
-        public void GivenThereIsNoContributorWithTheGivenIdentifier()
+        public static void GivenThereIsNoContributorWithTheGivenIdentifier()
         {
             // A contributor exists in the Donation context once they logged hours; nothing is arranged for this one.
         }
@@ -83,7 +83,7 @@ namespace TimeForCode.Reporting.Specifications.Steps
         }
 
         [Given("The platform has no logged hours")]
-        public void GivenThePlatformHasNoLoggedHours()
+        public static void GivenThePlatformHasNoLoggedHours()
         {
             // A new platform: nothing is arranged.
         }

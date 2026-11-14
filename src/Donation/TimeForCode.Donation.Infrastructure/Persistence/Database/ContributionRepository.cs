@@ -15,7 +15,7 @@ namespace TimeForCode.Donation.Infrastructure.Persistence.Database
         /// </summary>
         private const int MaxContributionsPerProject = 1000;
 
-        private static readonly object IndexCreationLock = new();
+        private static readonly Lock IndexCreationLock = new();
         private static bool _indexesCreated;
         private readonly IMongoCollection<Contribution> _collection;
 
