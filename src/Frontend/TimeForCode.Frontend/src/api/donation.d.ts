@@ -450,6 +450,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/contributor/{id}/hours": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Returns the total hours a contributor logged (anonymous). Only the total is exposed. */
+        get: operations["GetContributorHours"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/donororganization/{id}/hours": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Returns the hours logged towards the donations of a donor organization (anonymous). Only the total is exposed. */
+        get: operations["GetDonorOrganizationHours"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/statistics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Returns the platform-wide totals (anonymous): hours logged and donor organizations supported. */
+        get: operations["GetPlatformStatistics"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -491,6 +542,14 @@ export interface components {
              * @description The moment the hours were logged.
              */
             loggedAt: string;
+        };
+        /** @description The total hours a contributor logged. */
+        ContributorHoursResponse: {
+            /**
+             * Format: int32
+             * @description The total hours of all non-deleted contributions of the contributor.
+             */
+            totalHours: number | string;
         };
         /** @description Represents the profile of a contributor. */
         ContributorProfileResponse: {
@@ -586,6 +645,14 @@ export interface components {
          * @enum {string}
          */
         DonationStatus: "Pending" | "Active" | "Completed" | "Cancelled";
+        /** @description The hours logged towards the donations of a donor organization. */
+        DonorOrganizationHoursResponse: {
+            /**
+             * Format: int32
+             * @description The hours logged on the Active and Completed donations of the organization.
+             */
+            hoursLogged: number | string;
+        };
         /** @description Represents a donor organization response. */
         DonorOrganizationResponse: {
             /** @description The unique identifier. */
@@ -742,6 +809,19 @@ export interface components {
             githubLogin: string;
             /** @description The avatar URL of the maintainer. */
             avatarUrl: string;
+        };
+        /** @description Platform-wide totals; no personal data. */
+        PlatformStatisticsResponse: {
+            /**
+             * Format: int64
+             * @description The hours logged on all Active and Completed donations of donor organizations.
+             */
+            totalHoursLogged: number | string;
+            /**
+             * Format: int32
+             * @description The number of donor organizations with an Active or Completed donation.
+             */
+            organizationsSupported: number | string;
         };
         /** @description Represents a pledge of developer hours to a project. Exactly one donor must be given: an individual or a donor organization. */
         PledgeDonationRequest: {
@@ -3261,6 +3341,162 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Too many requests. Retry after the number of seconds given in the Retry-After header. */
+            429: {
+                headers: {
+                    /** @description Number of seconds to wait before retrying. */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description The request could not be processed because of an unexpected error. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    GetContributorHours: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The contributor identifier. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The total hours of the contributor. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContributorHoursResponse"];
+                };
+            };
+            /** @description The identifier is not valid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description The contributor does not exist. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Too many requests. Retry after the number of seconds given in the Retry-After header. */
+            429: {
+                headers: {
+                    /** @description Number of seconds to wait before retrying. */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description The request could not be processed because of an unexpected error. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    GetDonorOrganizationHours: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The donor organization identifier. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The hours logged towards the donations of the organization. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DonorOrganizationHoursResponse"];
+                };
+            };
+            /** @description The identifier is not valid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description The donor organization does not exist. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Too many requests. Retry after the number of seconds given in the Retry-After header. */
+            429: {
+                headers: {
+                    /** @description Number of seconds to wait before retrying. */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description The request could not be processed because of an unexpected error. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    GetPlatformStatistics: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The platform-wide totals; zeros when no hours were logged. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformStatisticsResponse"];
                 };
             };
             /** @description Too many requests. Retry after the number of seconds given in the Retry-After header. */

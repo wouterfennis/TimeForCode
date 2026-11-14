@@ -11,7 +11,7 @@ namespace TimeForCode.Authorization.Infrastructure.Persistence.Database
         internal const string UserIdIndexName = "ix_refresh_token_user_id";
         internal const string ExpiryIndexName = "ttl_refresh_token_expires_after";
 
-        private static readonly object IndexCreationLock = new();
+        private static readonly Lock IndexCreationLock = new();
         private static bool _indexesCreated;
         private readonly IMongoCollection<RefreshToken> _collection;
 

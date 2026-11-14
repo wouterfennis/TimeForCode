@@ -25,6 +25,15 @@ namespace TimeForCode.Reporting.Specifications.Mocking
                 services.TryAddSingleton(donationDataSource);
                 services.TryAddSingleton<IDonationDataSource>(donationDataSource);
 
+                services.RemoveAll<IBadgeTierRepository>();
+                services.RemoveAll<IBadgeAwardRepository>();
+                var tierRepository = new InMemoryBadgeTierRepository();
+                var awardRepository = new InMemoryBadgeAwardRepository();
+                services.AddSingleton(tierRepository);
+                services.AddSingleton(awardRepository);
+                services.AddSingleton<IBadgeTierRepository>(tierRepository);
+                services.AddSingleton<IBadgeAwardRepository>(awardRepository);
+
                 // One host serves every scenario of a run, so the production limit of 60 requests a minute would reject later scenarios.
                 services.RemoveAll<IConfigureOptions<RateLimiterOptions>>();
                 services.Configure<RateLimiterOptions>(options => options
@@ -56,6 +65,8 @@ namespace TimeForCode.Reporting.Specifications.Mocking
         public void ResetState()
         {
             Services.GetRequiredService<InMemoryDonationDataSource>().Clear();
+            Services.GetRequiredService<InMemoryBadgeTierRepository>().Clear();
+            Services.GetRequiredService<InMemoryBadgeAwardRepository>().Clear();
         }
     }
 }

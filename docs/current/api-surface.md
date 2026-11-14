@@ -186,11 +186,21 @@ The maintainer profile is created (or its GitHub login and avatar refreshed) whe
 | `PUT` | `/api/v1/contributor/{id}` | ✅ | Replaces a profile by contributor id, same body and responses as `PUT /contributor/me` plus `403` for another user's profile; allowed for the contributor themselves and administrators |
 | `GET` | `/api/v1/donororganization/{id}/contributor` | ✅ | Lists the contributors affiliated with a donor organization, ordered by GitHub login (at most 1000; admin JWT only; `403` for user tokens); `200` with `{ "contributors": [ ...profiles ] }`, empty when there are none; `404` for an unknown organization, `400` for a malformed id, `401` without a token |
 
+### Public totals
+
+Anonymous, aggregate-only reads that the Reporting API uses for badges and statistics. They expose hour totals, never personal data. A contributor's total only adds up what `GET /api/v1/project/{id}/contribution` already returns publicly; the `404` for an unknown contributor does confirm that an identifier exists (see arc42 chapter 08, public aggregate reads).
+
+| Method | Endpoint | Status | Notes |
+| --- | --- | --- | --- |
+| `GET` | `/api/v1/contributor/{id}/hours` | ✅ | Total hours of the non-deleted contributions of a contributor; `200` with `{ "totalHours": 25 }`, `400` for a malformed id, `404` for an unknown contributor |
+| `GET` | `/api/v1/donororganization/{id}/hours` | ✅ | Hours logged on the Active and Completed donations of a donor organization; `200` with `{ "hoursLogged": 17 }`, `400`, `404` for an unknown organization |
+| `GET` | `/api/v1/statistics` | ✅ | Platform totals; `200` with `{ "totalHoursLogged": 20, "organizationsSupported": 2 }`, zeros when nothing was logged |
+
 ---
 
 ## Reporting API
 
-The Reporting API (`:8083` locally) is back-end only. It reads the donations and contributions of a donor organization from the Donation API over HTTP with the caller's own bearer token, so the Donation API decides who may read: contributors affiliated with the organization and administrators (see DEBT-19: affiliation is self-declared). Reporting has no database and never writes to the Donation API. The caller needs a token whose audiences include the Reporting API (user or admin JWT).
+The Reporting API (`:8083` locally) is back-end only. It reads the donations and contributions of a donor organization from the Donation API over HTTP with the caller's own bearer token, so the Donation API decides who may read: contributors affiliated with the organization and administrators (see DEBT-19: affiliation is self-declared). Reporting never writes to the Donation API. Its only data of its own are the badge tiers and awarded badges, kept in a MongoDB database that Reporting alone owns (`DbOptions__DatabaseName`, `TimeForCodeReporting` locally). The caller needs a token whose audiences include the Reporting API (user or admin JWT).
 
 ### Reporting Endpoints
 
@@ -202,6 +212,19 @@ Every schema, property and declared response status of the Reporting, Donation a
 | `GET` | `/api/v1/reporting/donororganization/{id}/contribution-history?format=Json\|Csv` | ✅ | Export of the contribution history as a file download (user or admin JWT); `format` is `Json` (default, `application/json`) or `Csv` (`text/csv`); same status codes as the impact report; every contribution, earliest first, deleted ones left out, attributed by the contributor's current affiliation (DEBT-21) |
 | `GET` | `/api/v1/reporting/project/{id}/donation-report` | ✅ | Detailed donation report of a project (user JWT of the project's maintainer, or admin JWT); `200` with the schema below; `400` for a malformed id or a missing bearer token, `401` without a token, `403` when the caller is not the maintainer, `404` for an unknown or unpublished project (also for its maintainer), `502` when the Donation API fails or cannot be reached |
 | `GET` | `/api/v1/reporting/project/{id}/public-summary` | ✅ | Public summary of a project, anonymous; aggregate totals only (see below), no names, logins or identifiers; `200`, `400` for a malformed id, `404` for an unknown or unpublished project, `502` when the Donation API fails |
+
+Badges, tiers and statistics:
+
+| Method | Endpoint | Status | Notes |
+| --- | --- | --- | --- |
+| `GET` | `/api/v1/reporting/donororganization/{id}/badges` | ✅ | Badges of a donor organization, anonymous; `200` with `{ "badges": [ { "name": "Bronze", "awardedAt": "2026-11-01T09:00:00+00:00" } ] }` (earliest award first, empty when none). The badge of every tier of recipient type `Organization` whose threshold the hours logged on the organization's Active and Completed donations reached is awarded first, once per tier, also for requests at the same time. `400` for a malformed id, `404` for an unknown organization, `429`, `502` when the Donation API fails |
+| `GET` | `/api/v1/reporting/contributor/{id}/badges` | ✅ | Badges of a contributor, anonymous; same response, measured on the total hours the contributor logged themselves against the tiers of recipient type `Contributor`. Only badge names and award dates are exposed. `400`, `404` for an unknown contributor, `429`, `502` |
+| `GET` | `/api/v1/reporting/statistics` | ✅ | Public impact statistics, anonymous; `200` with `{ "totalHoursLogged": 20, "organizationsSupported": 2 }`: the hours logged on the Active and Completed donations of all donor organizations and the number of organizations with such a donation; zeros on a new platform; totals only; `429`, `502` |
+| `GET` | `/api/v1/reporting/badge-tier?recipientType=Organization\|Contributor` | ✅ | Configured badge tiers, anonymous; `200` with `{ "tiers": [ { "name": "Bronze", "recipientType": "Organization", "thresholdHours": 10 } ] }` ordered by recipient type and threshold; `recipientType` is optional, `400` when invalid |
+| `PUT` | `/api/v1/reporting/badge-tier/{recipientType}/{name}` | ✅ | Defines a badge tier or changes the threshold of the tier with that recipient type and name (admin JWT only); body `{ "thresholdHours": 10 }`; `200` with the tier; `400` for a threshold below 1 or a name of 0 or more than 100 characters (the name limit is declared on the route parameter in the OpenAPI document), `409` when another tier of the recipient type already has the threshold, `401` without a token, `403` for a user token. Name and threshold are unique per recipient type; the two recipient types are independent and may share a threshold |
+| `DELETE` | `/api/v1/reporting/badge-tier/{recipientType}/{name}` | ✅ | Removes a badge tier (admin JWT only); `204`, `404` for an unknown tier, `401`, `403`; badges already awarded stay |
+
+Badges are awarded when they are requested, so a tier added or lowered reaches recipients who already qualify the next time their badges are read; a raised or removed tier takes no badge away. An award is stored once per recipient type, recipient and tier (unique index), so requests at the same time store one award and keep the first award date. The hours come from three anonymous, totals-only endpoints of the Donation API (see Public totals), read without a token.
 
 Project donation report (`donation-report`):
 

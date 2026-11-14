@@ -16,9 +16,12 @@ namespace TimeForCode.Reporting.Specifications.Steps
         public string? LastBody { get; private set; }
 
         /// <summary>Sends the request and keeps what the Then-steps assert on: the status, the content type and the body.</summary>
-        public async Task GetAsync(HttpClient client, string url)
+        public Task GetAsync(HttpClient client, string url) => SendAsync(() => client.GetAsync(new Uri(url, UriKind.Relative)));
+
+        /// <summary>Runs the request and keeps what the Then-steps assert on, like <see cref="GetAsync"/> does for a GET.</summary>
+        public async Task SendAsync(Func<Task<HttpResponseMessage>> send)
         {
-            using HttpResponseMessage response = await client.GetAsync(new Uri(url, UriKind.Relative));
+            using HttpResponseMessage response = await send();
             LastStatusCode = response.StatusCode;
             LastContentType = response.Content.Headers.ContentType?.MediaType;
             LastBody = await response.Content.ReadAsStringAsync();

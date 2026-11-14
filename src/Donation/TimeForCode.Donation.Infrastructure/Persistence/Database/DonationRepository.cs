@@ -15,7 +15,7 @@ namespace TimeForCode.Donation.Infrastructure.Persistence.Database
         /// </summary>
         private const int MaxDonationsPerQuery = 1000;
 
-        private static readonly object IndexCreationLock = new();
+        private static readonly Lock IndexCreationLock = new();
         private static bool _indexesCreated;
         private readonly IMongoCollection<Domain.Donation> _collection;
 
@@ -182,6 +182,22 @@ namespace TimeForCode.Donation.Infrastructure.Persistence.Database
                 Builders<Domain.Donation>.Filter.In(d => d.Status, [DonationStatus.Active, DonationStatus.Completed]));
 
             return await _collection.Find(filter).ToListAsync(cancellationToken);
+        }
+
+        public async Task<(long TotalHours, int Organizations)> GetReceivedTotalsAsync(CancellationToken cancellationToken)
+        {
+            var filter = Builders<Domain.Donation>.Filter.And(
+                Builders<Domain.Donation>.Filter.In(d => d.Status, [DonationStatus.Active, DonationStatus.Completed]),
+                Builders<Domain.Donation>.Filter.Ne(d => d.DonorOrganizationId, null));
+
+            // One row per organization keeps the result small however many donations there are.
+            var perOrganization = await _collection
+                .Aggregate()
+                .Match(filter)
+                .Group(d => d.DonorOrganizationId, g => new { Hours = g.Sum(d => (long)d.HoursLogged) })
+                .ToListAsync(cancellationToken);
+
+            return (perOrganization.Sum(o => o.Hours), perOrganization.Count);
         }
 
         private async Task<IReadOnlyList<Domain.Donation>> FindOldestFirstAsync(FilterDefinition<Domain.Donation> filter, CancellationToken cancellationToken)

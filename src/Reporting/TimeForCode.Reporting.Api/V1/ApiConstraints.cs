@@ -7,5 +7,8 @@ namespace TimeForCode.Reporting.Api.V1
     {
         /// <summary>A 24-character hexadecimal object identifier, the shape of the identifiers the Donation context issues.</summary>
         internal const string ObjectIdPattern = "^[0-9a-fA-F]{24}$";
+
+        /// <summary>Longest badge tier name accepted; the same limit the application layer enforces.</summary>
+        internal const int MaxTierNameLength = 100;
     }
 }

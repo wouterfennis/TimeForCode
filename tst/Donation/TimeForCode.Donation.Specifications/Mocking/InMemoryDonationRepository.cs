@@ -60,6 +60,15 @@ namespace TimeForCode.Donation.Specifications.Mocking
             return OldestFirst(d => d.DonorOrganizationId is ObjectId id && organizationIds.Contains(id.ToString()));
         }
 
+        public Task<(long TotalHours, int Organizations)> GetReceivedTotalsAsync(CancellationToken cancellationToken)
+        {
+            var received = _donations
+                .Where(d => d.DonorOrganizationId != null && d.Status is DonationStatus.Active or DonationStatus.Completed)
+                .ToList();
+
+            return Task.FromResult((received.Sum(d => (long)d.HoursLogged), received.Select(d => d.DonorOrganizationId).Distinct().Count()));
+        }
+
         public Task<(IReadOnlyList<DonationEntity> Donations, int TotalCount)> GetPageByDonorOrganizationIdAsync(string organizationId, int pageNumber, int pageSize, CancellationToken cancellationToken)
         {
             var matches = _donations

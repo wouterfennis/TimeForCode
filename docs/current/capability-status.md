@@ -87,7 +87,7 @@ This document provides an explicit, feature-level view of what is implemented, p
 | Hours spent per project | ⚠️ | Contributions can be logged, listed, corrected and soft deleted per project (`POST`/`GET /api/v1/project/{id}/contribution`, `PUT`/`DELETE .../{contributionId}`); no total field or dashboard yet |
 | Contribution history for a user | ❌ | Not implemented |
 | Impact dashboard | ❌ | Not implemented |
-| Badges and tiers | ❌ | Concept only |
+| Badges and tiers | ✅ | Admin-configured tiers per recipient type (`PUT/DELETE /api/v1/reporting/badge-tier/...`), badges for donor organizations and contributors awarded once per tier (`GET /api/v1/reporting/donororganization/{id}/badges`, `.../contributor/{id}/badges`) and public statistics (`GET /api/v1/reporting/statistics`); back-end only, no front-end yet |
 
 ---
 

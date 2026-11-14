@@ -110,8 +110,11 @@ services:
       - AuthenticationOptions__Audience=http://localhost:8083
       - RateLimiting__ApiPermitLimit=600
       - DonationApiOptions__BaseUri=http://donation-api:8080
+      - DbOptions__ConnectionString=mongodb://root:example@mongo:27017/?authSource=admin
+      - DbOptions__DatabaseName=TimeForCodeReporting
     depends_on:
       - donation-api
+      - mongo
       - authorization-api
     networks:
       - app-network

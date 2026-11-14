@@ -84,6 +84,16 @@ Limits on request input (paging bounds, string lengths, identifier and name patt
 
 ---
 
+## Public aggregate reads
+
+Reporting builds badges and statistics (#82) from three anonymous, totals-only endpoints of the Donation API (`GET /api/v1/contributor/{id}/hours`, `GET /api/v1/donororganization/{id}/hours`, `GET /api/v1/statistics`) and calls them without a token, because the badge and statistics reads are public. A service token was considered and declined: it adds token plumbing and nothing new would stay private.
+
+- **Exposure decision:** the endpoints return hour totals only, never names, logins or other personal data. A contributor's total adds up values the anonymous `GET /api/v1/project/{id}/contribution` already returns for every published project (`contributorId` with `hours`), so no new information becomes public. What is new is that `GET /api/v1/contributor/{id}/hours` answers `404` for an unknown contributor identifier and so confirms that an identifier belongs to a contributor. The identifiers are random 24-character values that are not listed anywhere except in those public contributions; the rate limit of the Donation API applies.
+- **If the exposure is no longer acceptable:** restrict the three endpoints to the `service` scope (`ApiService`, as the anonymise endpoint) and let Reporting fetch a client-credentials token. Badges and statistics would stay public on the Reporting side.
+- **Writes on public reads:** the badge reads store newly reached awards (at most one write per newly reached tier and recipient, none when nothing is new). Both Reporting and Donation rate-limit public endpoints.
+
+---
+
 ## Configuration Management
 
 Configuration follows the ASP.NET Core options pattern:
