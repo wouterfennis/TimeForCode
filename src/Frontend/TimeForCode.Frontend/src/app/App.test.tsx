@@ -6,7 +6,14 @@ import { App } from './App'
 beforeEach(() => {
   vi.stubGlobal(
     'fetch',
-    vi.fn(() => Promise.resolve(Response.json({ projects: [], totalCount: 0, pageNumber: 1, pageSize: 20 }))),
+    vi.fn((input: RequestInfo | URL) => {
+      const url = input instanceof Request ? input.url : String(input)
+      return Promise.resolve(
+        url.includes('/bff/session')
+          ? new Response(null, { status: 401 })
+          : Response.json({ projects: [], totalCount: 0, pageNumber: 1, pageSize: 20 }),
+      )
+    }),
   )
 })
 

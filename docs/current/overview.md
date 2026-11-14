@@ -41,7 +41,7 @@ The Authorization context is the most mature part of the platform.
 - Retrieval of GitHub user profile and linking to an internal user account.
 - Issuance of an internal JWT (RS256-signed) access token and refresh token.
 - Token refresh without requiring a new login.
-- Secure HttpOnly cookie storage for both tokens on the browser side.
+- Sign-in through the front-end BFF: the tokens stay server-side and the browser holds one opaque HttpOnly session cookie ([ADR-019](../reference/adr/0019-browser-session-in-the-bff.md)).
 - Downstream services validate the internal JWT by checking signature, expiry, issuer, and audience.
 - Identity Provider Mock service for local development and integration testing.
 
@@ -99,7 +99,6 @@ The Shared context provides common utilities used across services.
 
 **What is implemented:**
 
-- `CookieAuthorizationHandler`: reads the internal JWT from the cookie and attaches it as a bearer token on outgoing requests.
 - `AuthorizeFilter`: validates the JWT on incoming requests.
 
 ---

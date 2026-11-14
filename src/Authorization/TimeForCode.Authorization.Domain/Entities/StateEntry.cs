@@ -21,12 +21,17 @@ namespace TimeForCode.Authorization.Domain.Entities
         public required string CodeVerifier { get; init; }
 
         /// <summary>
+        /// The S256 PKCE challenge the client sent at login; the code exchange must present its verifier.
+        /// </summary>
+        public required string ClientCodeChallenge { get; init; }
+
+        /// <summary>
         /// Stored as a BSON date so the TTL index can remove the record once it has passed.
         /// </summary>
         [BsonRepresentation(BsonType.DateTime)]
         public required DateTimeOffset ExpiresAfter { get; init; }
 
-        public static StateEntry Start(string key, IdentityProvider identityProvider, Uri redirectUri, string codeVerifier, DateTimeOffset now)
+        public static StateEntry Start(string key, IdentityProvider identityProvider, Uri redirectUri, string codeVerifier, string clientCodeChallenge, DateTimeOffset now)
         {
             return new StateEntry
             {
@@ -35,6 +40,7 @@ namespace TimeForCode.Authorization.Domain.Entities
                 IdentityProvider = identityProvider,
                 RedirectUri = redirectUri,
                 CodeVerifier = codeVerifier,
+                ClientCodeChallenge = clientCodeChallenge,
                 ExpiresAfter = now.Add(Lifetime)
             };
         }

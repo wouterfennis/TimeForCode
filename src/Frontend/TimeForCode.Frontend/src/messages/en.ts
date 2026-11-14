@@ -1,6 +1,15 @@
 // All user-facing strings live here, so translations can be added later without touching components.
 export const messages = {
   title: 'TimeForCode',
+  session: {
+    loading: 'Checking your sign-in…',
+    error: 'Your sign-in could not be checked. Try again later.',
+    signIn: 'Sign in',
+    signOut: 'Sign out',
+    signOutFailed: 'You could not be signed out. Try again.',
+    signedInAs: (name: string) => `Signed in as ${name}`,
+    welcome: 'Welcome! Your profile has been created.',
+  },
   projects: {
     listLabel: 'Projects',
     loading: 'Loading projects…',

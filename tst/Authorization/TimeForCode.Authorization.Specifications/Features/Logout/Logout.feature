@@ -1,4 +1,4 @@
-﻿Feature: Logout
+Feature: Logout
 	As a user
 	I want to logout from the time for code platform
 	So that my session can no longer be used for authentication
@@ -14,13 +14,11 @@ Scenario: User has logged in at the time for code platform
 	When The user logs out from the external platform
 	Then The logout is confirmed
 
-Scenario: The logout removes the session cookies
-	Given The user has an access token
-	And The user has a refresh token
+Scenario: The logout revokes the refresh token
+	Given The user has a refresh token
 	When The user logs out from the external platform
 	Then The logout is confirmed
-	And The access token cookie is expired
-	And The refresh token cookie is expired
+	And The refresh token of the user is revoked
 
 Scenario: A logout is requested with a read-only request
 	Given The user has an access token

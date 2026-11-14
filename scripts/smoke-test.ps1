@@ -10,8 +10,8 @@
 
         1. Auth API, IdP Mock and Donation API respond
         2. Auth API OIDC discovery publishes issuer and JWKS
-        3. Login round trip issues access and refresh cookies
-        4. The JWT audiences include the Donation API
+        3. Login round trip issues a one-time code, which only the client holding the PKCE verifier can exchange for tokens
+        4. The JWT audiences include the Donation API; refresh rotates the refresh token (token in the body)
         5. The Auth API accepts its own JWT
         6. The Donation API accepts the Auth API JWT and stores a project (Mongo write)
         7. The stored project is read back (Mongo read)
@@ -191,11 +191,18 @@ try {
 
 Write-Section "3. Login round trip and JWT wiring"
 
-$cookieJar = [System.IO.Path]::GetTempFileName()
-try {
-    # Auth API login -> IdP Mock authorize form -> confirm -> Auth API callback
-    $redirectUri = [System.Uri]::EscapeDataString($ClientRedirectUri)
-    $r1 = curl -si --max-redirs 0 -c $cookieJar "$AuthApiBaseUrl/api/v1/authentication/login?IdentityProvider=Github&RedirectUri=$redirectUri" 2>&1
+function New-PkcePair {
+    $bytes    = [System.Security.Cryptography.RandomNumberGenerator]::GetBytes(32)
+    $verifier = [Convert]::ToBase64String($bytes).TrimEnd('=').Replace('+', '-').Replace('/', '_')
+    $hash     = [System.Security.Cryptography.SHA256]::HashData([System.Text.Encoding]::ASCII.GetBytes($verifier))
+    $challenge = [Convert]::ToBase64String($hash).TrimEnd('=').Replace('+', '-').Replace('/', '_')
+    return @{ Verifier = $verifier; Challenge = $challenge }
+}
+
+# Follows a login URL of the Authorization API through the IdP Mock (authorize form, confirm) up to and including the
+# Authorization API callback. Returns the callback response: a 302 to the client with a single-use code.
+function Invoke-IdpSignIn([string] $loginUrl) {
+    $r1 = curl -si --max-redirs 0 $loginUrl 2>&1
     $idpRedirect = Get-HeaderValue $r1 "Location"
     if ((Get-StatusCode $r1) -ne 302 -or $idpRedirect -notmatch [regex]::Escape($IdpMockBaseUrl)) {
         throw "login did not redirect to the IdP Mock (status $(Get-StatusCode $r1), location '$idpRedirect')"
@@ -218,20 +225,55 @@ try {
         throw "IdP Mock confirm did not redirect to the callback with a code (status $(Get-StatusCode $r2b))"
     }
 
-    $r3 = curl -si --max-redirs 0 -c $cookieJar -b $cookieJar $callbackRedirect 2>&1
+    return (curl -si --max-redirs 0 $callbackRedirect 2>&1)
+}
+
+function Get-SetCookieValue([string[]] $response, [string] $name) {
+    $match = ($response | Select-String "(?i)^Set-Cookie:\s*$([regex]::Escape($name))=([^;]*)" | Select-Object -First 1)
+    if ($match) { return $match.Matches[0].Groups[1].Value }
+    return $null
+}
+
+try {
+    # A client without a browser (like these scripts) signs in at the Authorization API directly: PKCE challenge on the login,
+    # one-time code in the redirect, tokens from the code exchange. No cookie, no token in the redirect.
+    $pkce        = New-PkcePair
+    $redirectUri = [System.Uri]::EscapeDataString($ClientRedirectUri)
+    $r3 = Invoke-IdpSignIn "$AuthApiBaseUrl/api/v1/authentication/login?IdentityProvider=Github&RedirectUri=$redirectUri&CodeChallenge=$($pkce.Challenge)"
     $frontendRedirect = Get-HeaderValue $r3 "Location"
-    $hasAccessToken  = $null -ne ($r3 | Select-String "Set-Cookie:.*AccessToken")
-    $hasRefreshToken = $null -ne ($r3 | Select-String "Set-Cookie:.*RefreshToken")
-    if ((Get-StatusCode $r3) -eq 302 -and $frontendRedirect -match [regex]::Escape($ClientRedirectUri) -and $hasAccessToken -and $hasRefreshToken) {
-        Write-Pass "Login round trip -> 302 to the client redirect URI with access and refresh cookies"
+    $hasCookie = $null -ne ($r3 | Select-String "(?i)^Set-Cookie:")
+    $code      = if ($frontendRedirect -match "[?&]code=([^&]+)") { $Matches[1] } else { $null }
+    if ((Get-StatusCode $r3) -eq 302 -and $frontendRedirect -match [regex]::Escape($ClientRedirectUri) -and $code -and -not $hasCookie) {
+        Write-Pass "Login round trip -> 302 to the client redirect URI with a one-time code and no cookie"
     } else {
-        Write-Fail "Login round trip callback" "Status=$(Get-StatusCode $r3), Location=$frontendRedirect, access=$hasAccessToken, refresh=$hasRefreshToken"
+        Write-Fail "Login round trip callback" "Status=$(Get-StatusCode $r3), Location=$frontendRedirect, code=$([bool]$code), cookie=$hasCookie"
+    }
+    if (-not $code) { throw "no one-time code in the redirect, cannot continue" }
+
+    $wrongVerifier = (New-PkcePair).Verifier
+    $sWrong = [int](curl -s -o /dev/null -w "%{http_code}" -H "Content-Type: application/json" --data-raw (@{ code = $code; codeVerifier = $wrongVerifier } | ConvertTo-Json -Compress) "$AuthApiBaseUrl/api/v1/authentication/token" 2>&1 | Select-Object -Last 1)
+    if ($sWrong -eq 400) { Write-Pass "Code exchange with a verifier of another login is refused: POST /authentication/token -> 400" }
+    else                 { Write-Fail "Code exchange with the wrong verifier" "Status=$sWrong (expected 400)" }
+
+    # The wrong attempt consumed the code, so a second login is needed for the real exchange.
+    $pkce = New-PkcePair
+    $r3b  = Invoke-IdpSignIn "$AuthApiBaseUrl/api/v1/authentication/login?IdentityProvider=Github&RedirectUri=$redirectUri&CodeChallenge=$($pkce.Challenge)"
+    $code = if ((Get-HeaderValue $r3b "Location") -match "[?&]code=([^&]+)") { $Matches[1] } else { $null }
+    $exchangeBody = @{ code = $code; codeVerifier = $pkce.Verifier } | ConvertTo-Json -Compress
+    $rEx = curl -si -H "Content-Type: application/json" --data-raw $exchangeBody "$AuthApiBaseUrl/api/v1/authentication/token" 2>&1
+    $jsonEx = $rEx | Select-String '^\{' | Select-Object -First 1
+    $tokens = if ($jsonEx) { $jsonEx.ToString() | ConvertFrom-Json } else { $null }
+    if ((Get-StatusCode $rEx) -eq 200 -and $tokens.accessToken.token -and $tokens.refreshToken.token) {
+        Write-Pass "Code exchange with the right verifier returns an access and a refresh token"
+    } else {
+        Write-Fail "Code exchange" "Status=$(Get-StatusCode $rEx)"
     }
 
-    $accessCookie = ($r3 | Select-String "Set-Cookie:\s*AccessToken=([^;]+)").Matches
-    if ($accessCookie.Count -eq 0) { throw "AccessToken cookie not found, cannot continue" }
-    $tokenJson  = [System.Uri]::UnescapeDataString($accessCookie[0].Groups[1].Value) | ConvertFrom-Json
-    $bearer     = $tokenJson.Token
+    $sReplay = [int](curl -s -o /dev/null -w "%{http_code}" -H "Content-Type: application/json" --data-raw $exchangeBody "$AuthApiBaseUrl/api/v1/authentication/token" 2>&1 | Select-Object -Last 1)
+    if ($sReplay -eq 400) { Write-Pass "A used one-time code cannot be exchanged again: POST /authentication/token -> 400" }
+    else                  { Write-Fail "Code replay" "Status=$sReplay (expected 400)" }
+
+    $bearer     = $tokens.accessToken.token
     $claims     = Decode-JwtPayload $bearer
     $authHeader = "Authorization: Bearer $bearer"
 
@@ -251,13 +293,94 @@ try {
         Write-Fail "Auth API GET /api/v1/user" "Status=$(Get-StatusCode $r5)"
     }
 
-    # The BFF turns the AccessToken cookie into the bearer header: the same call through the front-end, with only the cookie.
-    $r5b = curl -si -H "Cookie: AccessToken=$($accessCookie[0].Groups[1].Value)" "$FrontendBaseUrl/api/auth/v1/user" 2>&1
-    if ((Get-StatusCode $r5b) -eq 200 -and ($r5b | Select-String '"login"')) {
-        Write-Pass "Front-end BFF forwards the AccessToken cookie as bearer: GET /api/auth/v1/user -> 200 with profile"
+    $sRefresh = curl -si -H "Content-Type: application/json" --data-raw (@{ refreshToken = @{ token = $tokens.refreshToken.token; expiresAfter = $tokens.refreshToken.expiresAfter } } | ConvertTo-Json -Compress -Depth 4) "$AuthApiBaseUrl/api/v1/authentication/refresh" 2>&1
+    $jsonRf = $sRefresh | Select-String '^\{' | Select-Object -First 1
+    $rotated = if ($jsonRf) { $jsonRf.ToString() | ConvertFrom-Json } else { $null }
+    if ((Get-StatusCode $sRefresh) -eq 200 -and $rotated.refreshToken.token -and $rotated.refreshToken.token -ne $tokens.refreshToken.token) {
+        Write-Pass "Refresh with the refresh token in the body returns a rotated refresh token: POST /authentication/refresh -> 200"
     } else {
-        Write-Fail "Front-end BFF GET /api/auth/v1/user with the AccessToken cookie" "Status=$(Get-StatusCode $r5b)"
+        Write-Fail "Refresh in the body" "Status=$(Get-StatusCode $sRefresh)"
     }
+
+    # The browser's way in: the BFF. Start the login at the BFF, come back from the Authorization API with a code, and the
+    # browser holds only the opaque session cookie. This is the sign-in, session status, call and sign-out of the SPA.
+    $csrf   = "X-Requested-With: XMLHttpRequest"
+    $origin = "Origin: $FrontendBaseUrl"
+    $rb1 = curl -si --max-redirs 0 "$FrontendBaseUrl/bff/login?returnUrl=/projects" 2>&1
+    $loginCookie = Get-SetCookieValue $rb1 "__Host-login"
+    $authLogin   = Get-HeaderValue $rb1 "Location"
+    if ((Get-StatusCode $rb1) -eq 302 -and $loginCookie -and $authLogin -match "CodeChallenge=") {
+        Write-Pass "BFF starts the login: GET /bff/login -> 302 to the Authorization API with a PKCE challenge and an opaque login cookie"
+    } else {
+        Write-Fail "BFF GET /bff/login" "Status=$(Get-StatusCode $rb1), location=$authLogin"
+    }
+
+    $rb2 = Invoke-IdpSignIn $authLogin
+    $bffCallback = Get-HeaderValue $rb2 "Location"
+    if ((Get-StatusCode $rb2) -ne 302 -or $bffCallback -notmatch "/bff/callback\?code=") { throw "the Authorization API did not redirect to the BFF callback (status $(Get-StatusCode $rb2), location '$bffCallback')" }
+
+    $rb3 = curl -si --max-redirs 0 -H "Cookie: __Host-login=$loginCookie" $bffCallback 2>&1
+    $sessionCookie = Get-SetCookieValue $rb3 "__Host-session"
+    $cookieFlags   = ($rb3 | Select-String "(?i)^Set-Cookie:\s*__Host-session=" | Select-Object -First 1).ToString().ToLowerInvariant()
+    $everything    = ($rb3 -join "`n")
+    if ((Get-StatusCode $rb3) -eq 302 -and (Get-HeaderValue $rb3 "Location") -eq "/projects" -and $sessionCookie `
+            -and $cookieFlags -match "httponly" -and $cookieFlags -match "secure" -and $cookieFlags -match "samesite=strict" `
+            -and $everything -notmatch "eyJ") {
+        Write-Pass "BFF completes the login: one opaque __Host-session cookie (HttpOnly, Secure, Strict), no token anywhere in the response"
+    } else {
+        Write-Fail "BFF GET /bff/callback" "Status=$(Get-StatusCode $rb3), location=$(Get-HeaderValue $rb3 'Location'), cookie=$([bool]$sessionCookie)"
+    }
+    if (-not $sessionCookie) { throw "no session cookie, cannot continue" }
+
+    $rb3b = curl -si --max-redirs 0 -H "Cookie: __Host-login=$loginCookie" $bffCallback 2>&1
+    if ((Get-HeaderValue $rb3b "Location") -match "signInError") { Write-Pass "BFF refuses to complete the same login twice" }
+    else                                                         { Write-Fail "BFF callback replay" "Location=$(Get-HeaderValue $rb3b 'Location')" }
+
+    $rb4 = curl -si -H "Cookie: __Host-session=$sessionCookie" "$FrontendBaseUrl/bff/session" 2>&1
+    if ((Get-StatusCode $rb4) -eq 200 -and ($rb4 | Select-String '"isSignedIn":true') -and -not ($rb4 -join "`n").Contains("eyJ")) {
+        Write-Pass "BFF session status: GET /bff/session -> 200 with the user and no token"
+    } else {
+        Write-Fail "BFF GET /bff/session" "Status=$(Get-StatusCode $rb4)"
+    }
+
+    $r5b = curl -si -H "Cookie: __Host-session=$sessionCookie" "$FrontendBaseUrl/api/auth/v1/user" 2>&1
+    if ((Get-StatusCode $r5b) -eq 200 -and ($r5b | Select-String '"login"')) {
+        Write-Pass "Front-end BFF adds the bearer token for the session: GET /api/auth/v1/user -> 200 with profile"
+    } else {
+        Write-Fail "Front-end BFF GET /api/auth/v1/user with the session cookie" "Status=$(Get-StatusCode $r5b)"
+    }
+
+    # Silent refresh: expire the access token inside the BFF session database, then call again. The BFF refreshes on its own,
+    # so the call still succeeds, and the browser notices nothing (no new cookie).
+    if (Get-Command $ContainerCli -ErrorAction SilentlyContinue) {
+        $previousPreference = $ErrorActionPreference
+        $ErrorActionPreference = "Continue"
+        try {
+            & $ContainerCli exec mongo mongosh -u root -p example --authenticationDatabase admin --quiet --eval 'db.getSiblingDB("Bff").BffSessions.updateMany({}, {$set:{AccessTokenExpiresAt:new Date(Date.now()-60000)}})' 2>&1 | Out-Null
+        } finally {
+            $ErrorActionPreference = $previousPreference
+        }
+        $rSilent = curl -si -H "Cookie: __Host-session=$sessionCookie" "$FrontendBaseUrl/api/auth/v1/user" 2>&1
+        $newCookies = $rSilent | Select-String "(?i)^Set-Cookie:"
+        if ((Get-StatusCode $rSilent) -eq 200 -and -not $newCookies) { Write-Pass "BFF refreshes an expired access token silently: GET /api/auth/v1/user -> 200, no new cookie" }
+        else                                                          { Write-Fail "BFF silent refresh" "Status=$(Get-StatusCode $rSilent), set-cookie=$([bool]$newCookies)" }
+    } else {
+        Write-Output "  [SKIP] BFF silent refresh: $ContainerCli not found"
+    }
+
+    $sToken = [int](curl -s -o /dev/null -w "%{http_code}" -X POST -H $csrf -H "Cookie: __Host-session=$sessionCookie" "$FrontendBaseUrl/api/auth/v1/authentication/refresh" 2>&1 | Select-Object -Last 1)
+    if ($sToken -eq 404) { Write-Pass "The Authorization API token endpoints are not reachable through the BFF: POST /api/auth/v1/authentication/refresh -> 404" }
+    else                 { Write-Fail "BFF exposes a token endpoint" "Status=$sToken (expected 404)" }
+
+    $sOrigin = [int](curl -s -o /dev/null -w "%{http_code}" -X POST -H $csrf -H "Origin: https://evil.example" -H "Cookie: __Host-session=$sessionCookie" "$FrontendBaseUrl/bff/logout" 2>&1 | Select-Object -Last 1)
+    if ($sOrigin -eq 403) { Write-Pass "BFF refuses a sign-out from another origin: POST /bff/logout -> 403" }
+    else                  { Write-Fail "BFF sign-out from another origin" "Status=$sOrigin (expected 403)" }
+
+    $rb5 = curl -si -X POST -H $csrf -H $origin -H "Cookie: __Host-session=$sessionCookie" "$FrontendBaseUrl/bff/logout" 2>&1
+    $sAfter = [int](curl -s -o /dev/null -w "%{http_code}" -H "Cookie: __Host-session=$sessionCookie" "$FrontendBaseUrl/bff/session" 2>&1 | Select-Object -Last 1)
+    if ((Get-StatusCode $rb5) -eq 204 -and $sAfter -eq 401) { Write-Pass "BFF sign-out: POST /bff/logout -> 204 and the session is gone (GET /bff/session -> 401)" }
+    else                                                    { Write-Fail "BFF sign-out" "logout=$(Get-StatusCode $rb5), session afterwards=$sAfter" }
+
 
     # Donation API accepts the Auth JWT: one Mongo-backed write, then read it back.
     $projectUrl   = "$DonationApiBaseUrl/api/v1/project"
@@ -297,7 +420,7 @@ try {
 } catch {
     Write-Fail "Authentication flow aborted: $_"
 } finally {
-    Remove-Item $cookieJar -ErrorAction SilentlyContinue
+    # nothing to clean up: no cookie jar
 }
 
 # ---------------------------------------------------------------------------

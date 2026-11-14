@@ -80,7 +80,7 @@ graph LR
 | From | To | Protocol | Auth |
 | --- | --- | --- | --- |
 | Browser | Frontend | HTTPS | None (static assets) |
-| Frontend | Authorization API | HTTPS REST | HttpOnly JWT cookies |
+| Front-end BFF | Authorization API | HTTPS REST | Code exchange, refresh and logout (one-time code with PKCE verifier, or the refresh token in the body); the browser is redirected to the login and back |
 | Frontend | Donation API | HTTPS REST | Bearer token |
 | Authorization API | GitHub OAuth | HTTPS | Client ID + secret (server-side) |
 | Donation API | GitHub REST API | HTTPS | Unauthenticated; locally routed to Identity Provider Mock via configurable base URL |

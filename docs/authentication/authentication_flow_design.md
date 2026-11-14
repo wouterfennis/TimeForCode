@@ -1,115 +1,387 @@
 # Authentication flow
 
-This document explains in depth how a person signs in, how the GitHub authorization code is exchanged for a token, and how the platform turns that into its own session. It describes the implemented behaviour of the Authorization module (`src/Authorization/`). For the short version see [arc42 section 6](../architecture/arc42/06-runtime-view.md); for the reasoning behind the main choices see [ADR-001](../reference/adr/0001-use-internal-jwt.md), [ADR-005](../reference/adr/0005-http-only-cookies.md), [ADR-011](../reference/adr/0011-webauthn-admin-authentication.md) and [ADR-013](../reference/adr/0013-no-stored-github-tokens.md).
+How a person signs in, how the browser stays signed in, and how every API call gets its token. The design is decided in [ADR-019](../reference/adr/0019-browser-session-in-the-bff.md) (the browser session lives in the BFF) and builds on [ADR-001](../reference/adr/0001-use-internal-jwt.md) (internal JWT), [ADR-011](../reference/adr/0011-webauthn-admin-authentication.md) (admin passkey), [ADR-013](../reference/adr/0013-no-stored-github-tokens.md) (no stored GitHub tokens), [ADR-015](../reference/adr/0015-durable-single-use-login-state.md) (durable single-use state) and [ADR-018](../reference/adr/0018-reporting-reads-donation-over-http-with-forwarded-token.md) (Reporting forwards the caller's token). [ADR-005](../reference/adr/0005-http-only-cookies.md) (tokens in cookies) is superseded.
+
+Two readers:
+
+- **In five minutes:** read [In short](#in-short), the [overview diagram](#overview) and the [credential table](#every-cookie-token-and-code).
+- **Engineer or front-end developer:** the [sequence diagrams](#sequence-diagrams) have the detail, the [front-end guide](#front-end-guide) has the endpoints and example requests.
+
+Status: the GitHub sign-in is implemented as described. The admin passkey login still sets cookies in the Authorization API and does not work through the BFF yet; it moves onto this model in issue #196 (see [Admin login](#admin-login)).
 
 ## In short
 
-1. The client asks the Authorization API to start a login and names the URL to return to.
-2. The API checks that URL against an allow-list, stores a random `state` and redirects the browser to GitHub.
-3. GitHub redirects back to the API with an authorization `code` and the same `state`.
-4. The API exchanges the code for a GitHub access token (server to server), reads the public profile and **discards the GitHub token**.
-5. The API links the GitHub account to an internal account, creating it on first login.
-6. The API issues its own signed JWT and a refresh token, sets both as cookies and redirects the browser to the return URL.
-7. Other services accept the JWT after verifying its signature against the keys published by the Authorization API.
+- The browser talks only to the **BFF** (the host that serves the SPA, `src/Frontend/TimeForCode.Frontend.Bff`). It holds **one opaque cookie**, `__Host-session`. No token is in a cookie, a response body, the URL or anything a script can read.
+- The BFF keeps the access and refresh token **server-side** in MongoDB, adds `Authorization: Bearer ...` to every call it forwards to the APIs, and refreshes an expired token itself.
+- The **Authorization API** is a plain token issuer for every client. For the GitHub sign-in it sets and reads no cookie. It hands out tokens only against a **single-use code plus the PKCE verifier** of the client that started the login.
+- The **Donation, Reporting and Authorization APIs** only ever see bearer tokens. Reporting forwards the caller's own token to the Donation API.
+- An XSS bug can still make the browser call the API with the session cookie attached (session riding). The design prevents token theft, not that; see [Decisions and accepted risk](#decisions-and-accepted-risk).
 
-Two kinds of token are involved and they never mix:
+## Overview
 
-| Token | Issued by | Lifetime | What it is for | Stored |
-| --- | --- | --- | --- | --- |
-| GitHub access token | GitHub | Does not expire | Reading the signed-in user's profile once | Nowhere: discarded after the profile fetch |
-| Internal access token (JWT) | Authorization API | `TokenExpiresInMinutes` (configuration, 1 to 15 minutes) | Calling the platform APIs | Only in the client's cookie |
-| Internal refresh token | Authorization API | `DefaultRefreshTokenExpirationAfterInDays` (configuration) | Getting a new access token without GitHub | MongoDB, and in the client's cookie |
+```mermaid
+flowchart LR
+    Browser["Browser<br/>(SPA, no token)"]
+    BFF["BFF<br/>(serves the SPA, session in MongoDB)"]
+    Auth["Authorization API<br/>(token issuer)"]
+    GitHub["GitHub"]
+    Donation["Donation API"]
+    Reporting["Reporting API"]
+    Mongo[("MongoDB")]
 
-The login is the OAuth 2.0 *authorization code grant* ([RFC 6749 section 4.1](https://datatracker.ietf.org/doc/html/rfc6749#section-4.1)), with the Authorization API acting as the confidential client and GitHub as the authorization server. See [References](#references) for the specifications.
+    Browser -- "session cookie (__Host-session)" --> BFF
+    Browser -. "login / callback redirects<br/>one-time code in the URL" .-> Auth
+    Auth -- "OAuth redirect, code + PKCE" --> GitHub
+    BFF -- "code + PKCE verifier,<br/>refresh token (server to server)" --> Auth
+    BFF -- "bearer access token" --> Donation
+    BFF -- "bearer access token" --> Auth
+    Reporting -- "caller's bearer token (ADR-018)" --> Donation
+    BFF --- Mongo
+    Auth --- Mongo
+```
 
-## Participants and endpoints
+Only the arrows labelled with a credential carry one. The browser never receives a token; the dotted arrow is the sign-in redirect, which carries a one-time code that is worthless without the verifier the BFF holds.
 
-| Participant | Role |
-| --- | --- |
-| Client (browser or SPA) | Starts the login, follows redirects, holds the cookies |
-| Authorization API | OAuth client towards GitHub and token issuer towards the platform |
-| GitHub | External identity provider (OAuth app) |
-| Donation API and other APIs | Resource servers that validate the internal JWT |
+## Every cookie, token and code
 
-| Endpoint | Purpose |
-| --- | --- |
-| `GET /api/v1/authentication/login` | Starts the login; answers with a redirect to GitHub |
-| `GET /api/v1/authentication/callback` | Receives GitHub's redirect, performs the code exchange, issues tokens |
-| `POST /api/v1/authentication/session/refresh` | Issues a new access token and rotates the refresh token; the body holds only `expiresAfter` and `isNewUser` |
-| `POST /api/v1/authentication/session/logout` | Deletes the refresh token and clears both cookies |
-| `GET /.well-known/openid-configuration` | Discovery document (issuer and JWKS location) |
-| `GET /.well-known/jwks.json` | Public signing key |
+| Credential | Issued by | Stored by | Lifetime | Flags and format | Who can read it |
+| --- | --- | --- | --- | --- | --- |
+| Session cookie `__Host-session` | BFF | Browser (the cookie); BFF database holds the hash of its id | Browser session; server-side idle timeout 30 minutes (`Session:IdleTimeoutMinutes`), absolute 8 hours (`Session:AbsoluteLifetimeHours`) | `HttpOnly`, `Secure`, `SameSite=Strict`, `Path=/`, no `Domain`; random 256-bit id, no content | Sent by the browser to the BFF only; script cannot read it |
+| Login cookie `__Host-login` | BFF | Browser; BFF database holds the hash of its id and the PKCE verifier | 10 minutes (`Session:LoginTimeoutMinutes`), removed at the callback | `HttpOnly`, `Secure`, `SameSite=Lax` (the browser returns from another site), `Path=/`; random id | BFF only |
+| PKCE verifier (BFF to Authorization API) | BFF, per login | BFF database (never in the browser) | Until the callback, at most 10 minutes | 43 to 128 unreserved characters | BFF only; only its S256 challenge goes into the login URL |
+| One-time code | Authorization API | MongoDB (hash only) | 60 seconds (`AuthenticationOptions:LoginCodeLifetimeInSeconds`), single use | Random string in the callback redirect `?code=` | Visible in the URL of one redirect (browser history, logs); useless without the verifier |
+| Access token (JWT, RS256) | Authorization API | BFF database (inside the session) | 1 to 15 minutes (`TokenCreationOptions:TokenExpiresInMinutes`) | `Authorization: Bearer` between the BFF and the APIs | BFF and the APIs; never the browser |
+| Refresh token | Authorization API | BFF database (session); Authorization API stores only its SHA-256 hash | 7 days (`DefaultRefreshTokenExpirationAfterInDays`), single use: every refresh rotates it | Random string in a request body between the BFF and the Authorization API | BFF and Authorization API; never the browser |
+| GitHub access token | GitHub | Nowhere | Used once to read the profile, then dropped | Bearer, Authorization API to GitHub | Authorization API, for one call |
 
-`login`, `callback` and `refresh` use the sliding-window rate limit policy `auth`.
+The admin passkey login still uses `AccessToken`, `RefreshToken` and ceremony-state cookies set by the Authorization API until #196; they are described under [Admin login](#admin-login).
 
-## Sequence
+## Sequence diagrams
+
+### GitHub sign-in with the PKCE binding and one-time code exchange
 
 ```mermaid
 sequenceDiagram
-    participant Client as Client (browser)
+    autonumber
+    actor User as Browser
+    participant SPA
+    participant BFF
     participant Auth as Authorization API
     participant GitHub
-    participant Mongo as MongoDB
+    participant DB as MongoDB
 
-    Client->>Auth: GET /login?redirectUri=...
-    Auth->>Auth: Check redirectUri against allow-list
-    Auth->>Mongo: Store state, provider, redirectUri, PKCE verifier (10 min)
-    Auth-->>Client: 302 to GitHub authorize (client_id, redirect_uri, state, code_challenge)
-    Client->>GitHub: Sign in and approve
-    GitHub-->>Client: 302 to /callback?code=...&state=...
-    Client->>Auth: GET /callback?code=...&state=...
-    Auth->>Mongo: Take state (read and delete in one step)
-    Auth->>GitHub: POST access_token (client_id, client_secret, code, redirect_uri, code_verifier)
+    User->>SPA: Click "Sign in"
+    SPA->>BFF: GET /bff/login?returnUrl=/projects
+    BFF->>BFF: Create verifier, challenge = S256(verifier)
+    BFF->>DB: Store login attempt (hash of login id, verifier, local returnUrl)
+    BFF-->>User: 302 to Authorization API login, Set-Cookie __Host-login
+    User->>Auth: GET /api/v1/authentication/login?IdentityProvider=Github&RedirectUri=https://app/bff/callback&CodeChallenge=...
+    Auth->>Auth: RedirectUri on allow-list? CodeChallenge 43 base64url characters?
+    Auth->>DB: Store state (provider, redirect, own PKCE verifier, client challenge, 10 min)
+    Auth-->>User: 302 to GitHub (state, own PKCE challenge)
+    User->>GitHub: Sign in and approve
+    GitHub-->>User: 302 to /api/v1/authentication/callback?code=..&state=..
+    User->>Auth: GET callback
+    Auth->>DB: Take state (atomic delete, single use)
+    Auth->>GitHub: Exchange GitHub code (client secret, own verifier)
     GitHub-->>Auth: GitHub access token
-    Auth->>GitHub: GET /user (Bearer GitHub token)
-    GitHub-->>Auth: Public profile
-    Note over Auth: GitHub token is dropped here
-    Auth->>Mongo: Create or update account
-    Auth->>Mongo: Insert refresh token
-    Auth->>Auth: Sign internal JWT (RS256)
-    Auth-->>Client: 302 to redirectUri, Set-Cookie AccessToken, RefreshToken
+    Auth->>GitHub: GET /user, then drop the token
+    Auth->>DB: Create or update account; store hash of one-time code (60 s, client challenge)
+    Auth-->>User: 302 to https://app/bff/callback?code=<one-time code>
+    User->>BFF: GET /bff/callback?code=.. (with __Host-login cookie)
+    BFF->>DB: Take login attempt (atomic delete)
+    BFF->>Auth: POST /api/v1/authentication/token {code, codeVerifier}
+    Auth->>DB: Take code (atomic delete), check S256(verifier) = stored challenge
+    Auth-->>BFF: access token, refresh token, isNewUser
+    BFF->>DB: Create session with a NEW id (hash stored)
+    BFF-->>User: 302 to /projects, Set-Cookie __Host-session, clear __Host-login
+    SPA->>BFF: GET /bff/session
+    BFF-->>SPA: 200 {isSignedIn, isNewUser, userId, login, avatarUrl}
 ```
 
-## Step by step
+What each step guarantees:
+
+- **Steps 4 and 9 to 11 bind the login to the browser.** The verifier never leaves the BFF and the login id only maps to it in the cookie of the browser that started the login. An attacker who starts a login, signs in as themselves and sends the callback URL to a victim fails: the victim's browser has no matching `__Host-login` cookie (login CSRF is closed).
+- **The code is useless alone.** Without the verifier the exchange returns `400`, and the lookup consumed the code, so a guess cannot be retried. A replayed, forged or expired code gets the same `400`.
+- **Failure cases.** Any failure at the callback sends the browser to `/?signInError=1` and creates no session. The Authorization API answers `400` with `ProblemDetails` for a bad redirect URI, an invalid challenge, an unknown or used `state` or an invalid code.
+- **No token in any redirect, cookie or body** the browser sees.
+
+### An authenticated API call through the BFF
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant SPA
+    participant BFF
+    participant DB as MongoDB
+    participant API as Donation or Authorization API
+
+    SPA->>BFF: POST /api/donation/v1/Project (cookie, X-Requested-With, Origin)
+    BFF->>BFF: Origin is this host? header present?
+    BFF->>DB: Find session by hash of cookie id, slide the idle timeout
+    BFF->>BFF: Access token fresh? (more than 30 s left)
+    BFF->>API: POST /api/v1/Project with Authorization: Bearer, no Cookie header
+    API-->>BFF: 201
+    BFF-->>SPA: 201 (Set-Cookie of the API is removed, Cache-Control: no-store)
+```
+
+The BFF strips the browser's `Cookie` and `Authorization` headers before it forwards, so the APIs never see a cookie and a script cannot supply its own token. A request without a session is forwarded without a bearer header and the API decides (public endpoints answer, protected ones answer `401`). Only `/api/donation/...` and `/api/auth/v1/user...` are routed; every other path under `/api/auth/` is `404`.
+
+### Silent refresh with the per-session refresh lock
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant SPA
+    participant A as BFF request A
+    participant B as BFF request B
+    participant DB as MongoDB
+    participant Auth as Authorization API
+
+    par two parallel calls find an expired access token
+        SPA->>A: GET /api/donation/...
+        SPA->>B: GET /api/donation/...
+    end
+    A->>DB: Take refresh lease (atomic conditional update)
+    DB-->>A: granted
+    B->>DB: Take refresh lease
+    DB-->>B: refused, another request holds it
+    A->>Auth: POST /api/v1/authentication/refresh {refresh token}
+    Auth->>Auth: Rotate: mark old token used, issue new access + refresh token
+    Auth-->>A: new tokens
+    A->>DB: Save tokens, release lease
+    B->>DB: Re-read the session (polls every 50 ms, up to 15 s)
+    DB-->>B: session with the new access token
+    A->>Auth: forward call with the new bearer
+    B->>Auth: forward call with the new bearer
+```
+
+A refresh token may be used once. The Authorization API treats a second use as theft and revokes every refresh token of the user, so two requests must never refresh with the same token. The lease is one atomic conditional update on the session record (`RefreshLeaseUntil`, 15 seconds), so it holds across BFF instances and expires on its own if the BFF dies mid-refresh. The SPA notices nothing. If the Authorization API cannot be reached, the call goes out without a bearer header and the session is kept; if it rejects the refresh token, the session ends (next diagram).
+
+### An expired or revoked session
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant SPA
+    participant BFF
+    participant DB as MongoDB
+    participant Auth as Authorization API
+    participant API as Donation API
+
+    SPA->>BFF: GET /bff/session (cookie)
+    BFF->>DB: Find session
+    alt idle 30 min, or 8 h since sign-in
+        BFF->>DB: Delete session
+        BFF-->>SPA: 401, Set-Cookie __Host-session cleared
+    else refresh token rejected, revoked or expired
+        SPA->>BFF: GET /api/donation/... (cookie)
+        BFF->>Auth: POST refresh
+        Auth-->>BFF: 400
+        BFF->>DB: Delete session
+        BFF->>API: forward WITHOUT bearer
+        API-->>BFF: 401 (protected endpoint)
+        BFF-->>SPA: 401, Set-Cookie __Host-session cleared
+    end
+    SPA->>SPA: Show the sign-in prompt, keep the current page for the return
+```
+
+### Replayed refresh token (all tokens revoked)
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant Attacker as Holder of an old refresh token
+    participant Auth as Authorization API
+    participant DB as MongoDB
+
+    Note over Auth,DB: The BFF already rotated the token (it is marked used)
+    Attacker->>Auth: POST /api/v1/authentication/refresh {old refresh token}
+    Auth->>DB: Token found and already rotated
+    Auth->>DB: Delete ALL refresh tokens of the user
+    Auth-->>Attacker: 400 "Token refresh failed."
+    Note over Auth,DB: The BFF session of the user fails at its next refresh and ends; the user signs in again
+```
+
+### Sign-out
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant SPA
+    participant BFF
+    participant DB as MongoDB
+    participant Auth as Authorization API
+
+    SPA->>BFF: POST /bff/logout (cookie, X-Requested-With: XMLHttpRequest, Origin)
+    BFF->>BFF: Header present, Origin is this host
+    BFF->>DB: Find session
+    BFF->>Auth: POST /api/v1/authentication/logout {refresh token}
+    Auth->>Auth: Delete the refresh token (204 even when unknown)
+    BFF->>DB: Delete session
+    BFF-->>SPA: 204, Set-Cookie __Host-session cleared
+```
+
+A missing header or a foreign `Origin` is `403` and nothing changes. A failure to reach the Authorization API does not keep the user signed in: the session is deleted anyway. Sign-out ends one session and revokes its refresh token; an access token that was already issued stays valid until it expires (at most 15 minutes). "Sign out everywhere" is out of scope.
+
+### Reporting's forwarded-token call
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant Client as Client with a bearer token
+    participant Reporting as Reporting API
+    participant Donation as Donation API
+
+    Client->>Reporting: GET /api/v1/reporting/donororganization/{id}/impact-report (Bearer)
+    Reporting->>Reporting: Validate the JWT (audience includes the Reporting API)
+    Reporting->>Donation: GET the donations and contributions (the same Bearer)
+    Donation->>Donation: Validate the JWT, check the organization access
+    Donation-->>Reporting: 200, 401, 403 or 404
+    Reporting-->>Client: report, or the status passed on with a fixed message, 502 for other failures
+```
+
+The Donation API alone decides who may read; Reporting has no service credential. The BFF is not on this path today; a browser reaches Reporting through the same bearer-adding mechanism when a route is added.
+
+### Admin login
+
+The administrator signs in with a WebAuthn passkey (`/api/v1/admin-authentication/...`, rate limit policy `admin-auth`, [ADR-011](../reference/adr/0011-webauthn-admin-authentication.md)). After a successful assertion the Authorization API issues a token with `sub=admin`, `role=admin` and `scope=admin`. This path still sets the `AccessToken`, `RefreshToken` and ceremony-state cookies (`AdminAttestationState`, `AdminAssertionState`) in the Authorization API and its CORS policy allows credentials. Because the BFF no longer converts cookies into bearer tokens, the admin login does not work through the BFF until issue #196 moves it onto the BFF session with single-use ceremony state. The registration and sign-in sequence diagrams are added there.
+
+## Front-end guide
+
+For the developer of the SPA. The SPA is served by the BFF, so all calls are same-origin.
+
+### The rules
+
+- Call **relative paths on your own origin**: `/api/donation/...`, `/api/auth/v1/user...`, `/bff/...`. Never call the Authorization API directly and never put an absolute API address in the code.
+- **Never read, store or send a token.** There is none to read. Do not look at cookies (`__Host-session` is `HttpOnly`), do not add an `Authorization` header (the BFF removes it) and do not use `localStorage` or `sessionStorage` for credentials.
+- Send **`X-Requested-With: XMLHttpRequest`** on every `POST`, `PUT`, `PATCH` and `DELETE`. Without it the BFF answers `403` and the request never reaches the API.
+- Use `credentials: 'same-origin'` (the default of `fetch` for same-origin requests).
+
+### Sign in and sign out
+
+Sign in by sending the browser to the BFF; it is a navigation, not a `fetch`:
+
+```text
+GET /bff/login?returnUrl=%2Fprojects%2F42
+```
+
+`returnUrl` must be a path on this site (`/projects/42`); anything else becomes `/`. The browser goes through the identity provider and returns to `returnUrl` with the session cookie set. If the sign-in fails, the browser lands on `/?signInError=1`.
+
+Sign out with a `POST`:
+
+```ts
+await fetch('/bff/logout', {
+  method: 'POST',
+  credentials: 'same-origin',
+  headers: { 'X-Requested-With': 'XMLHttpRequest' },
+}) // 204
+```
+
+`src/features/auth/session.ts` has `signInUrl`, `signOut` and `fetchSession`; `SessionControls` shows the controls.
+
+### Find out whether the user is signed in
+
+```ts
+const response = await fetch('/bff/session', { headers: { Accept: 'application/json' } })
+```
+
+| Status | Meaning |
+| --- | --- |
+| `200` | Signed in. Body: `{ "isSignedIn": true, "isNewUser": false, "userId": "...", "login": "octocat", "avatarUrl": "https://..." }`. No token. |
+| `401` | Not signed in, or the session expired or ended. Show the sign-in prompt. |
+| other | The check failed; do not treat it as signed out. Show an error and retry. |
+
+The response is never cached (`Cache-Control: no-store`). Call it when the app loads and after a sign-out. The BFF documents it in its OpenAPI document (`src/Frontend/TimeForCode.Frontend.Bff/TimeForCode.Frontend.Bff.json`).
+
+### The first-login signal
+
+`isNewUser` is `true` in `/bff/session` for 5 minutes after the first sign-in of a new account (`Session:NewUserMinutes`). Use it to show the welcome once; do not rely on it later.
+
+### Errors to handle
+
+| Status | Cause | What to do |
+| --- | --- | --- |
+| `401` | No session, session ended, or the API refused the token | Go to `signInUrl(current path)`; the user returns to the same page |
+| `403` from the BFF | The `X-Requested-With` header is missing, or the `Origin` is another site | A bug in the client: add the header; never retry blindly |
+| `403` from an API | The user lacks the role or access (for example an organization they are not part of) | Show "not allowed"; signing in again does not help |
+| `429` | Rate limit; `Retry-After` gives seconds | Wait and retry once, then tell the user |
+| `ProblemDetails` | `application/problem+json` with `title`, `detail`, and for validation `errors` | Show `detail`; map `errors` onto form fields |
+| `502` | An API behind the BFF failed (Reporting maps Donation failures to it) | Show an error; try again later |
+
+Example of the sign-in return after a `401`:
+
+```ts
+if (response.status === 401) {
+  window.location.assign(signInUrl(`${window.location.pathname}${window.location.search}`))
+}
+```
+
+### Tabs and reloads
+
+The session is a cookie, so it is shared by all tabs of the browser and survives reloads. Signing out in one tab ends it for all tabs; the other tabs find out at their next call (`401`). The idle timeout (30 minutes) slides forward with every call; after 8 hours the user has to sign in again however active they are.
+
+### Run it locally
+
+| What | Where |
+| --- | --- |
+| Whole stack | `scripts/start-local.ps1` (add `-ResetData` after a breaking change) |
+| BFF and SPA | `http://localhost:8084` |
+| Authorization API (login, callback) | `http://localhost:8080` (the browser is redirected here during sign-in) |
+| Identity provider mock | `http://localhost:8081` |
+| Vite dev server | `npm run dev` in `src/Frontend/TimeForCode.Frontend`; it proxies `/api/donation/` to `:8082` and `/bff` to the BFF on `:8084` |
+
+The cookies are `Secure` and have the `__Host-` prefix. Chrome and Firefox accept `Secure` cookies on `http://localhost`. **Safari does not**, so sign-in does not work on `http://localhost` in Safari; use Chrome or Firefox or serve the stack over HTTPS. The compose stack allows the redirect URI `http://localhost:8084/bff/callback`; another origin must be added to `AuthenticationOptions:ValidRedirectUris`.
+
+## The Authorization API for other clients
+
+A client that is not the BFF (a script, a test, another service) uses the same endpoints, with its own PKCE pair:
+
+| Endpoint | Purpose |
+| --- | --- |
+| `GET /api/v1/authentication/login?IdentityProvider=Github&RedirectUri=...&CodeChallenge=...` | Starts the login; `302` to GitHub. `CodeChallenge` is the unpadded base64url SHA-256 of a random verifier (43 characters). `RedirectUri` must be on the allow-list. |
+| `GET /api/v1/authentication/callback` | Called by GitHub's redirect; `302` to the redirect URI with `?code=` |
+| `POST /api/v1/authentication/token` | `{ "code": "...", "codeVerifier": "..." }` returns `{ accessToken, refreshToken, isNewUser }` |
+| `POST /api/v1/authentication/refresh` | `{ "refreshToken": { "token": "...", "expiresAfter": "..." } }` returns new tokens; the sent token is now invalid |
+| `POST /api/v1/authentication/logout` | Same body; revokes the refresh token, `204` |
+| `GET /.well-known/openid-configuration`, `GET /.well-known/jwks.json` | Discovery (issuer and JWKS location) and the public signing key |
+
+`login`, `callback`, `token` and `refresh` use the sliding-window rate limit policy `auth`. The `token`, `refresh` and `logout` endpoints are meant for the BFF and other server-side clients; keep them off the public network where the deployment allows it. They need no secret, because the credential is the single-use code with its verifier, or the refresh token itself.
+
+## Step by step: the Authorization API
 
 ### 1. Starting the login
 
-The client calls `login` with the identity provider (GitHub) and a `redirectUri`, the place the user should end up after signing in.
+The client calls `login` with the identity provider (GitHub), a `redirectUri` and a PKCE `codeChallenge`.
 
 - The `redirectUri` must match an entry in `AuthenticationOptions:ValidRedirectUris`. The match compares scheme, host, port, path (ignoring a trailing slash), query and fragment; anything else is answered with `400` and a `ProblemDetails` body. This is the guard against open redirects, because the same URL is used for the final redirect.
-- The handler creates a random `state` string and stores a `StateEntry` (state key, identity provider, return URL, PKCE code verifier, expiry) in MongoDB, so any instance can complete the login. A TTL index removes entries after the expiry, 10 minutes after the login started.
-- It then builds the GitHub authorize URL with `client_id`, `redirect_uri` (the Authorization API's own callback URL from `ExternalIdentityProviderOptions:CallbackUri`), `state`, and the PKCE `code_challenge` (SHA-256 of the verifier, `code_challenge_method=S256`), and answers `302`.
+- The `codeChallenge` must be 43 base64url characters; anything else is `400`.
+- The handler creates a random `state` string and stores a `StateEntry` (state key, identity provider, return URL, its own PKCE verifier for GitHub, the client's challenge, expiry) in MongoDB, so any instance can complete the login. A TTL index removes entries 10 minutes after the login started.
+- It then builds the GitHub authorize URL with `client_id`, `redirect_uri` (the Authorization API's own callback URL from `ExternalIdentityProviderOptions:CallbackUri`), `state`, and its own PKCE `code_challenge` (S256), and answers `302`.
 - **No `scope` is requested.** GitHub then grants access to public profile data only (see [ADR-013](../reference/adr/0013-no-stored-github-tokens.md)).
 
-### 2. The callback and the code exchange
+### 2. The callback and the identity provider code exchange
 
-GitHub redirects the browser to `callback` with a one-time `code` and the original `state` (authorization response, [RFC 6749 section 4.1.2](https://datatracker.ietf.org/doc/html/rfc6749#section-4.1.2)). This is where the *token exchange* happens (access token request, [section 4.1.3](https://datatracker.ietf.org/doc/html/rfc6749#section-4.1.3)):
+GitHub redirects the browser to `callback` with a one-time `code` and the original `state` ([RFC 6749 section 4.1.2](https://datatracker.ietf.org/doc/html/rfc6749#section-4.1.2)). The access token request ([section 4.1.3](https://datatracker.ietf.org/doc/html/rfc6749#section-4.1.3)) follows:
 
-1. The request is validated: `code` and `state` must both be non-empty.
-2. The `state` is taken from MongoDB: read and deleted in one atomic step, so it works once. An unknown, already used or expired `state` fails the request, which stops forged or replayed callbacks. The expiry is checked in the handler because the TTL index removes entries with a delay of up to a minute. The stored entry also tells the API which identity provider to use.
-3. The API calls GitHub's token endpoint server to server with a JSON `POST` containing `client_id`, `client_secret`, `code`, `redirect_uri` and the stored `code_verifier`. The client secret never reaches the browser.
+1. `code` and `state` must both be non-empty and at most 2048 characters.
+2. The `state` is taken from MongoDB: read and deleted in one atomic step, so it works once. An unknown, already used or expired `state` fails the request, which stops forged or replayed callbacks.
+3. The API calls GitHub's token endpoint server to server with `client_id`, `client_secret`, `code`, `redirect_uri` and its own `code_verifier`. The client secret never reaches the browser.
 4. GitHub answers with an access token. The browser never sees it.
 
-Any failure in these steps is logged with the provider's message, but the client only receives `400` with the generic text "Authentication failed." so provider details do not leak.
+Any failure is logged with the provider's message, but the client only receives `400` with the generic text "Authentication failed.".
 
 ### 3. Reading the profile and dropping the GitHub token
 
-The GitHub token is used for exactly one call: `GET /user` with `Authorization: Bearer <token>`. The response is mapped to an `AccountInformation` (provider account id, login, node id, avatar, name, company, email, bio, location).
-
-After that call the token goes out of scope. It is not written to MongoDB, not logged and not put in a cookie. The platform has no GitHub token to leak and no GitHub credential to revoke.
-
-Public repository data (the user's repositories, a single repository) is read later with the application's own client id and secret, sent as HTTP Basic and only over HTTPS. See [ADR-013](../reference/adr/0013-no-stored-github-tokens.md).
+The GitHub token is used for exactly one call: `GET /user`. The response is mapped to an `AccountInformation` (provider account id, login, node id, avatar, name, company, email, bio, location). After that call the token goes out of scope. It is not written to MongoDB, not logged and not put in a cookie. Public repository data is read later with the application's own client id and secret ([ADR-013](../reference/adr/0013-no-stored-github-tokens.md)).
 
 ### 4. Linking to an internal account
 
-The account is looked up by the provider's account id:
+The account is looked up by the provider's account id. If it is not found, a new account is created and the user is marked as new (`isNewUser`). If it is found, the stored profile is updated. The internal account id (a MongoDB `ObjectId`) becomes the `sub` claim and does not change when the GitHub login changes.
 
-- **Not found:** a new account is created and the response marks the user as new (`IsNewUser`).
-- **Found:** the stored profile is updated from the fresh GitHub data.
+### 5. The one-time code and the token exchange
 
-The internal account id (a MongoDB `ObjectId`) becomes the `sub` claim. It does not change when the GitHub login changes.
-
-### 5. Issuing the internal tokens
+The callback does not issue tokens. It stores a `LoginCode` (SHA-256 hash of a random code, user id, `isNewUser`, the client's challenge, expiry after 60 seconds) and redirects to the stored `redirectUri` with `?code=`. At `token` the code is **taken with an atomic delete**; it is expired after 60 seconds, and `S256(codeVerifier)` must equal the stored challenge (compared in constant time). Any mismatch is `400` "Code exchange failed.", and the code is already gone. Only then are the tokens issued:
 
 **Access token.** A JWT signed with RS256 using the Authorization API's RSA key.
 
@@ -121,83 +393,68 @@ The internal account id (a MongoDB `ObjectId`) becomes the `sub` claim. It does 
 | `scope` | `user` for GitHub logins, `admin` for the admin passkey login |
 | `login`, `avatar_url` | GitHub login and avatar (user tokens only) |
 | `role` | `admin` (admin tokens only) |
-| `nbf`, `exp` | Now and now plus `TokenExpiresInMinutes` |
+| `nbf`, `exp` | Now and now plus `TokenExpiresInMinutes` (1 to 15) |
 
-**Refresh token.** A random string, stored in MongoDB together with the user id and its expiry (`DefaultRefreshTokenExpirationAfterInDays`).
+**Refresh token.** A random string; MongoDB stores its SHA-256 hash with the user id and expiry (`DefaultRefreshTokenExpirationAfterInDays`).
 
-### 6. Cookies and the final redirect
+### 6. Validation at the resource servers
 
-The tokens are returned as cookies and the browser is redirected to the stored return URL (when the state carries none, the endpoint answers `200` with only `expiresAfter` and `isNewUser`; no response body ever contains a token).
+A resource server such as the Donation API validates the bearer token locally: it fetches the signing key from the issuer's `/.well-known/jwks.json` (via `Authority`), checks signature, issuer, audience and lifetime, and the endpoint's policy checks the `scope` claim (`ApiUser` requires `scope=user`, `ApiAdmin` requires `scope=admin`). No call to the Authorization API is needed per request, so a token stays valid until it expires, even after sign-out. That is why its lifetime is at most 15 minutes.
 
-| Cookie | Content | Flags |
-| --- | --- | --- |
-| `AccessToken` | JSON `{ token, expiresAfter }` | `HttpOnly`, `Secure`, `SameSite=Strict`, expires with the token |
-| `RefreshToken` | JSON `{ token, expiresAfter }` | `HttpOnly`, `Secure`, `SameSite=Strict`, expires with the token, `Path` = the public session path (`AuthenticationOptions:RefreshCookiePath`, behind the BFF `/api/auth/v1/Authentication/session`), so the browser sends it to refresh and logout only |
-| `IsNewUser` | `true` | Same flags, lives 5 minutes, only set on first login |
+### 7. Refreshing and revoking
 
-Script code cannot read these cookies, and no response body carries a token. The BFF forwards no `Cookie` header to the Donation API and only the `RefreshToken` cookie to the Authorization API; it turns the `AccessToken` cookie into the bearer header. The cookie `Path` is case-sensitive in the browser, so the SPA must call the session endpoints with the casing `Authentication`. Because the cookie holds JSON rather than the bare JWT, whatever forwards it as a bearer header (see below) must unpack the `token` field.
+`refresh` takes the refresh token in the body:
 
-### 7. Using the access token
+1. The token must exist in MongoDB and not be expired, and the account must still exist.
+2. It is marked rotated with one atomic conditional update; the loser of a concurrent rotation counts as a replay.
+3. A new access token is issued from the current account data and a new refresh token is created.
+4. Using an already rotated token deletes **all** refresh tokens of the user ("Refresh token reuse detected").
 
-A client or backend-for-frontend reads the `AccessToken` cookie and sends the `token` value as `Authorization: Bearer <jwt>` (`CookieAuthorizationHandler` does this).
-
-A resource server such as the Donation API validates the token locally:
-
-1. It fetches the signing key from the issuer's `/.well-known/jwks.json` (via `Authority`) and caches it.
-2. It checks signature, issuer, audience and lifetime.
-3. The endpoint's authorization policy checks the `scope` claim: `ApiUser` requires `scope=user`, `ApiAdmin` requires `scope=admin`.
-
-No call to the Authorization API is needed per request, so a token stays valid until it expires, even after logout.
-
-### 8. Refreshing
-
-When the access token has expired the client calls `refresh`, which reads the `RefreshToken` cookie:
-
-1. The refresh token must exist in MongoDB and not be expired, and the account it belongs to must still exist.
-2. A new access token is issued from the current account data.
-3. The old refresh token is **deleted** and a new one is created (rotation), so a refresh token works once.
-4. New cookies are set. The body holds only `expiresAfter` and `isNewUser`, never a token. A corrupt `RefreshToken` cookie counts as a missing one.
-
-Missing cookie, unknown token, expired token or unknown account all end in `400` "Token refresh failed.", after which the client sends the user through the login again.
-
-### 9. Logging out
-
-`logout` (`POST`) deletes the refresh token from MongoDB, clears both cookies and answers `204`, also when the cookie is corrupt or missing. It cannot revoke an access token that was already issued; that token stays valid until `exp`, which is why its lifetime is short.
-
-## Admin login
-
-Administrators do not use GitHub. They sign in with a WebAuthn passkey (`/api/v1/admin-authentication/...`, rate limit policy `admin-auth`, see [ADR-011](../reference/adr/0011-webauthn-admin-authentication.md)). After a successful assertion the same `TokenService` issues a token with `sub=admin`, `role=admin` and `scope=admin`, plus a refresh token. There is no GitHub token exchange in this path.
+Missing, unknown, expired and replayed tokens all end in `400` "Token refresh failed.". `logout` deletes the presented refresh token and answers `204`.
 
 ## Security properties
 
 | Concern | How it is handled |
 | --- | --- |
-| Forged or replayed callback | `state` must exist in the database, is consumed on first use and expires after 10 minutes |
-| Authorization code interception | PKCE: GitHub only accepts the code together with the verifier that never left the server |
+| Token theft by script | No token reaches the browser: tokens live in the BFF database; the browser holds one opaque `HttpOnly` cookie |
+| Login CSRF (attacker's account) | The PKCE verifier stays at the BFF and is tied to the `__Host-login` cookie of the browser that started the login |
+| Forged or replayed callback | `state` must exist, is consumed on first use and expires after 10 minutes |
+| Stolen or guessed one-time code | Hash only in the database, 60 seconds, single use, useless without the verifier, consumed even by a wrong verifier |
+| Authorization code interception at GitHub | PKCE toward GitHub, and the client secret stays on the server |
 | Open redirect | The return URL must match the configured allow-list before the login starts |
-| Authorization code theft | The code is only useful together with the client secret, which stays on the server |
-| Stolen database | No GitHub token is stored; the refresh token is a random value that expires |
-| Token theft from script | Cookies are `HttpOnly`, `Secure` and `SameSite=Strict` |
-| Refresh token replay | Rotation: every use deletes the old token |
+| Session fixation | A new session id is created at every sign-in |
+| CSRF on state-changing calls | `SameSite=Strict`, the `X-Requested-With` header and an `Origin` check |
+| Refresh token replay | Rotation with an atomic update; reuse revokes all tokens of the user |
+| Refresh race inside the BFF | A lease on the session record lets one request refresh; the others wait |
+| Cookies and tokens on the APIs | The BFF removes `Cookie` and `Authorization` from the browser's request and `Set-Cookie` from the response |
+| Token endpoints reachable by script | Only the user endpoints of the Authorization API are routed through the BFF |
+| Secrets in logs | The BFF and the APIs log no cookie, token, code or session id (a test scans the log output) |
 | Information leakage | Clients get generic error texts; log values are stripped of control characters |
-| Brute force | Sliding-window rate limits on the login, callback, refresh and admin endpoints |
+| Brute force | Sliding-window rate limits on login, callback, token, refresh and the admin endpoints |
+| Transport | HSTS behind a trusted proxy, `Secure` cookies, forwarded headers only from configured proxies ([chapter 8](../architecture/arc42/08-crosscutting-concepts.md#transport-and-browser-security-headers)) |
 
-## Known limitations
+## Decisions and accepted risk
 
-- **The signing key is not rotated.** The JWKS endpoint publishes one key without a key id.
-- **Access tokens cannot be revoked** before they expire.
-- **Email may be missing.** Only the public GitHub email is available since no scope is requested.
+- **Why the BFF holds the session** and why MongoDB stores it: [ADR-019](../reference/adr/0019-browser-session-in-the-bff.md). It replaces tokens in cookies ([ADR-005](../reference/adr/0005-http-only-cookies.md)).
+- **Accepted risk: session riding.** A script that runs on the SPA origin (an XSS bug) can call `/api/...` with the session cookie attached. A BFF prevents token theft, not that. Mitigations: a CSP without `unsafe-inline` and `unsafe-eval`, the `Origin` and `X-Requested-With` checks, and the idle and absolute timeouts.
+- **Accepted risk: tokens at rest** in the BFF database in the clear; they expire within 15 minutes (access) or are revoked at sign-out (refresh).
+- **Known limitations.** The signing key is not rotated automatically (the JWKS endpoint publishes the current and previous key). Access tokens cannot be revoked before they expire. The email may be missing because no scope is requested. Sign out everywhere is not offered.
 
 ## Configuration reference
 
 | Section | Setting | Meaning |
 | --- | --- | --- |
-| `AuthenticationOptions` | `ValidRedirectUris` | Allow-list for return URLs |
+| `AuthenticationOptions` | `ValidRedirectUris` | Allow-list for return URLs; contains the BFF callback, for example `https://app/bff/callback` |
+| `AuthenticationOptions` | `LoginCodeLifetimeInSeconds` | Lifetime of the one-time code, default 60 |
 | `AuthenticationOptions` | `Issuer`, `Audience` | Values the Authorization API itself validates tokens against |
+| `AuthenticationOptions` | `RefreshCookiePath` | Only for the admin login cookies until #196 |
 | `TokenCreationOptions` | `Issuer`, `Audiences` | Values written into issued tokens |
 | `TokenCreationOptions` | `TokenExpiresInMinutes`, `DefaultRefreshTokenExpirationAfterInDays` | Token lifetimes; the access token lifetime must be 1 to 15 minutes or the service does not start |
-| `ForwardedHeaders` | `KnownProxies`, `KnownNetworks` | The proxies whose `X-Forwarded-*` headers are trusted; without them only loopback is |
+| `ForwardedHeaders` | `KnownProxies`, `KnownNetworks` | The proxies whose `X-Forwarded-*` headers are trusted; without them only loopback is (all services, BFF included) |
 | `ExternalIdentityProviderOptions` | `CallbackUri` and per provider hosts, `ClientId`, `ClientSecret` | The OAuth app registration at GitHub |
+| BFF `Authorization` | `BaseAddress`, `PublicBaseAddress` | Where the BFF calls the token endpoints (internal) and where the browser is sent to log in (public) |
+| BFF `Session` | `IdleTimeoutMinutes`, `AbsoluteLifetimeHours`, `RefreshSkewSeconds`, `LoginTimeoutMinutes`, `NewUserMinutes` | Session timeouts and the refresh margin; defaults 30, 8, 30, 10 and 5 |
+| BFF `DbOptions` | `ConnectionString`, `DatabaseName` | The MongoDB database of the sessions |
 
 Secrets belong in environment-specific configuration, never in the repository.
 
@@ -208,11 +465,12 @@ Secrets belong in environment-specific configuration, never in the repository.
 | Authorization code grant, `state`, redirect URIs, token endpoint | [RFC 6749 — The OAuth 2.0 Authorization Framework](https://datatracker.ietf.org/doc/html/rfc6749) |
 | Sending the access token as `Authorization: Bearer` | [RFC 6750 — Bearer Token Usage](https://datatracker.ietf.org/doc/html/rfc6750) |
 | Current security recommendations (exact redirect URI matching, `state`, refresh token rotation) | [RFC 9700 — OAuth 2.0 Security Best Current Practice](https://datatracker.ietf.org/doc/html/rfc9700) |
-| Internal access token format and claims (`iss`, `aud`, `sub`, `exp`, `nbf`) | [RFC 7519 — JSON Web Token](https://datatracker.ietf.org/doc/html/rfc7519) |
+| Internal access token format and claims | [RFC 7519 — JSON Web Token](https://datatracker.ietf.org/doc/html/rfc7519) |
 | Public signing key published at `jwks.json` | [RFC 7517 — JSON Web Key](https://datatracker.ietf.org/doc/html/rfc7517) |
 | Discovery document at `openid-configuration` | [OpenID Connect Discovery 1.0](https://openid.net/specs/openid-connect-discovery-1_0.html) |
-| Protecting the code with a verifier | [RFC 7636 — PKCE](https://datatracker.ietf.org/doc/html/rfc7636) |
+| The code challenge and verifier | [RFC 7636 — PKCE](https://datatracker.ietf.org/doc/html/rfc7636) |
+| Cookie prefixes (`__Host-`) and `SameSite` | [RFC 6265bis — Cookies](https://datatracker.ietf.org/doc/html/draft-ietf-httpbis-rfc6265bis) |
 | GitHub's own behaviour (endpoints, scopes, rate limits) | [Authorizing OAuth apps](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps) |
 | Admin login | [W3C Web Authentication](https://www.w3.org/TR/webauthn-3/) |
 
-The discovery document only carries `issuer` and `jwks_uri`, so it is a minimal subset of the OpenID Connect format and the platform does not implement OpenID Connect login itself. The GitHub flow uses PKCE (S256) on top of the client secret and `state`, as RFC 9700 recommends.
+The discovery document only carries `issuer` and `jwks_uri`, a minimal subset of the OpenID Connect format; the platform does not implement OpenID Connect login itself.

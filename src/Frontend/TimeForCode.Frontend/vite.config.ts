@@ -11,6 +11,8 @@ export default defineConfig({
   server: {
     // Same route as the BFF in the image: /api/donation/v1/Project -> the local Donation API's /api/v1/Project.
     proxy: {
+      // The BFF owns the sign-in, the session status and the sign-out; the dev server forwards them to the local stack.
+      '/bff': 'http://localhost:8084',
       // Trailing slash as in the BFF's route `/api/donation/{**rest}`, so `/api/donationfoo` is not proxied.
       '/api/donation/': {
         target: 'http://localhost:8082',

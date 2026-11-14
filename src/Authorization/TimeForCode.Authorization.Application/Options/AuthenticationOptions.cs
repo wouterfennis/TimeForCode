@@ -36,11 +36,17 @@ namespace TimeForCode.Authorization.Application.Options
         public const string DefaultRefreshCookiePath = "/api/v1/Authentication/session";
 
         /// <summary>
-        /// The <c>Path</c> of the refresh token cookie: the public path the browser uses for the session endpoints
-        /// (refresh and logout), so the browser sends the cookie to those two endpoints and to no other route.
-        /// When a proxy or gateway publishes the API under another prefix, this is that public path, not the API's own path. Browsers match it case-sensitively.
+        /// The <c>Path</c> of the refresh token cookie that the admin passkey login still sets (issue #196 moves that login to the BFF session and removes it).
+        /// The GitHub sign-in sets no cookie at all.
         /// </summary>
         public string RefreshCookiePath { get; init; } = DefaultRefreshCookiePath;
+
+        /// <summary>
+        /// How long a single-use login code can be exchanged for tokens, in seconds. Defaults to 60.
+        /// </summary>
+        public int LoginCodeLifetimeInSeconds { get; init; } = DefaultLoginCodeLifetimeInSeconds;
+
+        public const int DefaultLoginCodeLifetimeInSeconds = 60;
 
         /// <summary>
         /// Bind the configuration to the AuthenticationOptions
@@ -53,6 +59,7 @@ namespace TimeForCode.Authorization.Application.Options
                 Issuer = configuration.GetSection(SectionName).GetValue<string>(nameof(Issuer))!,
                 ValidRedirectUris = configuration.GetSection($"{SectionName}:{nameof(ValidRedirectUris)}").Get<List<string>>() ?? [],
                 RefreshCookiePath = configuration.GetSection(SectionName).GetValue<string>(nameof(RefreshCookiePath)) ?? DefaultRefreshCookiePath,
+                LoginCodeLifetimeInSeconds = configuration.GetSection(SectionName).GetValue<int?>(nameof(LoginCodeLifetimeInSeconds)) ?? DefaultLoginCodeLifetimeInSeconds,
             };
 
             return authenticationOptions;

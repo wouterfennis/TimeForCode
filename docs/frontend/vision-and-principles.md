@@ -24,7 +24,7 @@ A fast, welcoming website where a maintainer can list a project in a minute, a c
 1. **Public pages are fast and indexable.** Project listing and detail must load quickly on a mid-range phone and be shareable with a good title and description.
 2. **Task-first, not data-first.** Each page answers one question for one persona. See the personas in [Personas and Journeys](../target/personas-and-journeys.md).
 3. **The API is the contract.** The front-end contains no business rules that the backend also needs. Types come from the OpenAPI snapshots, never hand-written.
-4. **Tokens never touch JavaScript.** Authentication stays in HttpOnly cookies ([ADR-005](../reference/adr/0005-http-only-cookies.md)). Do not add `localStorage` tokens, ever.
+4. **Tokens never touch the browser.** The BFF holds the session and the tokens; the browser holds one opaque HttpOnly cookie ([ADR-019](../reference/adr/0019-browser-session-in-the-bff.md)). Do not add `localStorage` tokens, ever.
 5. **Accessible by default.** WCAG 2.2 AA is the baseline, not a later phase. See [design-system.md](design-system.md).
 6. **Honest states.** Every screen defines loading, empty, error, and unauthorized states. A blank page is a bug.
 7. **Small, replaceable pieces.** Prefer a few well-known libraries over many. Every dependency needs a reason.

@@ -25,7 +25,7 @@ Each phase is independently shippable and ends with working, tested software, in
 - Scaffold the SPA project, tooling, linting, and CI as described in [architecture](architecture.md).
 - Implement design tokens, the app shell, and the core components from the [design system](design-system.md).
 - Serve the SPA with nginx: static hosting with security headers (#111), then forwarding `/api/donation/*` for the public project list (#112).
-- Replace nginx with the BFF (#182): it serves the SPA, forwards both APIs and turns the token cookie into a bearer header ([ADR-012 amendment](../reference/adr/0012-react-spa-frontend.md#amendment-2026-11-08-the-bff-replaces-nginx)); sign-in (#113) builds on it.
+- Replace nginx with the BFF (#182): it serves the SPA, forwards both APIs and holds the browser session and adds the bearer header ([ADR-012 amendment](../reference/adr/0012-react-spa-frontend.md#amendment-2026-11-08-the-bff-replaces-nginx), [ADR-019](../reference/adr/0019-browser-session-in-the-bff.md)); sign-in (#113) builds on it.
 - Generate the API clients from the OpenAPI snapshots.
 - Done when: the SPA is served in Docker Compose, a signed-in API call works through the BFF, and CI builds and tests the SPA and its image.
 
@@ -78,14 +78,14 @@ A developer ticks an item only when it is verified in the new front-end.
 | Item | Action |
 | --- | --- |
 | Backend APIs and their OpenAPI snapshots | Keep unchanged (the allow-list for login redirects needs the new origin) |
-| `CookieAuthorizationHandler`, `RefreshTokenForwardingHandler` | Keep and reuse in the BFF |
+| `CookieAuthorizationHandler`, `RefreshTokenForwardingHandler` | Removed (ADR-019): the BFF holds the session and adds the bearer header itself |
 | Admin CORS policy in the Authorization API | Review once the BFF is in place; it may no longer be needed once everything is same-origin |
 
 ## Risks
 
 | Risk | Mitigation |
 | --- | --- |
-| Cookie and bearer mismatch blocks direct API calls | BFF design above; validate in Phase 0 with a real authenticated call before building pages |
+| Cookie and bearer mismatch blocks direct API calls | Solved by the BFF session (ADR-019); the smoke test signs in and makes an authenticated call through the BFF |
 | Passkey Relying Party domain differs from the new origin | Configure `AdminPasskeyOptions.ServerDomain` for the new origin; test the ceremony in Phase 0 or early Phase 3 (ADR-011) |
 | Scope creep into redesigning the product | Phases follow the page specs; new features wait for Phase 3 |
 | Planned pages built against non-existent APIs | Only build pages whose endpoints exist; see the "Planned" markers |

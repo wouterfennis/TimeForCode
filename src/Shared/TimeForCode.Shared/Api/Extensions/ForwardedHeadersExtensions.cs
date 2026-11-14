@@ -18,6 +18,9 @@ namespace TimeForCode.Shared.Api.Extensions
     /// </remarks>
     public static class ForwardedHeadersExtensions
     {
+        /// <summary>
+        /// The configuration section with the trusted proxies.
+        /// </summary>
         public const string SectionName = "ForwardedHeaders";
 
         /// <summary>

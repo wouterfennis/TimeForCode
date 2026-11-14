@@ -4,11 +4,11 @@ namespace TimeForCode.Authorization.Api.Client.Extensions
 {
     public static class AuthClientExtensions
     {
-        public static async Task<TryVoid<ApiException?>> TryLoginAsync(this IAuthClient client, Values.IdentityProvider identityProvider, Uri redirectUri)
+        public static async Task<TryVoid<ApiException?>> TryLoginAsync(this IAuthClient client, Values.IdentityProvider identityProvider, Uri redirectUri, string codeChallenge)
         {
             try
             {
-                await client.LoginAsync(Enum.Parse<Client.IdentityProvider>(identityProvider.ToString()), redirectUri);
+                await client.LoginAsync(Enum.Parse<Client.IdentityProvider>(identityProvider.ToString()), redirectUri, codeChallenge);
             }
             catch (ApiException<ProblemDetails> exception)
             {
@@ -22,30 +22,43 @@ namespace TimeForCode.Authorization.Api.Client.Extensions
             return TryVoid<ApiException?>.Create(default);
         }
 
-        public static async Task<TryResponse<CallbackResponseModel?, System.Exception?>> TryCallbackAsync(this IAuthClient client, string code, string state)
+        /// <summary>
+        /// Completes the sign-in. A success is a redirect, which the generated client reports as an <see cref="ApiException"/> with status 302.
+        /// </summary>
+        public static async Task<TryVoid<ApiException?>> TryCallbackAsync(this IAuthClient client, string code, string state)
         {
-            CallbackResponseModel? response = default;
             try
             {
-                response = await client.CallbackAsync(code, state);
-            }
-            catch (ApiException<ProblemDetails> exception)
-            {
-                return TryResponse<CallbackResponseModel?, System.Exception?>.Create(response, exception);
+                await client.CallbackAsync(code, state);
             }
             catch (ApiException exception)
             {
-                return TryResponse<CallbackResponseModel?, System.Exception?>.Create(response, exception);
+                return TryVoid<ApiException?>.Create(exception);
             }
 
-            return TryResponse<CallbackResponseModel?, System.Exception?>.Create(response, default);
+            return TryVoid<ApiException?>.Create(default);
         }
 
-        public static async Task<TryVoid<ApiException?>> TryLogoutAsync(this IAuthClient client)
+        public static async Task<TryResponse<TokenResponseModel?, ApiException?>> TryExchangeCodeAsync(this IAuthClient client, string code, string codeVerifier)
+        {
+            TokenResponseModel? response = default;
+            try
+            {
+                response = await client.TokenAsync(new ExchangeCodeRequestModel { Code = code, CodeVerifier = codeVerifier });
+            }
+            catch (ApiException exception)
+            {
+                return TryResponse<TokenResponseModel?, ApiException?>.Create(response, exception);
+            }
+
+            return TryResponse<TokenResponseModel?, ApiException?>.Create(response, default);
+        }
+
+        public static async Task<TryVoid<ApiException?>> TryLogoutAsync(this IAuthClient client, RefreshToken refreshToken)
         {
             try
             {
-                await client.LogoutAsync();
+                await client.LogoutAsync(new RefreshRequestModel { RefreshToken = refreshToken });
             }
             catch (ApiException exception)
             {
@@ -69,18 +82,19 @@ namespace TimeForCode.Authorization.Api.Client.Extensions
             return TryVoid<ApiException?>.Create(default);
         }
 
-        public static async Task<TryVoid<ApiException<ProblemDetails>?>> TryRefreshAsync(this IAuthClient client)
+        public static async Task<TryResponse<TokenResponseModel?, ApiException<ProblemDetails>?>> TryRefreshAsync(this IAuthClient client, RefreshToken refreshToken)
         {
+            TokenResponseModel? response = default;
             try
             {
-                await client.RefreshAsync();
+                response = await client.RefreshAsync(new RefreshRequestModel { RefreshToken = refreshToken });
             }
             catch (ApiException<ProblemDetails>? exception)
             {
-                return TryVoid<ApiException<ProblemDetails>?>.Create(exception);
+                return TryResponse<TokenResponseModel?, ApiException<ProblemDetails>?>.Create(response, exception);
             }
 
-            return TryVoid<ApiException<ProblemDetails>?>.Create(default);
+            return TryResponse<TokenResponseModel?, ApiException<ProblemDetails>?>.Create(response, default);
         }
 
         public static async Task<TryResponse<ICollection<RepositoryResponse>?, ApiException?>> TryUserRepositoriesAsync(this IAuthClient client)

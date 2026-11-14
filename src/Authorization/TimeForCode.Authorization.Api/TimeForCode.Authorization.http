@@ -1,14 +1,43 @@
 @TimeForCode.Authorization_HostAddress = https://localhost:7138
 
-POST {{TimeForCode.Authorization_HostAddress}}/api/v1/authentication/login
+# Sign-in is a redirect flow for a browser (through a client that keeps the PKCE verifier):
+# 1. GET login with a PKCE challenge (base64url of the SHA-256 of a random verifier, 43 characters)
+# 2. the identity provider confirms the user and redirects to the callback
+# 3. the callback redirects to the redirect uri with a single-use ?code=
+# 4. POST token with the code and the verifier returns the tokens
+
+GET {{TimeForCode.Authorization_HostAddress}}/api/v1/authentication/login?IdentityProvider=Github&RedirectUri=http://localhost:8084/bff/callback&CodeChallenge=E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM
+User-Agent: testfile
+
+###
+
+POST {{TimeForCode.Authorization_HostAddress}}/api/v1/authentication/token
 Content-Type: application/json
 User-Agent: testfile
 
 {
-    "IdentityProvider": "Github"
+    "code": "the code from the redirect",
+    "codeVerifier": "the verifier whose challenge was sent at login (43 to 128 characters)"
 }
 
-### Assert response
+###
 
+POST {{TimeForCode.Authorization_HostAddress}}/api/v1/authentication/refresh
+Content-Type: application/json
+User-Agent: testfile
+
+{
+    "refreshToken": { "token": "the refresh token", "expiresAfter": "2099-01-01T00:00:00Z" }
+}
+
+###
+
+POST {{TimeForCode.Authorization_HostAddress}}/api/v1/authentication/logout
+Content-Type: application/json
+User-Agent: testfile
+
+{
+    "refreshToken": { "token": "the refresh token", "expiresAfter": "2099-01-01T00:00:00Z" }
+}
 
 ###

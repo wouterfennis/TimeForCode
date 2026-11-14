@@ -14,12 +14,13 @@ namespace TimeForCode.Authorization.Application.Tests.EntityTests
         {
             var redirectUri = new Uri("https://example.test/callback");
 
-            var entry = StateEntry.Start("key", IdentityProvider.Github, redirectUri, "verifier", Now);
+            var entry = StateEntry.Start("key", IdentityProvider.Github, redirectUri, "verifier", "client-challenge", Now);
 
             entry.Key.Should().Be("key");
             entry.IdentityProvider.Should().Be(IdentityProvider.Github);
             entry.RedirectUri.Should().Be(redirectUri);
             entry.CodeVerifier.Should().Be("verifier");
+            entry.ClientCodeChallenge.Should().Be("client-challenge");
             entry.ExpiresAfter.Should().Be(Now.Add(StateEntry.Lifetime));
             entry.Id.Should().NotBe(default);
         }
@@ -27,7 +28,7 @@ namespace TimeForCode.Authorization.Application.Tests.EntityTests
         [TestMethod]
         public void IsExpired_AfterTheLifetime_IsTrue()
         {
-            var entry = StateEntry.Start("key", IdentityProvider.Github, new Uri("https://example.test/callback"), "verifier", Now);
+            var entry = StateEntry.Start("key", IdentityProvider.Github, new Uri("https://example.test/callback"), "verifier", "client-challenge", Now);
 
             entry.IsExpired(Now.Add(StateEntry.Lifetime).AddSeconds(1)).Should().BeTrue();
             entry.IsExpired(Now.AddMinutes(1)).Should().BeFalse();

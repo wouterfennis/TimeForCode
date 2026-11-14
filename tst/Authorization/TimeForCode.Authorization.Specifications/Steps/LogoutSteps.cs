@@ -1,14 +1,15 @@
 using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Bson;
+using Moq;
 using Reqnroll;
 using System.Net;
 using System.Text.Json;
 using System.Web;
 using TimeForCode.Authorization.Api.Client;
 using TimeForCode.Authorization.Api.Client.Extensions;
+using TimeForCode.Authorization.Application.Interfaces;
 using TimeForCode.Authorization.Application.Services;
-using TimeForCode.Authorization.Values;
 using TimeForCode.Shared.Api.Authentication;
 
 namespace TimeForCode.Authorization.Specifications.Steps
@@ -33,14 +34,16 @@ namespace TimeForCode.Authorization.Specifications.Steps
         }
 
         [Given("The user has not logged in at the time for code platform")]
-        public static void GivenTheUserHasNotLoggedInAtTheTimeForCodePlatform()
+        public void GivenTheUserHasNotLoggedInAtTheTimeForCodePlatform()
         {
-            // do nothing
+            // The user holds no refresh token; sign-out is still confirmed.
+            _session.RefreshToken = new RefreshToken { Token = "never-issued", ExpiresAfter = DateTimeOffset.UtcNow.AddDays(1) };
         }
 
         [Given("The user has an access token")]
         public void GivenTheUserHasAnAccessToken()
         {
+            // The spec client sends this token as a bearer header for the calls that need a signed-in user.
             using var scope = _provider.CreateScope();
             var tokenService = scope.ServiceProvider.GetRequiredService<ITokenService>();
             var accessToken = tokenService.GenerateInternalToken(new ObjectId().ToString(), "user", "user");
@@ -53,31 +56,27 @@ namespace TimeForCode.Authorization.Specifications.Steps
         [When("The user logs out from the external platform")]
         public async Task WhenTheUserLogsOutFromTheExternalPlatformAsync()
         {
-            _result = await _authClient.TryLogoutAsync();
+            _result = await _authClient.TryLogoutAsync(_session.RefreshToken!);
         }
 
         [When("The user logs out with a read-only request")]
         public async Task WhenTheUserLogsOutWithAReadOnlyRequestAsync()
         {
-            _session.ReadOnlyRequestResponse = await _httpClient.GetAsync("/api/v1/authentication/session/logout");
+            _session.ReadOnlyRequestResponse = await _httpClient.GetAsync("/api/v1/authentication/logout");
         }
 
         [Then("The logout is confirmed")]
-        public static void ThenTheLogoutIsConfirmed()
+        public void ThenTheLogoutIsConfirmed()
         {
-            // do nothing, no exceptions should have been thrown
+            _result!.Exception.Should().BeNull();
         }
 
-        [Then("The access token cookie is expired")]
-        public void ThenTheAccessTokenCookieIsExpired()
+        [Then("The refresh token of the user is revoked")]
+        public void ThenTheRefreshTokenOfTheUserIsRevoked()
         {
-            _cookieContainer.GetAllCookies()[CookieConstants.TokenKey].Should().BeNull();
-        }
+            var repository = _provider.GetRequiredService<Mock<IRefreshTokenRepository>>();
 
-        [Then("The refresh token cookie is expired")]
-        public void ThenTheRefreshTokenCookieIsExpired()
-        {
-            _cookieContainer.GetAllCookies()[CookieConstants.RefreshTokenKey].Should().BeNull();
+            repository.Verify(x => x.DeleteAsync(It.Is<Domain.Entities.RefreshToken>(t => t.TokenHash == RefreshTokenHasher.Hash(_session.RefreshToken!.Token))), Times.Once);
         }
     }
 }

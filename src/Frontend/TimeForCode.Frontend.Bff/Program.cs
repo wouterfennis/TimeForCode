@@ -1,16 +1,32 @@
+using Microsoft.Extensions.Options;
 using TimeForCode.Frontend.Bff;
+using TimeForCode.Frontend.Bff.Sessions;
 using TimeForCode.Shared.Api.Extensions;
-using Yarp.ReverseProxy.Forwarder;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var defaultOpenApiOptions = TimeForCode.Shared.Api.Extensions.ServiceCollectionExtensions.CreateDefaultOpenApiOptions(
+    "Front-end BFF",
+    "The browser-facing sign-in, session status and sign-out. The BFF keeps the tokens; the browser only holds one opaque session cookie.");
+builder.Services.AddOpenApi("v1", options =>
+{
+    defaultOpenApiOptions(options);
+    BffOpenApi.Describe(options);
+});
 builder.Services.AddTrustedForwardedHeaders(builder.Configuration);
-builder.Services.AddHttpContextAccessor();
+builder.Services.Configure<BrowserSessionOptions>(builder.Configuration.GetSection(BrowserSessionOptions.SectionName));
+builder.Services.Configure<AuthorizationOptions>(builder.Configuration.GetSection(AuthorizationOptions.SectionName));
+builder.Services.Configure<DbOptions>(builder.Configuration.GetSection(DbOptions.SectionName));
+builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddSingleton<ISessionStore, MongoSessionStore>();
+builder.Services.AddSingleton<SessionService>();
+// The address is read when the client is first used, not at start: the OpenAPI build step starts the host without configuration.
+builder.Services.AddHttpClient<IAuthorizationApi, AuthorizationApi>((provider, client) =>
+    client.BaseAddress = new Uri(provider.GetRequiredService<IOptions<AuthorizationOptions>>().Value.BaseAddress));
 builder.Services.AddReverseProxy()
     .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"))
     .AddTransforms(LocationRewrite.Add)
-    .AddTransforms(ForwardOnlyCookie.Add);
-builder.Services.AddSingleton<IForwarderHttpClientFactory, BearerTokenForwarderHttpClientFactory>();
+    .AddTransforms(SessionBearer.Add);
 
 var app = builder.Build();
 
@@ -23,6 +39,8 @@ if (!app.Environment.IsDevelopment())
 
 app.UseBrowserSecurityHeaders();
 app.UseCsrfHeaderCheck();
+app.UseAuthRouteAllowlist();
+app.MapBffEndpoints();
 app.MapReverseProxy();
 app.MapSpaFiles();
 

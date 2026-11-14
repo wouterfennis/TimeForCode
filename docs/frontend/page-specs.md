@@ -30,7 +30,7 @@ Keep these `data-testid` values; the E2E tests rely on them: `project-list`, `pr
 ```
 
 - Signed-in variant: greeting with the user name, and links to Profile and Sign out.
-- A new user (first login) sees a one-time welcome message linking to the profile. Today the signal is an `IsNewUser` cookie set by the Authorization API, but it is HttpOnly, so the SPA cannot read it. **Open question**: the callback should return the flag in the redirect or a response field, or the BFF should expose it (see [architecture](architecture.md#authentication-and-the-bff)).
+- A new user (first login) sees a one-time welcome message linking to the profile. The signal is `isNewUser` in the response of `GET /bff/session`; it is `true` for five minutes after the first sign-in (see [authentication flow](../authentication/authentication_flow_design.md#the-first-login-signal)).
 - The admin passkey sign-in is intentionally low-key (footer or a separate link), not a primary call to action.
 
 ## Project list — `/projects`
@@ -133,7 +133,7 @@ Keep these `data-testid` values; the E2E tests rely on them: `project-list`, `pr
 **Data**: the four `admin-authentication` endpoints (registration/options, registration, authentication/options, authentication).
 
 - Port the behaviour of `wwwroot/js/webauthn-admin-interop.js` into a typed module using the `navigator.credentials` API.
-- Requests use `credentials: "include"` so the HttpOnly cookie round-trips.
+- Requests use `credentials: "same-origin"` (the default) so the opaque session cookie is sent; state-changing requests also send `X-Requested-With`.
 - Registration needs the bootstrap secret; never store it, never log it.
 - See [ADR-011](../reference/adr/0011-webauthn-admin-authentication.md) for the ceremony and its accepted risks. The Relying Party domain is configured as the front-end origin, so its production origin must be configured on the backend.
 

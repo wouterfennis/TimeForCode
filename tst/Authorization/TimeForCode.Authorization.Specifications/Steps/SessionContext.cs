@@ -10,6 +10,21 @@ namespace TimeForCode.Authorization.Specifications.Steps
         public HttpResponseMessage? ReadOnlyRequestResponse { get; set; }
 
         /// <summary>
+        /// The single-use code the browser received in the redirect after a completed sign-in.
+        /// </summary>
+        public string? OneTimeCode { get; set; }
+
+        /// <summary>
+        /// The refresh token the user holds, as the client sends it to refresh or sign out.
+        /// </summary>
+        public Api.Client.RefreshToken? RefreshToken { get; set; }
+
+        /// <summary>
+        /// The tokens returned by the last successful code exchange or refresh.
+        /// </summary>
+        public Api.Client.TokenResponseModel? Tokens { get; set; }
+
+        /// <summary>
         /// The error of the last call that failed, for the steps that check what the user is told.
         /// </summary>
         public Api.Client.ApiException? LastException { get; set; }

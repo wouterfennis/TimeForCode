@@ -38,7 +38,7 @@ A random state key, the redirect URI and the PKCE code verifier of a login in pr
 
 ### Cookies
 
-`AccessToken` and `RefreshToken` hold the tokens of the session. They are `HttpOnly`, `Secure` and `SameSite=Strict`; the browser removes them at their expiry and the platform expires them at logout and account deletion. The short-lived `IsNewUser` cookie holds no personal data.
+The browser holds one opaque cookie, `__Host-session` (`HttpOnly`, `Secure`, `SameSite=Strict`), that identifies the session at the BFF and contains no personal data. The tokens live in the session record of the BFF database (collection `BffSessions`, with the hash of the cookie value), which holds the access and refresh token and timestamps. The record is removed at sign-out, after 30 idle minutes or 8 hours, or at the latest by its TTL index. A short-lived `__Host-login` cookie and its record (`BffLoginAttempts`, the PKCE verifier and a local return path) exist while a sign-in is in progress. The admin passkey login still uses the cookies described in the [authentication flow](../authentication/authentication_flow_design.md#admin-login).
 
 ## Donation module
 
@@ -67,7 +67,7 @@ A signed-in user deletes the account with `DELETE /api/v1/user`:
 1. The Authorization API asks the Donation API to anonymise the contributor of the user (`POST /api/v1/contributor/{userId}/anonymise`, with a service token, scope `service`; see [ADR-001](adr/0001-use-internal-jwt.md)). When this fails, the deletion fails with `502` and nothing is removed, so the user can retry.
 2. All refresh tokens of the user are deleted.
 3. The account record is deleted.
-4. The access and refresh token cookies are expired.
+4. The BFF session of the browser is not removed by the deletion; its refresh token no longer exists, so the session ends at the next token refresh (at most 15 minutes later).
 
 The profile is no longer found afterwards (`GET /api/v1/user` returns `404`) and a refresh with an old refresh token fails. Anonymising twice is accepted, so a retry after a partial failure completes the work.
 

@@ -1,13 +1,11 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 using System.ComponentModel.DataAnnotations;
 using System.Net.Mime;
 using System.Security.Claims;
 using TimeForCode.Authorization.Api.Models;
 using TimeForCode.Authorization.Application.Interfaces;
-using TimeForCode.Authorization.Application.Options;
 using TimeForCode.Authorization.Commands;
 
 namespace TimeForCode.Authorization.Api.Controllers
@@ -26,7 +24,6 @@ namespace TimeForCode.Authorization.Api.Controllers
         private readonly IAccountInformationRepository _accountInformationRepository;
         private readonly IGithubApiService _githubApiService;
         private readonly ISender _sender;
-        private readonly IOptions<AuthenticationOptions> _authenticationOptions;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UserController"/> class.
@@ -34,13 +31,11 @@ namespace TimeForCode.Authorization.Api.Controllers
         public UserController(
             IAccountInformationRepository accountInformationRepository,
             IGithubApiService githubApiService,
-            ISender sender,
-            IOptions<AuthenticationOptions> authenticationOptions)
+            ISender sender)
         {
             _accountInformationRepository = accountInformationRepository;
             _githubApiService = githubApiService;
             _sender = sender;
-            _authenticationOptions = authenticationOptions;
         }
 
         /// <summary>
@@ -114,8 +109,6 @@ namespace TimeForCode.Authorization.Api.Controllers
                     Detail = "The account was kept because a dependent service could not be updated. Try again later."
                 });
             }
-
-            TokenCookies.Expire(HttpContext.Response, _authenticationOptions.Value.RefreshCookiePath);
 
             return NoContent();
         }

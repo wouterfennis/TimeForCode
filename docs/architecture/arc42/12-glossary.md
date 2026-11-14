@@ -21,7 +21,9 @@ This glossary defines the terms used throughout the TimeForCode architecture doc
 | DonationTransaction | A single time-log entry made by a contributor against an active donation. Records hours, a description, and an optional link to a GitHub commit or pull request. |
 | DonorOrganization | A company registered on the platform that pledges developer hours on behalf of its employees. |
 | GitHub Entity | A base class in the Donation domain that links a domain object to a GitHub resource (repository, user, milestone). |
-| HttpOnly Cookie | A browser cookie that cannot be accessed by JavaScript. Used to store tokens securely and prevent XSS attacks. |
+| HttpOnly Cookie | A browser cookie that cannot be accessed by JavaScript. The only cookie the browser holds is the opaque session cookie of the BFF; it carries no token. |
+| One-time code | A single-use code the Authorization API appends to the redirect after sign-in. It is exchanged for tokens together with the PKCE verifier of the client that started the login. |
+| Session (BFF) | The server-side record behind the opaque session cookie: the tokens, timestamps and the refresh lease. |
 | Identity Provider (IdP) | An external service that authenticates users. In TimeForCode, GitHub is the primary IdP. |
 | Identity Provider Mock | A test service that simulates the GitHub OAuth 2.0 provider for local development and integration testing. |
 | Internal JWT | A JSON Web Token issued by the Authorization API, signed with the platform's RSA key. Used for all internal service-to-service authorization. Distinct from any token provided by GitHub. |

@@ -16,7 +16,7 @@ ADR documents live in [docs/reference/adr/](../../reference/adr/README.md).
 | [ADR-002](../../reference/adr/0002-use-mongodb.md) | Use MongoDB as the primary data store | Accepted | 2025 |
 | [ADR-003](../../reference/adr/0003-use-arc42.md) | Use Arc42 for architecture documentation | Accepted | 2026 |
 | [ADR-004](../../reference/adr/0004-use-mediatr.md) | Use MediatR for command dispatch | Accepted | 2025 |
-| [ADR-005](../../reference/adr/0005-http-only-cookies.md) | Store tokens in HttpOnly cookies, not localStorage | Accepted | 2025 |
+| [ADR-005](../../reference/adr/0005-http-only-cookies.md) | Store tokens in HttpOnly cookies, not localStorage | Superseded in part by ADR-019 | 2025 |
 | [ADR-006](../../reference/adr/0006-reqnroll-bdd.md) | Use Reqnroll + BDD for acceptance tests | Accepted | 2026-06-21 |
 | [ADR-007](../../reference/adr/0007-swagger-snapshot-gate.md) | Swagger snapshot gate for API contract review | Accepted | 2026-06-21 |
 | [ADR-009](../../reference/adr/0009-result-type-error-handling.md) | Use Result&lt;T&gt; for expected failures, exceptions for programming errors | Accepted | 2026 |
@@ -29,6 +29,7 @@ ADR documents live in [docs/reference/adr/](../../reference/adr/README.md).
 | [ADR-016](../../reference/adr/0016-mongodb-bson-in-domain-and-application.md) | Allow MongoDB.Bson types in Domain and Application, forbid the driver | Accepted | 2026-10-18 |
 | [ADR-017](../../reference/adr/0017-test-only-admin-access.md) | Test-only admin access on the local stack, disabled by default and refused outside Development and Test | Accepted | 2026-10-21 |
 | [ADR-018](../../reference/adr/0018-reporting-reads-donation-over-http-with-forwarded-token.md) | Reporting reads Donation over HTTP with the caller's token | Accepted | 2026-11-01 |
+| [ADR-019](../../reference/adr/0019-browser-session-in-the-bff.md) | The browser session lives in the BFF | Accepted | 2026 |
 
 ---
 

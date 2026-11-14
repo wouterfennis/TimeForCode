@@ -48,7 +48,9 @@ namespace TimeForCode.Authorization.Application.Tests.Handlers
             _sut = new LoginHandler(options, _stateRepository.Object, randomGenerator.Object, timeProvider.Object, NullLogger<LoginHandler>.Instance);
         }
 
-        private static LoginCommand Command() => new() { IdentityProvider = IdentityProvider.Github, RedirectUri = new Uri("http://localhost/") };
+        private const string ClientChallenge = "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM";
+
+        private static LoginCommand Command() => new() { IdentityProvider = IdentityProvider.Github, RedirectUri = new Uri("http://localhost/"), CodeChallenge = ClientChallenge };
 
         [TestMethod]
         public async Task Handle_ValidCommand_DoesNotRequestAnyScope()
@@ -93,6 +95,7 @@ namespace TimeForCode.Authorization.Application.Tests.Handlers
             stored!.Key.Should().Be("state-key");
             stored.CodeVerifier.Should().Be(Verifier);
             stored.ExpiresAfter.Should().Be(Now.AddMinutes(10));
+            stored.ClientCodeChallenge.Should().Be(ClientChallenge);
         }
     }
 }

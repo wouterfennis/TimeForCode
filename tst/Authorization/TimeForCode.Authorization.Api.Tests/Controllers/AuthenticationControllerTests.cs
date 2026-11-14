@@ -5,13 +5,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
-using System.Text.Json;
 using TimeForCode.Authorization.Api.Controllers;
 using TimeForCode.Authorization.Api.Models;
 using TimeForCode.Authorization.Application.Options;
 using TimeForCode.Authorization.Commands;
 using TimeForCode.Authorization.Values;
-using TimeForCode.Shared.Api.Authentication;
 using TimeForCode.Shared.Api.Authentication.Models;
 
 namespace TimeForCode.Authorization.Api.Tests.Controllers
@@ -19,165 +17,155 @@ namespace TimeForCode.Authorization.Api.Tests.Controllers
     [TestClass]
     public class AuthenticationControllerTests
     {
-        private const string RefreshPath = "/api/auth/v1/Authentication/session";
-
+        private const string Challenge = "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM";
         private static readonly DateTimeOffset AccessExpiry = new(2030, 1, 1, 0, 0, 0, TimeSpan.Zero);
 
         private readonly Mock<ISender> _sender = new();
 
-        private AuthenticationController CreateSut(string? refreshCookie = null)
+        private AuthenticationController CreateSut()
         {
             var options = Options.Create(new AuthenticationOptions
             {
                 Issuer = "issuer",
                 Audience = "audience",
-                ValidRedirectUris = ["https://app.test/"],
-                RefreshCookiePath = RefreshPath
+                ValidRedirectUris = ["https://app.test/signed-in"]
             });
-            var context = new DefaultHttpContext();
-            if (refreshCookie is not null)
-            {
-                context.Request.Headers.Cookie = $"{CookieConstants.RefreshTokenKey}={Uri.EscapeDataString(refreshCookie)}";
-            }
 
             return new AuthenticationController(_sender.Object, options, NullLogger<AuthenticationController>.Instance)
             {
-                ControllerContext = new ControllerContext { HttpContext = context }
+                ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
             };
         }
 
-        // RFC 6265 section 5.1.4: the browser sends a cookie when the request path equals the cookie path or continues it after a slash.
-        private static bool BrowserSends(string cookiePath, string requestPath)
-            => requestPath == cookiePath || requestPath.StartsWith(cookiePath + "/", StringComparison.Ordinal);
-
-        private static string ValidRefreshCookie() => JsonSerializer.Serialize(new RefreshToken { Token = "refresh-secret", ExpiresAfter = AccessExpiry.AddDays(7) });
-
-        private static Result<TokenResult> SuccessfulTokens(Uri? redirect = null, bool isNewUser = false)
+        private static Result<TokenResult> SuccessfulTokens(bool isNewUser = false)
             => Result<TokenResult>.Success(new TokenResult
             {
                 InternalAccessToken = new AccessToken { Token = "access-secret", ExpiresAfter = AccessExpiry },
                 RefreshToken = new RefreshToken { Token = "refresh-secret", ExpiresAfter = AccessExpiry.AddDays(7) },
-                RedirectUri = redirect,
                 IsNewUser = isNewUser
             });
 
-        private static string[] SetCookies(AuthenticationController sut)
-            => sut.HttpContext.Response.Headers.SetCookie.ToArray()!;
+        private static void NoCookiesShouldBeSet(AuthenticationController sut)
+            => sut.HttpContext.Response.Headers.SetCookie.Should().BeEmpty();
 
         [TestMethod]
-        public async Task RefreshAsync_ValidRefreshCookie_ReturnsOnlyExpiryAndNewUserFlag()
+        public async Task LoginAsync_ValidRequest_PassesTheClientChallengeOnAndRedirects()
         {
-            _sender.Setup(s => s.Send(It.IsAny<RefreshCommand>(), It.IsAny<CancellationToken>())).ReturnsAsync(SuccessfulTokens());
-            var sut = CreateSut(ValidRefreshCookie());
+            _sender.Setup(s => s.Send(It.IsAny<LoginCommand>(), It.IsAny<CancellationToken>())).ReturnsAsync(new Uri("https://idp.test/authorize"));
+            var sut = CreateSut();
 
-            var result = await sut.RefreshAsync();
+            var result = await sut.LoginAsync(new LoginRequestModel
+            {
+                IdentityProvider = Api.Models.IdentityProvider.Github,
+                RedirectUri = new Uri("https://app.test/signed-in"),
+                CodeChallenge = Challenge
+            });
 
-            var body = result.Should().BeOfType<OkObjectResult>().Subject.Value.Should().BeOfType<CallbackResponseModel>().Subject;
-            body.ExpiresAfter.Should().Be(AccessExpiry);
-            JsonSerializer.Serialize(body).Should().NotContain("access-secret").And.NotContain("refresh-secret");
+            result.Should().BeOfType<RedirectResult>().Which.Url.Should().Be("https://idp.test/authorize");
+            _sender.Verify(s => s.Send(It.Is<LoginCommand>(c => c.CodeChallenge == Challenge), It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [TestMethod]
-        public async Task RefreshAsync_ValidRefreshCookie_SetsBothTokenCookies()
+        public async Task LoginAsync_UnlistedRedirectUri_ReturnsBadRequest()
         {
-            _sender.Setup(s => s.Send(It.IsAny<RefreshCommand>(), It.IsAny<CancellationToken>())).ReturnsAsync(SuccessfulTokens());
-            var sut = CreateSut(ValidRefreshCookie());
+            var sut = CreateSut();
 
-            await sut.RefreshAsync();
-
-            var cookies = SetCookies(sut);
-            cookies.Should().ContainSingle(c => c.StartsWith(CookieConstants.TokenKey + "="));
-            cookies.Should().ContainSingle(c => c.StartsWith(CookieConstants.RefreshTokenKey + "="));
-        }
-
-        [TestMethod]
-        public async Task RefreshAsync_ValidRefreshCookie_ScopesTheRefreshCookieToTheSessionPathOnly()
-        {
-            _sender.Setup(s => s.Send(It.IsAny<RefreshCommand>(), It.IsAny<CancellationToken>())).ReturnsAsync(SuccessfulTokens());
-            var sut = CreateSut(ValidRefreshCookie());
-
-            await sut.RefreshAsync();
-
-            var cookies = SetCookies(sut);
-            cookies.Single(c => c.StartsWith(CookieConstants.RefreshTokenKey + "=")).Should().Contain($"path={RefreshPath}");
-            cookies.Single(c => c.StartsWith(CookieConstants.TokenKey + "=")).Should().Contain("path=/;");
-        }
-
-        [TestMethod]
-        [DataRow("/api/auth/v1/Authentication/session/refresh", true)]
-        [DataRow("/api/auth/v1/Authentication/session/logout", true)]
-        [DataRow("/api/auth/v1/Authentication/login", false)]
-        [DataRow("/api/auth/v1/Authentication/callback", false)]
-        [DataRow("/api/auth/v1/Authentication/sessionx", false)]
-        [DataRow("/api/auth/v1/User", false)]
-        [DataRow("/api/donation/v1/Project", false)]
-        public async Task RefreshAsync_RefreshCookiePath_IsSentByTheBrowserOnlyToRefreshAndLogout(string requestPath, bool expectedSent)
-        {
-            _sender.Setup(s => s.Send(It.IsAny<RefreshCommand>(), It.IsAny<CancellationToken>())).ReturnsAsync(SuccessfulTokens());
-            var sut = CreateSut(ValidRefreshCookie());
-
-            await sut.RefreshAsync();
-
-            var cookiePath = SetCookies(sut).Single(c => c.StartsWith(CookieConstants.RefreshTokenKey + "="))
-                .Split(';', StringSplitOptions.TrimEntries).Single(a => a.StartsWith("path=", StringComparison.OrdinalIgnoreCase))[5..];
-            BrowserSends(cookiePath, requestPath).Should().Be(expectedSent);
-        }
-
-        [TestMethod]
-        public void SessionEndpoints_Routes_LieUnderTheRefreshCookiePath()
-        {
-            var routes = new[] { nameof(AuthenticationController.RefreshAsync), nameof(AuthenticationController.LogoutAsync) }
-                .Select(name => typeof(AuthenticationController).GetMethod(name)!.GetCustomAttributes(typeof(RouteAttribute), false).Cast<RouteAttribute>().Single().Template);
-
-            routes.Should().OnlyContain(route => route.StartsWith("session/", StringComparison.Ordinal));
-            AuthenticationOptions.DefaultRefreshCookiePath.Should().EndWith("/Authentication/session");
-        }
-
-        [TestMethod]
-        public async Task RefreshAsync_MalformedRefreshCookie_ReturnsBadRequest()
-        {
-            var sut = CreateSut("not-json{");
-
-            var result = await sut.RefreshAsync();
+            var result = await sut.LoginAsync(new LoginRequestModel
+            {
+                IdentityProvider = Api.Models.IdentityProvider.Github,
+                RedirectUri = new Uri("https://evil.test/"),
+                CodeChallenge = Challenge
+            });
 
             result.Should().BeOfType<BadRequestObjectResult>();
-            _sender.Verify(s => s.Send(It.IsAny<RefreshCommand>(), It.IsAny<CancellationToken>()), Times.Never);
         }
 
         [TestMethod]
-        public async Task LogoutAsync_MalformedRefreshCookie_ReturnsNoContentAndClearsBothCookies()
+        public async Task CallbackAsync_Success_RedirectsToTheClientWithTheOneTimeCodeAndSetsNoCookie()
         {
-            var sut = CreateSut("not-json{");
-
-            var result = await sut.LogoutAsync();
-
-            result.Should().BeOfType<NoContentResult>();
-            var cookies = SetCookies(sut);
-            cookies.Should().Contain(c => c.StartsWith(CookieConstants.TokenKey + "=;"));
-            cookies.Should().Contain(c => c.StartsWith(CookieConstants.RefreshTokenKey + "=;") && c.Contains($"path={RefreshPath}"));
-        }
-
-        [TestMethod]
-        public async Task LogoutAsync_MalformedRefreshCookie_RevokesNothing()
-        {
-            var sut = CreateSut("not-json{");
-
-            await sut.LogoutAsync();
-
-            _sender.Verify(s => s.Send(It.Is<LogoutCommand>(c => c.RefreshToken == null), It.IsAny<CancellationToken>()), Times.Once);
-        }
-
-        [TestMethod]
-        public async Task CallbackAsync_WithoutRedirect_ReturnsOnlyExpiryAndNewUserFlag()
-        {
-            _sender.Setup(s => s.Send(It.IsAny<CallbackCommand>(), It.IsAny<CancellationToken>())).ReturnsAsync(SuccessfulTokens(isNewUser: true));
+            _sender.Setup(s => s.Send(It.IsAny<CallbackCommand>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(Result<CallbackResult>.Success(new CallbackResult { RedirectUri = new Uri("https://app.test/signed-in"), Code = "one-time" }));
             var sut = CreateSut();
 
             var result = await sut.CallbackAsync(new CallbackRequestModel { Code = "code", State = "state" });
 
-            var body = result.Should().BeOfType<OkObjectResult>().Subject.Value.Should().BeOfType<CallbackResponseModel>().Subject;
+            result.Should().BeOfType<RedirectResult>().Which.Url.Should().Be("https://app.test/signed-in?code=one-time");
+            NoCookiesShouldBeSet(sut);
+        }
+
+        [TestMethod]
+        public async Task CallbackAsync_Failure_ReturnsBadRequest()
+        {
+            _sender.Setup(s => s.Send(It.IsAny<CallbackCommand>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(Result<CallbackResult>.Failure("State is not known"));
+            var sut = CreateSut();
+
+            var result = await sut.CallbackAsync(new CallbackRequestModel { Code = "code", State = "state" });
+
+            result.Should().BeOfType<BadRequestObjectResult>();
+        }
+
+        [TestMethod]
+        public async Task ExchangeCodeAsync_ValidCode_ReturnsBothTokensAndSetsNoCookie()
+        {
+            _sender.Setup(s => s.Send(It.IsAny<ExchangeCodeCommand>(), It.IsAny<CancellationToken>())).ReturnsAsync(SuccessfulTokens(isNewUser: true));
+            var sut = CreateSut();
+
+            var result = await sut.ExchangeCodeAsync(new ExchangeCodeRequestModel { Code = "one-time", CodeVerifier = new string('a', 43) });
+
+            var body = result.Should().BeOfType<OkObjectResult>().Subject.Value.Should().BeOfType<TokenResponseModel>().Subject;
+            body.AccessToken.Token.Should().Be("access-secret");
+            body.RefreshToken.Token.Should().Be("refresh-secret");
             body.IsNewUser.Should().BeTrue();
-            JsonSerializer.Serialize(body).Should().NotContain("access-secret").And.NotContain("refresh-secret");
+            NoCookiesShouldBeSet(sut);
+        }
+
+        [TestMethod]
+        public async Task ExchangeCodeAsync_InvalidCode_ReturnsBadRequest()
+        {
+            _sender.Setup(s => s.Send(It.IsAny<ExchangeCodeCommand>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result<TokenResult>.Failure("Code is not valid"));
+            var sut = CreateSut();
+
+            var result = await sut.ExchangeCodeAsync(new ExchangeCodeRequestModel { Code = "one-time", CodeVerifier = new string('a', 43) });
+
+            result.Should().BeOfType<BadRequestObjectResult>();
+        }
+
+        [TestMethod]
+        public async Task RefreshAsync_ValidRefreshToken_ReturnsNewTokensAndSetsNoCookie()
+        {
+            _sender.Setup(s => s.Send(It.IsAny<RefreshCommand>(), It.IsAny<CancellationToken>())).ReturnsAsync(SuccessfulTokens());
+            var sut = CreateSut();
+
+            var result = await sut.RefreshAsync(new RefreshRequestModel { RefreshToken = new RefreshToken { Token = "old", ExpiresAfter = AccessExpiry } });
+
+            var body = result.Should().BeOfType<OkObjectResult>().Subject.Value.Should().BeOfType<TokenResponseModel>().Subject;
+            body.RefreshToken.Token.Should().Be("refresh-secret");
+            _sender.Verify(s => s.Send(It.Is<RefreshCommand>(c => c.RefreshToken.Token == "old"), It.IsAny<CancellationToken>()), Times.Once);
+            NoCookiesShouldBeSet(sut);
+        }
+
+        [TestMethod]
+        public async Task RefreshAsync_RejectedRefreshToken_ReturnsBadRequest()
+        {
+            _sender.Setup(s => s.Send(It.IsAny<RefreshCommand>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result<TokenResult>.Failure("Refresh token not found"));
+            var sut = CreateSut();
+
+            var result = await sut.RefreshAsync(new RefreshRequestModel { RefreshToken = new RefreshToken { Token = "old", ExpiresAfter = AccessExpiry } });
+
+            result.Should().BeOfType<BadRequestObjectResult>();
+        }
+
+        [TestMethod]
+        public async Task LogoutAsync_RefreshToken_RevokesItAndReturnsNoContentWithoutCookies()
+        {
+            var sut = CreateSut();
+
+            var result = await sut.LogoutAsync(new RefreshRequestModel { RefreshToken = new RefreshToken { Token = "old", ExpiresAfter = AccessExpiry } });
+
+            result.Should().BeOfType<NoContentResult>();
+            _sender.Verify(s => s.Send(It.Is<LogoutCommand>(c => c.RefreshToken!.Token == "old"), It.IsAny<CancellationToken>()), Times.Once);
+            NoCookiesShouldBeSet(sut);
         }
     }
 }

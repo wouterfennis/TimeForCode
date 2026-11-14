@@ -43,35 +43,30 @@ namespace TimeForCode.Shared.Tests.Live
         }
 
         [TestMethod]
-        public void ReadAccessToken_CookieWithTokenJson_ReturnsToken()
+        public void ReadCode_CallbackRedirectWithCode_ReturnsTheCode()
         {
-            string[] cookies =
-            [
-                "RefreshToken=%7B%22token%22%3A%22refresh%22%7D; expires=Thu, 01 Jan 2099 00:00:00 GMT; path=/",
-                "AccessToken=%7B%22Token%22%3A%22jwt-value%22%2C%22ExpiresAfter%22%3A%222099-01-01T00%3A00%3A00Z%22%7D; path=/; httponly"
-            ];
+            var redirect = new Uri("http://localhost:8084/?code=one-time%2Bcode");
 
-            LiveAuthentication.ReadAccessToken(cookies).Should().Be("jwt-value");
+            LiveAuthentication.ReadCode(redirect).Should().Be("one-time+code");
         }
 
         [TestMethod]
-        public void ReadAccessToken_EmptyCookieBeforeRealOne_SkipsTheEmptyCookie()
+        public void ReadCode_RedirectWithoutCode_Throws()
         {
-            string[] cookies =
-            [
-                "AccessToken=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/",
-                "AccessToken=%7B%22Token%22%3A%22jwt-value%22%2C%22ExpiresAfter%22%3A%222099-01-01T00%3A00%3A00Z%22%7D; path=/"
-            ];
+            Action act = () => LiveAuthentication.ReadCode(new Uri("http://localhost:8084/?error=denied"));
 
-            LiveAuthentication.ReadAccessToken(cookies).Should().Be("jwt-value");
+            act.Should().Throw<InvalidOperationException>().WithMessage("*code*");
         }
 
         [TestMethod]
-        public void ReadAccessToken_NoAccessTokenCookie_Throws()
+        public void CreatePkcePair_Always_ChallengeIsTheS256OfTheVerifier()
         {
-            Action act = () => LiveAuthentication.ReadAccessToken(["RefreshToken=x; path=/"]);
+            var (verifier, challenge) = LiveAuthentication.CreatePkcePair();
 
-            act.Should().Throw<InvalidOperationException>().WithMessage("*AccessToken*");
+            verifier.Length.Should().BeInRange(43, 128);
+            challenge.Should().MatchRegex("^[A-Za-z0-9_-]{43}$");
+            Convert.ToBase64String(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.ASCII.GetBytes(verifier)))
+                .TrimEnd('=').Replace('+', '-').Replace('/', '_').Should().Be(challenge);
         }
 
         [TestMethod]

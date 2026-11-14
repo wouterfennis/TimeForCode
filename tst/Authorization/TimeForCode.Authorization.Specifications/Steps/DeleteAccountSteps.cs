@@ -78,16 +78,9 @@ namespace TimeForCode.Authorization.Specifications.Steps
                 _logoutSteps.GivenTheUserHasAnAccessToken();
             }
 
-            // The deletion expires the cookies of the client; copies of the tokens that the user kept must stay unusable.
-            var keptTokens = _cookieContainer.GetAllCookies().ToList();
-
             await DeleteAsync();
 
             _result!.Exception.Should().BeNull();
-            foreach (var kept in keptTokens)
-            {
-                _cookieContainer.Add(new Uri("http://localhost:8083"), new Cookie(kept.Name, kept.Value));
-            }
         }
 
         [When("The user deletes their account")]

@@ -41,6 +41,7 @@ namespace TimeForCode.Authorization.Infrastructure.Tests.Persistence
                 IdentityProvider = IdentityProvider.Github,
                 RedirectUri = new Uri("https://localhost/"),
                 CodeVerifier = "verifier",
+                ClientCodeChallenge = "challenge",
                 ExpiresAfter = new DateTimeOffset(2026, 10, 16, 12, 0, 0, TimeSpan.Zero)
             };
 

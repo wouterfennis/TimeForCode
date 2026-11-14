@@ -26,6 +26,7 @@ ADRs are referenced from [Arc42 Section 09 — Architecture Decisions](../archit
 | [ADR-016](0016-mongodb-bson-in-domain-and-application.md) | Allow MongoDB.Bson types in Domain and Application, forbid the driver | Accepted |
 | [ADR-017](0017-test-only-admin-access.md) | Test-only admin access on the local stack | Accepted |
 | [ADR-018](0018-reporting-reads-donation-over-http-with-forwarded-token.md) | Reporting reads Donation over HTTP with the caller's token | Accepted |
+| [ADR-019](0019-browser-session-in-the-bff.md) | The browser session lives in the BFF | Accepted |
 
 ---
 

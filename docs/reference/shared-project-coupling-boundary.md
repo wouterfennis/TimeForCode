@@ -20,9 +20,9 @@ Permitted categories:
 
 | Category | Example |
 | --- | --- |
-| Delegating HTTP handlers | `CookieAuthorizationHandler`, `RefreshTokenForwardingHandler` |
-| Shared cookie/header constant definitions | `CookieConstants` |
-| Strongly-typed token models used by handlers | `AccessToken` |
+| API pipeline extensions | `UseDefaultApiPipeline`, `AddTrustedForwardedHeaders`, `UseSecurityHeaders` |
+| Cookie name constants (admin passkey cookies, until the admin login moves to the BFF) | `CookieConstants` |
+| Strongly-typed token models shared by the APIs | `AccessToken` |
 | Generic pipeline behaviours (MediatR) | `ValidationBehaviour<,>` |
 | ASP.NET Core extension methods for common service registration | `AddSharedInfrastructure()` |
 
@@ -55,14 +55,13 @@ If any check fails, the type stays in the bounded context that needs it, or a ne
 
 ---
 
-## Current Contents (as of 2026-06-26)
+## Current Contents (as of 2026-11-14)
 
 | Type | Layer | Consumed by |
 | --- | --- | --- |
-| `CookieAuthorizationHandler` | API (delegating handler) | Donation API client, Authorization API client |
-| `RefreshTokenForwardingHandler` | API (delegating handler) | Authorization API client |
-| `CookieConstants` | API (constants) | Both handlers |
-| `AccessToken` model | API (model) | `CookieAuthorizationHandler` |
+| `ForwardedHeadersExtensions` | API (service registration) | Authorization, Donation, Reporting APIs and the front-end BFF |
+| `CookieConstants` | API (constants) | Authorization API (admin cookies), test projects |
+| `AccessToken` model | API (model) | Authorization API response models |
 | `ValidationBehaviour<,>` | Application pipeline | Authorization Application, Donation Application |
 
 All current contents satisfy the domain-free and framework-only checks.
@@ -71,6 +70,6 @@ All current contents satisfy the domain-free and framework-only checks.
 
 ## Rationale
 
-The Shared project exists because HTTP-cookie handling for the internal JWT and refresh-token flow is structurally identical across the Authorization and Donation API clients. Duplicating the delegating handlers in every consumer would introduce maintenance risk without any isolation benefit, since these handlers have no domain knowledge and change only when the cookie protocol changes.
+The Shared project exists because the API pipeline (security headers, forwarded headers, rate limiting, OpenAPI defaults) is structurally identical across the APIs. Duplicating it in every API would introduce maintenance risk without any isolation benefit, since it has no domain knowledge and changes only when the cross-cutting policy changes.
 
 This boundary is intentionally narrow. If the Shared project grows beyond cross-cutting infrastructure middleware, it risks becoming a "shared kernel" that couples bounded contexts — an anti-pattern in a context-first architecture.

@@ -13,6 +13,7 @@ namespace TimeForCode.Authorization.Specifications.Mocking
         private TimeForCodeWebApplicationFactory? _otherInstance;
 
         public InMemoryStateRepository States { get; } = new();
+        public InMemoryLoginCodeRepository LoginCodes { get; } = new();
 
         public MockHttpMessageHandler MockHttp { get; } = new();
 

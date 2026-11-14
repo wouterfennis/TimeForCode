@@ -18,3 +18,8 @@ Scenario: User wants to login with an invalid redirect url
 	Given The user has an account at the external platform
 	When The user logs in at the time for code platform with an invalid redirect url
 	Then The request is rejected as invalid
+
+Scenario: User wants to login without a valid code challenge
+	Given The user has an account at the external platform
+	When The user logs in at the time for code platform with a malformed code challenge
+	Then The request is rejected as invalid
