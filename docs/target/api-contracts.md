@@ -27,11 +27,11 @@ Initiates GitHub OAuth 2.0 login. Returns a redirect to the GitHub authorization
 
 OAuth 2.0 callback. Exchanges the authorization code, creates an internal user, issues JWT and refresh token cookies.
 
-### POST /api/authentication/refresh
+### POST /api/authentication/session/refresh
 
 Issues a new access token using the refresh token cookie.
 
-### POST /api/authentication/logout
+### POST /api/authentication/session/logout
 
 Clears both token cookies.
 

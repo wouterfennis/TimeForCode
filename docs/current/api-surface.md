@@ -19,8 +19,8 @@ The Authorization API exposes OAuth 2.0 endpoints and an OpenID Connect discover
 | --- | --- | --- | --- |
 | `GET` | `/api/v1/authentication/login` | ✅ | Initiates OAuth 2.0 login; redirects to GitHub |
 | `GET` | `/api/v1/authentication/callback` | ✅ | Handles OAuth 2.0 callback; exchanges code for tokens |
-| `POST` | `/api/v1/authentication/refresh` | ✅ | Issues a new access token using the refresh token (POST only; GET returns 405) |
-| `POST` | `/api/v1/authentication/logout` | ✅ | Clears access and refresh token cookies |
+| `POST` | `/api/v1/authentication/session/refresh` | ✅ | Issues a new access token using the refresh token (POST only; GET returns 405). The body holds only `expiresAfter` and `isNewUser`; the tokens are cookies |
+| `POST` | `/api/v1/authentication/session/logout` | ✅ | Revokes the refresh token and clears access and refresh token cookies |
 
 ### Test-only admin endpoint
 

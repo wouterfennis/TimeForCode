@@ -59,7 +59,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
         [When("The user logs out with a read-only request")]
         public async Task WhenTheUserLogsOutWithAReadOnlyRequestAsync()
         {
-            _session.ReadOnlyRequestResponse = await _httpClient.GetAsync("/api/v1/authentication/logout");
+            _session.ReadOnlyRequestResponse = await _httpClient.GetAsync("/api/v1/authentication/session/logout");
         }
 
         [Then("The logout is confirmed")]

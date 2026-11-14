@@ -27,6 +27,7 @@ services:
       - AuthenticationOptions__Issuer=http://authorization-api:8080
       - AuthenticationOptions__Audience=http://authorization-api:8080
       - AuthenticationOptions__ValidRedirectUris__0=http://localhost:8084
+      - AuthenticationOptions__RefreshCookiePath=/api/auth/v1/Authentication/session
       - TokenCreationOptions__Issuer=http://authorization-api:8080
       - TokenCreationOptions__Audiences__0=http://authorization-api:8080
       - TokenCreationOptions__Audiences__1=http://localhost:8082

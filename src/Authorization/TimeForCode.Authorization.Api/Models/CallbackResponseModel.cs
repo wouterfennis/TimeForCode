@@ -1,26 +1,18 @@
 using System.ComponentModel.DataAnnotations;
-using TimeForCode.Authorization.Values;
-using TimeForCode.Shared.Api.Authentication.Models;
 
 namespace TimeForCode.Authorization.Api.Models
 {
 
     /// <summary>
-    /// Represents the model for a callback response.
+    /// Represents the model for a sign-in or refresh response. It carries no token: both tokens are only in HttpOnly cookies (ADR-005).
     /// </summary>
     public class CallbackResponseModel
     {
         /// <summary>
-        /// The access token.
+        /// When the new access token, which only the HttpOnly cookie carries, expires. The client schedules its next refresh from this.
         /// </summary>
         [Required]
-        public required AccessToken AccessToken { get; init; }
-
-        /// <summary>
-        /// The access token.
-        /// </summary>
-        [Required]
-        public required RefreshToken RefreshToken { get; init; }
+        public required DateTimeOffset ExpiresAfter { get; init; }
 
         /// <summary>
         /// Indicates whether this is the user's first login (new account was created).

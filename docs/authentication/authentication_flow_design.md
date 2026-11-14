@@ -35,8 +35,8 @@ The login is the OAuth 2.0 *authorization code grant* ([RFC 6749 section 4.1](ht
 | --- | --- |
 | `GET /api/v1/authentication/login` | Starts the login; answers with a redirect to GitHub |
 | `GET /api/v1/authentication/callback` | Receives GitHub's redirect, performs the code exchange, issues tokens |
-| `GET /api/v1/authentication/refresh` | Issues a new access token and rotates the refresh token |
-| `GET /api/v1/authentication/logout` | Deletes the refresh token |
+| `POST /api/v1/authentication/session/refresh` | Issues a new access token and rotates the refresh token; the body holds only `expiresAfter` and `isNewUser` |
+| `POST /api/v1/authentication/session/logout` | Deletes the refresh token and clears both cookies |
 | `GET /.well-known/openid-configuration` | Discovery document (issuer and JWKS location) |
 | `GET /.well-known/jwks.json` | Public signing key |
 
@@ -127,15 +127,15 @@ The internal account id (a MongoDB `ObjectId`) becomes the `sub` claim. It does 
 
 ### 6. Cookies and the final redirect
 
-The tokens are returned as cookies and the browser is redirected to the stored return URL (when the state carries none, the endpoint answers `200` with the tokens in the body instead).
+The tokens are returned as cookies and the browser is redirected to the stored return URL (when the state carries none, the endpoint answers `200` with only `expiresAfter` and `isNewUser`; no response body ever contains a token).
 
 | Cookie | Content | Flags |
 | --- | --- | --- |
 | `AccessToken` | JSON `{ token, expiresAfter }` | `HttpOnly`, `Secure`, `SameSite=Strict`, expires with the token |
-| `RefreshToken` | JSON `{ token, expiresAfter }` | `HttpOnly`, `Secure`, `SameSite=Strict`, expires with the token |
+| `RefreshToken` | JSON `{ token, expiresAfter }` | `HttpOnly`, `Secure`, `SameSite=Strict`, expires with the token, `Path` = the public session path (`AuthenticationOptions:RefreshCookiePath`, behind the BFF `/api/auth/v1/Authentication/session`), so the browser sends it to refresh and logout only |
 | `IsNewUser` | `true` | Same flags, lives 5 minutes, only set on first login |
 
-Script code cannot read these cookies. Because the cookie holds JSON rather than the bare JWT, whatever forwards it as a bearer header (see below) must unpack the `token` field.
+Script code cannot read these cookies, and no response body carries a token. The BFF forwards no `Cookie` header to the Donation API and only the `RefreshToken` cookie to the Authorization API; it turns the `AccessToken` cookie into the bearer header. The cookie `Path` is case-sensitive in the browser, so the SPA must call the session endpoints with the casing `Authentication`. Because the cookie holds JSON rather than the bare JWT, whatever forwards it as a bearer header (see below) must unpack the `token` field.
 
 ### 7. Using the access token
 
@@ -156,13 +156,13 @@ When the access token has expired the client calls `refresh`, which reads the `R
 1. The refresh token must exist in MongoDB and not be expired, and the account it belongs to must still exist.
 2. A new access token is issued from the current account data.
 3. The old refresh token is **deleted** and a new one is created (rotation), so a refresh token works once.
-4. New cookies are set and the new tokens are also returned in the body.
+4. New cookies are set. The body holds only `expiresAfter` and `isNewUser`, never a token. A corrupt `RefreshToken` cookie counts as a missing one.
 
 Missing cookie, unknown token, expired token or unknown account all end in `400` "Token refresh failed.", after which the client sends the user through the login again.
 
 ### 9. Logging out
 
-`logout` deletes the refresh token from MongoDB and answers `204`. It does not clear the cookies and cannot revoke an access token that was already issued; that token stays valid until `exp`, which is why its lifetime is short.
+`logout` (`POST`) deletes the refresh token from MongoDB, clears both cookies and answers `204`, also when the cookie is corrupt or missing. It cannot revoke an access token that was already issued; that token stays valid until `exp`, which is why its lifetime is short.
 
 ## Admin login
 

@@ -162,7 +162,7 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
-                /** @description The access token and refresh token; both are also set as cookies. */
+                /** @description The expiry of the new access token and whether the user is new; both tokens are only set as HttpOnly cookies, never in the body. */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -217,7 +217,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/Authentication/logout": {
+    "/api/v1/Authentication/session/logout": {
         parameters: {
             query?: never;
             header?: never;
@@ -262,7 +262,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/Authentication/refresh": {
+    "/api/v1/Authentication/session/refresh": {
         parameters: {
             query?: never;
             header?: never;
@@ -281,7 +281,7 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
-                /** @description A new access token and refresh token; both are also set as cookies. */
+                /** @description The expiry of the new access token; both new tokens are only set as HttpOnly cookies, never in the body. */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -614,16 +614,6 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        /** @description A short-lived access token issued by the Authorization API. */
-        AccessToken: {
-            /** @description The signed JSON Web Token (JWT, RS256); send it as a bearer token. Verify it with the keys of the JWKS endpoint. */
-            token: string;
-            /**
-             * Format: date-time
-             * @description The moment the token expires, as an ISO 8601 date and time with offset; the token is invalid after this instant.
-             */
-            expiresAfter: string;
-        };
         /** @description Completes the admin passkey authentication ceremony. */
         AdminCompleteAuthenticationRequestModel: {
             /** @description The JSON-serialised `PublicKeyCredential` returned by `navigator.credentials.get()`. */
@@ -646,12 +636,13 @@ export interface components {
             /** @description Shared secret guarding who may claim the admin role. */
             bootstrapSecret: string;
         };
-        /** @description Represents the model for a callback response. */
+        /** @description Represents the model for a sign-in or refresh response. It carries no token: both tokens are only in HttpOnly cookies (ADR-005). */
         CallbackResponseModel: {
-            /** @description The access token. */
-            accessToken: components["schemas"]["AccessToken"];
-            /** @description The access token. */
-            refreshToken: components["schemas"]["RefreshToken"];
+            /**
+             * Format: date-time
+             * @description When the new access token, which only the HttpOnly cookie carries, expires. The client schedules its next refresh from this.
+             */
+            expiresAfter: string;
             /** @description Indicates whether this is the user's first login (new account was created). */
             isNewUser?: boolean;
         };
@@ -694,16 +685,6 @@ export interface components {
             status?: null | number | string;
             detail?: null | string;
             instance?: null | string;
-        };
-        /** @description A long-lived refresh token that is exchanged for a new access token and a new refresh token. */
-        RefreshToken: {
-            /** @description The opaque refresh token value; single use, it is replaced by a new one on every refresh. */
-            token: string;
-            /**
-             * Format: date-time
-             * @description The moment the refresh token expires, as an ISO 8601 date and time with offset; the token is invalid after this instant.
-             */
-            expiresAfter: string;
         };
         /** @description Repository response model */
         RepositoryResponse: {
@@ -812,7 +793,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description The admin credential was claimed; the access token and refresh token are returned and set as cookies. */
+            /** @description The admin credential was claimed; the tokens are only set as HttpOnly cookies, never in the body. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -895,7 +876,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description The admin signed in; the access token and refresh token are returned and set as cookies. */
+            /** @description The admin signed in; the tokens are only set as HttpOnly cookies, never in the body. */
             200: {
                 headers: {
                     [name: string]: unknown;
