@@ -136,8 +136,9 @@ sequenceDiagram
     participant DB as MongoDB
     participant Auth as Authorization API
 
-    par two parallel calls find an expired access token
+    par the first call finds an expired access token
         SPA->>A: GET /api/donation/...
+    and the second call
         SPA->>B: GET /api/donation/...
     end
     A->>DB: Take refresh lease (atomic conditional update)
