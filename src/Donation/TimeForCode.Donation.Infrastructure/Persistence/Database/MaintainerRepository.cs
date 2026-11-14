@@ -8,7 +8,7 @@ namespace TimeForCode.Donation.Infrastructure.Persistence.Database
     [ExcludeFromCodeCoverage(Justification = "Repository implementation")]
     internal class MaintainerRepository : IMaintainerRepository
     {
-        private static readonly object IndexCreationLock = new();
+        private static readonly Lock IndexCreationLock = new();
         private static bool _indexesCreated;
         private readonly IMongoCollection<Maintainer> _collection;
 

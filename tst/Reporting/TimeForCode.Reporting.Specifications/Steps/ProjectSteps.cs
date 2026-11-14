@@ -80,7 +80,7 @@ namespace TimeForCode.Reporting.Specifications.Steps
             _contributionNumber++;
             _donationData.AddProject(Constants.TestProjectId);
             _donationData.AddProjectLoggedHours(Constants.TestProjectId, hours);
-            _donationData.AddProjectContribution(Constants.TestProjectId, new ProjectContribution($"contributor-{login}", login, hours));
+            _donationData.AddProjectContribution(Constants.TestProjectId, new ProjectContribution(Constants.ContributorIdOf(login), login, hours));
         }
 
         // Registered, submitted and approved through the Donation API directly with its own tokens, so the scenario's own identity

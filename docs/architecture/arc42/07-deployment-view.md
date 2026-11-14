@@ -105,7 +105,7 @@ graph LR
 | Frontend | Azure App Service (container) | Static SPA assets served by nginx |
 | Authorization API | Azure App Service (container) | Current deployment extended |
 | Donation API | Azure App Service (container) | Not yet deployed |
-| Reporting API | Azure App Service (container) | Not yet deployed; stateless, needs only the Donation API address (`DonationApiOptions__BaseUri`) and the token settings |
+| Reporting API | Azure App Service (container) | Not yet deployed; needs the Donation API address (`DonationApiOptions__BaseUri`), the token settings and its own MongoDB database (`DbOptions__ConnectionString`, `DbOptions__DatabaseName`) for badge tiers and awards |
 | Database | Azure Cosmos DB for MongoDB API | Drop-in replacement for MongoDB driver |
 | Secrets | Azure Key Vault | Client secrets, RSA key, connection strings |
 | Container registry | Azure Container Registry | Build and store images via CI/CD |
