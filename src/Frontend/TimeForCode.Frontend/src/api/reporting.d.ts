@@ -4,6 +4,104 @@
  */
 
 export interface paths {
+    "/api/v1/reporting/donororganization/{id}/badges": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Returns the badges of a donor organization (anonymous), awarding the ones it has newly earned.
+         * @description An organization is measured on the hours logged on its Active and Completed donations and earns the badges of the
+         *     tiers with recipient type `Organization`.
+         */
+        get: operations["GetOrganizationBadges"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/reporting/contributor/{id}/badges": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Returns the badges of a contributor (anonymous), awarding the ones they have newly earned.
+         * @description A contributor is measured on the total hours they logged themselves and earns the badges of the tiers with recipient
+         *     type `Contributor`. Only badge names and award dates are exposed, no other personal data.
+         */
+        get: operations["GetContributorBadges"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/reporting/statistics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Returns the public impact statistics (anonymous): the total hours logged and the number of donor organizations supported. */
+        get: operations["GetPublicStatistics"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/reporting/badge-tier": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Returns the configured badge tiers (anonymous), so the thresholds can be shown next to the badges. */
+        get: operations["GetBadgeTiers"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/reporting/badge-tier/{recipientType}/{name}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Defines a badge tier, or changes the threshold of the tier with the same recipient type and name (administrators only).
+         * @description Badges already awarded stay when a threshold is raised. A tier added or lowered is awarded to recipients who already
+         *     qualify the next time their badges are requested.
+         */
+        put: operations["DefineBadgeTier"];
+        post?: never;
+        /** Removes a badge tier (administrators only). Badges already awarded for it stay. */
+        delete: operations["RemoveBadgeTier"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/reporting/project/{id}/donation-report": {
         parameters: {
             query?: never;
@@ -89,6 +187,43 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /**
+         * @description Who a badge tier is meant for; each recipient type has its own, independent set of tiers.
+         * @enum {string}
+         */
+        BadgeRecipientType: "Organization" | "Contributor";
+        /** @description One badge. */
+        BadgeResponse: {
+            /** @description The name of the tier the badge was awarded for. */
+            name: string;
+            /**
+             * Format: date-time
+             * @description When the badge was awarded (UTC).
+             */
+            awardedAt: string;
+        };
+        /** @description The badges a donor organization or a contributor holds. Public: only names and award dates, no personal data. */
+        BadgesResponse: {
+            /** @description The badges, earliest award first; empty when none was earned. */
+            badges: components["schemas"]["BadgeResponse"][];
+        };
+        /** @description One badge tier. */
+        BadgeTierResponse: {
+            /** @description The tier name, unique per recipient type. */
+            name: string;
+            /** @description Who the tier is for: `Organization` or `Contributor`. */
+            recipientType: components["schemas"]["BadgeRecipientType"];
+            /**
+             * Format: int32
+             * @description The hours that must be logged to earn the badge, unique per recipient type.
+             */
+            thresholdHours: number | string;
+        };
+        /** @description The configured badge tiers. */
+        BadgeTiersResponse: {
+            /** @description The tiers, grouped by recipient type and ordered by threshold. */
+            tiers: components["schemas"]["BadgeTierResponse"][];
+        };
         /** @description One logged contribution in the export. */
         ContributionHistoryItemResponse: {
             /** @description The contribution identifier. */
@@ -117,6 +252,14 @@ export interface components {
         ContributionHistoryResponse: {
             /** @description The contributions, earliest first. */
             contributions: components["schemas"]["ContributionHistoryItemResponse"][];
+        };
+        /** @description The body for defining a badge tier. */
+        DefineBadgeTierRequest: {
+            /**
+             * Format: int32
+             * @description The hours that must be logged to earn the badge; a positive number not used by another tier of the recipient type.
+             */
+            thresholdHours: number | string;
         };
         /**
          * @description Lifecycle state of a donation as the Donation context reports it; duplicated here on purpose (ADR-010).
@@ -287,6 +430,19 @@ export interface components {
              */
             contributorCount: number | string;
         };
+        /** @description Platform-wide impact totals; no personal data. */
+        PublicStatisticsResponse: {
+            /**
+             * Format: int64
+             * @description The hours logged on the Active and Completed donations of all donor organizations.
+             */
+            totalHoursLogged: number | string;
+            /**
+             * Format: int32
+             * @description The number of donor organizations with an Active or Completed donation.
+             */
+            organizationsSupported: number | string;
+        };
     };
     responses: never;
     parameters: never;
@@ -296,6 +452,395 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    GetOrganizationBadges: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The donor organization identifier. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The badges of the organization; an empty list when none was earned. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BadgesResponse"];
+                };
+            };
+            /** @description The organization identifier is not a valid identifier. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description The donor organization does not exist. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Too many requests. Retry after the number of seconds given in the Retry-After header. */
+            429: {
+                headers: {
+                    /** @description Number of seconds to wait before retrying. */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description The badges could not be determined because of an unexpected error. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description The Donation API could not be reached or answered with an error. */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    GetContributorBadges: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The contributor identifier. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The badges of the contributor; an empty list when none was earned. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BadgesResponse"];
+                };
+            };
+            /** @description The contributor identifier is not a valid identifier. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description The contributor does not exist. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Too many requests. Retry after the number of seconds given in the Retry-After header. */
+            429: {
+                headers: {
+                    /** @description Number of seconds to wait before retrying. */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description The badges could not be determined because of an unexpected error. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description The Donation API could not be reached or answered with an error. */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    GetPublicStatistics: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The totals; zeros on a platform without logged hours. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicStatisticsResponse"];
+                };
+            };
+            /** @description Too many requests. Retry after the number of seconds given in the Retry-After header. */
+            429: {
+                headers: {
+                    /** @description Number of seconds to wait before retrying. */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description The statistics could not be determined because of an unexpected error. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description The Donation API could not be reached or answered with an error. */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    GetBadgeTiers: {
+        parameters: {
+            query?: {
+                /** @description Only the tiers of this recipient type; all tiers when omitted. */
+                recipientType?: components["schemas"]["BadgeRecipientType"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The tiers; an empty list when none is configured. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BadgeTiersResponse"];
+                };
+            };
+            /** @description The recipient type is not valid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Too many requests. Retry after the number of seconds given in the Retry-After header. */
+            429: {
+                headers: {
+                    /** @description Number of seconds to wait before retrying. */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description The tiers could not be read because of an unexpected error. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    DefineBadgeTier: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Who the tier is for: `Organization` or `Contributor`. */
+                recipientType: components["schemas"]["BadgeRecipientType"];
+                /** @description The tier name, 1 to 100 characters, unique per recipient type. */
+                name: string;
+            };
+            cookie?: never;
+        };
+        /** @description The threshold. */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DefineBadgeTierRequest"];
+                "text/json": components["schemas"]["DefineBadgeTierRequest"];
+                "application/*+json": components["schemas"]["DefineBadgeTierRequest"];
+            };
+        };
+        responses: {
+            /** @description The tier as saved. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BadgeTierResponse"];
+                };
+            };
+            /** @description The name is empty or longer than 100 characters, or the threshold is not a positive number of hours. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description The access token is missing, invalid or expired. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description The caller is not an administrator. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Another tier of the recipient type already has the threshold. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Too many requests. Retry after the number of seconds given in the Retry-After header. */
+            429: {
+                headers: {
+                    /** @description Number of seconds to wait before retrying. */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description The tier could not be saved because of an unexpected error. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    RemoveBadgeTier: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Who the tier is for: `Organization` or `Contributor`. */
+                recipientType: components["schemas"]["BadgeRecipientType"];
+                /** @description The tier name. */
+                name: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The tier was removed. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description The access token is missing, invalid or expired. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description The caller is not an administrator. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description There is no such tier. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Too many requests. Retry after the number of seconds given in the Retry-After header. */
+            429: {
+                headers: {
+                    /** @description Number of seconds to wait before retrying. */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description The tier could not be removed because of an unexpected error. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     GetDonationReport: {
         parameters: {
             query?: never;
