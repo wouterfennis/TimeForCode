@@ -9,7 +9,7 @@ namespace TimeForCode.Authorization.Specifications.TestBuilder
             return new PasskeyCeremonyOptionsResult
             {
                 OptionsJson = "{}",
-                ProtectedCeremonyState = "protected-ceremony-state"
+                CeremonyId = "protected-ceremony-state"
             };
         }
     }

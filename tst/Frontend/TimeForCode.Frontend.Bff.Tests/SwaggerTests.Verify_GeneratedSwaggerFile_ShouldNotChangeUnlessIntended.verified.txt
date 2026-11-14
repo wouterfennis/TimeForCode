@@ -108,10 +108,239 @@
           }
         }
       }
+    },
+    "/bff/admin/registration/options": {
+      "post": {
+        "tags": [
+          "BffEndpoints"
+        ],
+        "summary": "Starts the admin passkey registration.",
+        "description": "Only while no admin passkey is registered. Returns the options for navigator.credentials.create and a ceremony id; the ceremony state stays on the server and works once.",
+        "requestBody": {
+          "description": "The bootstrap secret that proves the caller may claim the admin role.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminRegistrationOptionsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "The options for navigator.credentials.create and the ceremony id that completes the registration. No cookie is set.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminCeremonyResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The bootstrap secret is wrong or an admin passkey is already registered. The reason is not given.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/bff/admin/registration": {
+      "post": {
+        "tags": [
+          "BffEndpoints"
+        ],
+        "summary": "Completes the admin passkey registration and signs the admin in.",
+        "description": "Claims the admin role for the passkey, opens the session and sets the session cookie. The response never holds a token.",
+        "requestBody": {
+          "description": "The bootstrap secret, the credential the browser created (PublicKeyCredential.toJSON()) and the ceremony id of the options call.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminRegistrationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "The admin passkey is registered and the admin is signed in: the session cookie is set and the body says who the user is; it never holds a token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The registration was refused (wrong secret, ceremony unknown, expired or already used, passkey rejected). No session is opened.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/bff/admin/authentication/options": {
+      "post": {
+        "tags": [
+          "BffEndpoints"
+        ],
+        "summary": "Starts the admin passkey sign-in.",
+        "description": "Returns the options for navigator.credentials.get and a ceremony id that works once.",
+        "responses": {
+          "200": {
+            "description": "The options for navigator.credentials.get and the ceremony id that completes the sign-in. No cookie is set.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminCeremonyResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "No admin passkey is registered yet.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/bff/admin/authentication": {
+      "post": {
+        "tags": [
+          "BffEndpoints"
+        ],
+        "summary": "Completes the admin passkey sign-in.",
+        "description": "Opens the admin session and sets the session cookie. The response never holds a token.",
+        "requestBody": {
+          "description": "The assertion the browser produced (PublicKeyCredential.toJSON()) and the ceremony id of the options call.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminAuthenticationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "The admin is signed in: the session cookie is set and the body says who the user is; it never holds a token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The sign-in was refused (ceremony unknown, expired or already used, wrong device, signature counter did not increase). No session is opened.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "AdminAuthenticationRequest": {
+        "required": [
+          "credentialJson",
+          "ceremonyId"
+        ],
+        "type": "object",
+        "properties": {
+          "credentialJson": {
+            "type": "string",
+            "description": "The assertion the browser produced, as JSON (PublicKeyCredential.toJSON())."
+          },
+          "ceremonyId": {
+            "type": "string",
+            "description": "The ceremony id of the options call."
+          }
+        },
+        "description": "Completes the admin passkey sign-in."
+      },
+      "AdminCeremonyResponse": {
+        "required": [
+          "ceremonyId",
+          "optionsJson"
+        ],
+        "type": "object",
+        "properties": {
+          "ceremonyId": {
+            "type": "string",
+            "description": "Send it back when the ceremony completes. It works once and expires after a short time."
+          },
+          "optionsJson": {
+            "type": "string",
+            "description": "The WebAuthn options as JSON: pass them to PublicKeyCredential.parseCreationOptionsFromJSON or parseRequestOptionsFromJSON."
+          }
+        },
+        "description": "The options for the browser passkey call and the id that completes the ceremony."
+      },
+      "AdminRegistrationOptionsRequest": {
+        "required": [
+          "bootstrapSecret"
+        ],
+        "type": "object",
+        "properties": {
+          "bootstrapSecret": {
+            "type": "string",
+            "description": "The secret that proves the caller may claim the admin role."
+          }
+        },
+        "description": "Starts the admin passkey registration."
+      },
+      "AdminRegistrationRequest": {
+        "required": [
+          "bootstrapSecret",
+          "credentialJson",
+          "ceremonyId"
+        ],
+        "type": "object",
+        "properties": {
+          "bootstrapSecret": {
+            "type": "string",
+            "description": "The same bootstrap secret."
+          },
+          "credentialJson": {
+            "type": "string",
+            "description": "The credential the browser created, as JSON (PublicKeyCredential.toJSON())."
+          },
+          "ceremonyId": {
+            "type": "string",
+            "description": "The ceremony id of the options call."
+          }
+        },
+        "description": "Completes the admin passkey registration."
+      },
       "ProblemDetails": {
         "type": "object",
         "properties": {
@@ -154,6 +383,7 @@
         "required": [
           "isSignedIn",
           "isNewUser",
+          "isAdmin",
           "userId",
           "login",
           "avatarUrl"
@@ -167,6 +397,10 @@
           "isNewUser": {
             "type": "boolean",
             "description": "True for a short time after the first ever sign-in, so the welcome shows once."
+          },
+          "isAdmin": {
+            "type": "boolean",
+            "description": "True for the administrator, who signed in with a passkey."
           },
           "userId": {
             "type": "string",

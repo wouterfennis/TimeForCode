@@ -21,7 +21,6 @@ Permitted categories:
 | Category | Example |
 | --- | --- |
 | API pipeline extensions | `UseDefaultApiPipeline`, `AddTrustedForwardedHeaders`, `UseSecurityHeaders` |
-| Cookie name constants (admin passkey cookies, until the admin login moves to the BFF) | `CookieConstants` |
 | Strongly-typed token models shared by the APIs | `AccessToken` |
 | Generic pipeline behaviours (MediatR) | `ValidationBehaviour<,>` |
 | ASP.NET Core extension methods for common service registration | `AddSharedInfrastructure()` |
@@ -60,7 +59,6 @@ If any check fails, the type stays in the bounded context that needs it, or a ne
 | Type | Layer | Consumed by |
 | --- | --- | --- |
 | `ForwardedHeadersExtensions` | API (service registration) | Authorization, Donation, Reporting APIs and the front-end BFF |
-| `CookieConstants` | API (constants) | Authorization API (admin cookies), test projects |
 | `AccessToken` model | API (model) | Authorization API response models |
 | `ValidationBehaviour<,>` | Application pipeline | Authorization Application, Donation Application |
 

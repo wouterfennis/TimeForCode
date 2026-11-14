@@ -1,16 +1,11 @@
 using MediatR;
-using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
-using Microsoft.Extensions.Options;
 using System.Net.Mime;
 using TimeForCode.Authorization.Api.Mappers;
 using TimeForCode.Authorization.Api.Models;
 using TimeForCode.Authorization.Api.Models.Admin;
-using TimeForCode.Authorization.Application.Options;
-using TimeForCode.Authorization.Commands;
 using TimeForCode.Authorization.Commands.Admin;
-using TimeForCode.Shared.Api.Authentication;
 
 namespace TimeForCode.Authorization.Api.Controllers
 {
@@ -18,41 +13,25 @@ namespace TimeForCode.Authorization.Api.Controllers
     /// Admin WebAuthn passkey authentication endpoints. Deliberately a separate controller (not an
     /// extension of <see cref="AuthenticationController"/>) so admin routes, Swagger docs, and rate-limit
     /// policies are independently versionable/removable from the GitHub OAuth flow.
+    /// The API sets and reads no cookie here: the state of a ceremony is kept server-side and identified by an opaque ceremony id,
+    /// and the tokens are returned in the body to the client that holds the session (the front-end BFF).
     /// </summary>
     [Route("api/v1/admin-authentication")]
     [Produces(MediaTypeNames.Application.Json)]
-    [EnableCors("AdminCorsPolicy")]
     [ApiController]
     public class AdminAuthenticationController : ControllerBase
     {
-        /// <summary>
-        /// Cookie key for the encrypted attestation state, round-tripped across the registration ceremony.
-        /// Public (not private) so the test project can seed it directly — Secure cookies set by the
-        /// response aren't reliably round-tripped by <see cref="System.Net.CookieContainer"/> over the
-        /// plain-HTTP test server.
-        /// </summary>
-        public const string AttestationStateCookieKey = "AdminAttestationState";
-
-        /// <summary>
-        /// Cookie key for the encrypted assertion state, round-tripped across the authentication ceremony.
-        /// See <see cref="AttestationStateCookieKey"/> for why this is public.
-        /// </summary>
-        public const string AssertionStateCookieKey = "AdminAssertionState";
-
         private readonly ISender _sender;
-        private readonly IOptions<AuthenticationOptions> _authenticationOptions;
         private readonly ILogger<AdminAuthenticationController> _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AdminAuthenticationController"/> class.
         /// </summary>
         /// <param name="sender">The sender.</param>
-        /// <param name="authenticationOptions">The authentication options.</param>
         /// <param name="logger">The logger.</param>
-        public AdminAuthenticationController(ISender sender, IOptions<AuthenticationOptions> authenticationOptions, ILogger<AdminAuthenticationController> logger)
+        public AdminAuthenticationController(ISender sender, ILogger<AdminAuthenticationController> logger)
         {
             _sender = sender;
-            _authenticationOptions = authenticationOptions;
             _logger = logger;
         }
 
@@ -60,7 +39,7 @@ namespace TimeForCode.Authorization.Api.Controllers
         /// Begins the one-time admin passkey registration ceremony. Only available while no admin credential has been claimed yet.
         /// </summary>
         /// <param name="model">The bootstrap secret that proves the caller may claim the admin role.</param>
-        /// <response code="200">The passkey creation options (JSON) for the browser; the ceremony state is set in a short-lived cookie.</response>
+        /// <response code="200">The passkey creation options (JSON) for the browser and the ceremony id to send back when the ceremony completes.</response>
         /// <response code="400">The bootstrap secret is wrong or an admin credential has already been claimed.</response>
         [HttpPost]
         [Route("registration/options", Name = "AdminRegistrationOptions")]
@@ -75,41 +54,33 @@ namespace TimeForCode.Authorization.Api.Controllers
             if (result.IsFailure)
             {
                 _logger.LogWarning("Admin registration options request failed: {Error}", result.ErrorMessage);
-                return BadRequest(ProblemDetailsMapper.BadRequest(result.ErrorMessage));
+                return BadRequest(ProblemDetailsMapper.BadRequest("The admin passkey request was refused."));
             }
 
-            SetCeremonyStateCookie(AttestationStateCookieKey, result.Value.ProtectedCeremonyState);
-            return Ok(new AdminPasskeyOptionsResponseModel { OptionsJson = result.Value.OptionsJson });
+            return Ok(new AdminPasskeyOptionsResponseModel { OptionsJson = result.Value.OptionsJson, CeremonyId = result.Value.CeremonyId });
         }
 
         /// <summary>
         /// Completes the one-time admin passkey registration ceremony. Only the first successful completion permanently claims the admin role.
         /// </summary>
-        /// <param name="model">The bootstrap secret and the credential (JSON) created by the browser.</param>
-        /// <response code="200">The admin credential was claimed; the tokens are only set as HttpOnly cookies, never in the body.</response>
-        /// <response code="400">No registration ceremony is in progress or the registration was rejected.</response>
+        /// <param name="model">The bootstrap secret, the credential (JSON) created by the browser and the ceremony id of the options call.</param>
+        /// <response code="200">The admin credential was claimed; the access token and refresh token are returned.</response>
+        /// <response code="400">The ceremony is unknown, expired or already used, or the registration was rejected.</response>
         [HttpPost]
         [Route("registration", Name = "AdminCompleteRegistration")]
         [EnableRateLimiting("admin-auth")]
-        [ProducesResponseType(typeof(CallbackResponseModel), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(TokenResponseModel), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> CompleteRegistrationAsync(AdminCompleteRegistrationRequestModel model)
         {
-            var ceremonyState = GetCeremonyStateCookie(AttestationStateCookieKey);
-            if (ceremonyState == null)
-            {
-                return BadRequest(ProblemDetailsMapper.BadRequest("No admin registration ceremony in progress."));
-            }
-
             var command = new CompleteAdminRegistrationCommand
             {
                 BootstrapSecret = model.BootstrapSecret,
                 CredentialJson = model.CredentialJson,
-                ProtectedCeremonyState = ceremonyState
+                CeremonyId = model.CeremonyId
             };
 
             var result = await _sender.Send(command);
-            Response.Cookies.Delete(AttestationStateCookieKey);
 
             if (result.IsFailure)
             {
@@ -117,15 +88,15 @@ namespace TimeForCode.Authorization.Api.Controllers
                 return BadRequest(ProblemDetailsMapper.BadRequest("Admin passkey registration failed."));
             }
 
-            return Ok(ProcessTokenResult(result.Value));
+            return Ok(result.Value.MapToResponse());
         }
 
         /// <summary>
         /// Begins the admin passkey authentication ceremony. Requires an admin credential to already exist.
         /// </summary>
-        /// <response code="200">The passkey request options (JSON) for the browser; the ceremony state is set in a short-lived cookie.</response>
+        /// <response code="200">The passkey request options (JSON) for the browser and the ceremony id to send back when the ceremony completes.</response>
         /// <response code="400">No admin credential has been registered yet.</response>
-        [HttpGet]
+        [HttpPost]
         [Route("authentication/options", Name = "AdminAuthenticationOptions")]
         [EnableRateLimiting("admin-auth")]
         [ProducesResponseType(typeof(AdminPasskeyOptionsResponseModel), StatusCodes.Status200OK)]
@@ -137,40 +108,32 @@ namespace TimeForCode.Authorization.Api.Controllers
             if (result.IsFailure)
             {
                 _logger.LogWarning("Admin authentication options request failed: {Error}", result.ErrorMessage);
-                return BadRequest(ProblemDetailsMapper.BadRequest(result.ErrorMessage));
+                return BadRequest(ProblemDetailsMapper.BadRequest("The admin passkey request was refused."));
             }
 
-            SetCeremonyStateCookie(AssertionStateCookieKey, result.Value.ProtectedCeremonyState);
-            return Ok(new AdminPasskeyOptionsResponseModel { OptionsJson = result.Value.OptionsJson });
+            return Ok(new AdminPasskeyOptionsResponseModel { OptionsJson = result.Value.OptionsJson, CeremonyId = result.Value.CeremonyId });
         }
 
         /// <summary>
         /// Completes the admin passkey authentication ceremony.
         /// </summary>
-        /// <param name="model">The assertion credential (JSON) produced by the browser.</param>
-        /// <response code="200">The admin signed in; the tokens are only set as HttpOnly cookies, never in the body.</response>
-        /// <response code="400">No authentication ceremony is in progress or the assertion was rejected.</response>
+        /// <param name="model">The assertion credential (JSON) produced by the browser and the ceremony id of the options call.</param>
+        /// <response code="200">The admin signed in; the access token and refresh token are returned.</response>
+        /// <response code="400">The ceremony is unknown, expired or already used, or the assertion was rejected (including a signature counter that did not increase).</response>
         [HttpPost]
         [Route("authentication", Name = "AdminCompleteAuthentication")]
         [EnableRateLimiting("admin-auth")]
-        [ProducesResponseType(typeof(CallbackResponseModel), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(TokenResponseModel), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> CompleteAuthenticationAsync(AdminCompleteAuthenticationRequestModel model)
         {
-            var ceremonyState = GetCeremonyStateCookie(AssertionStateCookieKey);
-            if (ceremonyState == null)
-            {
-                return BadRequest(ProblemDetailsMapper.BadRequest("No admin authentication ceremony in progress."));
-            }
-
             var command = new CompleteAdminAuthenticationCommand
             {
                 CredentialJson = model.CredentialJson,
-                ProtectedCeremonyState = ceremonyState
+                CeremonyId = model.CeremonyId
             };
 
             var result = await _sender.Send(command);
-            Response.Cookies.Delete(AssertionStateCookieKey);
 
             if (result.IsFailure)
             {
@@ -178,34 +141,7 @@ namespace TimeForCode.Authorization.Api.Controllers
                 return BadRequest(ProblemDetailsMapper.BadRequest("Admin authentication failed."));
             }
 
-            return Ok(ProcessTokenResult(result.Value));
-        }
-
-        private CallbackResponseModel ProcessTokenResult(TokenResult result)
-        {
-            TokenCookies.Append(Response, result, _authenticationOptions.Value.RefreshCookiePath);
-
-            return new CallbackResponseModel
-            {
-                ExpiresAfter = result.InternalAccessToken.ExpiresAfter,
-                IsNewUser = result.IsNewUser
-            };
-        }
-
-        private void SetCeremonyStateCookie(string key, string protectedState)
-        {
-            Response.Cookies.Append(key, protectedState, new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.Strict,
-                MaxAge = TimeSpan.FromMinutes(5)
-            });
-        }
-
-        private string? GetCeremonyStateCookie(string key)
-        {
-            return Request.Cookies.TryGetValue(key, out var value) ? value : null;
+            return Ok(result.Value.MapToResponse());
         }
     }
 }

@@ -32,14 +32,33 @@ namespace TimeForCode.Authorization.Application.Handlers.Admin
         {
             _logger.LogInformation("Handling admin authentication completion");
 
-            var outcome = await _passkeyCeremonyService.CompleteAuthenticationAsync(request.CredentialJson, request.ProtectedCeremonyState);
+            var credential = await _adminCredentialRepository.GetAsync();
+            if (credential == null)
+            {
+                _logger.LogWarning("Admin authentication rejected: no admin credential registered");
+                return Result<TokenResult>.Failure("Admin authentication failed.");
+            }
+
+            var outcome = await _passkeyCeremonyService.CompleteAuthenticationAsync(request.CredentialJson, request.CeremonyId);
             if (!outcome.Succeeded)
             {
                 _logger.LogWarning("Admin authentication rejected: {Error}", outcome.ErrorMessage);
                 return Result<TokenResult>.Failure("Admin authentication failed.");
             }
 
-            await _adminCredentialRepository.UpdateSignCountAsync(outcome.SignCount);
+            if (!SignCountAdvanced(credential.SignCount, outcome.SignCount))
+            {
+                // A counter that did not increase means a cloned authenticator or a replayed assertion (WebAuthn level 3, section 7.2 step 22).
+                _logger.LogWarning("Admin authentication rejected: the signature counter did not increase");
+                return Result<TokenResult>.Failure("Admin authentication failed.");
+            }
+
+            if (!await _adminCredentialRepository.TryAdvanceSignCountAsync(outcome.SignCount))
+            {
+                // Another assertion advanced the counter in the meantime: this one is a replay or a clone.
+                _logger.LogWarning("Admin authentication rejected: the signature counter was not advanced");
+                return Result<TokenResult>.Failure("Admin authentication failed.");
+            }
 
             var accessToken = _tokenService.GenerateInternalToken(AdminSession.UserId, AdminSession.Role, AdminSession.Scope);
             var refreshToken = await _refreshTokenService.CreateRefreshTokenAsync(AdminSession.UserId);
@@ -51,5 +70,9 @@ namespace TimeForCode.Authorization.Application.Handlers.Admin
                 IsNewUser = false
             });
         }
+
+        // Authenticators that keep no counter (synced passkeys) always report 0, so 0 on both sides is fine; otherwise it must grow.
+        private static bool SignCountAdvanced(long stored, long presented) =>
+            (stored == 0 && presented == 0) || presented > stored;
     }
 }

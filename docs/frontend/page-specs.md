@@ -130,9 +130,9 @@ Keep these `data-testid` values; the E2E tests rely on them: `project-list`, `pr
 ## Admin sign-in (passkey)
 
 **Purpose**: sign in as admin, or claim the admin role on first use.
-**Data**: the four `admin-authentication` endpoints (registration/options, registration, authentication/options, authentication).
+**Data**: the four admin endpoints of the BFF (`/bff/admin/registration/options`, `/bff/admin/registration`, `/bff/admin/authentication/options`, `/bff/admin/authentication`). The typed module is `src/features/admin/passkey.ts` (`signInAdmin`, `registerAdminPasskey`); the endpoints, the cookie-free ceremony and the replay protection are in the [authentication flow](../authentication/authentication_flow_design.md#admin-passkey-registration-and-sign-in-through-the-bff).
 
-- Port the behaviour of `wwwroot/js/webauthn-admin-interop.js` into a typed module using the `navigator.credentials` API.
+- The module uses the WebAuthn JSON API (`PublicKeyCredential.parseCreationOptionsFromJSON`, `parseRequestOptionsFromJSON` and `credential.toJSON()`), so no base64url conversion code is needed. It shows a result per status: signed in, refused (no reason is given), cancelled (the user dismissed the prompt), unsupported browser, error.
 - Requests use `credentials: "same-origin"` (the default) so the opaque session cookie is sent; state-changing requests also send `X-Requested-With`.
 - Registration needs the bootstrap secret; never store it, never log it.
 - See [ADR-011](../reference/adr/0011-webauthn-admin-authentication.md) for the ceremony and its accepted risks. The Relying Party domain is configured as the front-end origin, so its production origin must be configured on the backend.

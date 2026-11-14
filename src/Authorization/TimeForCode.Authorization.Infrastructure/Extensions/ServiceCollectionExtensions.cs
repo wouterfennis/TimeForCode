@@ -76,6 +76,8 @@ namespace TimeForCode.Authorization.Infrastructure.Extensions
         private static void AddAdminPasskeySlice(IServiceCollection services, IConfiguration configuration)
         {
             services.AddScoped<IAdminCredentialRepository, AdminCredentialRepository>();
+            services.AddScoped<ICeremonyStateRepository, CeremonyStateRepository>();
+            services.AddScoped<CeremonyStateStore>();
 
             services.AddHttpContextAccessor();
 

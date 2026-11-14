@@ -34,6 +34,13 @@ namespace TimeForCode.Authorization.Application.Options
         [Required]
         public required string BootstrapSecret { get; init; }
 
+        /// <summary>
+        /// How long a passkey ceremony can be completed after it started, in seconds. Defaults to 300.
+        /// </summary>
+        public int CeremonyLifetimeInSeconds { get; init; } = DefaultCeremonyLifetimeInSeconds;
+
+        public const int DefaultCeremonyLifetimeInSeconds = 300;
+
         public static AdminPasskeyOptions Bind(IConfiguration configuration)
         {
             return new AdminPasskeyOptions
@@ -41,6 +48,7 @@ namespace TimeForCode.Authorization.Application.Options
                 ServerDomain = configuration.GetSection(SectionName).GetValue<string>(nameof(ServerDomain))!,
                 RelyingPartyName = configuration.GetSection(SectionName).GetValue<string>(nameof(RelyingPartyName))!,
                 BootstrapSecret = configuration.GetSection(SectionName).GetValue<string>(nameof(BootstrapSecret))!,
+                CeremonyLifetimeInSeconds = configuration.GetSection(SectionName).GetValue<int?>(nameof(CeremonyLifetimeInSeconds)) ?? DefaultCeremonyLifetimeInSeconds,
             };
         }
     }

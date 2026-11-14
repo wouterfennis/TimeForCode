@@ -2,28 +2,29 @@ using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Reqnroll;
+using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Text.Json;
 using System.Web;
 using TimeForCode.Authorization.Api.Client;
 using TimeForCode.Authorization.Api.Client.Extensions;
-using TimeForCode.Authorization.Api.Controllers;
 using TimeForCode.Authorization.Application.Interfaces;
 using TimeForCode.Authorization.Application.Interfaces.Admin;
 using TimeForCode.Authorization.Application.Services;
-using TimeForCode.Authorization.Domain.Entities;
 using TimeForCode.Authorization.Specifications.TestBuilder;
-using TimeForCode.Shared.Api.Authentication;
 
 namespace TimeForCode.Authorization.Specifications.Steps
 {
     [Binding]
     internal class AdminAuthenticationSteps
     {
+        private const string CeremonyId = "ceremony-id";
+
         private readonly IAuthClient _authClient;
         private readonly IServiceProvider _provider;
         private readonly CookieContainer _cookieContainer;
-        private TryResponse<CallbackResponseModel?, ApiException?>? _result;
+        private TryResponse<TokenResponseModel?, ApiException?>? _result;
+        private TryResponse<TokenResponseModel?, ApiException?>? _secondResult;
         private readonly SessionContext _session;
 
         public AdminAuthenticationSteps(IAuthClient authClient, IServiceProvider provider, CookieContainer cookieContainer, SessionContext session)
@@ -37,8 +38,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
         [When("The user logs in as admin with the registered device")]
         public async Task WhenTheUserLogsInAsAdminWithTheRegisteredDeviceAsync()
         {
-            SeedAssertionStateCookie();
-            _result = await _authClient.TryAdminCompleteAuthenticationAsync("credential-json");
+            _result = await _authClient.TryAdminCompleteAuthenticationAsync("credential-json", CeremonyId);
         }
 
         [When("The user logs in as admin with a device that is not the registered device")]
@@ -48,8 +48,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
             ceremonyService.Setup(x => x.CompleteAuthenticationAsync(It.IsAny<string>(), It.IsAny<string>()))
                 .ReturnsAsync(AdminAssertionOutcomeBuilder.BuildFailed());
 
-            SeedAssertionStateCookie();
-            _result = await _authClient.TryAdminCompleteAuthenticationAsync("credential-json-from-unregistered-device");
+            _result = await _authClient.TryAdminCompleteAuthenticationAsync("credential-json-from-unregistered-device", CeremonyId);
         }
 
         [Given("The user started an admin login on one instance")]
@@ -58,25 +57,53 @@ namespace TimeForCode.Authorization.Specifications.Steps
             var options = await _authClient.TryAdminAuthenticationOptionsAsync();
 
             options.Exception.Should().BeNull();
+            options.Response!.CeremonyId.Should().NotBeNullOrEmpty();
         }
 
         [When("The user completes the admin login on a different instance")]
         public async Task WhenTheUserCompletesTheAdminLoginOnADifferentInstanceAsync()
         {
-            SeedAssertionStateCookie();
-            _result = await _authClient.TryAdminCompleteAuthenticationAsync("credential-json");
+            _result = await _authClient.TryAdminCompleteAuthenticationAsync("credential-json", CeremonyId);
         }
 
-        [When("The user completes an admin login with a ceremony state that cannot be read")]
-        public async Task WhenTheUserCompletesAnAdminLoginWithACeremonyStateThatCannotBeReadAsync()
+        [When("The user completes an admin login with a ceremony that is unknown, expired or already used")]
+        public async Task WhenTheUserCompletesAnAdminLoginWithAnUnknownCeremonyAsync()
         {
             var ceremonyService = _provider.GetRequiredService<Mock<IPasskeyCeremonyService>>();
-            ceremonyService.Setup(x => x.CompleteAuthenticationAsync(It.IsAny<string>(), "unreadable-ceremony-state"))
+            ceremonyService.Setup(x => x.CompleteAuthenticationAsync(It.IsAny<string>(), "unknown-ceremony"))
                 .ReturnsAsync(AdminAssertionOutcomeBuilder.BuildFailed());
 
-            var uri = new Uri("http://localhost:8084");
-            _cookieContainer.Add(uri, new Cookie(AdminAuthenticationController.AssertionStateCookieKey, "unreadable-ceremony-state"));
-            _result = await _authClient.TryAdminCompleteAuthenticationAsync("credential-json");
+            _result = await _authClient.TryAdminCompleteAuthenticationAsync("credential-json", "unknown-ceremony");
+        }
+
+        [When("The user completes the admin login twice with the same ceremony")]
+        public async Task WhenTheUserCompletesTheAdminLoginTwiceWithTheSameCeremonyAsync()
+        {
+            // The platform consumes a ceremony when it is completed, so the second attempt cannot succeed.
+            var ceremonyService = _provider.GetRequiredService<Mock<IPasskeyCeremonyService>>();
+            ceremonyService.SetupSequence(x => x.CompleteAuthenticationAsync(It.IsAny<string>(), CeremonyId))
+                .ReturnsAsync(AdminAssertionOutcomeBuilder.BuildSucceeded())
+                .ReturnsAsync(AdminAssertionOutcomeBuilder.BuildFailed());
+
+            _result = await _authClient.TryAdminCompleteAuthenticationAsync("credential-json", CeremonyId);
+            _secondResult = await _authClient.TryAdminCompleteAuthenticationAsync("credential-json", CeremonyId);
+        }
+
+        [Given("The registered device has a signature counter of {int}")]
+        public void GivenTheRegisteredDeviceHasASignatureCounterOf(int signCount)
+        {
+            var repository = _provider.GetRequiredService<Mock<IAdminCredentialRepository>>();
+            repository.Setup(x => x.GetAsync()).ReturnsAsync(AdminCredentialBuilder.Build(signCount));
+        }
+
+        [When("The user logs in as admin with an assertion whose signature counter is {int}")]
+        public async Task WhenTheUserLogsInAsAdminWithAnAssertionWhoseSignatureCounterIsAsync(int signCount)
+        {
+            var ceremonyService = _provider.GetRequiredService<Mock<IPasskeyCeremonyService>>();
+            ceremonyService.Setup(x => x.CompleteAuthenticationAsync(It.IsAny<string>(), It.IsAny<string>()))
+                .ReturnsAsync(new AdminAssertionOutcome { Succeeded = true, SignCount = signCount });
+
+            _result = await _authClient.TryAdminCompleteAuthenticationAsync("credential-json", CeremonyId);
         }
 
         [Then("The admin login is rejected as invalid")]
@@ -86,10 +113,11 @@ namespace TimeForCode.Authorization.Specifications.Steps
             _result!.Exception!.StatusCode.Should().Be(400);
         }
 
-        private void SeedAssertionStateCookie()
+        [Then("The second admin login is rejected as invalid")]
+        public void ThenTheSecondAdminLoginIsRejectedAsInvalid()
         {
-            var uri = new Uri("http://localhost:8084");
-            _cookieContainer.Add(uri, new Cookie(AdminAuthenticationController.AssertionStateCookieKey, "protected-ceremony-state"));
+            _secondResult!.Exception.Should().NotBeNull();
+            _secondResult!.Exception!.StatusCode.Should().Be(400);
         }
 
         [Given("The user has an admin session token")]
@@ -102,7 +130,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
 
             var uri = new Uri("http://localhost:8084");
             var cookieValue = HttpUtility.UrlEncode(JsonSerializer.Serialize(accessToken));
-            _cookieContainer.Add(uri, new Cookie(CookieConstants.TokenKey, cookieValue));
+            _cookieContainer.Add(uri, new Cookie(TokenWallet.CookieName, cookieValue));
         }
 
         [Then("The admin login succeeds")]
@@ -116,10 +144,16 @@ namespace TimeForCode.Authorization.Specifications.Steps
         public void ThenAnAdminSessionTokenIsIssuedContainingTheAdminRoleAndTheAdminScope()
         {
             _result!.Response.Should().NotBeNull();
-            var jwt = TokenCookieReader.ReadAccessToken(_cookieContainer);
+            var jwt = new JwtSecurityTokenHandler().ReadJwtToken(_result.Response!.AccessToken.Token);
 
             jwt.Claims.Should().Contain(c => c.Type == "role" && c.Value == "admin");
             jwt.Claims.Should().Contain(c => c.Type == "scope" && c.Value == "admin");
+        }
+
+        [Then("No cookie is set for the admin")]
+        public void ThenNoCookieIsSetForTheAdmin()
+        {
+            _cookieContainer.GetAllCookies().Should().BeEmpty();
         }
 
         [Then("The admin login is rejected")]

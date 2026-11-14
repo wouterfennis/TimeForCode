@@ -96,6 +96,16 @@ namespace TimeForCode.Frontend.Bff.Sessions
                 return null;
             }
 
+            var sessionId = await OpenSessionAsync(tokens, previousSessionId);
+            return new SignedIn(sessionId, attempt.ReturnUrl);
+        }
+
+        /// <summary>
+        /// Opens a session for tokens the Authorization API issued (GitHub sign-in or admin passkey) and discards the session the browser
+        /// held before, if any. The returned id is new every time, so an earlier id never keeps working.
+        /// </summary>
+        public async Task<string> OpenSessionAsync(IssuedTokens tokens, string? previousSessionId)
+        {
             var now = time.GetUtcNow();
             var absoluteExpiresAt = now.AddHours(_options.AbsoluteLifetimeHours);
             var sessionId = SessionIds.Create();
@@ -118,7 +128,7 @@ namespace TimeForCode.Frontend.Bff.Sessions
                 await store.DeleteSessionAsync(SessionIds.Hash(previousSessionId));
             }
 
-            return new SignedIn(sessionId, attempt.ReturnUrl);
+            return sessionId;
         }
 
         /// <summary>
@@ -226,11 +236,16 @@ namespace TimeForCode.Frontend.Bff.Sessions
         /// Reads the user from the access token payload, or null when the token cannot be read.
         /// The token came straight from the Authorization API, so it is not verified again here.
         /// </summary>
-        public static UserProfile? TryReadProfile(Session session)
+        public static UserProfile? TryReadProfile(Session session) => TryReadAccessTokenProfile(session.AccessToken);
+
+        /// <summary>
+        /// Reads the user from an access token payload, or null when it cannot be read.
+        /// </summary>
+        public static UserProfile? TryReadAccessTokenProfile(string accessToken)
         {
             try
             {
-                var parts = session.AccessToken.Split('.');
+                var parts = accessToken.Split('.');
                 using var payload = JsonDocument.Parse(Base64Url.DecodeFromChars(parts[1]));
                 var root = payload.RootElement;
                 string? Read(string name) => root.TryGetProperty(name, out var value) ? value.GetString() : null;

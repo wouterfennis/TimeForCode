@@ -38,19 +38,6 @@ namespace TimeForCode.Authorization.Api
 
             var authenticationOptions = AuthenticationOptions.Bind(_configuration);
 
-            services.AddCors(options =>
-            {
-                options.AddPolicy("AdminCorsPolicy", policy =>
-                {
-                    // The admin flow's fetch calls use credentials: "include" (HttpOnly cookie round-trip),
-                    // so the allowed origins must be explicit (no AllowAnyOrigin) and AllowCredentials is required.
-                    policy.WithOrigins(authenticationOptions.ValidRedirectUris.ToArray())
-                          .AllowAnyMethod()
-                          .AllowAnyHeader()
-                          .AllowCredentials();
-                });
-            });
-
             services.AddOpenApi(
                 "v1",
                 SharedApiServiceCollectionExtensions.CreateDefaultOpenApiOptions(

@@ -46,7 +46,9 @@ namespace TimeForCode.Authorization.Infrastructure.Services.Admin
 
         public async Task AddOrUpdatePasskeyAsync(AdminPasskeyUser user, UserPasskeyInfo passkey, CancellationToken cancellationToken)
         {
-            await _adminCredentialRepository.UpdateSignCountAsync(passkey.SignCount);
+            // The signature counter is owned by CompleteAdminAuthenticationHandler (an atomic advance that rejects a counter which did not increase).
+            // This store must never write the counter on its own, or a rejected clone could lower it.
+            await Task.CompletedTask;
         }
 
         public async Task<IList<UserPasskeyInfo>> GetPasskeysAsync(AdminPasskeyUser user, CancellationToken cancellationToken)

@@ -44,7 +44,7 @@ The login and callback endpoints stay publicly reachable: the browser is redirec
 
 ### Admin passkey login
 
-The admin passkey login keeps its cookies until issue #196 moves it onto the same model. Until then the admin login does not work through the BFF.
+The admin passkey login follows the same model since #196 ([ADR-011 amendment](0011-webauthn-admin-authentication.md#amendment-2026-11-14-196-the-ceremony-runs-through-the-bff-and-keeps-no-cookie)): the ceremony state is single use and server-side, the tokens go to the BFF, and the browser only gets the session cookie.
 
 ## Consequences
 

@@ -47,7 +47,7 @@ namespace TimeForCode.Authorization.Application.Handlers.Admin
                 return Result<TokenResult>.Failure("Invalid bootstrap secret.");
             }
 
-            var outcome = await _passkeyCeremonyService.CompleteRegistrationAsync(request.CredentialJson, request.ProtectedCeremonyState);
+            var outcome = await _passkeyCeremonyService.CompleteRegistrationAsync(request.CredentialJson, request.CeremonyId);
             if (!outcome.Succeeded)
             {
                 _logger.LogWarning("Admin registration completion rejected: {Error}", outcome.ErrorMessage);

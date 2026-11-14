@@ -39,6 +39,9 @@
 .PARAMETER FrontendBaseUrl
     Base URL of the front-end (the SPA and its API routes, served by the BFF). Default: http://localhost:8084
 
+.PARAMETER AdminBootstrapSecret
+    The admin bootstrap secret of the local stack (appsettings.Development.json). Used to start, never complete, an admin passkey registration. Default: test-bootstrap-secret
+
 .PARAMETER ContainerCli
     Container CLI used to inspect the Mongo container (check 8). Default: podman, and the check is skipped when it is missing. CI passes docker explicitly, and then a missing CLI fails the check.
 
@@ -56,7 +59,8 @@ param(
     [string] $ReportingApiBaseUrl = "http://localhost:8083",
     [string] $ClientRedirectUri    = "http://localhost:8084",
     [string] $FrontendBaseUrl      = "http://localhost:8084",
-    [string] $ContainerCli         = "podman"
+    [string] $ContainerCli         = "podman",
+    [string] $AdminBootstrapSecret = "test-bootstrap-secret"
 )
 
 Set-StrictMode -Version Latest
@@ -380,6 +384,36 @@ try {
     $sAfter = [int](curl -s -o /dev/null -w "%{http_code}" -H "Cookie: __Host-session=$sessionCookie" "$FrontendBaseUrl/bff/session" 2>&1 | Select-Object -Last 1)
     if ((Get-StatusCode $rb5) -eq 204 -and $sAfter -eq 401) { Write-Pass "BFF sign-out: POST /bff/logout -> 204 and the session is gone (GET /bff/session -> 401)" }
     else                                                    { Write-Fail "BFF sign-out" "logout=$(Get-StatusCode $rb5), session afterwards=$sAfter" }
+
+    # Admin passkey ceremony through the BFF. A real passkey cannot be driven from a script, so this checks what can be checked:
+    # the options calls answer with an opaque ceremony id and set no cookie, a wrong secret is refused without a reason, and a
+    # write without the CSRF header never reaches the Authorization API.
+    $adminJson = @{ bootstrapSecret = $AdminBootstrapSecret } | ConvertTo-Json -Compress
+    $rAdmin1 = curl -si -X POST -H $csrf -H $origin -H "Content-Type: application/json" --data-raw $adminJson "$FrontendBaseUrl/bff/admin/registration/options" 2>&1
+    $adminBody = ($rAdmin1 | Select-String '^\{' | Select-Object -First 1)
+    $adminCeremony = if ($adminBody) { $adminBody.ToString() | ConvertFrom-Json } else { $null }
+    $adminClaimed = (Get-StatusCode $rAdmin1) -eq 400
+    if ((Get-StatusCode $rAdmin1) -eq 200 -and $adminCeremony.ceremonyId -and $adminCeremony.optionsJson -and -not ($rAdmin1 | Select-String "(?i)^Set-Cookie:")) {
+        Write-Pass "BFF starts the admin passkey registration: POST /bff/admin/registration/options -> 200 with a ceremony id and no cookie"
+    } elseif ($adminClaimed) {
+        Write-Output "  [SKIP] BFF admin registration options: the admin role is already claimed on this stack"
+    } else {
+        Write-Fail "BFF admin registration options" "Status=$(Get-StatusCode $rAdmin1)"
+    }
+
+    $wrongJson = @{ bootstrapSecret = "wrong-secret" } | ConvertTo-Json -Compress
+    $sAdminWrong = [int](curl -s -o /dev/null -w "%{http_code}" -X POST -H $csrf -H $origin -H "Content-Type: application/json" --data-raw $wrongJson "$FrontendBaseUrl/bff/admin/registration/options" 2>&1 | Select-Object -Last 1)
+    if ($sAdminWrong -eq 400) { Write-Pass "BFF refuses admin registration with a wrong bootstrap secret: -> 400" }
+    else                      { Write-Fail "BFF admin registration with a wrong secret" "Status=$sAdminWrong (expected 400)" }
+
+    $sAdminCsrf = [int](curl -s -o /dev/null -w "%{http_code}" -X POST -H "Content-Type: application/json" --data-raw "{}" "$FrontendBaseUrl/bff/admin/authentication/options" 2>&1 | Select-Object -Last 1)
+    if ($sAdminCsrf -eq 403) { Write-Pass "BFF refuses an admin call without the CSRF header: POST /bff/admin/authentication/options -> 403" }
+    else                     { Write-Fail "BFF admin call without the CSRF header" "Status=$sAdminCsrf (expected 403)" }
+
+    $sAdminDirect = [int](curl -s -o /dev/null -w "%{http_code}" -X POST -H $csrf -H "Content-Type: application/json" --data-raw "{}" "$FrontendBaseUrl/api/auth/v1/admin-authentication/authentication" 2>&1 | Select-Object -Last 1)
+    if ($sAdminDirect -eq 404) { Write-Pass "The Authorization API admin endpoints are not reachable through the proxy: -> 404" }
+    else                       { Write-Fail "BFF proxies the admin endpoints" "Status=$sAdminDirect (expected 404)" }
+
 
 
     # Donation API accepts the Auth JWT: one Mongo-backed write, then read it back.

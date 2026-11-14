@@ -42,7 +42,7 @@ namespace TimeForCode.Authorization.Application.Tests.Handlers.Admin
         {
             _repositoryMock.Setup(x => x.GetAsync()).ReturnsAsync((AdminCredential?)null);
             _ceremonyServiceMock.Setup(x => x.CreateRegistrationOptionsAsync())
-                .ReturnsAsync(new PasskeyCeremonyOptionsResult { OptionsJson = "{}", ProtectedCeremonyState = "state" });
+                .ReturnsAsync(new PasskeyCeremonyOptionsResult { OptionsJson = "{}", CeremonyId = "state" });
 
             var result = await _sut.Handle(new CreateAdminRegistrationOptionsCommand { BootstrapSecret = "correct-secret" }, CancellationToken.None);
 

@@ -22,16 +22,16 @@ sequenceDiagram
     Browser->>BFF: GET / (unauthenticated), then GET /bff/session
     BFF-->>Browser: SPA, and 401: show "Sign in"
     Browser->>BFF: GET /bff/login?returnUrl=/projects
-    BFF-->>Browser: 302 to the Authorization API login (PKCE challenge; verifier kept server-side), Set-Cookie __Host-login
+    BFF-->>Browser: 302 to the Authorization API login (PKCE challenge, verifier kept server-side), Set-Cookie __Host-login
     Browser->>AuthAPI: GET /api/v1/authentication/login?...&CodeChallenge=...
-    AuthAPI-->>Browser: 302 Redirect to GitHub (state, client_id, own PKCE challenge; no scope, so public profile access only)
+    AuthAPI-->>Browser: 302 Redirect to GitHub (state, client_id, own PKCE challenge, no scope, so public profile access only)
     Browser->>GitHub: GET /login/oauth/authorize, user approves
     GitHub-->>Browser: 302 to /api/v1/authentication/callback?code=...&state=...
     Browser->>AuthAPI: GET callback
     AuthAPI->>GitHub: POST /login/oauth/access_token (exchange code), GET /user
     GitHub-->>AuthAPI: External access token, profile
-    AuthAPI->>AuthAPI: Discard the GitHub token; link GitHub account to internal user; store hash of a one-time code
-    AuthAPI-->>Browser: 302 to /bff/callback?code=<one-time code>
+    AuthAPI->>AuthAPI: Discard the GitHub token, link GitHub account to internal user, store hash of a one-time code
+    AuthAPI-->>Browser: 302 to /bff/callback?code=...
     Browser->>BFF: GET /bff/callback?code=... (with __Host-login)
     BFF->>AuthAPI: POST /api/v1/authentication/token {code, codeVerifier}
     AuthAPI-->>BFF: access token + refresh token
@@ -85,6 +85,33 @@ sequenceDiagram
 ```
 
 A request without the header or from another origin is `403` and changes nothing. An access token that was already issued stays valid until it expires, at most 15 minutes.
+
+---
+
+## Scenario 2c — Administrator Passkey Sign-In
+
+The administrator signs in with a WebAuthn passkey ([ADR-011](../../reference/adr/0011-webauthn-admin-authentication.md)). The ceremony state is a single-use record at the Authorization API, so no cookie is involved until the BFF opens the session.
+
+```mermaid
+sequenceDiagram
+    participant Browser
+    participant BFF as Front-end BFF
+    participant AuthAPI as Authorization API
+
+    Browser->>BFF: POST /bff/admin/authentication/options
+    BFF->>AuthAPI: POST /api/v1/admin-authentication/authentication/options
+    AuthAPI->>AuthAPI: Store the ceremony state (hash of an opaque id, 5 minutes)
+    AuthAPI-->>BFF: ceremony id + options
+    BFF-->>Browser: ceremony id + options (no cookie)
+    Browser->>Browser: navigator.credentials.get (passkey)
+    Browser->>BFF: POST /bff/admin/authentication (assertion, ceremony id)
+    BFF->>AuthAPI: POST /api/v1/admin-authentication/authentication
+    AuthAPI->>AuthAPI: Take the ceremony state once, verify the assertion, the signature counter must increase
+    AuthAPI-->>BFF: admin access token + refresh token
+    BFF-->>Browser: 200 (session cookie, no token)
+```
+
+A ceremony that is unknown, expired or already used, a wrong device or a counter that did not increase is a `400` without a reason. Registration works the same way with the bootstrap secret. Details and the replay diagram: [Authentication flow](../../authentication/authentication_flow_design.md#admin-passkey-registration-and-sign-in-through-the-bff).
 
 ---
 

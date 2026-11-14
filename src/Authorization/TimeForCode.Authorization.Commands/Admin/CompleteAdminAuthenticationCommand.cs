@@ -8,6 +8,6 @@ namespace TimeForCode.Authorization.Commands.Admin
     public class CompleteAdminAuthenticationCommand : IRequest<Result<TokenResult>>
     {
         public required string CredentialJson { get; init; }
-        public required string ProtectedCeremonyState { get; init; }
+        public required string CeremonyId { get; init; }
     }
 }

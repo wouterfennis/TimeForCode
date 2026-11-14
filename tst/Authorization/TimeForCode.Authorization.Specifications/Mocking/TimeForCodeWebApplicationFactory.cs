@@ -12,6 +12,7 @@ using TimeForCode.Authorization.Application.Interfaces;
 using TimeForCode.Authorization.Application.Interfaces.Admin;
 using TimeForCode.Authorization.Domain.Entities;
 using TimeForCode.Authorization.Infrastructure.Persistence.Database;
+using TimeForCode.Authorization.Infrastructure.Services.Admin;
 using TimeForCode.Authorization.Specifications.TestBuilder;
 
 namespace TimeForCode.Authorization.Specifications.Mocking
@@ -35,6 +36,8 @@ namespace TimeForCode.Authorization.Specifications.Mocking
                     typeof(IMongoDbContext),
                     typeof(IStateRepository),
                     typeof(ILoginCodeRepository),
+                    typeof(ICeremonyStateRepository),
+                    typeof(CeremonyStateStore),
                     typeof(TimeProvider),
                     typeof(IAccountInformationRepository),
                     typeof(IRefreshTokenRepository),
@@ -109,7 +112,7 @@ namespace TimeForCode.Authorization.Specifications.Mocking
             var mockAdminCredentialRepository = new Mock<IAdminCredentialRepository>();
             mockAdminCredentialRepository.Setup(x => x.GetAsync()).ReturnsAsync((AdminCredential?)null);
             mockAdminCredentialRepository.Setup(x => x.TryClaimAsync(It.IsAny<AdminCredential>())).ReturnsAsync(true);
-            mockAdminCredentialRepository.Setup(x => x.UpdateSignCountAsync(It.IsAny<long>())).Returns(Task.CompletedTask);
+            mockAdminCredentialRepository.Setup(x => x.TryAdvanceSignCountAsync(It.IsAny<long>())).ReturnsAsync(true);
 
             var mockPasskeyCeremonyService = new Mock<IPasskeyCeremonyService>();
             mockPasskeyCeremonyService.Setup(x => x.CreateRegistrationOptionsAsync())

@@ -6,6 +6,7 @@ using TimeForCode.Authorization.Application.Interfaces;
 using TimeForCode.Authorization.Application.Interfaces.Admin;
 using TimeForCode.Authorization.Application.Options;
 using TimeForCode.Authorization.Commands.Admin;
+using TimeForCode.Authorization.Domain.Entities;
 
 namespace TimeForCode.Authorization.Infrastructure.Services.Admin
 {
@@ -21,17 +22,20 @@ namespace TimeForCode.Authorization.Infrastructure.Services.Admin
         private readonly IPasskeyHandler<AdminPasskeyUser> _passkeyHandler;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IEncryptionService _encryptionService;
+        private readonly CeremonyStateStore _ceremonyStates;
         private readonly AdminPasskeyOptions _options;
-        private const string UnreadableStateMessage = "The ceremony state could not be read.";
+        private const string UnknownCeremonyMessage = "The ceremony is unknown, expired or was already used.";
 
         public PasskeyCeremonyService(IPasskeyHandler<AdminPasskeyUser> passkeyHandler,
             IHttpContextAccessor httpContextAccessor,
             IEncryptionService encryptionService,
+            CeremonyStateStore ceremonyStates,
             IOptions<AdminPasskeyOptions> options)
         {
             _passkeyHandler = passkeyHandler;
             _httpContextAccessor = httpContextAccessor;
             _encryptionService = encryptionService;
+            _ceremonyStates = ceremonyStates;
             _options = options.Value;
         }
 
@@ -49,16 +53,16 @@ namespace TimeForCode.Authorization.Infrastructure.Services.Admin
             return new PasskeyCeremonyOptionsResult
             {
                 OptionsJson = creationOptions.CreationOptionsJson,
-                ProtectedCeremonyState = _encryptionService.Encrypt(creationOptions.AttestationState ?? string.Empty)
+                CeremonyId = await _ceremonyStates.StartAsync(CeremonyKind.Registration, _encryptionService.Encrypt(creationOptions.AttestationState ?? string.Empty))
             };
         }
 
-        public async Task<AdminAttestationOutcome> CompleteRegistrationAsync(string credentialJson, string ceremonyState)
+        public async Task<AdminAttestationOutcome> CompleteRegistrationAsync(string credentialJson, string ceremonyId)
         {
-            var attestationState = TryDecryptCeremonyState(ceremonyState);
+            var attestationState = await TakeStateAsync(CeremonyKind.Registration, ceremonyId);
             if (attestationState == null)
             {
-                return new AdminAttestationOutcome { Succeeded = false, ErrorMessage = UnreadableStateMessage };
+                return new AdminAttestationOutcome { Succeeded = false, ErrorMessage = UnknownCeremonyMessage };
             }
 
             var context = new PasskeyAttestationContext
@@ -96,16 +100,16 @@ namespace TimeForCode.Authorization.Infrastructure.Services.Admin
             return new PasskeyCeremonyOptionsResult
             {
                 OptionsJson = requestOptions.RequestOptionsJson,
-                ProtectedCeremonyState = _encryptionService.Encrypt(requestOptions.AssertionState ?? string.Empty)
+                CeremonyId = await _ceremonyStates.StartAsync(CeremonyKind.Authentication, _encryptionService.Encrypt(requestOptions.AssertionState ?? string.Empty))
             };
         }
 
-        public async Task<AdminAssertionOutcome> CompleteAuthenticationAsync(string credentialJson, string ceremonyState)
+        public async Task<AdminAssertionOutcome> CompleteAuthenticationAsync(string credentialJson, string ceremonyId)
         {
-            var assertionState = TryDecryptCeremonyState(ceremonyState);
+            var assertionState = await TakeStateAsync(CeremonyKind.Authentication, ceremonyId);
             if (assertionState == null)
             {
-                return new AdminAssertionOutcome { Succeeded = false, ErrorMessage = UnreadableStateMessage };
+                return new AdminAssertionOutcome { Succeeded = false, ErrorMessage = UnknownCeremonyMessage };
             }
 
             var context = new PasskeyAssertionContext
@@ -125,14 +129,18 @@ namespace TimeForCode.Authorization.Infrastructure.Services.Admin
             return new AdminAssertionOutcome { Succeeded = true, SignCount = result.Passkey.SignCount };
         }
 
-        /// <summary>
-        /// The state comes from a client cookie, so an unreadable value (tampered, expired key, other key ring) is a bad request, not a server error.
-        /// </summary>
-        private string? TryDecryptCeremonyState(string ceremonyState)
+        // The state is taken (deleted) first, so the ceremony works once even when it then fails; an unreadable state counts as unknown.
+        private async Task<string?> TakeStateAsync(CeremonyKind kind, string ceremonyId)
         {
+            var stored = await _ceremonyStates.TakeAsync(kind, ceremonyId);
+            if (stored is null)
+            {
+                return null;
+            }
+
             try
             {
-                return _encryptionService.Decrypt(ceremonyState);
+                return _encryptionService.Decrypt(stored);
             }
             catch (CryptographicException)
             {
