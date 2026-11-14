@@ -78,27 +78,36 @@ namespace TimeForCode.Frontend.Bff.Sessions
                 s => s.IdHash == idHash,
                 Builders<Session>.Update.Set(s => s.LastSeenAt, lastSeenAt).Set(s => s.ExpiresAt, expiresAt));
 
-        public async Task<bool> TryAcquireRefreshLeaseAsync(string idHash, DateTimeOffset now, DateTimeOffset leaseUntil)
+        public async Task<string?> TryAcquireRefreshLeaseAsync(string idHash, DateTimeOffset now, DateTimeOffset leaseUntil)
         {
+            var leaseId = Guid.NewGuid().ToString("N");
             var filter = Builders<Session>.Filter.Eq(s => s.IdHash, idHash)
                 & (Builders<Session>.Filter.Eq(s => s.RefreshLeaseUntil, null) | Builders<Session>.Filter.Lte(s => s.RefreshLeaseUntil, now));
 
-            var result = await _sessions.Value.UpdateOneAsync(filter, Builders<Session>.Update.Set(s => s.RefreshLeaseUntil, leaseUntil));
-            return result.ModifiedCount == 1;
+            var result = await _sessions.Value.UpdateOneAsync(
+                filter,
+                Builders<Session>.Update.Set(s => s.RefreshLeaseUntil, leaseUntil).Set(s => s.RefreshLeaseId, leaseId));
+            return result.ModifiedCount == 1 ? leaseId : null;
         }
 
-        public Task SaveTokensAsync(string idHash, IssuedTokens tokens) =>
-            _sessions.Value.UpdateOneAsync(
-                s => s.IdHash == idHash,
+        public async Task<bool> SaveTokensAsync(string idHash, string leaseId, IssuedTokens tokens)
+        {
+            var result = await _sessions.Value.UpdateOneAsync(
+                s => s.IdHash == idHash && s.RefreshLeaseId == leaseId,
                 Builders<Session>.Update
                     .Set(s => s.AccessToken, tokens.AccessToken)
                     .Set(s => s.AccessTokenExpiresAt, tokens.AccessTokenExpiresAt)
                     .Set(s => s.RefreshToken, tokens.RefreshToken)
                     .Set(s => s.RefreshTokenExpiresAt, tokens.RefreshTokenExpiresAt)
-                    .Set(s => s.RefreshLeaseUntil, null));
+                    .Set(s => s.RefreshLeaseUntil, null)
+                    .Set(s => s.RefreshLeaseId, null));
+            return result.ModifiedCount == 1;
+        }
 
-        public Task ReleaseRefreshLeaseAsync(string idHash) =>
-            _sessions.Value.UpdateOneAsync(s => s.IdHash == idHash, Builders<Session>.Update.Set(s => s.RefreshLeaseUntil, null));
+        public Task ReleaseRefreshLeaseAsync(string idHash, string leaseId) =>
+            _sessions.Value.UpdateOneAsync(
+                s => s.IdHash == idHash && s.RefreshLeaseId == leaseId,
+                Builders<Session>.Update.Set(s => s.RefreshLeaseUntil, null).Set(s => s.RefreshLeaseId, null));
 
         public Task DeleteSessionAsync(string idHash) => _sessions.Value.DeleteOneAsync(s => s.IdHash == idHash);
 

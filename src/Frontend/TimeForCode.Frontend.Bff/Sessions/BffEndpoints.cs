@@ -86,7 +86,8 @@ namespace TimeForCode.Frontend.Bff.Sessions
             context.Request.Cookies.TryGetValue(BrowserSession.LoginCookie, out var loginId);
             BrowserSession.ClearLoginCookie(context);
 
-            var signedIn = await sessions.CompleteLoginAsync(loginId, code, context.RequestAborted);
+            context.Request.Cookies.TryGetValue(BrowserSession.SessionCookie, out var previousSessionId);
+            var signedIn = await sessions.CompleteLoginAsync(loginId, code, previousSessionId, context.RequestAborted);
             if (signedIn is null)
             {
                 return Results.Redirect(SignInFailedLocation);
@@ -105,7 +106,13 @@ namespace TimeForCode.Frontend.Bff.Sessions
                 return Results.Problem(statusCode: StatusCodes.Status401Unauthorized, title: "Not signed in");
             }
 
-            var profile = SessionService.ReadProfile(session);
+            var profile = SessionService.TryReadProfile(session);
+            if (profile is null)
+            {
+                // A token the BFF cannot read is no usable session.
+                return Results.Problem(statusCode: StatusCodes.Status401Unauthorized, title: "Not signed in");
+            }
+
             return Results.Ok(new SessionResponse(true, sessions.IsNewUser(session), profile.UserId, profile.Login, profile.AvatarUrl));
         }
 

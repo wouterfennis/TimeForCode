@@ -35,39 +35,57 @@ namespace TimeForCode.Frontend.Bff.Tests
             return Task.CompletedTask;
         }
 
-        public Task<bool> TryAcquireRefreshLeaseAsync(string idHash, DateTimeOffset now, DateTimeOffset leaseUntil)
+        public int SaveFailures { get; set; }
+
+        public Task<string?> TryAcquireRefreshLeaseAsync(string idHash, DateTimeOffset now, DateTimeOffset leaseUntil)
         {
             lock (_gate)
             {
                 if (!_sessions.TryGetValue(idHash, out var session) || (session.RefreshLeaseUntil is { } until && until > now))
                 {
-                    return Task.FromResult(false);
+                    return Task.FromResult<string?>(null);
                 }
 
                 session.RefreshLeaseUntil = leaseUntil;
-                return Task.FromResult(true);
+                session.RefreshLeaseId = Guid.NewGuid().ToString("N");
+                return Task.FromResult<string?>(session.RefreshLeaseId);
             }
         }
 
-        public Task SaveTokensAsync(string idHash, IssuedTokens tokens)
+        public Task<bool> SaveTokensAsync(string idHash, string leaseId, IssuedTokens tokens)
         {
-            if (_sessions.TryGetValue(idHash, out var session))
+            lock (_gate)
             {
+                if (SaveFailures > 0)
+                {
+                    SaveFailures--;
+                    throw new InvalidOperationException("The database is not reachable.");
+                }
+
+                if (!_sessions.TryGetValue(idHash, out var session) || session.RefreshLeaseId != leaseId)
+                {
+                    return Task.FromResult(false);
+                }
+
                 session.AccessToken = tokens.AccessToken;
                 session.AccessTokenExpiresAt = tokens.AccessTokenExpiresAt;
                 session.RefreshToken = tokens.RefreshToken;
                 session.RefreshTokenExpiresAt = tokens.RefreshTokenExpiresAt;
                 session.RefreshLeaseUntil = null;
+                session.RefreshLeaseId = null;
+                return Task.FromResult(true);
             }
-
-            return Task.CompletedTask;
         }
 
-        public Task ReleaseRefreshLeaseAsync(string idHash)
+        public Task ReleaseRefreshLeaseAsync(string idHash, string leaseId)
         {
-            if (_sessions.TryGetValue(idHash, out var session))
+            lock (_gate)
             {
-                session.RefreshLeaseUntil = null;
+                if (_sessions.TryGetValue(idHash, out var session) && session.RefreshLeaseId == leaseId)
+                {
+                    session.RefreshLeaseUntil = null;
+                    session.RefreshLeaseId = null;
+                }
             }
 
             return Task.CompletedTask;

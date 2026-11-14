@@ -144,6 +144,7 @@ namespace TimeForCode.Frontend.Bff.Tests
             using var response = await SendAsync(HttpMethod.Get, "/bff/callback?code=one-time-code", cookie: $"__Host-login={loginCookie}; __Host-session={old}");
 
             CookieValue(response, "__Host-session").Should().NotBe(old);
+            Factory.Store.Sessions.Should().ContainSingle("the earlier session is discarded at sign-in");
         }
 
         [TestMethod]
@@ -176,6 +177,17 @@ namespace TimeForCode.Frontend.Bff.Tests
 
             using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync(TestContext.CancellationToken));
             json.RootElement.GetProperty("isNewUser").GetBoolean().Should().BeFalse();
+        }
+
+        [TestMethod]
+        public async Task Session_AccessTokenThatCannotBeRead_IsUnauthorizedNotAServerError()
+        {
+            var sessionId = await SignInAsync();
+            Factory.Store.Sessions.Single().AccessToken = "garbage";
+
+            using var response = await SendAsync(HttpMethod.Get, "/bff/session", cookie: SessionCookie(sessionId));
+
+            response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
 
         [TestMethod]

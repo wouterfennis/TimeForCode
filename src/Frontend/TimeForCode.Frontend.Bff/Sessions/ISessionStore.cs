@@ -13,16 +13,16 @@ namespace TimeForCode.Frontend.Bff.Sessions
         Task TouchAsync(string idHash, DateTimeOffset lastSeenAt, DateTimeOffset expiresAt);
 
         /// <summary>
-        /// Atomically takes the right to refresh; false when another request holds an unexpired lease.
+        /// Atomically takes the right to refresh and returns the id of the lease; null when another request holds an unexpired lease.
         /// </summary>
-        Task<bool> TryAcquireRefreshLeaseAsync(string idHash, DateTimeOffset now, DateTimeOffset leaseUntil);
+        Task<string?> TryAcquireRefreshLeaseAsync(string idHash, DateTimeOffset now, DateTimeOffset leaseUntil);
 
         /// <summary>
-        /// Stores the rotated tokens and releases the lease.
+        /// Stores the rotated tokens and releases the lease, but only while the caller still holds that lease; false when it was taken over.
         /// </summary>
-        Task SaveTokensAsync(string idHash, IssuedTokens tokens);
+        Task<bool> SaveTokensAsync(string idHash, string leaseId, IssuedTokens tokens);
 
-        Task ReleaseRefreshLeaseAsync(string idHash);
+        Task ReleaseRefreshLeaseAsync(string idHash, string leaseId);
 
         Task DeleteSessionAsync(string idHash);
 

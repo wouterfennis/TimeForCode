@@ -51,8 +51,7 @@ graph LR
 
     Client["Front-end / External Client"]
     GitHub["GitHub OAuth"]
-    DonationAPI["Donation API
-(anonymise contributor)"]
+    DonationAPI["Donation API\n(anonymise contributor)"]
     MongoDB[("MongoDB")]
 
     Client -->|HTTP requests| AuthAPI_Ctrl

@@ -65,7 +65,7 @@ Choices that differ from the latest versions or the usual defaults, with the rea
 
 This is the most important design constraint. Read it before writing any code. The full design, the sequence diagrams and the endpoint reference are in [Authentication flow](../authentication/authentication_flow_design.md); the decision is [ADR-019](../reference/adr/0019-browser-session-in-the-bff.md).
 
-**Facts about the backend**
+### Facts about the backend
 
 - The Donation, Authorization and Reporting APIs validate only a **bearer token in the `Authorization` header**. They read no cookies.
 - The Authorization API is a plain token issuer: it sets and reads no cookie for the GitHub sign-in and hands out tokens only against a one-time code plus the PKCE verifier of the client that started the login.

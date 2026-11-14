@@ -25,6 +25,10 @@ namespace TimeForCode.Frontend.Bff.Tests
 
         public TimeSpan RefreshDelay { get; set; } = TimeSpan.Zero;
 
+        public Exception? RefreshFailure { get; set; }
+
+        public Exception? LogoutFailure { get; set; }
+
         public Task<IssuedTokens?> ExchangeCodeAsync(string code, string codeVerifier, CancellationToken cancellationToken)
         {
             Exchanges.Add((code, codeVerifier));
@@ -35,6 +39,11 @@ namespace TimeForCode.Frontend.Bff.Tests
         public async Task<IssuedTokens?> RefreshAsync(string refreshToken, CancellationToken cancellationToken)
         {
             Refreshes.Add(refreshToken);
+            if (RefreshFailure is not null)
+            {
+                throw RefreshFailure;
+            }
+
             if (RefreshDelay > TimeSpan.Zero)
             {
                 await Task.Delay(RefreshDelay, cancellationToken);
@@ -46,6 +55,11 @@ namespace TimeForCode.Frontend.Bff.Tests
         public Task LogoutAsync(string refreshToken, CancellationToken cancellationToken)
         {
             Logouts.Add(refreshToken);
+            if (LogoutFailure is not null)
+            {
+                throw LogoutFailure;
+            }
+
             return Task.CompletedTask;
         }
 

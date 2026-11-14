@@ -26,15 +26,21 @@ namespace TimeForCode.Frontend.Bff.Sessions
                     return;
                 }
 
-                var accessToken = await sessions.GetAccessTokenAsync(session, http.RequestAborted);
-                if (accessToken is null)
+                var result = await sessions.GetAccessTokenAsync(session, http.RequestAborted);
+                switch (result.Outcome)
                 {
-                    // The refresh token was rejected or the Authorization API is unreachable: the call goes out anonymous.
-                    BrowserSession.ClearSessionCookieWhenTheResponseStarts(http);
-                    return;
+                    case AccessTokenOutcome.Available:
+                        headers.Authorization = new AuthenticationHeaderValue("Bearer", result.Token);
+                        break;
+                    case AccessTokenOutcome.SessionEnded:
+                        // The refresh token was rejected: the call goes out anonymous and the browser forgets the cookie.
+                        BrowserSession.ClearSessionCookieWhenTheResponseStarts(http);
+                        break;
+                    default:
+                        // The Authorization API is unreachable or slow: the call goes out anonymous, but the session and the cookie stay,
+                        // so the user is not signed out by an outage.
+                        break;
                 }
-
-                headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
             });
     }
 }

@@ -47,6 +47,12 @@ namespace TimeForCode.Frontend.Bff.Sessions
         /// </summary>
         [BsonRepresentation(BsonType.DateTime)]
         public DateTimeOffset? RefreshLeaseUntil { get; set; }
+
+        /// <summary>
+        /// Who holds the lease. Saving the rotated tokens and releasing the lease only work for the holder, so a slow request whose
+        /// lease expired cannot overwrite the tokens of the request that took over.
+        /// </summary>
+        public string? RefreshLeaseId { get; set; }
     }
 
     /// <summary>

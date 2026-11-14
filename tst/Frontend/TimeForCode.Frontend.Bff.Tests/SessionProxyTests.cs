@@ -108,6 +108,20 @@ namespace TimeForCode.Frontend.Bff.Tests
         }
 
         [TestMethod]
+        public async Task Get_AuthorizationApiUnreachableForTheRefresh_ForwardsWithoutBearerButKeepsTheSessionAndTheCookie()
+        {
+            var sessionId = await SignInAsync();
+            Factory.Time.Advance(TimeSpan.FromMinutes(16));
+            Factory.Api.RefreshFailure = new HttpRequestException("down");
+
+            var response = await SendAsync(HttpMethod.Get, "/api/donation/v1/Project", cookie: SessionCookie(sessionId));
+
+            Factory.Upstream.Requests.Should().ContainSingle().Which.Headers.Should().NotContainKey("Authorization");
+            Factory.Store.Sessions.Should().ContainSingle("an outage must not sign the user out");
+            SetCookies(response).Should().BeEmpty("the session cookie stays");
+        }
+
+        [TestMethod]
         public async Task Get_SessionIdleTooLong_ForwardsWithoutBearer()
         {
             var sessionId = await SignInAsync();

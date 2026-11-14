@@ -29,10 +29,13 @@ namespace TimeForCode.Frontend.Bff.Tests
             _sut = new SessionService(_store, _api, Options.Create(_options), _time, NullLogger<SessionService>.Instance);
         }
 
+        private async Task<string?> GetTokenAsync(Session session) =>
+            (await _sut.GetAccessTokenAsync(session, TestContext.CancellationToken)).Token;
+
         private async Task<string> SignInAsync()
         {
             var start = await _sut.StartLoginAsync("/projects", TestContext.CancellationToken);
-            var signedIn = await _sut.CompleteLoginAsync(start.LoginId, "one-time-code", TestContext.CancellationToken);
+            var signedIn = await _sut.CompleteLoginAsync(start.LoginId, "one-time-code", null, TestContext.CancellationToken);
             return signedIn!.SessionId;
         }
 
@@ -41,7 +44,7 @@ namespace TimeForCode.Frontend.Bff.Tests
         {
             var start = await _sut.StartLoginAsync("/projects", TestContext.CancellationToken);
 
-            await _sut.CompleteLoginAsync(start.LoginId, "one-time-code", TestContext.CancellationToken);
+            await _sut.CompleteLoginAsync(start.LoginId, "one-time-code", null, TestContext.CancellationToken);
 
             var verifier = _api.Exchanges.Single().Verifier;
             Base64Url.EncodeToString(SHA256.HashData(Encoding.ASCII.GetBytes(verifier))).Should().Be(start.CodeChallenge);
@@ -60,7 +63,7 @@ namespace TimeForCode.Frontend.Bff.Tests
         {
             var start = await _sut.StartLoginAsync(returnUrl, TestContext.CancellationToken);
 
-            var signedIn = await _sut.CompleteLoginAsync(start.LoginId, "one-time-code", TestContext.CancellationToken);
+            var signedIn = await _sut.CompleteLoginAsync(start.LoginId, "one-time-code", null, TestContext.CancellationToken);
 
             signedIn!.ReturnUrl.Should().Be(expected);
         }
@@ -89,9 +92,9 @@ namespace TimeForCode.Frontend.Bff.Tests
         public async Task CompleteLoginAsync_TheSameLoginTwice_FailsTheSecondTime()
         {
             var start = await _sut.StartLoginAsync("/", TestContext.CancellationToken);
-            await _sut.CompleteLoginAsync(start.LoginId, "one-time-code", TestContext.CancellationToken);
+            await _sut.CompleteLoginAsync(start.LoginId, "one-time-code", null, TestContext.CancellationToken);
 
-            var again = await _sut.CompleteLoginAsync(start.LoginId, "one-time-code", TestContext.CancellationToken);
+            var again = await _sut.CompleteLoginAsync(start.LoginId, "one-time-code", null, TestContext.CancellationToken);
 
             again.Should().BeNull();
         }
@@ -102,7 +105,7 @@ namespace TimeForCode.Frontend.Bff.Tests
         [DataRow("unknown-login")]
         public async Task CompleteLoginAsync_NoKnownLoginAttempt_FailsWithoutCallingTheApi(string? loginId)
         {
-            var signedIn = await _sut.CompleteLoginAsync(loginId, "one-time-code", TestContext.CancellationToken);
+            var signedIn = await _sut.CompleteLoginAsync(loginId, "one-time-code", null, TestContext.CancellationToken);
 
             signedIn.Should().BeNull();
             _api.Exchanges.Should().BeEmpty();
@@ -114,7 +117,7 @@ namespace TimeForCode.Frontend.Bff.Tests
             var start = await _sut.StartLoginAsync("/", TestContext.CancellationToken);
             _time.Advance(TimeSpan.FromMinutes(_options.LoginTimeoutMinutes) + TimeSpan.FromSeconds(1));
 
-            var signedIn = await _sut.CompleteLoginAsync(start.LoginId, "one-time-code", TestContext.CancellationToken);
+            var signedIn = await _sut.CompleteLoginAsync(start.LoginId, "one-time-code", null, TestContext.CancellationToken);
 
             signedIn.Should().BeNull();
             _api.Exchanges.Should().BeEmpty();
@@ -125,7 +128,7 @@ namespace TimeForCode.Frontend.Bff.Tests
         {
             var start = await _sut.StartLoginAsync("/", TestContext.CancellationToken);
 
-            var signedIn = await _sut.CompleteLoginAsync(start.LoginId, "forged-code", TestContext.CancellationToken);
+            var signedIn = await _sut.CompleteLoginAsync(start.LoginId, "forged-code", null, TestContext.CancellationToken);
 
             signedIn.Should().BeNull();
             _store.Sessions.Should().BeEmpty();
@@ -200,7 +203,7 @@ namespace TimeForCode.Frontend.Bff.Tests
         {
             var session = (await _sut.FindSessionAsync(await SignInAsync(), TestContext.CancellationToken))!;
 
-            var token = await _sut.GetAccessTokenAsync(session, TestContext.CancellationToken);
+            var token = await GetTokenAsync(session);
 
             token.Should().Be(FakeAuthorizationApi.JwtFor(1));
             _api.Refreshes.Should().BeEmpty();
@@ -212,7 +215,7 @@ namespace TimeForCode.Frontend.Bff.Tests
             var session = (await _sut.FindSessionAsync(await SignInAsync(), TestContext.CancellationToken))!;
             _time.Advance(TimeSpan.FromMinutes(16));
 
-            var token = await _sut.GetAccessTokenAsync(session, TestContext.CancellationToken);
+            var token = await GetTokenAsync(session);
 
             token.Should().Be(FakeAuthorizationApi.JwtFor(2));
             _api.Refreshes.Should().Equal("refresh-1");
@@ -225,7 +228,7 @@ namespace TimeForCode.Frontend.Bff.Tests
             var session = (await _sut.FindSessionAsync(await SignInAsync(), TestContext.CancellationToken))!;
             _time.Advance(TimeSpan.FromMinutes(15) - TimeSpan.FromSeconds(_options.RefreshSkewSeconds / 2));
 
-            await _sut.GetAccessTokenAsync(session, TestContext.CancellationToken);
+            await GetTokenAsync(session);
 
             _api.Refreshes.Should().HaveCount(1);
         }
@@ -240,7 +243,7 @@ namespace TimeForCode.Frontend.Bff.Tests
             var tokens = await Task.WhenAll(Enumerable.Range(0, 8).Select(async _ =>
             {
                 var session = (await _sut.FindSessionAsync(sessionId, TestContext.CancellationToken))!;
-                return await _sut.GetAccessTokenAsync(session, TestContext.CancellationToken);
+                return await GetTokenAsync(session);
             }));
 
             _api.Refreshes.Should().HaveCount(1, "a second use of a refresh token would be read as theft and revoke the user's tokens");
@@ -255,7 +258,7 @@ namespace TimeForCode.Frontend.Bff.Tests
             _time.Advance(TimeSpan.FromMinutes(16));
             _api.RejectRefresh = true;
 
-            var token = await _sut.GetAccessTokenAsync(session, TestContext.CancellationToken);
+            var token = await GetTokenAsync(session);
 
             token.Should().BeNull();
             (await _sut.FindSessionAsync(sessionId, TestContext.CancellationToken)).Should().BeNull();
@@ -278,7 +281,7 @@ namespace TimeForCode.Frontend.Bff.Tests
         {
             var session = (await _sut.FindSessionAsync(await SignInAsync(), TestContext.CancellationToken))!;
 
-            var profile = SessionService.ReadProfile(session);
+            var profile = SessionService.TryReadProfile(session)!;
 
             profile.UserId.Should().Be("user-1");
             profile.Login.Should().Be("octocat");

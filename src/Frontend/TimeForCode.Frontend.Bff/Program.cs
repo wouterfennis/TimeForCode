@@ -22,7 +22,11 @@ builder.Services.AddSingleton<ISessionStore, MongoSessionStore>();
 builder.Services.AddSingleton<SessionService>();
 // The address is read when the client is first used, not at start: the OpenAPI build step starts the host without configuration.
 builder.Services.AddHttpClient<IAuthorizationApi, AuthorizationApi>((provider, client) =>
-    client.BaseAddress = new Uri(provider.GetRequiredService<IOptions<AuthorizationOptions>>().Value.BaseAddress));
+{
+    client.BaseAddress = new Uri(provider.GetRequiredService<IOptions<AuthorizationOptions>>().Value.BaseAddress);
+    // Well below the 30 s refresh lease, so a slow refresh ends before another request can take the lease over.
+    client.Timeout = TimeSpan.FromSeconds(10);
+});
 builder.Services.AddReverseProxy()
     .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"))
     .AddTransforms(LocationRewrite.Add)
