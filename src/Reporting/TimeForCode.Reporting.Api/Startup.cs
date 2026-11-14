@@ -33,6 +33,7 @@ namespace TimeForCode.Reporting.Api
                     "Reporting API",
                     "API for the impact report and contribution history export of donor organizations"));
             services.AddDefaultControllers();
+            services.AddTrustedForwardedHeaders(_configuration);
 
             services.AddJwtBearerAuthentication(_configuration);
 

@@ -69,6 +69,10 @@ graph LR
 
 ---
 
+### Trusted proxy assumption
+
+Azure terminates TLS in front of the App Service container, so the API sees HTTP and the original scheme arrives in `X-Forwarded-Proto`. The API trusts those headers only from `ForwardedHeaders:KnownNetworks` (the `trustedProxyNetwork` parameter of `deploy/application.bicep`, default `169.254.0.0/16`, the App Service front-end network; verify it for the plan in use). The access token lifetime is set explicitly to 15 minutes in the same file. Details: [chapter 8](08-crosscutting-concepts.md#transport-and-browser-security-headers).
+
 ## Target Cloud Deployment (Azure)
 
 The full platform should eventually run on Azure with each service as an independent App Service container, a managed MongoDB instance, and secrets stored in Azure Key Vault.

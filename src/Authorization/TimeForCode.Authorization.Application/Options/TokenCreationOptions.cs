@@ -36,6 +36,24 @@ namespace TimeForCode.Authorization.Application.Options
         [Required]
         public required int DefaultRefreshTokenExpirationAfterInDays { get; init; }
 
+        /// <summary>
+        /// The longest access token lifetime in minutes. An issued access token cannot be revoked, so its lifetime is the exposure window.
+        /// </summary>
+        public const int MaximumTokenExpiresInMinutes = 15;
+
+        /// <summary>
+        /// Fails closed: throws when the access token lifetime is not between 1 and <see cref="MaximumTokenExpiresInMinutes"/> minutes,
+        /// so a missing value (0) or a long-lived token never reaches production by default.
+        /// </summary>
+        public void EnsureValidLifetime()
+        {
+            if (TokenExpiresInMinutes is < 1 or > MaximumTokenExpiresInMinutes)
+            {
+                throw new InvalidOperationException(
+                    $"{SectionName}:{nameof(TokenExpiresInMinutes)} must be between 1 and {MaximumTokenExpiresInMinutes} minutes, but is {TokenExpiresInMinutes}.");
+            }
+        }
+
         public static TokenCreationOptions Bind(IConfiguration configuration)
         {
             var tokenCreationOptions = new TokenCreationOptions

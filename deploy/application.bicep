@@ -5,6 +5,9 @@ param location string = 'WestEurope'
 @description('Base64 PKCS#12 certificate of the replaced signing key; set only while rotating, so its public key stays published.')
 param previousSigningCertificate string = ''
 
+@description('CIDR range of the App Service front end that terminates TLS and sets X-Forwarded-* headers. Only requests from this range may change the scheme, host and client address the API sees; adjust it to the plan'"'"'s actual front-end network.')
+param trustedProxyNetwork string = '169.254.0.0/16'
+
 var parameters = loadJsonContent('parameters.json')
 
 resource rgAuthApp 'Microsoft.Resources/resourceGroups@2021-04-01' = {
@@ -29,6 +32,10 @@ module apiAppServiceModule 'modules/appService.bicep' = {
       {
         name: 'ASPNETCORE_URLS'
         value: 'http://+:80'
+      }
+      {
+        name: 'ForwardedHeaders__KnownNetworks__0'
+        value: trustedProxyNetwork
       }
       {
         name: 'Logging__LogLevel__Default'
@@ -80,7 +87,7 @@ module apiAppServiceModule 'modules/appService.bicep' = {
       }
       {
         name: 'TokenCreationOptions__TokenExpiresInMinutes'
-        value: '60'
+        value: '15'
       }
       {
         name: 'TokenCreationOptions__DefaultRefreshTokenExpirationAfterInDays'

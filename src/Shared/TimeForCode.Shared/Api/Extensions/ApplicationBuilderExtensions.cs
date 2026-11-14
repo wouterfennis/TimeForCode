@@ -15,11 +15,14 @@ namespace TimeForCode.Shared.Api.Extensions
     public static class ApplicationBuilderExtensions
     {
         /// <summary>
-        /// Configures the standard API pipeline: exception page or HSTS, security headers,
+        /// Configures the standard API pipeline: forwarded headers from trusted proxies, exception page or HSTS, security headers,
         /// rate limiting, routing, authentication, authorisation, and mapped endpoints.
         /// </summary>
         public static IApplicationBuilder UseDefaultApiPipeline(this IApplicationBuilder app, IWebHostEnvironment env)
         {
+            // First, so the scheme and host that HSTS, redirects and cookies see are the original ones behind a proxy.
+            app.UseForwardedHeaders();
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
