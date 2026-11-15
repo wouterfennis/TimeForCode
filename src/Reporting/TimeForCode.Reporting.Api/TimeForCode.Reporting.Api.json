@@ -6,6 +6,510 @@
     "version": "v1"
   },
   "paths": {
+    "/api/v1/reporting/donororganization/{id}/badges": {
+      "get": {
+        "tags": [
+          "Badge"
+        ],
+        "summary": "Returns the badges of a donor organization (anonymous), awarding the ones it has newly earned.",
+        "description": "An organization is measured on the hours logged on its Active and Completed donations and earns the badges of the\r\ntiers with recipient type `Organization`.",
+        "operationId": "GetOrganizationBadges",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The donor organization identifier.",
+            "required": true,
+            "schema": {
+              "pattern": "^[0-9a-fA-F]{24}$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The badges of the organization; an empty list when none was earned.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadgesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The organization identifier is not a valid identifier.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The donor organization does not exist.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. Retry after the number of seconds given in the Retry-After header.",
+            "headers": {
+              "Retry-After": {
+                "description": "Number of seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "The badges could not be determined because of an unexpected error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "The Donation API could not be reached or answered with an error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reporting/contributor/{id}/badges": {
+      "get": {
+        "tags": [
+          "Badge"
+        ],
+        "summary": "Returns the badges of a contributor (anonymous), awarding the ones they have newly earned.",
+        "description": "A contributor is measured on the total hours they logged themselves and earns the badges of the tiers with recipient\r\ntype `Contributor`. Only badge names and award dates are exposed, no other personal data.",
+        "operationId": "GetContributorBadges",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The contributor identifier.",
+            "required": true,
+            "schema": {
+              "pattern": "^[0-9a-fA-F]{24}$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The badges of the contributor; an empty list when none was earned.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadgesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The contributor identifier is not a valid identifier.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The contributor does not exist.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. Retry after the number of seconds given in the Retry-After header.",
+            "headers": {
+              "Retry-After": {
+                "description": "Number of seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "The badges could not be determined because of an unexpected error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "The Donation API could not be reached or answered with an error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reporting/statistics": {
+      "get": {
+        "tags": [
+          "Badge"
+        ],
+        "summary": "Returns the public impact statistics (anonymous): the total hours logged and the number of donor organizations supported.",
+        "operationId": "GetPublicStatistics",
+        "responses": {
+          "200": {
+            "description": "The totals; zeros on a platform without logged hours.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicStatisticsResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. Retry after the number of seconds given in the Retry-After header.",
+            "headers": {
+              "Retry-After": {
+                "description": "Number of seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "The statistics could not be determined because of an unexpected error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "The Donation API could not be reached or answered with an error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reporting/badge-tier": {
+      "get": {
+        "tags": [
+          "Badge"
+        ],
+        "summary": "Returns the configured badge tiers (anonymous), so the thresholds can be shown next to the badges.",
+        "operationId": "GetBadgeTiers",
+        "parameters": [
+          {
+            "name": "recipientType",
+            "in": "query",
+            "description": "Only the tiers of this recipient type; all tiers when omitted.",
+            "schema": {
+              "$ref": "#/components/schemas/BadgeRecipientType"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The tiers; an empty list when none is configured.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadgeTiersResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The recipient type is not valid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. Retry after the number of seconds given in the Retry-After header.",
+            "headers": {
+              "Retry-After": {
+                "description": "Number of seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "The tiers could not be read because of an unexpected error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reporting/badge-tier/{recipientType}/{name}": {
+      "put": {
+        "tags": [
+          "Badge"
+        ],
+        "summary": "Defines a badge tier, or changes the threshold of the tier with the same recipient type and name (administrators only).",
+        "description": "Badges already awarded stay when a threshold is raised. A tier added or lowered is awarded to recipients who already\r\nqualify the next time their badges are requested.",
+        "operationId": "DefineBadgeTier",
+        "parameters": [
+          {
+            "name": "recipientType",
+            "in": "path",
+            "description": "Who the tier is for: `Organization` or `Contributor`.",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/BadgeRecipientType"
+            }
+          },
+          {
+            "name": "name",
+            "in": "path",
+            "description": "The tier name, 1 to 100 characters, unique per recipient type.",
+            "required": true,
+            "schema": {
+              "maxLength": 100,
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "The threshold.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DefineBadgeTierRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DefineBadgeTierRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/DefineBadgeTierRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "The tier as saved.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadgeTierResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The name is empty or longer than 100 characters, or the threshold is not a positive number of hours.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The access token is missing, invalid or expired.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The caller is not an administrator.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Another tier of the recipient type already has the threshold.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "The tier could not be saved because of an unexpected error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. Retry after the number of seconds given in the Retry-After header.",
+            "headers": {
+              "Retry-After": {
+                "description": "Number of seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Badge"
+        ],
+        "summary": "Removes a badge tier (administrators only). Badges already awarded for it stay.",
+        "operationId": "RemoveBadgeTier",
+        "parameters": [
+          {
+            "name": "recipientType",
+            "in": "path",
+            "description": "Who the tier is for: `Organization` or `Contributor`.",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/BadgeRecipientType"
+            }
+          },
+          {
+            "name": "name",
+            "in": "path",
+            "description": "The tier name.",
+            "required": true,
+            "schema": {
+              "maxLength": 100,
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "The tier was removed.",
+            "content": {
+              "application/json": { }
+            }
+          },
+          "401": {
+            "description": "The access token is missing, invalid or expired.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The caller is not an administrator.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "There is no such tier.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "The tier could not be removed because of an unexpected error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. Retry after the number of seconds given in the Retry-After header.",
+            "headers": {
+              "Retry-After": {
+                "description": "Number of seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/reporting/project/{id}/donation-report": {
       "get": {
         "tags": [
@@ -421,6 +925,93 @@
   },
   "components": {
     "schemas": {
+      "BadgeRecipientType": {
+        "enum": [
+          "Organization",
+          "Contributor"
+        ],
+        "type": "string",
+        "description": "Who a badge tier is meant for; each recipient type has its own, independent set of tiers."
+      },
+      "BadgeResponse": {
+        "required": [
+          "name",
+          "awardedAt"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The name of the tier the badge was awarded for."
+          },
+          "awardedAt": {
+            "type": "string",
+            "description": "When the badge was awarded (UTC).",
+            "format": "date-time"
+          }
+        },
+        "description": "One badge."
+      },
+      "BadgesResponse": {
+        "required": [
+          "badges"
+        ],
+        "type": "object",
+        "properties": {
+          "badges": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BadgeResponse"
+            },
+            "description": "The badges, earliest award first; empty when none was earned."
+          }
+        },
+        "description": "The badges a donor organization or a contributor holds. Public: only names and award dates, no personal data."
+      },
+      "BadgeTierResponse": {
+        "required": [
+          "name",
+          "recipientType",
+          "thresholdHours"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The tier name, unique per recipient type."
+          },
+          "recipientType": {
+            "description": "Who the tier is for: `Organization` or `Contributor`.",
+            "$ref": "#/components/schemas/BadgeRecipientType"
+          },
+          "thresholdHours": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The hours that must be logged to earn the badge, unique per recipient type.",
+            "format": "int32"
+          }
+        },
+        "description": "One badge tier."
+      },
+      "BadgeTiersResponse": {
+        "required": [
+          "tiers"
+        ],
+        "type": "object",
+        "properties": {
+          "tiers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BadgeTierResponse"
+            },
+            "description": "The tiers, grouped by recipient type and ordered by threshold."
+          }
+        },
+        "description": "The configured badge tiers."
+      },
       "ContributionHistoryItemResponse": {
         "required": [
           "id",
@@ -482,6 +1073,24 @@
           }
         },
         "description": "The JSON shape of the contribution history export. The CSV export has the same values in the columns\r\nContributionId, ProjectId, ContributorLogin, Hours, GithubReference and LoggedAt."
+      },
+      "DefineBadgeTierRequest": {
+        "required": [
+          "thresholdHours"
+        ],
+        "type": "object",
+        "properties": {
+          "thresholdHours": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The hours that must be logged to earn the badge; a positive number not used by another tier of the recipient type.",
+            "format": "int32"
+          }
+        },
+        "description": "The body for defining a badge tier."
       },
       "DonationStatus": {
         "enum": [
@@ -868,10 +1477,41 @@
           }
         },
         "description": "The aggregate totals of a project. Holds no personal data: no names, logins or identifiers of donors or contributors."
+      },
+      "PublicStatisticsResponse": {
+        "required": [
+          "totalHoursLogged",
+          "organizationsSupported"
+        ],
+        "type": "object",
+        "properties": {
+          "totalHoursLogged": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The hours logged on the Active and Completed donations of all donor organizations.",
+            "format": "int64"
+          },
+          "organizationsSupported": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The number of donor organizations with an Active or Completed donation.",
+            "format": "int32"
+          }
+        },
+        "description": "Platform-wide impact totals; no personal data."
       }
     }
   },
   "tags": [
+    {
+      "name": "Badge"
+    },
     {
       "name": "ProjectReporting"
     },

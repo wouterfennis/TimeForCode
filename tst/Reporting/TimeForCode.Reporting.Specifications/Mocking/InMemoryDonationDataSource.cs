@@ -119,6 +119,38 @@ namespace TimeForCode.Reporting.Specifications.Mocking
             return Task.FromResult(ReadProject(projectId, p => p.Contributions));
         }
 
+        /// <summary>Like the public hours read of the Donation context: not found for an unknown organization, otherwise the hours logged on its Active and Completed donations.</summary>
+        public Task<Result<int>> GetOrganizationHoursAsync(string donorOrganizationId, CancellationToken cancellationToken)
+        {
+            return Task.FromResult(_organizations.TryGetValue(donorOrganizationId, out Organization? organization)
+                ? Result<int>.Success(CountedHours(organization))
+                : Result<int>.Failure("Donor organization not found.", HttpStatusCode.NotFound));
+        }
+
+        /// <summary>Like the public hours read of the Donation context: a contributor exists once they logged hours; the hours add up over every project.</summary>
+        public Task<Result<int>> GetContributorHoursAsync(string contributorId, CancellationToken cancellationToken)
+        {
+            List<ProjectContribution> contributions = _projects.Values
+                .SelectMany(p => p.Contributions)
+                .Where(c => c.ContributorId == contributorId)
+                .ToList();
+
+            return Task.FromResult(contributions.Count > 0
+                ? Result<int>.Success(contributions.Sum(c => c.Hours))
+                : Result<int>.Failure("Contributor not found.", HttpStatusCode.NotFound));
+        }
+
+        public Task<Result<PlatformStatistics>> GetPlatformStatisticsAsync(CancellationToken cancellationToken)
+        {
+            List<Organization> supported = _organizations.Values.Where(o => CountedDonations(o).Any()).ToList();
+            return Task.FromResult(Result<PlatformStatistics>.Success(new PlatformStatistics(supported.Sum(CountedHours), supported.Count)));
+        }
+
+        private static IEnumerable<OrganizationDonation> CountedDonations(Organization organization) =>
+            organization.Donations.Where(d => d.Status is DonationStatus.Active or DonationStatus.Completed);
+
+        private static int CountedHours(Organization organization) => CountedDonations(organization).Sum(d => d.HoursLogged);
+
         private Result<IReadOnlyList<T>> ReadProject<T>(string projectId, Func<Project, List<T>> select)
         {
             return _projects.TryGetValue(projectId, out Project? project)
