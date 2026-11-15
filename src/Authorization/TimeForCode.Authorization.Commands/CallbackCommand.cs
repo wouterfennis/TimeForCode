@@ -2,7 +2,7 @@ using MediatR;
 
 namespace TimeForCode.Authorization.Commands
 {
-    public class CallbackCommand : IRequest<Result<TokenResult>>
+    public class CallbackCommand : IRequest<Result<CallbackResult>>
     {
         public required string Code { get; init; }
 

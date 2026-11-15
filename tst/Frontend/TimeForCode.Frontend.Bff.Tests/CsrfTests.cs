@@ -44,7 +44,7 @@ namespace TimeForCode.Frontend.Bff.Tests
         [DataRow("DELETE")]
         public async Task StateChangingRequest_WithoutTheCsrfHeader_NeverReachesTheApi(string method)
         {
-            using var request = new HttpRequestMessage(new HttpMethod(method), "/api/auth/v1/authentication/session/logout");
+            using var request = new HttpRequestMessage(new HttpMethod(method), "/api/donation/v1/Project");
 
             await _browser.SendAsync(request, TestContext.CancellationToken);
 

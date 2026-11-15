@@ -21,6 +21,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
 
         private readonly HttpClient _defaultClient;
         private readonly CookieContainer _cookieContainer;
+        private readonly SessionContext _session;
         private readonly ScenarioInfrastructure _infrastructure;
         private readonly Dictionary<string, string?> _settings = new() { ["TokenCreationOptions:TokenExpiresInMinutes"] = "15" };
         private string _environment = "Development";
@@ -32,10 +33,11 @@ namespace TimeForCode.Authorization.Specifications.Steps
         private string? _heldToken;
         private List<JwkResponse> _publishedKeys = [];
 
-        public SigningKeySteps(HttpClient defaultClient, CookieContainer cookieContainer, ScenarioInfrastructure infrastructure)
+        public SigningKeySteps(HttpClient defaultClient, CookieContainer cookieContainer, ScenarioInfrastructure infrastructure, SessionContext session)
         {
             _defaultClient = defaultClient;
             _cookieContainer = cookieContainer;
+            _session = session;
             _infrastructure = infrastructure;
         }
 
@@ -218,11 +220,8 @@ namespace TimeForCode.Authorization.Specifications.Steps
 
         private string? ReadIssuedKeyId()
         {
-            var cookie = _cookieContainer.GetAllCookies()[CookieConstants.TokenKey];
-            cookie.Should().NotBeNull();
-
-            var accessToken = JsonSerializer.Deserialize<AccessToken>(HttpUtility.UrlDecode(cookie!.Value))!;
-            return new JwtSecurityTokenHandler().ReadJwtToken(accessToken.Token).Header.Kid;
+            _session.Tokens.Should().NotBeNull("the issued token comes from the code exchange");
+            return new JwtSecurityTokenHandler().ReadJwtToken(_session.Tokens!.AccessToken.Token).Header.Kid;
         }
     }
 }

@@ -29,13 +29,20 @@ namespace TimeForCode.Authorization.Specifications.Steps
         [When("The user logs in at the time for code platform")]
         public async Task WhenTheUserLogsInAtTheTimeForCodePlatformAsync()
         {
-            _result = await _authClient.TryLoginAsync(IdentityProvider.Github, new Uri("http://localhost:8084"));
+            _result = await _authClient.TryLoginAsync(IdentityProvider.Github, new Uri("http://localhost:8084"), Constants.ClientCodeChallenge);
         }
 
         [When("The user logs in at the time for code platform with an invalid redirect url")]
         public async Task WhenTheUserLogsInAtTheTimeForCodePlatformWithAnInvalidRedirectUrlAsync()
         {
-            _result = await _authClient.TryLoginAsync(IdentityProvider.Github, new Uri("http://invalid-uri.com"));
+            _result = await _authClient.TryLoginAsync(IdentityProvider.Github, new Uri("http://invalid-uri.com"), Constants.ClientCodeChallenge);
+            _session.LastException = _result.Exception;
+        }
+
+        [When("The user logs in at the time for code platform with a malformed code challenge")]
+        public async Task WhenTheUserLogsInAtTheTimeForCodePlatformWithAMalformedCodeChallengeAsync()
+        {
+            _result = await _authClient.TryLoginAsync(IdentityProvider.Github, new Uri("http://localhost:8084"), "not-a-challenge");
             _session.LastException = _result.Exception;
         }
 

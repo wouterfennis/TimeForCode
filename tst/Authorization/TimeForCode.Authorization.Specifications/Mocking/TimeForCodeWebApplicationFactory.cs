@@ -34,6 +34,7 @@ namespace TimeForCode.Authorization.Specifications.Mocking
                     typeof(IRandomGenerator),
                     typeof(IMongoDbContext),
                     typeof(IStateRepository),
+                    typeof(ILoginCodeRepository),
                     typeof(TimeProvider),
                     typeof(IAccountInformationRepository),
                     typeof(IRefreshTokenRepository),
@@ -65,6 +66,7 @@ namespace TimeForCode.Authorization.Specifications.Mocking
                     .Returns(Constants.CodeVerifier);
 
                 services.TryAddSingleton<IStateRepository>(_infrastructure.States);
+                services.TryAddSingleton<ILoginCodeRepository>(_infrastructure.LoginCodes);
                 services.TryAddSingleton<TimeProvider>(_infrastructure.Time);
 
                 var mockHttp = _infrastructure.MockHttp;

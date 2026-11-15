@@ -1,7 +1,7 @@
 # ADR-005 — Store tokens in HttpOnly cookies, not localStorage
 
 **Date**: 2025
-**Status**: Accepted
+**Status**: Accepted; the cookie design is superseded by [ADR-019](0019-browser-session-in-the-bff.md)
 
 ## Context
 
@@ -26,3 +26,7 @@ Three places undid the `HttpOnly` protection and are closed:
 - The BFF forwards no `Cookie` header to the Donation API and only the `RefreshToken` cookie to the Authorization API. It turns the `AccessToken` cookie into the bearer header.
 
 Under [ADR-014](0014-no-backwards-compatibility-before-release.md) the refresh and logout routes moved in place to `.../authentication/session/refresh` and `.../session/logout`; existing sessions' refresh cookies (path `/`) are not sent to the new routes, so every user signs in again once (data reset). A corrupt refresh cookie counts as none: refresh answers `400`, logout `204`. The follow-up #194 moves the session to the BFF and removes this cookie code from the Authorization API.
+
+## Superseded (2026-11-14, #194)
+
+[ADR-019](0019-browser-session-in-the-bff.md) moves the browser session to the BFF. The Authorization API no longer sets or reads token cookies for the GitHub sign-in, so the cookie design and the #193 amendment above no longer apply: refresh and logout are back at `.../authentication/refresh` and `.../logout`, take the refresh token in the body, and the cookie path setting only remains for the admin passkey login until #196. The goal of this ADR stands: no token is readable by script.

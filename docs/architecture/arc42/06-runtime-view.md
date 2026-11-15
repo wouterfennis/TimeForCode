@@ -15,47 +15,76 @@ This is the current, fully implemented authentication flow. See [authentication 
 ```mermaid
 sequenceDiagram
     participant Browser
-    participant Frontend
+    participant BFF as Front-end BFF
     participant AuthAPI as Authorization API
     participant GitHub
 
-    Browser->>Frontend: GET / (unauthenticated)
-    Frontend-->>Browser: Login page
-    Browser->>Frontend: Click "Sign in with GitHub"
-    Frontend->>AuthAPI: GET /api/v1/authentication/login
-    AuthAPI-->>Browser: 302 Redirect to GitHub (with state, client_id; no scope, so public profile access only)
-    Browser->>GitHub: GET /login/oauth/authorize
-    GitHub-->>Browser: GitHub login & consent page
-    Browser->>GitHub: User approves
-    GitHub-->>AuthAPI: GET /api/v1/authentication/callback?code=...&state=...
-    AuthAPI->>GitHub: POST /login/oauth/access_token (exchange code)
-    GitHub-->>AuthAPI: External access token
-    AuthAPI->>GitHub: GET /user (fetch profile)
-    GitHub-->>AuthAPI: User profile (id, login, email)
-    AuthAPI->>AuthAPI: Discard the GitHub token; link GitHub account to internal user
-    AuthAPI->>AuthAPI: Issue internal JWT + refresh token
-    AuthAPI-->>Browser: 302 Redirect to Frontend (set HttpOnly cookies)
-    Browser->>Frontend: GET / (authenticated, JWT cookie present)
+    Browser->>BFF: GET / (unauthenticated), then GET /bff/session
+    BFF-->>Browser: SPA, and 401: show "Sign in"
+    Browser->>BFF: GET /bff/login?returnUrl=/projects
+    BFF-->>Browser: 302 to the Authorization API login (PKCE challenge; verifier kept server-side), Set-Cookie __Host-login
+    Browser->>AuthAPI: GET /api/v1/authentication/login?...&CodeChallenge=...
+    AuthAPI-->>Browser: 302 Redirect to GitHub (state, client_id, own PKCE challenge; no scope, so public profile access only)
+    Browser->>GitHub: GET /login/oauth/authorize, user approves
+    GitHub-->>Browser: 302 to /api/v1/authentication/callback?code=...&state=...
+    Browser->>AuthAPI: GET callback
+    AuthAPI->>GitHub: POST /login/oauth/access_token (exchange code), GET /user
+    GitHub-->>AuthAPI: External access token, profile
+    AuthAPI->>AuthAPI: Discard the GitHub token; link GitHub account to internal user; store hash of a one-time code
+    AuthAPI-->>Browser: 302 to /bff/callback?code=<one-time code>
+    Browser->>BFF: GET /bff/callback?code=... (with __Host-login)
+    BFF->>AuthAPI: POST /api/v1/authentication/token {code, codeVerifier}
+    AuthAPI-->>BFF: access token + refresh token
+    BFF->>BFF: Open the session (tokens stay server-side)
+    BFF-->>Browser: 302 to /projects, Set-Cookie __Host-session (opaque)
 ```
+
+The full sequence, the cookie and token table and the front-end guide are in [Authentication flow](../../authentication/authentication_flow_design.md).
 
 ---
 
 ## Scenario 2 — Token Refresh
 
-When the access token expires, the Frontend obtains a new one transparently.
+The BFF refreshes an expired access token itself; the SPA and the browser notice nothing.
 
 ```mermaid
 sequenceDiagram
-    participant Frontend
+    participant Browser
+    participant BFF as Front-end BFF
     participant AuthAPI as Authorization API
+    participant API as Donation API
 
-    Frontend->>AuthAPI: POST /api/v1/authentication/session/refresh (refresh token cookie)
+    Browser->>BFF: GET /api/donation/... (session cookie)
+    BFF->>BFF: Access token expires within 30 s? Take the refresh lease of the session
+    BFF->>AuthAPI: POST /api/v1/authentication/refresh {refresh token}
     AuthAPI->>AuthAPI: Validate refresh token (expiry, hash lookup, rotated?)
     AuthAPI->>AuthAPI: Issue new access token + rotate refresh token (user or admin scope)
-    AuthAPI-->>Frontend: 200 OK (new HttpOnly cookies set)
+    AuthAPI-->>BFF: 200 OK (both tokens in the body)
+    BFF->>API: forward with Authorization: Bearer (no Cookie header)
+    API-->>BFF: response
+    BFF-->>Browser: response (no new cookie)
 ```
 
-The Frontend does not need to re-direct the user; the `CookieAuthorizationHandler` in the Shared layer intercepts 401 responses and triggers the refresh automatically.
+Parallel requests wait for the one that holds the lease: a refresh token used twice is treated as stolen and revokes all tokens of the user. A rejected refresh token ends the session and the next call is a `401`.
+
+---
+
+## Scenario 2a — Sign Out
+
+```mermaid
+sequenceDiagram
+    participant Browser
+    participant BFF as Front-end BFF
+    participant AuthAPI as Authorization API
+
+    Browser->>BFF: POST /bff/logout (session cookie, X-Requested-With, Origin)
+    BFF->>AuthAPI: POST /api/v1/authentication/logout {refresh token}
+    AuthAPI-->>BFF: 204 No Content (refresh token deleted)
+    BFF->>BFF: Delete the session
+    BFF-->>Browser: 204 No Content (session cookie cleared)
+```
+
+A request without the header or from another origin is `403` and changes nothing. An access token that was already issued stays valid until it expires, at most 15 minutes.
 
 ---
 
@@ -69,12 +98,12 @@ sequenceDiagram
     participant AuthAPI as Authorization API
     participant DonationAPI as Donation API
 
-    Website->>AuthAPI: DELETE /api/v1/user (access token)
+    Website->>AuthAPI: DELETE /api/v1/user (bearer access token)
     AuthAPI->>DonationAPI: POST /api/v1/contributor/{userId}/anonymise (service token)
     DonationAPI->>DonationAPI: Replace contributions identity, then contributor
     DonationAPI-->>AuthAPI: 204 No Content
     AuthAPI->>AuthAPI: Delete refresh tokens, then the account
-    AuthAPI-->>Website: 204 No Content (token cookies expired)
+    AuthAPI-->>Website: 204 No Content
 ```
 
 When the Donation API fails, the Authorization API answers 502 and removes nothing. See [personal data](../../reference/personal-data.md).

@@ -19,7 +19,7 @@ This document maps every target platform capability against its current implemen
 | GitHub OAuth 2.0 login | ✅ | ✅ | None |
 | Internal JWT (RS256) | ✅ | ✅ | None |
 | Refresh token rotation | ✅ | ✅ | None |
-| Secure cookie storage | ✅ | ✅ | None |
+| Browser session without tokens in the browser | ✅ | ✅ | None |
 | Logout | ✅ | ✅ | None |
 | User account creation | ✅ | ✅ | None |
 | Additional OAuth providers | ❌ | ⚠️ Should | Architecture supports it; not configured |

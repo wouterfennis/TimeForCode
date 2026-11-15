@@ -122,6 +122,7 @@ namespace TimeForCode.Authorization.Application.Tests.Services
                 Key = "state",
                 IdentityProvider = IdentityProvider.Github,
                 RedirectUri = new Uri("https://localhost/"),
+                ClientCodeChallenge = "client-challenge",
                 CodeVerifier = "verifier",
                 ExpiresAfter = DateTimeOffset.UtcNow.AddMinutes(10)
             };

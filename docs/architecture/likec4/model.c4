@@ -100,7 +100,7 @@ model {
     }
 
     bff = container 'Backend for frontend' {
-      description 'Same-origin host: serves the SPA build with the security headers, forwards /api/auth/* and /api/donation/* with YARP, turns the HttpOnly access-token cookie into a bearer token and checks the CSRF header (src/Frontend/TimeForCode.Frontend.Bff, ADR-012)'
+      description 'Same-origin host: serves the SPA build with the security headers, holds the browser session (opaque __Host-session cookie, tokens server-side in MongoDB, silent refresh), runs sign-in, session status and sign-out under /bff, forwards /api/donation/* and /api/auth/v1/user* with YARP and adds the bearer token (src/Frontend/TimeForCode.Frontend.Bff, ADR-012, ADR-019)'
       technology 'ASP.NET Core, YARP'
     }
 
@@ -450,22 +450,16 @@ model {
       validationBehaviour = component 'ValidationBehaviour' {
         description 'MediatR pipeline behaviour that runs the FluentValidation validators before a handler'
       }
-      cookieHandler = component 'CookieAuthorizationHandler' {
-        description 'Reads the access token cookie and attaches it as bearer token on outgoing calls'
-      }
-      refreshForwarding = component 'RefreshTokenForwardingHandler' {
-        description 'Forwards the refresh token cookie of the incoming request to the Authorization API'
-      }
     }
 
     // Containers
     bff -> frontend 'serves the build of'
     frontend -> bff 'calls the APIs through (same origin, /api/*)' 'HTTPS'
-    bff -> authorization 'forwards /api/auth/* with the cookies and the bearer token from the cookie' 'HTTPS, cookies'
-    bff -> donation 'REST with bearer token from the cookie' 'HTTPS'
+    bff -> authorization 'forwards /api/auth/v1/user* with the bearer token; exchanges the one-time code, refreshes and revokes tokens' 'HTTPS'
+    bff -> donation 'REST with the bearer token of the session' 'HTTPS'
     authorization -> donation 'anonymises contributor on account deletion' 'HTTPS, service token'
     donation -> authorization 'fetches the signing keys (OpenID configuration, JWKS)' 'HTTPS'
-    bff -> reporting 'REST with bearer token from the cookie (proposed, no route yet)' 'HTTPS'
+    bff -> reporting 'REST with the bearer token of the session (proposed, no route yet)' 'HTTPS'
     reporting -> donation 'reads donations and contributions with the bearer token of the caller' 'HTTPS'
     reporting -> authorization 'fetches the signing keys (OpenID configuration, JWKS)' 'HTTPS'
     authorization -> shared 'uses'
@@ -518,8 +512,6 @@ model {
   timeforcode.shared.defaultPipeline -> timeforcode.shared.securityHeaders 'adds'
   timeforcode.authorization.authApplication -> timeforcode.shared.validationBehaviour 'runs handlers through'
   timeforcode.donation.donationApplication -> timeforcode.shared.validationBehaviour 'runs handlers through'
-  timeforcode.authorization.authInfrastructure -> timeforcode.shared.cookieHandler 'forwards the access token with'
-  timeforcode.authorization.authApi -> timeforcode.shared.refreshForwarding 'forwards the refresh cookie with'
 
   // Delivery
   developer -> githubActions 'pushes, opens pull requests' 'HTTPS'

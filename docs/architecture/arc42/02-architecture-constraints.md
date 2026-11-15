@@ -28,7 +28,7 @@ This section lists all constraints that are not negotiable. They must be respect
 | Each bounded context must follow Domain → Application → Infrastructure → API layering | Enforced by Architecture.Tests in each context; prevents circular dependencies. |
 | Architecture tests are mandatory for every new bounded context | Prevents layering violations from silently accumulating. |
 | Only the Authorization API may issue tokens | All other services validate tokens; none of them sign or issue new ones. |
-| Tokens must be stored in HttpOnly, Secure cookies on the browser | Prevents XSS-based token theft. |
+| No token reaches the browser; it holds one opaque HttpOnly, Secure session cookie that the BFF issues | Prevents XSS-based token theft. |
 | Secrets must not be committed to source control | GitHub Actions secrets and Azure Key Vault should be used in all non-local environments. |
 | Redirect URIs must be explicitly allowlisted | Prevents open redirect attacks in the OAuth 2.0 flow. |
 

@@ -54,53 +54,7 @@ namespace TimeForCode.Frontend.Bff.Tests
         }
 
         [TestMethod]
-        public async Task Get_DonationRouteWithCookies_ForwardsNoCookieHeader()
-        {
-            using var request = new HttpRequestMessage(HttpMethod.Get, "/api/donation/v1/Project");
-            request.Headers.Add("Cookie", "AccessToken=a; RefreshToken=r; Other=o");
-
-            await _browser.SendAsync(request, TestContext.CancellationToken);
-
-            _factory.Upstream.Requests.Should().ContainSingle().Which.Headers.Should().NotContainKey("Cookie");
-        }
-
-        [TestMethod]
-        public async Task Get_AuthRouteWithCookies_ForwardsOnlyTheRefreshTokenCookie()
-        {
-            using var request = new HttpRequestMessage(HttpMethod.Get, "/api/auth/v1/user");
-            request.Headers.Add("Cookie", "AccessToken=a; RefreshToken=refresh-value; Other=o");
-
-            await _browser.SendAsync(request, TestContext.CancellationToken);
-
-            _factory.Upstream.Requests.Should().ContainSingle().Which.Headers["Cookie"].Should().Be("RefreshToken=refresh-value");
-        }
-
-        [TestMethod]
-        public async Task Get_AuthRouteWithoutARefreshTokenCookie_ForwardsNoCookieHeader()
-        {
-            using var request = new HttpRequestMessage(HttpMethod.Get, "/api/auth/v1/user");
-            request.Headers.Add("Cookie", "AccessToken=a; Other=o");
-
-            await _browser.SendAsync(request, TestContext.CancellationToken);
-
-            _factory.Upstream.Requests.Should().ContainSingle().Which.Headers.Should().NotContainKey("Cookie");
-        }
-
-        [TestMethod]
-        public async Task Get_AuthRouteWithAnEncodedJsonRefreshTokenCookie_ForwardsTheValueAsTheApiWroteIt()
-        {
-            var value = Uri.EscapeDataString("{\"Token\":\"abc\",\"ExpiresAfter\":\"2030-01-01T00:00:00+00:00\"}");
-            using var request = new HttpRequestMessage(HttpMethod.Post, "/api/auth/v1/Authentication/session/refresh");
-            request.Headers.Add("Cookie", $"RefreshToken={value}");
-            request.Headers.Add("X-Requested-With", "XMLHttpRequest");
-
-            await _browser.SendAsync(request, TestContext.CancellationToken);
-
-            _factory.Upstream.Requests.Should().ContainSingle().Which.Headers["Cookie"].Should().Be($"RefreshToken={value}");
-        }
-
-        [TestMethod]
-        public async Task Get_ApiSetsACookie_SetCookieReachesTheBrowser()
+        public async Task Get_ApiSetsACookie_TheBrowserNeverGetsIt()
         {
             _factory.Upstream.Respond = () =>
             {
@@ -109,17 +63,14 @@ namespace TimeForCode.Frontend.Bff.Tests
                 return response;
             };
 
-            var response = await _browser.GetAsync("/api/auth/v1/authentication/callback", TestContext.CancellationToken);
+            var response = await _browser.GetAsync("/api/auth/v1/user", TestContext.CancellationToken);
 
-            response.Headers.GetValues("Set-Cookie").Should().ContainSingle()
-                .Which.Should().Be("AccessToken=value; path=/; secure; samesite=strict; httponly");
+            response.Headers.Contains("Set-Cookie").Should().BeFalse("the browser holds only the session cookie of the BFF");
         }
 
         [TestMethod]
         [DataRow("/api/donation/v1/Project", "http://donation-api:8080/api/v1/Project/42", "/api/donation/v1/Project/42")]
         [DataRow("/api/auth/v1/user", "http://authorization-api:8080/api/v1/user", "/api/auth/v1/user")]
-        [DataRow("/api/auth/v1/authentication/login", "http://localhost:8081/login/oauth/authorize?client_id=test", "http://localhost:8081/login/oauth/authorize?client_id=test")]
-        [DataRow("/api/auth/v1/authentication/callback", "http://localhost:8084/", "http://localhost:8084/")]
         public async Task Get_ApiAnswersWithALocation_OnlyTheApisOwnPathsPointAtTheRoute(string path, string location, string expectedLocation)
         {
             _factory.Upstream.Respond = () =>

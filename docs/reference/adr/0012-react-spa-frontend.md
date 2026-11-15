@@ -2,7 +2,7 @@
 
 **Date**: 2026-10-06
 **Status**: Proposed
-**Amended**: 2026-10-21 (nginx serves the SPA until the BFF arrives, see [Amendment](#amendment-2026-10-21-nginx-first-the-bff-with-sign-in)); 2026-11-08 (the BFF replaces nginx, see [Amendment](#amendment-2026-11-08-the-bff-replaces-nginx))
+**Amended**: 2026-11-14 (the browser session lives in the BFF, see [ADR-019](0019-browser-session-in-the-bff.md)); 2026-10-21 (nginx serves the SPA until the BFF arrives, see [Amendment](#amendment-2026-10-21-nginx-first-the-bff-with-sign-in)); 2026-11-08 (the BFF replaces nginx, see [Amendment](#amendment-2026-11-08-the-bff-replaces-nginx))
 
 ## Context
 
@@ -69,3 +69,7 @@ Decided in [#182](https://github.com/wouterfennis/TimeForCode/issues/182), split
 - Update Arc42 section 04 (frontend row), 05 (building blocks), 07 (deployment), 09 (index), and 11 (risks).
 - Update ADR-005 consequences with the CSRF approach.
 - Update `docs/current/overview.md` at cutover.
+
+## Amendment (2026-11-14): the BFF holds the session
+
+The BFF no longer turns token cookies into a bearer header. It keeps the tokens server-side behind one opaque `__Host-session` cookie, runs the sign-in with a PKCE-bound one-time code, refreshes tokens itself and exposes `/bff/login`, `/bff/callback`, `/bff/session` and `/bff/logout`. Only the user endpoints of the Authorization API stay reachable through it. Decision and trade-offs: [ADR-019](0019-browser-session-in-the-bff.md).

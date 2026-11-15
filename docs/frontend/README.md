@@ -25,7 +25,7 @@ This folder is the starting point for building the new TimeForCode front-end. It
 ## Key terms
 
 - **SPA (single-page application)**: a website that loads once in the browser and then updates the page with JavaScript, fetching data from APIs instead of requesting a new HTML page for each navigation.
-- **BFF (backend for frontend)**: a small server that exists only to serve one front-end. Here it serves the SPA files and forwards the browser's API calls to the Authorization and Donation APIs, turning the HttpOnly login cookie into the bearer token those APIs expect. The browser therefore never handles tokens. See [Technical Architecture](architecture.md#authentication-and-the-bff).
+- **BFF (backend for frontend)**: a small server that exists only to serve one front-end. Here it serves the SPA files and holds the session and forwards the browser API calls to the Authorization and Donation APIs with the bearer token those APIs expect. The browser therefore never handles tokens. See [Technical Architecture](architecture.md#authentication-and-the-bff).
 
 Both terms are also in the [glossary](../reference/glossary.md).
 

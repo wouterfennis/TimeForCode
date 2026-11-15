@@ -45,7 +45,7 @@ graph LR
 
 | ID | Scenario | Stimulus | Expected Response | Acceptance Criterion |
 | --- | --- | --- | --- | --- |
-| SEC-Q1 | Token theft prevention | Attacker attempts to read token from browser storage | No token is stored in localStorage or sessionStorage | All tokens stored exclusively in HttpOnly cookies; confirmed by security review |
+| SEC-Q1 | Token theft prevention | Attacker attempts to read token from browser storage, a cookie or a response | No token is stored in localStorage, sessionStorage, a cookie or a response body | Tokens exist only server-side in the BFF session; the browser holds one opaque HttpOnly cookie; a BFF test and the smoke test check that no token appears in a cookie, header or body |
 | SEC-Q2 | CSRF protection in OAuth flow | Attacker attempts to replay a stolen authorization callback | State mismatch causes the callback to be rejected with 400 | State is validated on every callback; unit test confirms rejection |
 | SEC-Q3 | Expired token rejected | A request is made with a JWT that expired 1 minute ago | 401 Unauthorized returned | All API endpoints return 401 for expired tokens; verified by integration tests |
 | SEC-Q4 | Wrong audience rejected | A token issued for the Donation API is presented to the Authorization API | 401 Unauthorized returned | Audience validation enforced by each service independently |

@@ -125,20 +125,20 @@ views {
     timeforcode.authorization.authApplication.accountService -> timeforcode.authorization.authInfrastructure.accountRepository 'save account'
     timeforcode.authorization.authInfrastructure.accountRepository -> mongodb.authDb 'persist'
     timeforcode.authorization.authApplication.authHandlers -> timeforcode.authorization.authApplication.refreshTokenService 'create the refresh token'
-    timeforcode.authorization.authApi.authController -> donor '302 to client, HttpOnly JWT and refresh cookies'
+    timeforcode.authorization.authApi.authController -> donor '302 to the client with a one-time code (no token, no cookie)'
   }
 
   dynamic view tokenRefresh {
     title 'Scenario 2: Token refresh'
     description 'Runtime scenario 2 in 06-runtime-view.md'
 
-    donor -> timeforcode.authorization.authApi.authController 'POST /api/v1/authentication/session/refresh (refresh cookie)'
+    donor -> timeforcode.authorization.authApi.authController 'POST /api/v1/authentication/refresh (refresh token in the body, from the BFF)'
     timeforcode.authorization.authApi.authController -> timeforcode.authorization.authApplication.authHandlers 'dispatch refresh command'
     timeforcode.authorization.authApplication.authHandlers -> timeforcode.authorization.authApplication.refreshTokenService 'validate and replace the refresh token'
     timeforcode.authorization.authApplication.refreshTokenService -> timeforcode.authorization.authInfrastructure.refreshTokenRepository 'look up the hash, store the replacement'
     timeforcode.authorization.authInfrastructure.refreshTokenRepository -> mongodb.authDb 'persist'
     timeforcode.authorization.authApplication.authHandlers -> timeforcode.authorization.authApplication.tokenService 'issue a new access token'
-    timeforcode.authorization.authApi.authController -> donor '200, new HttpOnly cookies'
+    timeforcode.authorization.authApi.authController -> donor '200, new tokens in the body'
   }
 
   dynamic view deleteAccount {
@@ -157,7 +157,7 @@ views {
     timeforcode.authorization.authApplication.authHandlers -> timeforcode.authorization.authInfrastructure.refreshTokenRepository 'delete the refresh tokens'
     timeforcode.authorization.authApplication.authHandlers -> timeforcode.authorization.authInfrastructure.accountRepository 'delete the account'
     timeforcode.authorization.authInfrastructure.accountRepository -> mongodb.authDb 'persist'
-    timeforcode.authorization.authApi.userController -> donor '204, token cookies expired'
+    timeforcode.authorization.authApi.userController -> donor '204'
   }
 
   dynamic view adminSignIn {

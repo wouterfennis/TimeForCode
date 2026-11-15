@@ -1,7 +1,11 @@
+using System.Buffers.Text;
 using System.Net;
 using System.Net.Http.Json;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Web;
 using TimeForCode.Shared.Api.Authentication.Models;
 
 namespace TimeForCode.Shared.Live
@@ -16,7 +20,6 @@ namespace TimeForCode.Shared.Live
         public const string ClientRedirectUriVariable = "TIMEFORCODE_LIVE_CLIENT_REDIRECT_URI";
 
         private const string DefaultClientRedirectUri = "http://localhost:8084"; // NOSONAR S1075: local compose frontend address, overridable via the environment variable
-        private const string AccessTokenCookie = "AccessToken";
 
         private static readonly TimeSpan RequestTimeout = TimeSpan.FromSeconds(30);
 
@@ -93,30 +96,33 @@ namespace TimeForCode.Shared.Live
             return builder.Uri;
         }
 
-        public static string ReadAccessToken(IEnumerable<string> setCookieHeaders)
+        /// <summary>A PKCE pair: the client keeps the verifier, the platform only sees its S256 challenge.</summary>
+        public static (string Verifier, string Challenge) CreatePkcePair()
         {
-            string prefix = AccessTokenCookie + "=";
-            string? value = setCookieHeaders
-                .Where(h => h.StartsWith(prefix, StringComparison.Ordinal))
-                .Select(h => h[prefix.Length..].Split(';')[0])
-                .FirstOrDefault(v => !string.IsNullOrWhiteSpace(v));
-
-            if (value is null)
-            {
-                throw new InvalidOperationException($"The sign-in callback did not set an {AccessTokenCookie} cookie with a value.");
-            }
-
-            return JsonSerializer.Deserialize<AccessToken>(Uri.UnescapeDataString(value), WebJsonOptions)!.Token;
+            string verifier = Base64Url.EncodeToString(RandomNumberGenerator.GetBytes(32));
+            string challenge = Base64Url.EncodeToString(SHA256.HashData(Encoding.ASCII.GetBytes(verifier)));
+            return (verifier, challenge);
         }
 
-        /// <summary>Logs in through the Authorization API and the mock identity provider, like a browser would.</summary>
+        /// <summary>Reads the single-use code from the redirect that follows a completed sign-in.</summary>
+        public static string ReadCode(Uri callbackRedirect)
+        {
+            string? code = HttpUtility.ParseQueryString(callbackRedirect.Query)["code"];
+
+            return string.IsNullOrWhiteSpace(code)
+                ? throw new InvalidOperationException("The sign-in callback did not redirect with a code.")
+                : code;
+        }
+
+        /// <summary>Logs in through the Authorization API and the mock identity provider, like the BFF does for a browser.</summary>
         public static async Task<string> SignInAsync(Uri authorizationAddress, Uri clientRedirectUri, string? persona = null)
         {
-            using var handler = new HttpClientHandler { AllowAutoRedirect = false, UseCookies = true };
+            using var handler = new HttpClientHandler { AllowAutoRedirect = false, UseCookies = false };
             using var client = new HttpClient(handler) { Timeout = RequestTimeout };
+            var (verifier, challenge) = CreatePkcePair();
 
             string loginUrl = new Uri(authorizationAddress, "api/v1/authentication/login").AbsoluteUri
-                + $"?IdentityProvider=Github&RedirectUri={Uri.EscapeDataString(clientRedirectUri.AbsoluteUri)}";
+                + $"?IdentityProvider=Github&RedirectUri={Uri.EscapeDataString(clientRedirectUri.AbsoluteUri)}&CodeChallenge={challenge}";
             Uri identityProviderUrl = AddPersona(await GetRedirectAsync(client, loginUrl), persona);
 
             string form = await client.GetStringAsync(identityProviderUrl);
@@ -138,13 +144,17 @@ namespace TimeForCode.Shared.Live
             Uri callbackUrl = RedirectTarget(confirmed, identityProviderUrl);
 
             using HttpResponseMessage callback = await client.GetAsync(callbackUrl);
-            if (!callback.Headers.TryGetValues("Set-Cookie", out IEnumerable<string>? cookies))
-            {
-                throw new InvalidOperationException($"The sign-in callback answered {(int)callback.StatusCode} without setting cookies.");
-            }
+            string code = ReadCode(RedirectTarget(callback, callbackUrl));
 
-            return ReadAccessToken(cookies);
+            using HttpResponseMessage exchange = await client.PostAsJsonAsync(
+                new Uri(authorizationAddress, "api/v1/authentication/token"), new { Code = code, CodeVerifier = verifier });
+            exchange.EnsureSuccessStatusCode();
+
+            var tokens = await exchange.Content.ReadFromJsonAsync<TokenResponse>(WebJsonOptions);
+            return tokens!.AccessToken.Token;
         }
+
+        private sealed record TokenResponse(AccessToken AccessToken);
 
         public static async Task<string> RequestTestAdminTokenAsync(Uri authorizationAddress, string secret)
         {

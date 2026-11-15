@@ -14,7 +14,7 @@ Scenario: The external platform's access token is not kept after login
 	And The user logs in at the time for code platform
 	And The user logs in at the external platform
 	When The external platform calls the time for code platform to complete the authorization
-	Then An access token is returned
+	Then The user is redirected back with a one-time code
 	And The user information is saved in the time for code platform
 	And No access token of the external platform is stored for the user
 

@@ -61,7 +61,7 @@ The Identity Provider Mock replaces GitHub in local development. The Authorizati
 
 | Service | URL | Notes |
 | --- | --- | --- |
-| Frontend (BFF + SPA) | <http://localhost:8084> | The BFF serves the React SPA and forwards `/api/donation/*` and `/api/auth/*` to the APIs, with the access-token cookie as bearer token |
+| Frontend (BFF + SPA) | <http://localhost:8084> | The BFF serves the React SPA and holds the browser session (opaque cookie, tokens server-side in MongoDB), forwards `/api/donation/*` and `/api/auth/v1/user*` to the APIs with the session token as bearer token, and serves `/bff/login`, `/bff/callback`, `/bff/session` and `/bff/logout` |
 | Authorization API | <http://localhost:8080> | OAuth 2.0 + JWT |
 | Identity Provider Mock | <http://localhost:8081> | Simulates GitHub OAuth and GitHub REST API |
 | Donation API | <http://localhost:8082> | Project and donation management |

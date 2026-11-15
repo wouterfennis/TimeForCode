@@ -18,7 +18,8 @@ namespace TimeForCode.Authorization.Api.Mappers
             return new LoginCommand
             {
                 IdentityProvider = model.IdentityProvider.MapToValue(),
-                RedirectUri = model.RedirectUri
+                RedirectUri = model.RedirectUri,
+                CodeChallenge = model.CodeChallenge
             };
         }
 

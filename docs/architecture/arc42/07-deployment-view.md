@@ -32,9 +32,10 @@ graph LR
     ReportingAPI -->|HTTP, caller's token| DonationAPI
     AuthAPI -->|HTTP :8081| IdpMock
     DonationAPI -->|HTTP :8081| IdpMock
-    Frontend -->|/api/auth/*| AuthAPI
+    Frontend -->|/api/auth/v1/user* and code exchange, refresh, logout| AuthAPI
     Frontend -->|/api/donation/*| DonationAPI
     AuthAPI -->|MongoDB wire protocol| MongoDB
+    Frontend -->|sessions, MongoDB wire protocol| MongoDB
     DonationAPI -->|MongoDB wire protocol| MongoDB
 ```
 
@@ -108,7 +109,7 @@ graph LR
 
 | Component | Technology | Notes |
 | --- | --- | --- |
-| Frontend | Azure App Service (container) | The BFF serving the SPA and forwarding the API routes (one container, `Dockerfile.frontend`) |
+| Frontend | Azure App Service (container) | The BFF serving the SPA, holding the browser session (MongoDB) and forwarding the API routes (one container, `Dockerfile.frontend`) |
 | Authorization API | Azure App Service (container) | Current deployment extended |
 | Donation API | Azure App Service (container) | Not yet deployed |
 | Reporting API | Azure App Service (container) | Not yet deployed; needs the Donation API address (`DonationApiOptions__BaseUri`), the token settings and its own MongoDB database (`DbOptions__ConnectionString`, `DbOptions__DatabaseName`) for badge tiers and awards |

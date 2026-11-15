@@ -8,7 +8,7 @@ This document defines the intended API surface for the TimeForCode platform. End
 
 ## General Conventions
 
-- **Authentication**: Bearer JWT in `Authorization` header (forwarded from the HttpOnly cookie by the front-end BFF).
+- **Authentication**: Bearer JWT in the `Authorization` header (added by the front-end BFF from its server-side session; the browser holds only an opaque cookie).
 - **Content type**: `application/json`.
 - **Versioning**: `/api/v1/` prefix.
 - **Errors**: ASP.NET Core `ProblemDetails` format.
@@ -25,15 +25,15 @@ Initiates GitHub OAuth 2.0 login. Returns a redirect to the GitHub authorization
 
 ### GET /api/authentication/callback
 
-OAuth 2.0 callback. Exchanges the authorization code, creates an internal user, issues JWT and refresh token cookies.
+OAuth 2.0 callback. Exchanges the authorization code, creates or updates the internal user and redirects to the client with a single-use code. `POST /api/authentication/token` exchanges the code (with the PKCE verifier) for the tokens.
 
-### POST /api/authentication/session/refresh
+### POST /api/authentication/refresh
 
-Issues a new access token using the refresh token cookie.
+Issues a new access token using the refresh token in the request body.
 
-### POST /api/authentication/session/logout
+### POST /api/authentication/logout
 
-Clears both token cookies.
+Revokes the refresh token in the request body.
 
 ### GET /api/user
 

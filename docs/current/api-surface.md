@@ -6,6 +6,21 @@ This document lists all API endpoints that currently exist in the codebase, thei
 
 ---
 
+## Front-end BFF
+
+The host at `http://localhost:8084` (locally) serves the SPA and the browser-facing session endpoints. Its OpenAPI document is `src/Frontend/TimeForCode.Frontend.Bff/TimeForCode.Frontend.Bff.json`. State-changing requests need the `X-Requested-With` header and an `Origin` of this host. Details: [authentication flow](../authentication/authentication_flow_design.md).
+
+| Method | Path | Status | Description |
+| --- | --- | --- | --- |
+| `GET` | `/bff/login?returnUrl=` | ✅ | Starts the sign-in: `302` to the Authorization API login with a PKCE challenge; sets the short-lived `__Host-login` cookie. `returnUrl` must be a local path |
+| `GET` | `/bff/callback?code=` | ✅ | Completes the sign-in: exchanges the code with the stored verifier, opens the session (`__Host-session` cookie) and redirects to `returnUrl`; on failure redirects to `/?signInError=1` |
+| `GET` | `/bff/session` | ✅ | `200` with `{ isSignedIn, isNewUser, userId, login, avatarUrl }` (never a token), `401` when not signed in; not cached |
+| `POST` | `/bff/logout` | ✅ | Revokes the refresh token, ends the session, clears the cookie; `204` (also without a session), `403` without the header or from another origin |
+| `*` | `/api/donation/{**rest}` | ✅ | Forwarded to the Donation API as `/api/{rest}` with the session bearer token; no `Cookie` header and no `Set-Cookie` pass |
+| `*` | `/api/auth/v1/user{**rest}` | ✅ | Forwarded to the Authorization API user endpoints; every other `/api/auth/...` path is `404` |
+
+---
+
 ## Authorization API
 
 Base URL (local): `http://localhost:8080`
@@ -17,10 +32,11 @@ The Authorization API exposes OAuth 2.0 endpoints and an OpenID Connect discover
 
 | Method | Path | Status | Description |
 | --- | --- | --- | --- |
-| `GET` | `/api/v1/authentication/login` | ✅ | Initiates OAuth 2.0 login; redirects to GitHub |
-| `GET` | `/api/v1/authentication/callback` | ✅ | Handles OAuth 2.0 callback; exchanges code for tokens |
-| `POST` | `/api/v1/authentication/session/refresh` | ✅ | Issues a new access token using the refresh token (POST only; GET returns 405). The body holds only `expiresAfter` and `isNewUser`; the tokens are cookies |
-| `POST` | `/api/v1/authentication/session/logout` | ✅ | Revokes the refresh token and clears access and refresh token cookies |
+| `GET` | `/api/v1/authentication/login` | ✅ | Initiates OAuth 2.0 login; needs `RedirectUri` (allow-listed) and a PKCE `CodeChallenge` (S256, 43 characters); redirects to GitHub |
+| `GET` | `/api/v1/authentication/callback` | ✅ | Handles OAuth 2.0 callback; redirects to the redirect uri with a single-use `?code=`; no token and no cookie |
+| `POST` | `/api/v1/authentication/token` | ✅ | Exchanges the one-time code and the PKCE `codeVerifier` for the access and refresh token; the code is single use and expires after 60 seconds |
+| `POST` | `/api/v1/authentication/refresh` | ✅ | Takes the refresh token in the body, returns new access and refresh tokens and invalidates the sent token (POST only; GET returns 405); `400` for an unknown, expired or replayed token |
+| `POST` | `/api/v1/authentication/logout` | ✅ | Takes the refresh token in the body and revokes it; `204`; no cookie is set |
 
 ### Test-only admin endpoint
 
@@ -35,7 +51,7 @@ Not part of the published contract: hidden from the OpenAPI document and absent 
 | Method | Path | Status | Description |
 | --- | --- | --- | --- |
 | `GET` | `/api/v1/user` | ✅ | Returns the currently authenticated user's profile |
-| `DELETE` | `/api/v1/user` | ✅ | Deletes the caller's account: asks the Donation API to anonymise the contributor, then deletes the refresh tokens and the profile and expires both token cookies; `204` on success, `404` when the profile does not exist, `502` when the Donation API fails (nothing is removed, retry later), `401` without a token. See [personal data](../reference/personal-data.md) |
+| `DELETE` | `/api/v1/user` | ✅ | Deletes the caller's account: asks the Donation API to anonymise the contributor, then deletes the refresh tokens and the profile; `204` on success, `404` when the profile does not exist, `502` when the Donation API fails (nothing is removed, retry later), `401` without a token. See [personal data](../reference/personal-data.md) |
 | `GET` | `/api/v1/user/repositories` | ✅ | Returns the caller's public GitHub repositories, read with the application's own GitHub credentials (no user token is stored); `502` when GitHub fails |
 | `GET` | `/api/v1/user/repositories/{owner}/{repo}` | ✅ | Returns one public GitHub repository (`404` for private or unknown ones), read with the application's own GitHub credentials; `400` when `owner` or `repo` is not a valid GitHub name (see [declared input limits](#declared-input-limits)) |
 
@@ -263,7 +279,7 @@ When the Donation API refuses the caller (`401`, `403`, `404`) the Reporting API
 
 All implemented endpoints follow these conventions:
 
-- Authentication: Bearer token (internal JWT from Authorization API) passed via cookie or `Authorization` header.
+- Authentication: Bearer token (internal JWT from the Authorization API) in the `Authorization` header. The browser never holds it: the front-end BFF adds it from the server-side session.
 - Content type: `application/json`.
 - API versioning: URL path prefix (`/api/v1/`).
 - Error format: standard ASP.NET Core `ProblemDetails`. Input that violates a declared limit returns `400` with validation problem details (title `One or more validation errors occurred.`, an `errors` entry per parameter).

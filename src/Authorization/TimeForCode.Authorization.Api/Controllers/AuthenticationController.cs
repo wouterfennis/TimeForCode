@@ -1,20 +1,17 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Options;
 using System.Net.Mime;
-using System.Text.Json;
 using TimeForCode.Authorization.Api.Mappers;
 using TimeForCode.Authorization.Api.Models;
 using TimeForCode.Authorization.Application.Options;
-using TimeForCode.Authorization.Commands;
-using TimeForCode.Authorization.Values;
-using TimeForCode.Shared.Api.Authentication;
 
 namespace TimeForCode.Authorization.Api.Controllers
 {
     /// <summary>
-    /// Authentication endpoints.
+    /// Authentication endpoints. The API issues tokens; it sets and reads no cookies for this flow.
     /// </summary>
     [Route("api/v1/[controller]")]
     [Produces(MediaTypeNames.Application.Json)]
@@ -41,12 +38,12 @@ namespace TimeForCode.Authorization.Api.Controllers
         /// <summary>
         /// Login endpoint.
         /// </summary>
-        /// <param name="loginModel">The model containing the requested external identity provider</param>
-        /// <returns> 
+        /// <param name="loginModel">The model containing the requested external identity provider, the redirect URI and the PKCE code challenge.</param>
+        /// <returns>
         /// The redirect URL towards an external identity provider.
         /// </returns>
         /// <response code="302">Redirect to the external identity provider's sign-in page.</response>
-        /// <response code="400">The redirect uri is not on the list of allowed redirect uris or the request is not valid.</response>
+        /// <response code="400">The redirect uri is not on the list of allowed redirect uris, the code challenge is malformed or the request is not valid.</response>
         /// <response code="500">The login could not be started because of an unexpected server error.</response>
         [HttpGet]
         [Route("login")]
@@ -71,62 +68,99 @@ namespace TimeForCode.Authorization.Api.Controllers
         /// Callback endpoint that is being called by the external identity provider. After the redirect initiated by <see cref="LoginAsync"/>.
         /// </summary>
         /// <param name="callbackModel">The model containing the authorization code from the external identity provider</param>
-        /// <returns> 
-        /// The expiry of the internal access token.
+        /// <returns>
+        /// A redirect to the redirect uri given at login, with a single-use <c>code</c> query parameter.
         /// </returns>
-        /// <response code="200">The expiry of the new access token and whether the user is new; both tokens are only set as HttpOnly cookies, never in the body.</response>
-        /// <response code="302">Sign-in succeeded and the browser is redirected to the redirect uri given at login; the tokens are set as cookies.</response>
+        /// <response code="302">Sign-in succeeded and the browser is redirected to the redirect uri given at login, with a single-use code to exchange for tokens.</response>
         /// <response code="400">The authorization code or state is missing, invalid or expired.</response>
         /// <response code="500">The sign-in could not be completed because of an unexpected server error.</response>
         [HttpGet]
         [Route("callback")]
         [EnableRateLimiting("auth")]
-        [ProducesResponseType(typeof(CallbackResponseModel), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status302Found)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> CallbackAsync([FromQuery] CallbackRequestModel callbackModel)
         {
-            var tokenResult = await _sender.Send(callbackModel.MapToCommand());
+            var result = await _sender.Send(callbackModel.MapToCommand());
 
-            if (tokenResult.IsFailure)
+            if (result.IsFailure)
             {
-                _logger.LogWarning("Authentication callback failed: {ErrorMessage}", SanitizeForLog(tokenResult.ErrorMessage));
+                _logger.LogWarning("Authentication callback failed: {ErrorMessage}", SanitizeForLog(result.ErrorMessage));
                 return BadRequest(ProblemDetailsMapper.BadRequest("Authentication failed."));
             }
 
-            var response = ProcessTokenResult(tokenResult);
+            return Redirect(QueryHelpers.AddQueryString(result.Value.RedirectUri.ToString(), "code", result.Value.Code));
+        }
 
-            if (tokenResult.Value.RedirectUri != null)
+        /// <summary>
+        /// Exchanges the single-use code of a completed sign-in for tokens.
+        /// </summary>
+        /// <param name="model">The code and the PKCE verifier of the login that produced it.</param>
+        /// <returns>The access token, the refresh token and whether the user is new.</returns>
+        /// <response code="200">The access token and refresh token.</response>
+        /// <response code="400">The code is unknown, already used or expired, or the verifier does not match the login.</response>
+        /// <response code="500">The exchange failed because of an unexpected server error.</response>
+        [HttpPost]
+        [Route("token")]
+        [EnableRateLimiting("auth")]
+        [ProducesResponseType(typeof(TokenResponseModel), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> ExchangeCodeAsync(ExchangeCodeRequestModel model)
+        {
+            var result = await _sender.Send(model.MapToCommand());
+
+            if (result.IsFailure)
             {
-                return Redirect(tokenResult.Value.RedirectUri.ToString());
+                _logger.LogWarning("Code exchange denied: {ErrorMessage}", SanitizeForLog(result.ErrorMessage));
+                return BadRequest(ProblemDetailsMapper.BadRequest("Code exchange failed."));
             }
 
-            return Ok(response);
+            return Ok(result.Value.MapToResponse());
+        }
+
+        /// <summary>
+        /// Refresh endpoint.
+        /// </summary>
+        /// <param name="model">The refresh token the client holds.</param>
+        /// <returns>New access token and refresh token</returns>
+        /// <response code="200">A new access token and refresh token. The refresh token that was sent is no longer valid.</response>
+        /// <response code="400">The refresh token is unknown, expired or was already used.</response>
+        /// <response code="500">The refresh failed because of an unexpected server error.</response>
+        [HttpPost]
+        [Route("refresh")]
+        [EnableRateLimiting("auth")]
+        [ProducesResponseType(typeof(TokenResponseModel), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> RefreshAsync(RefreshRequestModel model)
+        {
+            var result = await _sender.Send(model.MapToRefreshCommand());
+
+            if (result.IsFailure)
+            {
+                _logger.LogWarning("Token refresh denied: {ErrorMessage}", SanitizeForLog(result.ErrorMessage));
+                return BadRequest(ProblemDetailsMapper.BadRequest("Token refresh failed."));
+            }
+
+            return Ok(result.Value.MapToResponse());
         }
 
         /// <summary>
         /// Logout endpoint.
         /// </summary>
+        /// <param name="model">The refresh token to revoke.</param>
         /// <returns></returns>
-        /// <response code="204">The refresh token was revoked, if present, and the token cookies were removed.</response>
+        /// <response code="204">The refresh token was revoked, if it existed.</response>
         /// <response code="500">The logout failed because of an unexpected server error.</response>
         [HttpPost]
-        [Route("session/logout")]
+        [Route("logout")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> LogoutAsync()
+        public async Task<IActionResult> LogoutAsync(RefreshRequestModel model)
         {
-            var refreshToken = GetRefreshToken();
-
-            var command = new LogoutCommand
-            {
-                RefreshToken = refreshToken,
-            };
-
-            await _sender.Send(command);
-
-            TokenCookies.Expire(HttpContext.Response, _authenticationOptions.Value.RefreshCookiePath);
+            await _sender.Send(model.MapToLogoutCommand());
 
             return NoContent();
         }
@@ -138,89 +172,6 @@ namespace TimeForCode.Authorization.Api.Controllers
                     ? parsedValidRedirectUri
                     : null)
                 .Any(validRedirectUri => validRedirectUri != null && RedirectUrisMatch(redirectUri, validRedirectUri));
-        }
-
-        /// <summary>
-        /// Refresh endpoint.
-        /// </summary>
-        /// <returns>The expiry of the new access token.</returns>
-        /// <response code="200">The expiry of the new access token; both new tokens are only set as HttpOnly cookies, never in the body.</response>
-        /// <response code="400">The refresh token is missing, unknown or expired.</response>
-        /// <response code="500">The refresh failed because of an unexpected server error.</response>
-        [HttpPost]
-        [Route("session/refresh")]
-        [EnableRateLimiting("auth")]
-        [ProducesResponseType(typeof(CallbackResponseModel), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> RefreshAsync()
-        {
-            var refreshToken = GetRefreshToken();
-
-            if (refreshToken is null)
-            {
-                return BadRequest(ProblemDetailsMapper.BadRequest("No refresh token found."));
-            }
-
-            var refreshCommand = new RefreshCommand
-            {
-                RefreshToken = refreshToken
-            };
-
-            var tokenResult = await _sender.Send(refreshCommand);
-
-            if (tokenResult.IsFailure)
-            {
-                _logger.LogWarning("Token refresh denied: {ErrorMessage}", SanitizeForLog(tokenResult.ErrorMessage));
-                return BadRequest(ProblemDetailsMapper.BadRequest("Token refresh failed."));
-            }
-
-            var response = ProcessTokenResult(tokenResult);
-
-            return Ok(response);
-        }
-
-        private CallbackResponseModel ProcessTokenResult(Result<TokenResult> tokenResult)
-        {
-            var result = tokenResult.Value;
-
-            SetTokenResponseCookies(result);
-
-            return new CallbackResponseModel
-            {
-                ExpiresAfter = result.InternalAccessToken.ExpiresAfter,
-                IsNewUser = result.IsNewUser
-            };
-        }
-
-        private void SetTokenResponseCookies(TokenResult result)
-        {
-            TokenCookies.Append(HttpContext.Response, result, _authenticationOptions.Value.RefreshCookiePath);
-
-            if (result.IsNewUser)
-            {
-                var isNewUserCookieOptions = TokenCookies.CreateOptions(maxAge: TimeSpan.FromMinutes(5));
-
-                HttpContext.Response.Cookies.Append("IsNewUser", "true", isNewUserCookieOptions);
-            }
-        }
-
-        private RefreshToken? GetRefreshToken()
-        {
-            if (!HttpContext.Request.Cookies.TryGetValue(CookieConstants.RefreshTokenKey, out var refreshToken))
-            {
-                return null;
-            }
-
-            try
-            {
-                return JsonSerializer.Deserialize<RefreshToken>(refreshToken);
-            }
-            catch (JsonException)
-            {
-                // A corrupt cookie is the same as no cookie.
-                return null;
-            }
         }
 
         private static string SanitizeForLog(string? value)

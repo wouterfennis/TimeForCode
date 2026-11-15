@@ -122,7 +122,7 @@ graph LR
     Frontend["Frontend\n(passes tokens)"]
 
     Frontend -->|login request| AuthAPI
-    AuthAPI -->|JWT in HttpOnly cookie| Frontend
+    AuthAPI -->|one-time code, then tokens to the BFF only| Frontend
     Frontend -->|bearer token in request| DonationAPI
     DonationAPI -->|validates via JWKS| AuthAPI
 ```

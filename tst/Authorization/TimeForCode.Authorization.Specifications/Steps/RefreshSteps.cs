@@ -3,17 +3,10 @@ using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Bson;
 using Moq;
 using Reqnroll;
-using System.IdentityModel.Tokens.Jwt;
-using System.Net;
-using System.Text.Json;
-using System.Web;
 using TimeForCode.Authorization.Api.Client;
 using TimeForCode.Authorization.Api.Client.Extensions;
 using TimeForCode.Authorization.Application.Interfaces;
-using TimeForCode.Authorization.Application.Options;
 using TimeForCode.Authorization.Application.Services;
-using TimeForCode.Authorization.Specifications.TestBuilder;
-using TimeForCode.Shared.Api.Authentication;
 using IServiceProvider = System.IServiceProvider;
 
 namespace TimeForCode.Authorization.Specifications.Steps
@@ -26,30 +19,36 @@ namespace TimeForCode.Authorization.Specifications.Steps
         private readonly IAuthClient _authClient;
         private readonly HttpClient _httpClient;
         private readonly IServiceProvider _provider;
-        private readonly CookieContainer _cookieContainer;
         private readonly SessionContext _session;
-        private TryVoid<ApiException<ProblemDetails>?>? _result = null;
+        private TryResponse<TokenResponseModel?, ApiException<ProblemDetails>?>? _result = null;
         private Domain.Entities.RefreshToken? _storedRefreshToken;
 
-        public RefreshSteps(IAuthClient authClient, HttpClient httpClient, IServiceProvider provider, CookieContainer cookieContainer, SessionContext session)
+        public RefreshSteps(IAuthClient authClient, HttpClient httpClient, IServiceProvider provider, SessionContext session)
         {
             _authClient = authClient;
             _httpClient = httpClient;
             _provider = provider;
-            _cookieContainer = cookieContainer;
             _session = session;
         }
 
         [When("The user calls the refresh token endpoint")]
         public async Task WhenTheUserCallsTheRefreshTokenEndpointAsync()
         {
-            _result = await _authClient.TryRefreshAsync();
+            _result = await _authClient.TryRefreshAsync(_session.RefreshToken!);
+            _session.Tokens = _result.Response;
+            _session.LastException = _result.Exception;
         }
 
         [When("The user calls the refresh token endpoint with a read-only request")]
         public async Task WhenTheUserCallsTheRefreshTokenEndpointWithAReadOnlyRequestAsync()
         {
-            _session.ReadOnlyRequestResponse = await _httpClient.GetAsync("/api/v1/authentication/session/refresh");
+            _session.ReadOnlyRequestResponse = await _httpClient.GetAsync("/api/v1/authentication/refresh");
+        }
+
+        [When("The user calls the refresh token endpoint without a refresh token")]
+        public async Task WhenTheUserCallsTheRefreshTokenEndpointWithoutARefreshTokenAsync()
+        {
+            _session.LastResponse = await _httpClient.PostAsync("/api/v1/authentication/refresh", new StringContent("{}", System.Text.Encoding.UTF8, "application/json"));
         }
 
         [Then("The following refresh error message is returned: {string}")]
@@ -80,38 +79,6 @@ namespace TimeForCode.Authorization.Specifications.Steps
             _storedRefreshToken!.MarkRotated(DateTimeOffset.UtcNow.AddMinutes(-1));
         }
 
-        [Then("The refresh token is revoked")]
-        public void ThenTheRefreshTokenIsRevoked()
-        {
-            var refreshTokenCookie = _cookieContainer.GetAllCookies()[CookieConstants.RefreshTokenKey];
-            refreshTokenCookie.Should().BeNull();
-        }
-
-        [Then("The access token is revoked")]
-        public void ThenTheAccessTokenIsRevoked()
-        {
-            var accessTokenCookie = _cookieContainer.GetAllCookies()[CookieConstants.TokenKey];
-            accessTokenCookie.Should().BeNull();
-        }
-
-        [Then("A refresh token is returned")]
-        public void ThenARefreshTokenIsReturned()
-        {
-            var refreshTokenCookie = _cookieContainer.GetAllCookies()[CookieConstants.RefreshTokenKey];
-            refreshTokenCookie.Should().NotBeNull();
-        }
-
-        [Then("The refresh token is not stored in readable form")]
-        public void ThenTheRefreshTokenIsNotStoredInReadableForm()
-        {
-            var repository = _provider.GetRequiredService<Mock<IRefreshTokenRepository>>();
-            var newCookie = JsonSerializer.Deserialize<Values.RefreshToken>(
-                HttpUtility.UrlDecode(_cookieContainer.GetAllCookies()[CookieConstants.RefreshTokenKey]!.Value))!;
-
-            repository.Verify(x => x.CreateAsync(It.Is<Domain.Entities.RefreshToken>(t => t.TokenHash == RefreshTokenHasher.Hash(newCookie.Token))), Times.Once);
-            repository.Verify(x => x.CreateAsync(It.Is<Domain.Entities.RefreshToken>(t => t.TokenHash == newCookie.Token)), Times.Never);
-        }
-
         [Then("All other refresh tokens of the user are revoked")]
         public void ThenAllOtherRefreshTokensOfTheUserAreRevoked()
         {
@@ -119,36 +86,16 @@ namespace TimeForCode.Authorization.Specifications.Steps
             repository.Verify(x => x.DeleteByUserIdAsync(_session.UserId), Times.Once);
         }
 
-        [Then("The access token contains the admin role and the admin scope")]
-        public void ThenTheAccessTokenContainsTheAdminRoleAndTheAdminScope()
+        [Then("The refresh token that was sent can no longer be used")]
+        public void ThenTheRefreshTokenThatWasSentCanNoLongerBeUsed()
         {
-            JwtSecurityToken jwt = ReadAccessTokenCookie();
-
-            jwt.Claims.Should().Contain(c => c.Type == "role" && c.Value == "admin");
-            jwt.Claims.Should().Contain(c => c.Type == "scope" && c.Value == "admin");
+            _session.Tokens!.RefreshToken.Token.Should().NotBe(PlainRefreshToken);
+            _provider.GetRequiredService<Mock<IRefreshTokenRepository>>().Verify(x => x.TryMarkRotatedAsync(_storedRefreshToken!.Id, It.IsAny<DateTimeOffset>()), Times.Once);
         }
-
-        [Then("The access token contains the user scope")]
-        public void ThenTheAccessTokenContainsTheUserScope()
-        {
-            JwtSecurityToken jwt = ReadAccessTokenCookie();
-
-            jwt.Claims.Should().Contain(c => c.Type == "scope" && c.Value == "user");
-        }
-
-        private JwtSecurityToken ReadAccessTokenCookie() => TokenCookieReader.ReadAccessToken(_cookieContainer);
 
         private void SeedRefreshToken(DateTime expiresAfter)
         {
-            var refreshToken = new Values.RefreshToken
-            {
-                Token = PlainRefreshToken,
-                ExpiresAfter = expiresAfter,
-            };
-
-            var uri = new Uri("http://localhost:8084");
-            var cookieValue = HttpUtility.UrlEncode(JsonSerializer.Serialize(refreshToken));
-            _cookieContainer.Add(uri, new Cookie(CookieConstants.RefreshTokenKey, cookieValue, AuthenticationOptions.DefaultRefreshCookiePath));
+            _session.RefreshToken = new Api.Client.RefreshToken { Token = PlainRefreshToken, ExpiresAfter = expiresAfter };
 
             _storedRefreshToken = new Domain.Entities.RefreshToken
             {

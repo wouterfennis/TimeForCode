@@ -1,0 +1,199 @@
+﻿{
+  "openapi": "3.1.1",
+  "info": {
+    "title": "Front-end BFF",
+    "description": "The browser-facing sign-in, session status and sign-out. The BFF keeps the tokens; the browser only holds one opaque session cookie.",
+    "version": "v1"
+  },
+  "paths": {
+    "/bff/login": {
+      "get": {
+        "tags": [
+          "BffEndpoints"
+        ],
+        "summary": "Starts the sign-in.",
+        "description": "Redirects the browser to the Authorization API, which redirects to the identity provider. The PKCE verifier stays on the server; a short-lived opaque cookie finds it again at the callback.",
+        "parameters": [
+          {
+            "name": "returnUrl",
+            "in": "query",
+            "description": "The page to return to after sign-in: a path on this site such as /projects/42. Anything else is replaced by /.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "302": {
+            "description": "Redirect to the Authorization API login, which redirects on to the identity provider. Sets the short-lived __Host-login cookie that finds the PKCE verifier again."
+          }
+        }
+      }
+    },
+    "/bff/callback": {
+      "get": {
+        "tags": [
+          "BffEndpoints"
+        ],
+        "summary": "Completes the sign-in.",
+        "description": "The Authorization API redirects here with a single-use code. The BFF exchanges it, opens a session and redirects to the page the user came from. On any failure it redirects to /?signInError=1.",
+        "parameters": [
+          {
+            "name": "code",
+            "in": "query",
+            "description": "The single-use code the Authorization API appends to the redirect. It is exchanged once with the PKCE verifier of this browser.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "302": {
+            "description": "Redirect to the page the user came from after a successful sign-in, with the __Host-session cookie set; or to /?signInError=1 when the sign-in could not be completed."
+          }
+        }
+      }
+    },
+    "/bff/session": {
+      "get": {
+        "tags": [
+          "BffEndpoints"
+        ],
+        "summary": "Tells whether the user is signed in.",
+        "description": "Call it when the SPA loads. It returns who the user is and whether this is their first sign-in; it never returns a token.",
+        "responses": {
+          "200": {
+            "description": "The user is signed in. The body says who the user is and whether this is their first sign-in; it never holds a token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Nobody is signed in: there is no session cookie, or the session expired or was ended.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/bff/logout": {
+      "post": {
+        "tags": [
+          "BffEndpoints"
+        ],
+        "summary": "Signs out.",
+        "description": "Revokes the refresh token, ends the session and clears the session cookie. Needs the X-Requested-With header; a request from another origin is refused with 403.",
+        "responses": {
+          "204": {
+            "description": "The session is ended, the refresh token revoked and the session cookie cleared. Also returned when there was no session."
+          },
+          "403": {
+            "description": "The X-Requested-With header is missing, or the Origin header names another site.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ProblemDetails": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "title": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "status": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "detail": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "instance": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "SessionResponse": {
+        "required": [
+          "isSignedIn",
+          "isNewUser",
+          "userId",
+          "login",
+          "avatarUrl"
+        ],
+        "type": "object",
+        "properties": {
+          "isSignedIn": {
+            "type": "boolean",
+            "description": "Always true: a missing session answers 401 instead."
+          },
+          "isNewUser": {
+            "type": "boolean",
+            "description": "True for a short time after the first ever sign-in, so the welcome shows once."
+          },
+          "userId": {
+            "type": "string",
+            "description": "The platform id of the user."
+          },
+          "login": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "The login name at the identity provider."
+          },
+          "avatarUrl": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "The avatar of the user at the identity provider."
+          }
+        },
+        "description": "What the SPA learns about the session: who the user is and whether it is their first sign-in. Never a token."
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "BffEndpoints"
+    }
+  ]
+}

@@ -11,7 +11,7 @@ Scenario: Login completes on another instance of the time for code platform
 	And The user logs in at one instance of the time for code platform
 	And The user logs in at the external platform
 	When The external platform calls another instance of the time for code platform to complete the authorization
-	Then An access token is returned
+	Then The user is redirected back with a one-time code
 
 Scenario: Login completes after the time for code platform restarted
 	Given The user has an account at the external platform
@@ -19,7 +19,7 @@ Scenario: Login completes after the time for code platform restarted
 	And The user logs in at the external platform
 	And The time for code platform has restarted
 	When The external platform calls the time for code platform to complete the authorization
-	Then An access token is returned
+	Then The user is redirected back with a one-time code
 
 Scenario: Login state cannot be used a second time
 	Given The user has an account at the external platform
@@ -50,5 +50,5 @@ Scenario: Access token request proves the login started at the time for code pla
 	And The user logs in at the time for code platform
 	And The user logs in at the external platform
 	When The external platform calls the time for code platform to complete the authorization
-	Then An access token is returned
+	Then The user is redirected back with a one-time code
 	And The time for code platform proved to the external platform that it started the login

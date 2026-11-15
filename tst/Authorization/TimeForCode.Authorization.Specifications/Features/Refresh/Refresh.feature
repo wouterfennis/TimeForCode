@@ -1,12 +1,11 @@
-﻿Feature: Refresh token
+Feature: Refresh token
 	As a user
 	I want to refresh my authentication token
 	So that I won't have to log in again
 
-Scenario: User has not logged in at the external platform
-	Given The user has not logged in at the time for code platform
-	When The user calls the refresh token endpoint
-	Then The following refresh error message is returned: "No refresh token found."
+Scenario: User has not sent a refresh token
+	When The user calls the refresh token endpoint without a refresh token
+	Then The request is rejected as invalid
 
 Scenario: User has expired refresh token
 	Given The user has an expired refresh token
@@ -18,6 +17,7 @@ Scenario: User has valid refresh token
 	When The user calls the refresh token endpoint
 	Then An access token is returned
 	And A refresh token is returned
+	And The refresh token that was sent can no longer be used
 
 Scenario: The refresh token is not kept in readable form
 	Given The user has a refresh token

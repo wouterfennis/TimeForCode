@@ -26,8 +26,8 @@ services:
       - RefreshTokenOptions__DefaultExpirationAfterInDays=7
       - AuthenticationOptions__Issuer=http://authorization-api:8080
       - AuthenticationOptions__Audience=http://authorization-api:8080
-      - AuthenticationOptions__ValidRedirectUris__0=http://localhost:8084
-      - AuthenticationOptions__RefreshCookiePath=/api/auth/v1/Authentication/session
+      - AuthenticationOptions__ValidRedirectUris__0=http://localhost:8084/bff/callback
+      - AuthenticationOptions__ValidRedirectUris__1=http://localhost:8084
       - TokenCreationOptions__Issuer=http://authorization-api:8080
       - TokenCreationOptions__Audiences__0=http://authorization-api:8080
       - TokenCreationOptions__Audiences__1=http://localhost:8082
@@ -129,6 +129,12 @@ services:
     environment:
       - ReverseProxy__Clusters__donation__Destinations__api__Address=http://donation-api:8080
       - ReverseProxy__Clusters__auth__Destinations__api__Address=http://authorization-api:8080
+      - Authorization__BaseAddress=http://authorization-api:8080
+      - Authorization__PublicBaseAddress=http://localhost:8080
+      - DbOptions__ConnectionString=mongodb://root:example@mongo:27017/?authSource=admin
+      - DbOptions__DatabaseName=Bff
+    depends_on:
+      - mongo
     ports:
       - "8084:8080"
     networks:

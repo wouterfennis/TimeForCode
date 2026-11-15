@@ -21,6 +21,7 @@ Scenario: Issued access token identifies its signing key
 	And The user logs in at the time for code platform
 	And The user logs in at the external platform
 	And The external platform calls the time for code platform to complete the authorization
+	And The user exchanges the one-time code
 	When The user requests the published signing keys
 	Then The issued access token names a signing key
 	And The published signing keys contain the key named by the access token

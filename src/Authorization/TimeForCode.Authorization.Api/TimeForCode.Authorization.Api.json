@@ -264,6 +264,15 @@
               "type": "string",
               "format": "uri"
             }
+          },
+          {
+            "name": "CodeChallenge",
+            "in": "query",
+            "description": "Gets or sets the PKCE code challenge: the unpadded base64url SHA-256 hash (43 characters, method S256) of a random verifier\r\nthat only the client holds. The code exchange requires that verifier, which binds the sign-in to the client that started it.",
+            "schema": {
+              "pattern": "^[A-Za-z0-9_-]{43}$",
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -274,7 +283,7 @@
             }
           },
           "400": {
-            "description": "The redirect uri is not on the list of allowed redirect uris or the request is not valid.",
+            "description": "The redirect uri is not on the list of allowed redirect uris, the code challenge is malformed or the request is not valid.",
             "content": {
               "application/json": {
                 "schema": {
@@ -331,18 +340,8 @@
           }
         ],
         "responses": {
-          "200": {
-            "description": "The expiry of the new access token and whether the user is new; both tokens are only set as HttpOnly cookies, never in the body.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CallbackResponseModel"
-                }
-              }
-            }
-          },
           "302": {
-            "description": "Sign-in succeeded and the browser is redirected to the redirect uri given at login; the tokens are set as cookies.",
+            "description": "Sign-in succeeded and the browser is redirected to the redirect uri given at login, with a single-use code to exchange for tokens.",
             "content": {
               "application/json": { }
             }
@@ -378,47 +377,115 @@
         }
       }
     },
-    "/api/v1/Authentication/session/logout": {
+    "/api/v1/Authentication/token": {
       "post": {
         "tags": [
           "Authentication"
         ],
-        "summary": "Logout endpoint.",
-        "responses": {
-          "204": {
-            "description": "The refresh token was revoked, if present, and the token cookies were removed.",
-            "content": {
-              "application/json": { }
+        "summary": "Exchanges the single-use code of a completed sign-in for tokens.",
+        "requestBody": {
+          "description": "The code and the PKCE verifier of the login that produced it.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExchangeCodeRequestModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExchangeCodeRequestModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExchangeCodeRequestModel"
+              }
             }
           },
-          "500": {
-            "description": "The logout failed because of an unexpected server error.",
-            "content": {
-              "application/json": { }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/Authentication/session/refresh": {
-      "post": {
-        "tags": [
-          "Authentication"
-        ],
-        "summary": "Refresh endpoint.",
+          "required": true
+        },
         "responses": {
           "200": {
-            "description": "The expiry of the new access token; both new tokens are only set as HttpOnly cookies, never in the body.",
+            "description": "The access token and refresh token.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CallbackResponseModel"
+                  "$ref": "#/components/schemas/TokenResponseModel"
                 }
               }
             }
           },
           "400": {
-            "description": "The refresh token is missing, unknown or expired.",
+            "description": "The code is unknown, already used or expired, or the verifier does not match the login.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "The exchange failed because of an unexpected server error.",
+            "content": {
+              "application/json": { }
+            }
+          },
+          "429": {
+            "description": "Too many requests. Retry after the number of seconds given in the Retry-After header.",
+            "headers": {
+              "Retry-After": {
+                "description": "Number of seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/Authentication/refresh": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Refresh endpoint.",
+        "requestBody": {
+          "description": "The refresh token the client holds.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshRequestModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshRequestModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshRequestModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "A new access token and refresh token. The refresh token that was sent is no longer valid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenResponseModel"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The refresh token is unknown, expired or was already used.",
             "content": {
               "application/json": {
                 "schema": {
@@ -443,6 +510,49 @@
                   "format": "int32"
                 }
               }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/Authentication/logout": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Logout endpoint.",
+        "requestBody": {
+          "description": "The refresh token to revoke.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshRequestModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshRequestModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshRequestModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "The refresh token was revoked, if it existed.",
+            "content": {
+              "application/json": { }
+            }
+          },
+          "500": {
+            "description": "The logout failed because of an unexpected server error.",
+            "content": {
+              "application/json": { }
             }
           }
         }
@@ -721,6 +831,25 @@
   },
   "components": {
     "schemas": {
+      "AccessToken": {
+        "required": [
+          "token",
+          "expiresAfter"
+        ],
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "The signed JSON Web Token (JWT, RS256); send it as a bearer token. Verify it with the keys of the JWKS endpoint."
+          },
+          "expiresAfter": {
+            "type": "string",
+            "description": "The moment the token expires, as an ISO 8601 date and time with offset; the token is invalid after this instant.",
+            "format": "date-time"
+          }
+        },
+        "description": "A short-lived access token issued by the Authorization API."
+      },
       "AdminCompleteAuthenticationRequestModel": {
         "required": [
           "credentialJson"
@@ -817,6 +946,27 @@
           }
         },
         "description": "Response model for the discovery document endpoint."
+      },
+      "ExchangeCodeRequestModel": {
+        "required": [
+          "code",
+          "codeVerifier"
+        ],
+        "type": "object",
+        "properties": {
+          "code": {
+            "maxLength": 2048,
+            "type": "string",
+            "description": "The single-use code the browser received in the redirect after sign-in. It is valid once and for a short time."
+          },
+          "codeVerifier": {
+            "maxLength": 128,
+            "minLength": 43,
+            "type": "string",
+            "description": "The PKCE code verifier (43 to 128 unreserved characters) whose S256 challenge was sent when the login started.\r\nA code started with another verifier is rejected."
+          }
+        },
+        "description": "Represents the request to exchange the single-use code of a completed sign-in for tokens."
       },
       "IdentityProvider": {
         "enum": [
@@ -917,6 +1067,38 @@
           }
         }
       },
+      "RefreshRequestModel": {
+        "required": [
+          "refreshToken"
+        ],
+        "type": "object",
+        "properties": {
+          "refreshToken": {
+            "description": "The refresh token the client holds.",
+            "$ref": "#/components/schemas/RefreshToken"
+          }
+        },
+        "description": "Represents a request that carries the refresh token: renewing the tokens or signing out."
+      },
+      "RefreshToken": {
+        "required": [
+          "token",
+          "expiresAfter"
+        ],
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "The opaque refresh token value; single use, it is replaced by a new one on every refresh."
+          },
+          "expiresAfter": {
+            "type": "string",
+            "description": "The moment the refresh token expires, as an ISO 8601 date and time with offset; the token is invalid after this instant.",
+            "format": "date-time"
+          }
+        },
+        "description": "A long-lived refresh token that is exchanged for a new access token and a new refresh token."
+      },
       "RepositoryResponse": {
         "required": [
           "name",
@@ -957,6 +1139,28 @@
           }
         },
         "description": "Repository response model"
+      },
+      "TokenResponseModel": {
+        "required": [
+          "accessToken",
+          "refreshToken"
+        ],
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "description": "The short-lived access token; send it as a bearer token.",
+            "$ref": "#/components/schemas/AccessToken"
+          },
+          "refreshToken": {
+            "description": "The new refresh token. Single use: the one the client sent to refresh is now invalid.",
+            "$ref": "#/components/schemas/RefreshToken"
+          },
+          "isNewUser": {
+            "type": "boolean",
+            "description": "Indicates whether this is the user's first login (new account was created)."
+          }
+        },
+        "description": "The tokens issued to a client: after a code exchange or a refresh. The client keeps them server-side and never hands them to a browser script."
       },
       "UserResponse": {
         "required": [

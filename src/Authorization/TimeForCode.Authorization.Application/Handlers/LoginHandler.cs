@@ -38,7 +38,7 @@ namespace TimeForCode.Authorization.Application.Handlers
             _logger.LogInformation("Handling login for identity provider {IdentityProvider}", request.IdentityProvider);
 
             var identityProvider = _options.GetExternalIdentityProvider(request.IdentityProvider);
-            StateEntry stateEntry = await CreateStateAsync(request.IdentityProvider, request.RedirectUri);
+            StateEntry stateEntry = await CreateStateAsync(request.IdentityProvider, request.RedirectUri, request.CodeChallenge);
 
             var uriBuilder = new UriBuilder
             {
@@ -54,13 +54,14 @@ namespace TimeForCode.Authorization.Application.Handlers
             return uriBuilder.Uri;
         }
 
-        private async Task<StateEntry> CreateStateAsync(IdentityProvider identityProvider, Uri redirectUri)
+        private async Task<StateEntry> CreateStateAsync(IdentityProvider identityProvider, Uri redirectUri, string clientCodeChallenge)
         {
             var stateEntry = StateEntry.Start(
                 _randomGenerator.GenerateRandomString(),
                 identityProvider,
                 redirectUri,
                 _randomGenerator.GenerateCodeVerifier(),
+                clientCodeChallenge,
                 _timeProvider.GetUtcNow());
             await _stateRepository.AddAsync(stateEntry);
             return stateEntry;

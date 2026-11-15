@@ -51,8 +51,7 @@ graph LR
 
     Client["Front-end / External Client"]
     GitHub["GitHub OAuth"]
-    DonationAPI["Donation API
-(anonymise contributor)"]
+    DonationAPI["Donation API\n(anonymise contributor)"]
     MongoDB[("MongoDB")]
 
     Client -->|HTTP requests| AuthAPI_Ctrl
@@ -169,7 +168,7 @@ Architecture tests (`TimeForCode.Reporting.Architecture.Tests`) enforce the laye
 
 ## Level 2 — Front-end
 
-The front-end is a React single-page application written in TypeScript and built with Vite (`src/Frontend/TimeForCode.Frontend`). It is the user-facing shell and contains no business logic. It reaches the Authorization API and the Donation API through the same-origin backend-for-frontend (BFF) `src/Frontend/TimeForCode.Frontend.Bff`, which also serves the build: an ASP.NET host that sets the security headers, forwards `/api/auth/*` and `/api/donation/*` with YARP, turns the `HttpOnly` access-token cookie into a bearer token and checks the CSRF header ([ADR-012](../../reference/adr/0012-react-spa-frontend.md), #182). Stack, folder layout and testing strategy: [front-end architecture](../../frontend/architecture.md).
+The front-end is a React single-page application written in TypeScript and built with Vite (`src/Frontend/TimeForCode.Frontend`). It is the user-facing shell and contains no business logic. It reaches the Authorization API and the Donation API through the same-origin backend-for-frontend (BFF) `src/Frontend/TimeForCode.Frontend.Bff`, which also serves the build: an ASP.NET host that sets the security headers, forwards `/api/donation/*` and `/api/auth/v1/user*` with YARP, holds the browser session (opaque `__Host-session` cookie, tokens server-side in MongoDB, silent refresh, sign-in, session status and sign-out under `/bff`), adds the bearer token and checks the CSRF header and the origin ([ADR-012](../../reference/adr/0012-react-spa-frontend.md), [ADR-019](../../reference/adr/0019-browser-session-in-the-bff.md)). Stack, folder layout and testing strategy: [front-end architecture](../../frontend/architecture.md).
 
 | Folder | Responsibility |
 | --- | --- |
@@ -188,4 +187,4 @@ Component tests run with Vitest, Testing Library and axe. Interactive and inform
 
 | Component | Responsibility |
 | --- | --- |
-| `TimeForCode.Shared` | `CookieAuthorizationHandler` reads the JWT cookie and attaches it as a bearer token on outgoing HTTP calls. `AuthorizeFilter` validates the token on incoming requests. |
+| `TimeForCode.Shared` | The API pipeline (security headers, forwarded headers, rate limiting, OpenAPI defaults) and the JWT validation of incoming requests. |

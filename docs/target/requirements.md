@@ -90,7 +90,7 @@ This document lists the functional and non-functional requirements for the TimeF
 | ID | Priority | Requirement |
 | --- | --- | --- |
 | SEC-01 | Must | All API endpoints must require authentication except for public project listings and the login flow |
-| SEC-02 | Must | Tokens must be stored in HttpOnly, Secure cookies — not in browser local storage |
+| SEC-02 | Must | No token reaches the browser: tokens stay server-side in the BFF and the browser holds one opaque HttpOnly, Secure session cookie — not local storage |
 | SEC-03 | Must | Redirect URIs must be validated against an explicit allowlist |
 | SEC-04 | Must | All service-to-service communication must validate the JWT audience and issuer |
 | SEC-05 | Must | Sensitive configuration (client secrets, signing keys, database credentials) must be stored in a secrets manager, not in source code or plain environment variables |

@@ -49,6 +49,7 @@ namespace TimeForCode.Authorization.Infrastructure.Extensions
 
 
             services.AddScoped<IStateRepository, StateRepository>();
+            services.AddScoped<ILoginCodeRepository, LoginCodeRepository>();
 
             // Without a database (OpenAPI document generation at build time, specifications) the keys cannot be shared;
             // the framework then falls back to its default, local key ring.

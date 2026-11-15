@@ -51,7 +51,7 @@ The domain has no external dependencies. Infrastructure implements interfaces de
 
 - Authentication is centralised in the Authorization API. No other service issues tokens.
 - All services validate tokens against the Authorization API's JWKS endpoint.
-- Tokens are stored in HttpOnly cookies to prevent XSS.
+- Tokens stay on the server: the BFF keeps them and the browser holds one opaque HttpOnly session cookie ([ADR-019](../../reference/adr/0019-browser-session-in-the-bff.md)).
 - Secrets are not committed to source control; they are supplied via environment variables in local development and via Azure Key Vault in production (target).
 
 ### Resilience Strategy

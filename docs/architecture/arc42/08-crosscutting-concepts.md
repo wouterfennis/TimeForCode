@@ -18,17 +18,17 @@ All API endpoints (except public project listings and the login flow) require a 
 4. Verify the `aud` (audience) includes this service's URL.
 5. Extract role claims and apply policy-based authorization.
 
-**Token storage**: HttpOnly, Secure cookies only. Never localStorage or sessionStorage.
+**Token storage**: tokens never reach the browser. The BFF keeps them server-side in MongoDB; the browser holds one opaque `__Host-session` cookie (`HttpOnly`, `Secure`, `SameSite=Strict`). Never localStorage or sessionStorage ([ADR-019](../../reference/adr/0019-browser-session-in-the-bff.md)).
 
 **Refresh tokens**:
 
-- Only a SHA-256 hash of the token is persisted (`TokenHash`); the readable value exists only in the cookie.
+- Only a SHA-256 hash of the token is persisted (`TokenHash`); the readable value exists only in the BFF session (and in the response to the BFF).
 - Each refresh rotates the token. The old record is kept and marked `RotatedAt` through a conditional update, so exactly one of two concurrent requests wins the rotation.
 - Presenting a rotated token again (replay, or the losing side of a race) fails and deletes all refresh tokens of that user, which ends every session of the user.
 - Records are removed by a MongoDB TTL index on `ExpiresAfter` (stored as a BSON date), including rotated ones.
-- `refresh` and `logout` are POST only. Logout expires both cookies with the same cookie attributes they were set with.
+- `refresh` and `logout` are POST only and take the refresh token in the request body; they set no cookie. The sign-in returns a single-use code (hash stored, 60 seconds) that is exchanged with the PKCE verifier at `POST /api/v1/authentication/token` (one atomic delete).
 - The admin session (user id `admin`, no account record) refreshes to a token with role and scope `admin`; every other user gets scope `user`.
-- CSRF: the state-changing endpoints rely on `SameSite=Strict` cookies; there is no separate anti-forgery token.
+- CSRF: the BFF requires the `X-Requested-With` header on state-changing requests and refuses a foreign `Origin`, on top of the `SameSite=Strict` session cookie. The APIs use bearer tokens and are not open to cross-site cookie requests.
 - Test-only admin access: `POST /api/v1/test-admin-access/token` with `{ "secret": "..." }` returns a short-lived (15 minutes at most) admin access token, marked with the claim `amr=test` and without a refresh token, so live tests can drive admin actions without a passkey. It is hidden from the OpenAPI document, logs refused attempts with the caller address, and answers `404` unless `TestAdminAccess:Enabled` is `true` (default `false`), `401` for a wrong secret (constant-time comparison). Startup throws when it is enabled outside the `Development` and `Test` environments or with a secret shorter than 16 characters. Only `docker-compose.yaml` enables it, and only when `TEST_ADMIN_ACCESS_SECRET` is set (a plain `podman compose up` leaves it disabled; `scripts/start-local.ps1` generates a random value; the Authorization API port is bound to loopback); see [ADR-017](../../reference/adr/0017-test-only-admin-access.md). `deploy/` runs as `Production` and never sets it.
 
 See [authorization and roles](../../target/authorization-and-roles.md) for the full role and permission model.
