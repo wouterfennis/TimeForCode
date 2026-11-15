@@ -4,6 +4,10 @@
 param([string[]]$Allow)
 
 $ErrorActionPreference = 'Stop'
+
+# `pwsh -File ... -Allow 'a','b'` passes ONE string "a,b" (the comma is not an array operator with -File), so split it
+# again, only where a new pattern starts (a comma followed by ^) so commas inside a regex survive.
+$Allow = @($Allow | ForEach-Object { $_ -split ',(?=\^)' })
 try {
     $event = [Console]::In.ReadToEnd() | ConvertFrom-Json
     $command = [string]$event.tool_input.command
