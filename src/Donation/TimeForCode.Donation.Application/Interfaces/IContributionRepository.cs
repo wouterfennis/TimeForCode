@@ -15,6 +15,11 @@ namespace TimeForCode.Donation.Application.Interfaces
         Task<(IReadOnlyList<Contribution> Contributions, int TotalCount)> GetPageByContributorIdsAsync(IReadOnlyCollection<ObjectId> contributorIds, int pageNumber, int pageSize, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Returns the total hours of the contributions the contributor logged; deleted contributions are left out.
+        /// </summary>
+        Task<int> GetTotalHoursByContributorIdAsync(ObjectId contributorId, CancellationToken cancellationToken);
+
+        /// <summary>
         /// Returns the contribution of the project, or <c>null</c> when there is none or it was deleted.
         /// </summary>
         Task<Contribution?> GetByIdAsync(string projectId, string contributionId, CancellationToken cancellationToken);
