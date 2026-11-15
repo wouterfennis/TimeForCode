@@ -35,5 +35,22 @@ namespace TimeForCode.Reporting.Application.Interfaces
         /// Fails with not found for an unknown or unpublished project.
         /// </summary>
         Task<Result<IReadOnlyList<ProjectContribution>>> GetProjectContributionsAsync(string projectId, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Returns the hours logged towards the donations of the donor organization. Public in the Donation context, so no access token.
+        /// Fails with not found for an unknown organization.
+        /// </summary>
+        Task<Result<int>> GetOrganizationHoursAsync(string donorOrganizationId, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Returns the total hours the contributor logged. Public in the Donation context, so no access token.
+        /// Fails with not found for an unknown contributor.
+        /// </summary>
+        Task<Result<int>> GetContributorHoursAsync(string contributorId, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Returns the platform-wide totals. Public in the Donation context, so no access token.
+        /// </summary>
+        Task<Result<PlatformStatistics>> GetPlatformStatisticsAsync(CancellationToken cancellationToken);
     }
 }

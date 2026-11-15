@@ -9,7 +9,7 @@ namespace TimeForCode.Donation.Infrastructure.Persistence.Database
     [ExcludeFromCodeCoverage(Justification = "Repository implementation")]
     internal class DonorOrganizationRepository : IDonorOrganizationRepository
     {
-        private static readonly object IndexCreationLock = new();
+        private static readonly Lock IndexCreationLock = new();
         private static bool _nameIndexCreated;
         private readonly IMongoCollection<DonorOrganization> _collection;
 
