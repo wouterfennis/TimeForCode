@@ -87,6 +87,11 @@ export interface paths {
                     IdentityProvider?: components["schemas"]["IdentityProvider"];
                     /** @description Gets or sets the redirect URI for the login request. */
                     RedirectUri?: string;
+                    /**
+                     * @description Gets or sets the PKCE code challenge: the unpadded base64url SHA-256 hash (43 characters, method S256) of a random verifier
+                     *     that only the client holds. The code exchange requires that verifier, which binds the sign-in to the client that started it.
+                     */
+                    CodeChallenge?: string;
                 };
                 header?: never;
                 path?: never;
@@ -103,7 +108,7 @@ export interface paths {
                         "application/json": unknown;
                     };
                 };
-                /** @description The redirect uri is not on the list of allowed redirect uris or the request is not valid. */
+                /** @description The redirect uri is not on the list of allowed redirect uris, the code challenge is malformed or the request is not valid. */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -162,16 +167,7 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
-                /** @description The expiry of the new access token and whether the user is new; both tokens are only set as HttpOnly cookies, never in the body. */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["CallbackResponseModel"];
-                    };
-                };
-                /** @description Sign-in succeeded and the browser is redirected to the redirect uri given at login; the tokens are set as cookies. */
+                /** @description Sign-in succeeded and the browser is redirected to the redirect uri given at login, with a single-use code to exchange for tokens. */
                 302: {
                     headers: {
                         [name: string]: unknown;
@@ -217,7 +213,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/Authentication/session/logout": {
+    "/api/v1/Authentication/token": {
         parameters: {
             query?: never;
             header?: never;
@@ -226,7 +222,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Logout endpoint. */
+        /** Exchanges the single-use code of a completed sign-in for tokens. */
         post: {
             parameters: {
                 query?: never;
@@ -234,18 +230,43 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody?: never;
+            /** @description The code and the PKCE verifier of the login that produced it. */
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ExchangeCodeRequestModel"];
+                    "text/json": components["schemas"]["ExchangeCodeRequestModel"];
+                    "application/*+json": components["schemas"]["ExchangeCodeRequestModel"];
+                };
+            };
             responses: {
-                /** @description The refresh token was revoked, if present, and the token cookies were removed. */
-                204: {
+                /** @description The access token and refresh token. */
+                200: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": unknown;
+                        "application/json": components["schemas"]["TokenResponseModel"];
                     };
                 };
-                /** @description The logout failed because of an unexpected server error. */
+                /** @description The code is unknown, already used or expired, or the verifier does not match the login. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Too many requests. Retry after the number of seconds given in the Retry-After header. */
+                429: {
+                    headers: {
+                        /** @description Number of seconds to wait before retrying. */
+                        "Retry-After"?: number;
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description The exchange failed because of an unexpected server error. */
                 500: {
                     headers: {
                         [name: string]: unknown;
@@ -262,7 +283,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/Authentication/session/refresh": {
+    "/api/v1/Authentication/refresh": {
         parameters: {
             query?: never;
             header?: never;
@@ -279,18 +300,25 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody?: never;
+            /** @description The refresh token the client holds. */
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["RefreshRequestModel"];
+                    "text/json": components["schemas"]["RefreshRequestModel"];
+                    "application/*+json": components["schemas"]["RefreshRequestModel"];
+                };
+            };
             responses: {
-                /** @description The expiry of the new access token; both new tokens are only set as HttpOnly cookies, never in the body. */
+                /** @description A new access token and refresh token. The refresh token that was sent is no longer valid. */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["CallbackResponseModel"];
+                        "application/json": components["schemas"]["TokenResponseModel"];
                     };
                 };
-                /** @description The refresh token is missing, unknown or expired. */
+                /** @description The refresh token is unknown, expired or was already used. */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -309,6 +337,58 @@ export interface paths {
                     content?: never;
                 };
                 /** @description The refresh failed because of an unexpected server error. */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": unknown;
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/Authentication/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Logout endpoint. */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            /** @description The refresh token to revoke. */
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["RefreshRequestModel"];
+                    "text/json": components["schemas"]["RefreshRequestModel"];
+                    "application/*+json": components["schemas"]["RefreshRequestModel"];
+                };
+            };
+            responses: {
+                /** @description The refresh token was revoked, if it existed. */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": unknown;
+                    };
+                };
+                /** @description The logout failed because of an unexpected server error. */
                 500: {
                     headers: {
                         [name: string]: unknown;
@@ -614,6 +694,16 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** @description A short-lived access token issued by the Authorization API. */
+        AccessToken: {
+            /** @description The signed JSON Web Token (JWT, RS256); send it as a bearer token. Verify it with the keys of the JWKS endpoint. */
+            token: string;
+            /**
+             * Format: date-time
+             * @description The moment the token expires, as an ISO 8601 date and time with offset; the token is invalid after this instant.
+             */
+            expiresAfter: string;
+        };
         /** @description Completes the admin passkey authentication ceremony. */
         AdminCompleteAuthenticationRequestModel: {
             /** @description The JSON-serialised `PublicKeyCredential` returned by `navigator.credentials.get()`. */
@@ -653,6 +743,16 @@ export interface components {
             /** @description Absolute URL of the JSON Web Key Set that holds the public keys for verifying token signatures */
             jwks_uri: string;
         };
+        /** @description Represents the request to exchange the single-use code of a completed sign-in for tokens. */
+        ExchangeCodeRequestModel: {
+            /** @description The single-use code the browser received in the redirect after sign-in. It is valid once and for a short time. */
+            code: string;
+            /**
+             * @description The PKCE code verifier (43 to 128 unreserved characters) whose S256 challenge was sent when the login started.
+             *     A code started with another verifier is rejected.
+             */
+            codeVerifier: string;
+        };
         /**
          * @description Represents the identity providers supported by the application.
          * @enum {string}
@@ -686,6 +786,21 @@ export interface components {
             detail?: null | string;
             instance?: null | string;
         };
+        /** @description Represents a request that carries the refresh token: renewing the tokens or signing out. */
+        RefreshRequestModel: {
+            /** @description The refresh token the client holds. */
+            refreshToken: components["schemas"]["RefreshToken"];
+        };
+        /** @description A long-lived refresh token that is exchanged for a new access token and a new refresh token. */
+        RefreshToken: {
+            /** @description The opaque refresh token value; single use, it is replaced by a new one on every refresh. */
+            token: string;
+            /**
+             * Format: date-time
+             * @description The moment the refresh token expires, as an ISO 8601 date and time with offset; the token is invalid after this instant.
+             */
+            expiresAfter: string;
+        };
         /** @description Repository response model */
         RepositoryResponse: {
             /** @description Repository name */
@@ -701,6 +816,15 @@ export interface components {
             language?: null | string;
             /** @description Repository URL */
             url: string;
+        };
+        /** @description The tokens issued to a client: after a code exchange or a refresh. The client keeps them server-side and never hands them to a browser script. */
+        TokenResponseModel: {
+            /** @description The short-lived access token; send it as a bearer token. */
+            accessToken: components["schemas"]["AccessToken"];
+            /** @description The new refresh token. Single use: the one the client sent to refresh is now invalid. */
+            refreshToken: components["schemas"]["RefreshToken"];
+            /** @description Indicates whether this is the user's first login (new account was created). */
+            isNewUser?: boolean;
         };
         /** @description User response model */
         UserResponse: {

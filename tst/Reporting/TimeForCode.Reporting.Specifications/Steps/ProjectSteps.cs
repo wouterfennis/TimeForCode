@@ -131,7 +131,12 @@ namespace TimeForCode.Reporting.Specifications.Steps
             }
         }
 
-        private static Task<string> GetMaintainerTokenAsync()
+        // Cached: a sign-in is three calls against the shared sign-in rate limit, which every live scenario would otherwise spend again.
+        private static readonly LiveTokenCache MaintainerToken = new(SignInMaintainerAsync);
+
+        private static Task<string> GetMaintainerTokenAsync() => MaintainerToken.GetAsync();
+
+        private static Task<string> SignInMaintainerAsync()
         {
             return LiveAuthentication.SignInAsync(
                 LiveAuthentication.ResolveAuthorizationAddress(Environment.GetEnvironmentVariable(LiveAuthentication.AuthorizationUrlVariable)),

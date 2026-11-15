@@ -91,6 +91,20 @@ namespace TimeForCode.Authorization.Application.Tests.Handlers
         }
 
         [TestMethod]
+        public async Task Handle_AccessTokenCannotBeIssued_FailsWithItsErrorAndCreatesNoRefreshToken()
+        {
+            _codes.Setup(x => x.TakeAsync(It.IsAny<string>())).ReturnsAsync(Code(Now.AddSeconds(30), Challenge));
+            _tokenService.Setup(x => x.GenerateInternalTokenForSessionAsync(UserId))
+                .ReturnsAsync(Result<AccessToken>.Failure("User not found"));
+
+            var result = await _sut.Handle(Command(), CancellationToken.None);
+
+            result.IsFailure.Should().BeTrue();
+            result.ErrorMessage.Should().Be("User not found");
+            _refreshTokenService.Verify(x => x.CreateRefreshTokenAsync(It.IsAny<string>()), Times.Never);
+        }
+
+        [TestMethod]
         public async Task Handle_VerifierOfAnotherLogin_FailsWithoutIssuingTokens()
         {
             _codes.Setup(x => x.TakeAsync(It.IsAny<string>())).ReturnsAsync(Code(Now.AddSeconds(30), Challenge));
