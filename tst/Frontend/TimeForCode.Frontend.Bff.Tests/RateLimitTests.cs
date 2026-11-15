@@ -1,5 +1,8 @@
 using AwesomeAssertions;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
 using System.Net;
 using System.Net.Http.Json;
 
@@ -73,6 +76,58 @@ namespace TimeForCode.Frontend.Bff.Tests
 
             statuses.Take(Limit).Should().NotContain(HttpStatusCode.TooManyRequests);
             statuses.Last().Should().Be(HttpStatusCode.TooManyRequests);
+        }
+
+        private sealed class RemoteAddressFilter(string address) : Microsoft.AspNetCore.Hosting.IStartupFilter
+        {
+            public Action<Microsoft.AspNetCore.Builder.IApplicationBuilder> Configure(Action<Microsoft.AspNetCore.Builder.IApplicationBuilder> next) => app =>
+            {
+                app.Use((context, nextMiddleware) =>
+                {
+                    context.Connection.RemoteIpAddress = System.Net.IPAddress.Parse(address);
+                    return nextMiddleware();
+                });
+                next(app);
+            };
+        }
+
+        [TestMethod]
+        public async Task SignInEndpoint_BehindATrustedProxy_LimitsEachForwardedClientAddressOnItsOwn()
+        {
+            using var factory = new BffFactory().WithWebHostBuilder(builder =>
+            {
+                builder.UseSetting("Session:SignInRequestsPerMinute", Limit.ToString());
+                builder.UseSetting("ForwardedHeaders:KnownProxies:0", "10.0.0.5");
+                builder.ConfigureTestServices(services => services.AddSingleton<Microsoft.AspNetCore.Hosting.IStartupFilter>(new RemoteAddressFilter("10.0.0.5")));
+            });
+            using var client = factory.CreateClient(new Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
+
+            async Task<HttpStatusCode> LoginFromAsync(string clientAddress)
+            {
+                using var request = new HttpRequestMessage(HttpMethod.Get, "/bff/login");
+                request.Headers.Add("X-Forwarded-For", clientAddress);
+                using var response = await client.SendAsync(request, TestContext.CancellationToken);
+                return response.StatusCode;
+            }
+
+            for (var i = 0; i < Limit; i++)
+            {
+                await LoginFromAsync("203.0.113.1");
+            }
+
+            (await LoginFromAsync("203.0.113.1")).Should().Be(HttpStatusCode.TooManyRequests);
+            (await LoginFromAsync("203.0.113.2")).Should().NotBe(HttpStatusCode.TooManyRequests);
+        }
+
+        [TestMethod]
+        public async Task SignInEndpoint_RefusedRequest_HasAProblemDetailsBody()
+        {
+            await SendManyAsync(() => new HttpRequestMessage(HttpMethod.Get, "/bff/login"), Limit);
+
+            using var refused = await _browser.GetAsync("/bff/login", TestContext.CancellationToken);
+
+            refused.Content.Headers.ContentType!.MediaType.Should().Be("application/problem+json");
+            (await refused.Content.ReadAsStringAsync(TestContext.CancellationToken)).Should().Contain("429");
         }
 
         [TestMethod]

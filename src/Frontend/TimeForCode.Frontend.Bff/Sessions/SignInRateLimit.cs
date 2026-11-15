@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using System.Globalization;
 using System.Threading.RateLimiting;
@@ -19,17 +20,22 @@ namespace TimeForCode.Frontend.Bff.Sessions
             services.AddRateLimiter(options =>
             {
                 options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
-                options.OnRejected = (context, _) =>
+                options.OnRejected = async (context, cancellationToken) =>
                 {
                     // A sliding window gives no hint, so the answer is how long a segment takes to free (window / segments).
                     var seconds = context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter) ? (int)Math.Ceiling(retryAfter.TotalSeconds) : SegmentSeconds;
                     context.HttpContext.Response.Headers.RetryAfter = seconds.ToString(CultureInfo.InvariantCulture);
-                    return ValueTask.CompletedTask;
+                    await context.HttpContext.Response.WriteAsJsonAsync(
+                        new ProblemDetails { Status = StatusCodes.Status429TooManyRequests, Title = "Too many requests" },
+                        (System.Text.Json.JsonSerializerOptions?)null,
+                        "application/problem+json",
+                        cancellationToken);
                 };
                 options.AddPolicy(PolicyName, context =>
                 {
                     var limit = context.RequestServices.GetRequiredService<IOptions<BrowserSessionOptions>>().Value.SignInRequestsPerMinute;
                     return RateLimitPartition.GetSlidingWindowLimiter(
+                        // Kestrel always knows the address; the shared bucket is only the fail-closed fallback for a host that does not.
                         context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
                         _ => new SlidingWindowRateLimiterOptions
                         {
