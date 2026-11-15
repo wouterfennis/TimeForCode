@@ -20,7 +20,7 @@ namespace TimeForCode.Donation.Architecture.Tests
                 .Select(x => $"{x.Action} declares {x.Type.FullName}")
                 .ToList();
 
-            Assert.AreEqual(0, violations.Count, "Response types must be defined in the Donation API project:" + Environment.NewLine + string.Join(Environment.NewLine, violations));
+            Assert.IsEmpty(violations, "Response types must be defined in the Donation API project:" + Environment.NewLine + string.Join(Environment.NewLine, violations));
         }
 
         private static IEnumerable<Type> Flatten(Type type)
