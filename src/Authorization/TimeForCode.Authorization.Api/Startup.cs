@@ -34,6 +34,7 @@ namespace TimeForCode.Authorization.Api
         public void ConfigureServices(IServiceCollection services)
         {
             TestAdminAccessOptions.Bind(_configuration).EnsureSafeFor(_environment.EnvironmentName);
+            TokenCreationOptions.Bind(_configuration).EnsureValidLifetime();
 
             var authenticationOptions = AuthenticationOptions.Bind(_configuration);
 
@@ -56,6 +57,7 @@ namespace TimeForCode.Authorization.Api
                     "Authorization API",
                     "API to interact with the authorization backend"));
             services.AddDefaultControllers();
+            services.AddTrustedForwardedHeaders(_configuration);
 
             services.AddApplicationLayer(_configuration, allowEphemeralSigningKey: _environment.IsDevelopment());
             services.AddInfrastructureLayer(_configuration);

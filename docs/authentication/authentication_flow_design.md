@@ -17,7 +17,7 @@ Two kinds of token are involved and they never mix:
 | Token | Issued by | Lifetime | What it is for | Stored |
 | --- | --- | --- | --- | --- |
 | GitHub access token | GitHub | Does not expire | Reading the signed-in user's profile once | Nowhere: discarded after the profile fetch |
-| Internal access token (JWT) | Authorization API | `TokenExpiresInMinutes` (configuration) | Calling the platform APIs | Only in the client's cookie |
+| Internal access token (JWT) | Authorization API | `TokenExpiresInMinutes` (configuration, 1 to 15 minutes) | Calling the platform APIs | Only in the client's cookie |
 | Internal refresh token | Authorization API | `DefaultRefreshTokenExpirationAfterInDays` (configuration) | Getting a new access token without GitHub | MongoDB, and in the client's cookie |
 
 The login is the OAuth 2.0 *authorization code grant* ([RFC 6749 section 4.1](https://datatracker.ietf.org/doc/html/rfc6749#section-4.1)), with the Authorization API acting as the confidential client and GitHub as the authorization server. See [References](#references) for the specifications.
@@ -195,7 +195,8 @@ Administrators do not use GitHub. They sign in with a WebAuthn passkey (`/api/v1
 | `AuthenticationOptions` | `ValidRedirectUris` | Allow-list for return URLs |
 | `AuthenticationOptions` | `Issuer`, `Audience` | Values the Authorization API itself validates tokens against |
 | `TokenCreationOptions` | `Issuer`, `Audiences` | Values written into issued tokens |
-| `TokenCreationOptions` | `TokenExpiresInMinutes`, `DefaultRefreshTokenExpirationAfterInDays` | Token lifetimes |
+| `TokenCreationOptions` | `TokenExpiresInMinutes`, `DefaultRefreshTokenExpirationAfterInDays` | Token lifetimes; the access token lifetime must be 1 to 15 minutes or the service does not start |
+| `ForwardedHeaders` | `KnownProxies`, `KnownNetworks` | The proxies whose `X-Forwarded-*` headers are trusted; without them only loopback is |
 | `ExternalIdentityProviderOptions` | `CallbackUri` and per provider hosts, `ClientId`, `ClientSecret` | The OAuth app registration at GitHub |
 
 Secrets belong in environment-specific configuration, never in the repository.

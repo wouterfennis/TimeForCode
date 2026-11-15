@@ -33,6 +33,7 @@ namespace TimeForCode.Donation.Api
                     "Donation API",
                     "API to interact with the donation backend"));
             services.AddDefaultControllers();
+            services.AddTrustedForwardedHeaders(_configuration);
 
             services.AddJwtBearerAuthentication(_configuration);
 

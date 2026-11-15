@@ -40,5 +40,15 @@ namespace TimeForCode.Frontend.Bff.Tests
 
             response.Headers.GetValues(header).Should().ContainSingle().Which.Should().Be(value);
         }
+
+        [TestMethod]
+        [DataRow("unsafe-inline")]
+        [DataRow("unsafe-eval")]
+        public async Task Get_AnyResponse_ContentSecurityPolicyAllowsNoUnsafeScriptSources(string forbidden)
+        {
+            var response = await _browser.GetAsync("/", TestContext.CancellationToken);
+
+            response.Headers.GetValues("Content-Security-Policy").Single().Should().NotContain(forbidden);
+        }
     }
 }

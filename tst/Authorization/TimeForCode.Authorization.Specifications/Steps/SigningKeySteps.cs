@@ -22,7 +22,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
         private readonly HttpClient _defaultClient;
         private readonly CookieContainer _cookieContainer;
         private readonly ScenarioInfrastructure _infrastructure;
-        private readonly Dictionary<string, string?> _settings = new();
+        private readonly Dictionary<string, string?> _settings = new() { ["TokenCreationOptions:TokenExpiresInMinutes"] = "15" };
         private string _environment = "Development";
         private ConfiguredPlatformFactory? _factory;
         private HttpClient? _rotationClient;
