@@ -62,12 +62,16 @@ namespace TimeForCode.Frontend.Bff.Sessions
             group.MapGet("/login", LoginAsync)
                 .WithSummary("Starts the sign-in.")
                 .WithDescription("Redirects the browser to the Authorization API, which redirects to the identity provider. The PKCE verifier stays on the server; a short-lived opaque cookie finds it again at the callback.")
-                .Produces(StatusCodes.Status302Found);
+                .Produces(StatusCodes.Status302Found)
+                .ProducesProblem(StatusCodes.Status429TooManyRequests)
+                .RequireRateLimiting(SignInRateLimit.PolicyName);
 
             group.MapGet("/callback", CallbackAsync)
                 .WithSummary("Completes the sign-in.")
                 .WithDescription("The Authorization API redirects here with a single-use code. The BFF exchanges it, opens a session and redirects to the page the user came from. On any failure it redirects to /?signInError=1.")
-                .Produces(StatusCodes.Status302Found);
+                .Produces(StatusCodes.Status302Found)
+                .ProducesProblem(StatusCodes.Status429TooManyRequests)
+                .RequireRateLimiting(SignInRateLimit.PolicyName);
 
             group.MapGet("/session", GetSessionAsync)
                 .WithSummary("Tells whether the user is signed in.")
@@ -142,6 +146,8 @@ namespace TimeForCode.Frontend.Bff.Sessions
         private static void MapAdminEndpoints(RouteGroupBuilder group)
         {
             var admin = group.MapGroup("/admin");
+            admin.RequireRateLimiting(SignInRateLimit.PolicyName);
+            admin.WithMetadata(new ProducesResponseTypeAttribute(typeof(ProblemDetails), StatusCodes.Status429TooManyRequests, "application/problem+json"));
 
             admin.MapPost("/registration/options", AdminRegistrationOptionsAsync)
                 .WithSummary("Starts the admin passkey registration.")
