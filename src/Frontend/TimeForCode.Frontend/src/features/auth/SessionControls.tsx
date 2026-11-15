@@ -10,7 +10,7 @@ export function SessionControls() {
 
   useEffect(() => {
     const abort = new AbortController()
-    fetchSession(abort.signal).then((result) => {
+    void fetchSession(abort.signal).then((result) => {
       if (!abort.signal.aborted) setState(result)
     })
     return () => abort.abort()
