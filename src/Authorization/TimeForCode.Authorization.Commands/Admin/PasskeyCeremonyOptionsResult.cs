@@ -7,6 +7,9 @@ namespace TimeForCode.Authorization.Commands.Admin
     public class PasskeyCeremonyOptionsResult
     {
         public required string OptionsJson { get; init; }
-        public required string ProtectedCeremonyState { get; init; }
+        /// <summary>
+        /// The opaque id of the ceremony the client sends back to complete it. The state itself stays on the server.
+        /// </summary>
+        public required string CeremonyId { get; init; }
     }
 }

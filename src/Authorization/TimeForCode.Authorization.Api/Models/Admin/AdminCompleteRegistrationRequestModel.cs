@@ -20,5 +20,12 @@ namespace TimeForCode.Authorization.Api.Models.Admin
         [Required]
         [MaxLength(ApiConstraints.MaxCredentialJsonLength)]
         public required string CredentialJson { get; init; }
+
+        /// <summary>
+        /// The ceremony id returned by the options call. It works once and expires after a short time.
+        /// </summary>
+        [Required]
+        [MaxLength(ApiConstraints.MaxCeremonyIdLength)]
+        public required string CeremonyId { get; init; }
     }
 }

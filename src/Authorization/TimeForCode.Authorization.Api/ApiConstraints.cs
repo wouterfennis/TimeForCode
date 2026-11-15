@@ -8,6 +8,7 @@ namespace TimeForCode.Authorization.Api
         internal const int MaxOAuthParameterLength = 2048;
         internal const int MaxSecretLength = 256;
         internal const int MaxCredentialJsonLength = 16384;
+        internal const int MaxCeremonyIdLength = 128;
         internal const int MaxGithubOwnerLength = 39;
         internal const int MaxGithubRepositoryNameLength = 100;
 

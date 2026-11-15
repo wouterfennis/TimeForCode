@@ -36,7 +36,7 @@
         },
         "responses": {
           "200": {
-            "description": "The passkey creation options (JSON) for the browser; the ceremony state is set in a short-lived cookie.",
+            "description": "The passkey creation options (JSON) for the browser and the ceremony id to send back when the ceremony completes.",
             "content": {
               "application/json": {
                 "schema": {
@@ -78,7 +78,7 @@
         "summary": "Completes the one-time admin passkey registration ceremony. Only the first successful completion permanently claims the admin role.",
         "operationId": "AdminCompleteRegistration",
         "requestBody": {
-          "description": "The bootstrap secret and the credential (JSON) created by the browser.",
+          "description": "The bootstrap secret, the credential (JSON) created by the browser and the ceremony id of the options call.",
           "content": {
             "application/json": {
               "schema": {
@@ -100,17 +100,17 @@
         },
         "responses": {
           "200": {
-            "description": "The admin credential was claimed; the tokens are only set as HttpOnly cookies, never in the body.",
+            "description": "The admin credential was claimed; the access token and refresh token are returned.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CallbackResponseModel"
+                  "$ref": "#/components/schemas/TokenResponseModel"
                 }
               }
             }
           },
           "400": {
-            "description": "No registration ceremony is in progress or the registration was rejected.",
+            "description": "The ceremony is unknown, expired or already used, or the registration was rejected.",
             "content": {
               "application/json": {
                 "schema": {
@@ -135,7 +135,7 @@
       }
     },
     "/api/v1/admin-authentication/authentication/options": {
-      "get": {
+      "post": {
         "tags": [
           "AdminAuthentication"
         ],
@@ -143,7 +143,7 @@
         "operationId": "AdminAuthenticationOptions",
         "responses": {
           "200": {
-            "description": "The passkey request options (JSON) for the browser; the ceremony state is set in a short-lived cookie.",
+            "description": "The passkey request options (JSON) for the browser and the ceremony id to send back when the ceremony completes.",
             "content": {
               "application/json": {
                 "schema": {
@@ -185,7 +185,7 @@
         "summary": "Completes the admin passkey authentication ceremony.",
         "operationId": "AdminCompleteAuthentication",
         "requestBody": {
-          "description": "The assertion credential (JSON) produced by the browser.",
+          "description": "The assertion credential (JSON) produced by the browser and the ceremony id of the options call.",
           "content": {
             "application/json": {
               "schema": {
@@ -207,17 +207,17 @@
         },
         "responses": {
           "200": {
-            "description": "The admin signed in; the tokens are only set as HttpOnly cookies, never in the body.",
+            "description": "The admin signed in; the access token and refresh token are returned.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CallbackResponseModel"
+                  "$ref": "#/components/schemas/TokenResponseModel"
                 }
               }
             }
           },
           "400": {
-            "description": "No authentication ceremony is in progress or the assertion was rejected.",
+            "description": "The ceremony is unknown, expired or already used, or the assertion was rejected (including a signature counter that did not increase).",
             "content": {
               "application/json": {
                 "schema": {
@@ -852,7 +852,8 @@
       },
       "AdminCompleteAuthenticationRequestModel": {
         "required": [
-          "credentialJson"
+          "credentialJson",
+          "ceremonyId"
         ],
         "type": "object",
         "properties": {
@@ -860,6 +861,11 @@
             "maxLength": 16384,
             "type": "string",
             "description": "The JSON-serialised `PublicKeyCredential` returned by `navigator.credentials.get()`."
+          },
+          "ceremonyId": {
+            "maxLength": 128,
+            "type": "string",
+            "description": "The ceremony id returned by the options call. It works once and expires after a short time."
           }
         },
         "description": "Completes the admin passkey authentication ceremony."
@@ -867,7 +873,8 @@
       "AdminCompleteRegistrationRequestModel": {
         "required": [
           "bootstrapSecret",
-          "credentialJson"
+          "credentialJson",
+          "ceremonyId"
         ],
         "type": "object",
         "properties": {
@@ -880,19 +887,29 @@
             "maxLength": 16384,
             "type": "string",
             "description": "The JSON-serialised `PublicKeyCredential` returned by `navigator.credentials.create()`."
+          },
+          "ceremonyId": {
+            "maxLength": 128,
+            "type": "string",
+            "description": "The ceremony id returned by the options call. It works once and expires after a short time."
           }
         },
         "description": "Completes the one-time admin passkey registration ceremony. The bootstrap secret is re-validated here."
       },
       "AdminPasskeyOptionsResponseModel": {
         "required": [
-          "optionsJson"
+          "optionsJson",
+          "ceremonyId"
         ],
         "type": "object",
         "properties": {
           "optionsJson": {
             "type": "string",
             "description": "The JSON-serialised WebAuthn options for the browser to pass to `navigator.credentials`."
+          },
+          "ceremonyId": {
+            "type": "string",
+            "description": "The opaque id of the ceremony. Send it back when the ceremony completes; the ceremony state itself stays on the server."
           }
         },
         "description": "WebAuthn creation/request options for the browser to pass to `navigator.credentials`."
@@ -910,24 +927,6 @@
           }
         },
         "description": "Request to begin the one-time admin passkey registration ceremony."
-      },
-      "CallbackResponseModel": {
-        "required": [
-          "expiresAfter"
-        ],
-        "type": "object",
-        "properties": {
-          "expiresAfter": {
-            "type": "string",
-            "description": "When the new access token, which only the HttpOnly cookie carries, expires. The client schedules its next refresh from this.",
-            "format": "date-time"
-          },
-          "isNewUser": {
-            "type": "boolean",
-            "description": "Indicates whether this is the user's first login (new account was created)."
-          }
-        },
-        "description": "Represents the model for a sign-in or refresh response. It carries no token: both tokens are only in HttpOnly cookies (ADR-005)."
       },
       "DiscoveryDocumentResponse": {
         "required": [

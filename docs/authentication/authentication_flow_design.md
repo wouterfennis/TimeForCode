@@ -7,7 +7,7 @@ Two readers:
 - **In five minutes:** read [In short](#in-short), the [overview diagram](#overview) and the [credential table](#every-cookie-token-and-code).
 - **Engineer or front-end developer:** the [sequence diagrams](#sequence-diagrams) have the detail, the [front-end guide](#front-end-guide) has the endpoints and example requests.
 
-Status: the GitHub sign-in is implemented as described. The admin passkey login still sets cookies in the Authorization API and does not work through the BFF yet; it moves onto this model in issue #196 (see [Admin login](#admin-login)).
+Status: implemented as described, for the GitHub sign-in and the admin passkey login (registration and sign-in through the BFF).
 
 ## In short
 
@@ -54,8 +54,6 @@ Only the arrows labelled with a credential carry one. The browser never receives
 | Refresh token | Authorization API | BFF database (session); Authorization API stores only its SHA-256 hash | 7 days (`DefaultRefreshTokenExpirationAfterInDays`), single use: every refresh rotates it | Random string in a request body between the BFF and the Authorization API | BFF and Authorization API; never the browser |
 | GitHub access token | GitHub | Nowhere | Used once to read the profile, then dropped | Bearer, Authorization API to GitHub | Authorization API, for one call |
 
-The admin passkey login still uses `AccessToken`, `RefreshToken` and ceremony-state cookies set by the Authorization API until #196; they are described under [Admin login](#admin-login).
-
 ## Sequence diagrams
 
 ### GitHub sign-in with the PKCE binding and one-time code exchange
@@ -86,8 +84,8 @@ sequenceDiagram
     Auth->>GitHub: Exchange GitHub code (client secret, own verifier)
     GitHub-->>Auth: GitHub access token
     Auth->>GitHub: GET /user, then drop the token
-    Auth->>DB: Create or update account; store hash of one-time code (60 s, client challenge)
-    Auth-->>User: 302 to https://app/bff/callback?code=<one-time code>
+    Auth->>DB: Create or update account, store hash of one-time code (60 s, client challenge)
+    Auth-->>User: 302 to https://app/bff/callback?code=...
     User->>BFF: GET /bff/callback?code=.. (with __Host-login cookie)
     BFF->>DB: Take login attempt (atomic delete)
     BFF->>Auth: POST /api/v1/authentication/token {code, codeVerifier}
@@ -138,8 +136,9 @@ sequenceDiagram
     participant DB as MongoDB
     participant Auth as Authorization API
 
-    par two parallel calls find an expired access token
+    par the first call finds an expired access token
         SPA->>A: GET /api/donation/...
+    and the second call
         SPA->>B: GET /api/donation/...
     end
     A->>DB: Take refresh lease (atomic conditional update)
@@ -200,7 +199,7 @@ sequenceDiagram
     Auth->>DB: Token found and already rotated
     Auth->>DB: Delete ALL refresh tokens of the user
     Auth-->>Attacker: 400 "Token refresh failed."
-    Note over Auth,DB: The BFF session of the user fails at its next refresh and ends; the user signs in again
+    Note over Auth,DB: The BFF session of the user fails at its next refresh and ends, the user signs in again
 ```
 
 ### Sign-out
@@ -243,9 +242,104 @@ sequenceDiagram
 
 The Donation API alone decides who may read; Reporting has no service credential. The BFF is not on this path today; a browser reaches Reporting through the same bearer-adding mechanism when a route is added.
 
-### Admin login
+### Admin passkey registration and sign-in through the BFF
 
-The administrator signs in with a WebAuthn passkey (`/api/v1/admin-authentication/...`, rate limit policy `admin-auth`, [ADR-011](../reference/adr/0011-webauthn-admin-authentication.md)). After a successful assertion the Authorization API issues a token with `sub=admin`, `role=admin` and `scope=admin`. This path still sets the `AccessToken`, `RefreshToken` and ceremony-state cookies (`AdminAttestationState`, `AdminAssertionState`) in the Authorization API and its CORS policy allows credentials. Because the BFF no longer converts cookies into bearer tokens, the admin login does not work through the BFF until issue #196 moves it onto the BFF session with single-use ceremony state. The registration and sign-in sequence diagrams are added there.
+The administrator signs in with a WebAuthn passkey ([ADR-011](../reference/adr/0011-webauthn-admin-authentication.md), amended by #196). The role is claimed once, by registering a passkey with the bootstrap secret; after that the admin signs in with that passkey. Both ceremonies run through the BFF, set no cookie at the Authorization API and end in the same opaque `__Host-session` cookie as every other sign-in.
+
+What is different from the GitHub sign-in:
+
+- **A ceremony is a server-side record that works once.** The options call stores the (encrypted) challenge state under the hash of an opaque *ceremony id*, with the kind (registration or authentication) and an expiry (`AdminPasskeyOptions:CeremonyLifetimeInSeconds`, default 300). The completing call sends the id back; the record is taken with one atomic delete. There is no ceremony cookie.
+- **Tokens go to the BFF only.** The Authorization API returns the admin access and refresh token in the body; the BFF keeps them in the session, and the browser gets `{ isSignedIn, isNewUser, isAdmin, userId, ... }` and the cookie.
+- **Refusals carry no reason.** The BFF answers `400` with the same text whether the secret was wrong, the role was already claimed, the device is not the registered one or the ceremony was used.
+
+#### Registration (first claim of the admin role)
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Admin as Browser (admin)
+    participant SPA
+    participant BFF
+    participant Auth as Authorization API
+    participant DB as MongoDB
+
+    Admin->>SPA: Enter the bootstrap secret, choose "Register passkey"
+    SPA->>BFF: POST /bff/admin/registration/options {bootstrapSecret} (X-Requested-With)
+    BFF->>Auth: POST /api/v1/admin-authentication/registration/options
+    Auth->>Auth: Secret matches (constant time)? No admin credential yet?
+    Auth->>DB: Store ceremony state (hash of id, kind=registration, expiry)
+    Auth-->>BFF: {ceremonyId, optionsJson}
+    BFF-->>SPA: {ceremonyId, optionsJson} (no cookie)
+    SPA->>Admin: navigator.credentials.create(options)
+    Admin-->>SPA: New passkey (credential JSON)
+    SPA->>BFF: POST /bff/admin/registration {bootstrapSecret, credentialJson, ceremonyId}
+    BFF->>Auth: POST /api/v1/admin-authentication/registration
+    Auth->>DB: Take ceremony state (atomic delete, right kind, not expired)
+    Auth->>Auth: Verify the attestation (challenge, origin, relying party)
+    Auth->>DB: Claim the admin credential (atomic insert, only the first wins)
+    Auth-->>BFF: access token + refresh token (admin role and scope)
+    BFF->>DB: Open a session with a NEW id
+    BFF-->>SPA: 200 {isAdmin: true, ...}, Set-Cookie __Host-session
+```
+
+Failure cases: a wrong secret or an already claimed role stops the options call (`400`, nothing stored). A ceremony id that is unknown, expired, already used or of the other kind, or an attestation that does not verify, ends in `400` with no session. Two devices that register at the same moment: the atomic insert lets exactly one claim the role.
+
+#### Sign-in
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Admin as Browser (admin)
+    participant SPA
+    participant BFF
+    participant Auth as Authorization API
+    participant DB as MongoDB
+
+    Admin->>SPA: Choose "Admin sign-in"
+    SPA->>BFF: POST /bff/admin/authentication/options (X-Requested-With)
+    BFF->>Auth: POST /api/v1/admin-authentication/authentication/options
+    Auth->>DB: Store ceremony state (hash of id, kind=authentication, expiry)
+    Auth-->>BFF: {ceremonyId, optionsJson}
+    BFF-->>SPA: {ceremonyId, optionsJson} (no cookie)
+    SPA->>Admin: navigator.credentials.get(options)
+    Admin-->>SPA: Assertion (credential JSON)
+    SPA->>BFF: POST /bff/admin/authentication {credentialJson, ceremonyId}
+    BFF->>Auth: POST /api/v1/admin-authentication/authentication
+    Auth->>DB: Take ceremony state (atomic delete)
+    Auth->>Auth: Verify the assertion (challenge, origin, signature of the registered key)
+    Auth->>Auth: Signature counter increased? (or 0 on both sides)
+    Auth-->>BFF: access token + refresh token (admin role and scope)
+    BFF->>DB: Open a session with a NEW id (the old one is deleted)
+    BFF-->>SPA: 200 {isAdmin: true, ...}, Set-Cookie __Host-session
+```
+
+#### A replayed assertion
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Attacker as Attacker with a captured ceremony id and assertion
+    participant BFF
+    participant Auth as Authorization API
+    participant DB as MongoDB
+
+    Note over Auth,DB: The admin has already signed in with this ceremony: its state was deleted
+    Attacker->>BFF: POST /bff/admin/authentication {credentialJson, ceremonyId}
+    BFF->>Auth: POST /api/v1/admin-authentication/authentication
+    Auth->>DB: Take ceremony state
+    DB-->>Auth: nothing found
+    Auth-->>BFF: 400
+    BFF-->>Attacker: 400 "The admin sign-in could not be completed", no cookie
+```
+
+Two more defences against a copied or cloned credential:
+
+- **The ceremony state is gone** after its first use, whatever the outcome, and expires after five minutes anyway. Also a ceremony that was started for a registration cannot complete a sign-in.
+- **The signature counter must increase.** The stored counter is compared with the one in the assertion; an assertion with a counter that is equal or lower is refused (a cloned authenticator or a replay). Authenticators that keep no counter (synced passkeys) report 0 every time; 0 on both sides is accepted, so for those the single-use ceremony is the protection.
+
+The ASP.NET Core passkey library verifies the cryptographic parts of the ceremony (challenge, origin, relying party, signature); the single-use state and the counter rule are enforced by the platform on top of it and covered by tests (`CeremonyStateStoreTests`, `CompleteAdminAuthenticationHandlerTests`, the admin specifications and `AdminEndpointsTests` of the BFF).
+
+After sign-in the admin session is an ordinary session: calls get the bearer token, the access token is refreshed silently (the refresh works for the admin user id too), and sign-out is `POST /bff/logout`.
 
 ## Front-end guide
 
@@ -317,6 +411,39 @@ if (response.status === 401) {
 }
 ```
 
+### Admin sign-in (passkey)
+
+The module `src/features/admin/passkey.ts` has `signInAdmin()` and `registerAdminPasskey(bootstrapSecret)`. Both talk only to `/bff/admin/...`, with the `X-Requested-With` header, and both return a status: `signed-in` (with the session info, `isAdmin: true`), `refused` (no reason is given: wrong secret, role already claimed, wrong device, used ceremony), `cancelled` (the user dismissed the browser prompt), `unsupported` (no `PublicKeyCredential`) or `error` (network or server failure). A refusal is not retried automatically: the ceremony works once, so the next attempt starts a new one.
+
+What the SPA does and sends:
+
+```ts
+// 1. Ask for the options. The ceremony id works once and expires after five minutes.
+const started = await fetch('/bff/admin/authentication/options', {
+  method: 'POST',
+  credentials: 'same-origin',
+  headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+  body: '{}',
+}) // 200 { ceremonyId, optionsJson } | 400 (no passkey registered yet)
+const { ceremonyId, optionsJson } = await started.json()
+
+// 2. Let the browser sign. The WebAuthn JSON helpers do the base64url conversion.
+const options = PublicKeyCredential.parseRequestOptionsFromJSON(JSON.parse(optionsJson))
+const credential = (await navigator.credentials.get({ publicKey: options })) as PublicKeyCredential
+
+// 3. Send the assertion and the ceremony id back. The response is the session info, never a token.
+const finished = await fetch('/bff/admin/authentication', {
+  method: 'POST',
+  credentials: 'same-origin',
+  headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+  body: JSON.stringify({ ceremonyId, credentialJson: JSON.stringify(credential.toJSON()) }),
+}) // 200 { isSignedIn, isNewUser, isAdmin, userId, login, avatarUrl } + Set-Cookie __Host-session | 400
+```
+
+Registration is the same with `/bff/admin/registration/options` (body `{ bootstrapSecret }`), `navigator.credentials.create` with `parseCreationOptionsFromJSON`, and `/bff/admin/registration` (body `{ bootstrapSecret, ceremonyId, credentialJson }`). The bootstrap secret is typed by the person doing the first claim: never store it, never log it. Do not call the Authorization API (`/api/v1/admin-authentication/...`) from the SPA: through the BFF those paths are `404`.
+
+The passkey belongs to the relying party domain `AdminPasskeyOptions:ServerDomain`, which must be the host of the front-end. Where the admin signs in is up to the page (a button on the home page or a route); after sign-in `GET /bff/session` reports `isAdmin: true`, which the UI may use to show admin pages. The backend remains the enforcer: admin endpoints check the `admin` scope of the bearer token.
+
 ### Tabs and reloads
 
 The session is a cookie, so it is shared by all tabs of the browser and survives reloads. Signing out in one tab ends it for all tabs; the other tabs find out at their next call (`401`). The idle timeout (30 minutes) slides forward with every call; after 8 hours the user has to sign in again however active they are.
@@ -344,9 +471,10 @@ A client that is not the BFF (a script, a test, another service) uses the same e
 | `POST /api/v1/authentication/token` | `{ "code": "...", "codeVerifier": "..." }` returns `{ accessToken, refreshToken, isNewUser }` |
 | `POST /api/v1/authentication/refresh` | `{ "refreshToken": { "token": "...", "expiresAfter": "..." } }` returns new tokens; the sent token is now invalid |
 | `POST /api/v1/authentication/logout` | Same body; revokes the refresh token, `204` |
+| `POST /api/v1/admin-authentication/registration/options`, `.../registration`, `.../authentication/options`, `.../authentication` | The admin passkey ceremonies: the options calls return `{ ceremonyId, optionsJson }`, the completing calls take the `ceremonyId` and the credential JSON and return the tokens in the body (see [Admin passkey registration and sign-in](#admin-passkey-registration-and-sign-in-through-the-bff)) |
 | `GET /.well-known/openid-configuration`, `GET /.well-known/jwks.json` | Discovery (issuer and JWKS location) and the public signing key |
 
-`login`, `callback`, `token` and `refresh` use the sliding-window rate limit policy `auth`. The `token`, `refresh` and `logout` endpoints are meant for the BFF and other server-side clients; keep them off the public network where the deployment allows it. They need no secret, because the credential is the single-use code with its verifier, or the refresh token itself.
+`login`, `callback`, `token` and `refresh` use the sliding-window rate limit policy `auth`; the admin endpoints use `admin-auth`. The `token`, `refresh` and `logout` endpoints are meant for the BFF and other server-side clients; keep them off the public network where the deployment allows it. They need no secret, because the credential is the single-use code with its verifier, or the refresh token itself.
 
 ## Step by step: the Authorization API
 
@@ -431,6 +559,7 @@ Missing, unknown, expired and replayed tokens all end in `400` "Token refresh fa
 | Secrets in logs | The BFF and the APIs log no cookie, token, code or session id (a test scans the log output) |
 | Information leakage | Clients get generic error texts; log values are stripped of control characters |
 | Brute force | Sliding-window rate limits on login, callback, token, refresh and the admin endpoints |
+| Replayed admin assertion or ceremony | The ceremony state is a server-side record taken with one atomic delete, expires after five minutes, and the signature counter must increase |
 | Transport | HSTS behind a trusted proxy, `Secure` cookies, forwarded headers only from configured proxies ([chapter 8](../architecture/arc42/08-crosscutting-concepts.md#transport-and-browser-security-headers)) |
 
 ## Decisions and accepted risk
@@ -446,8 +575,9 @@ Missing, unknown, expired and replayed tokens all end in `400` "Token refresh fa
 | --- | --- | --- |
 | `AuthenticationOptions` | `ValidRedirectUris` | Allow-list for return URLs; contains the BFF callback, for example `https://app/bff/callback` |
 | `AuthenticationOptions` | `LoginCodeLifetimeInSeconds` | Lifetime of the one-time code, default 60 |
+| `AdminPasskeyOptions` | `ServerDomain`, `RelyingPartyName`, `BootstrapSecret` | The relying party of the passkey (the front-end host) and the secret that allows the one-time claim of the admin role |
+| `AdminPasskeyOptions` | `CeremonyLifetimeInSeconds` | How long a passkey ceremony can be completed, default 300; the state works once |
 | `AuthenticationOptions` | `Issuer`, `Audience` | Values the Authorization API itself validates tokens against |
-| `AuthenticationOptions` | `RefreshCookiePath` | Only for the admin login cookies until #196 |
 | `TokenCreationOptions` | `Issuer`, `Audiences` | Values written into issued tokens |
 | `TokenCreationOptions` | `TokenExpiresInMinutes`, `DefaultRefreshTokenExpirationAfterInDays` | Token lifetimes; the access token lifetime must be 1 to 15 minutes or the service does not start |
 | `ForwardedHeaders` | `KnownProxies`, `KnownNetworks` | The proxies whose `X-Forwarded-*` headers are trusted; without them only loopback is (all services, BFF included) |

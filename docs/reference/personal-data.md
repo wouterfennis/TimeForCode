@@ -38,7 +38,7 @@ A random state key, the redirect URI and the PKCE code verifier of a login in pr
 
 ### Cookies
 
-The browser holds one opaque cookie, `__Host-session` (`HttpOnly`, `Secure`, `SameSite=Strict`), that identifies the session at the BFF and contains no personal data. The tokens live in the session record of the BFF database (collection `BffSessions`, with the hash of the cookie value), which holds the access and refresh token and timestamps. The record is removed at sign-out, after 30 idle minutes or 8 hours, or at the latest by its TTL index. A short-lived `__Host-login` cookie and its record (`BffLoginAttempts`, the PKCE verifier and a local return path) exist while a sign-in is in progress. The admin passkey login still uses the cookies described in the [authentication flow](../authentication/authentication_flow_design.md#admin-login).
+The browser holds one opaque cookie, `__Host-session` (`HttpOnly`, `Secure`, `SameSite=Strict`), that identifies the session at the BFF and contains no personal data. The tokens live in the session record of the BFF database (collection `BffSessions`, with the hash of the cookie value), which holds the access and refresh token and timestamps. The record is removed at sign-out, after 30 idle minutes or 8 hours, or at the latest by its TTL index. A short-lived `__Host-login` cookie and its record (`BffLoginAttempts`, the PKCE verifier and a local return path) exist while a sign-in is in progress. The admin passkey login uses the same session; its ceremony state is a short-lived server-side record (`CeremonyState`, hash of an opaque id, removed when used or after five minutes) and holds no personal data.
 
 ## Donation module
 

@@ -12,5 +12,11 @@ namespace TimeForCode.Authorization.Api.Models.Admin
         /// </summary>
         [Required]
         public required string OptionsJson { get; init; }
+
+        /// <summary>
+        /// The opaque id of the ceremony. Send it back when the ceremony completes; the ceremony state itself stays on the server.
+        /// </summary>
+        [Required]
+        public required string CeremonyId { get; init; }
     }
 }

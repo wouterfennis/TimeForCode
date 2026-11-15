@@ -118,5 +118,117 @@ namespace TimeForCode.Frontend.Bff.Tests
 
             await act.Should().ThrowAsync<HttpRequestException>();
         }
+
+        private const string CeremonyBody = """{"ceremonyId":"ceremony-1","optionsJson":"{\"challenge\":\"abc\"}"}""";
+
+        [TestMethod]
+        public async Task AdminRegistrationOptionsAsync_ValidSecret_PostsTheSecretAndReturnsTheCeremony()
+        {
+            var (sut, handler) = Create(HttpStatusCode.OK, CeremonyBody);
+
+            AdminCeremony? ceremony = await sut.AdminRegistrationOptionsAsync("the-secret", TestContext.CancellationToken);
+
+            ceremony.Should().NotBeNull();
+            ceremony!.CeremonyId.Should().Be("ceremony-1");
+            ceremony.OptionsJson.Should().Contain("challenge");
+            handler.Request!.RequestUri!.AbsolutePath.Should().Be("/api/v1/admin-authentication/registration/options");
+            handler.RequestBody.Should().Contain("the-secret");
+        }
+
+        [TestMethod]
+        public async Task AdminRegistrationOptionsAsync_RefusedRequest_ReturnsNull()
+        {
+            var (sut, _) = Create(HttpStatusCode.BadRequest, "{}");
+
+            AdminCeremony? ceremony = await sut.AdminRegistrationOptionsAsync("wrong", TestContext.CancellationToken);
+
+            ceremony.Should().BeNull();
+        }
+
+        [TestMethod]
+        public async Task AdminRegistrationOptionsAsync_ServerError_Throws()
+        {
+            var (sut, _) = Create(HttpStatusCode.InternalServerError, "{}");
+
+            var act = () => sut.AdminRegistrationOptionsAsync("secret", TestContext.CancellationToken);
+
+            await act.Should().ThrowAsync<HttpRequestException>();
+        }
+
+        [TestMethod]
+        public async Task AdminRegistrationOptionsAsync_EmptyBody_Throws()
+        {
+            var (sut, _) = Create(HttpStatusCode.OK, "null");
+
+            var act = () => sut.AdminRegistrationOptionsAsync("secret", TestContext.CancellationToken);
+
+            await act.Should().ThrowAsync<InvalidOperationException>();
+        }
+
+        [TestMethod]
+        public async Task AdminCompleteRegistrationAsync_ValidCredential_PostsAllFieldsAndReturnsTokens()
+        {
+            var (sut, handler) = Create(HttpStatusCode.OK, TokensBody);
+
+            IssuedTokens? tokens = await sut.AdminCompleteRegistrationAsync("the-secret", "the-credential", "ceremony-1", TestContext.CancellationToken);
+
+            tokens.Should().NotBeNull();
+            handler.Request!.RequestUri!.AbsolutePath.Should().Be("/api/v1/admin-authentication/registration");
+            handler.RequestBody.Should().Contain("the-secret").And.Contain("the-credential").And.Contain("ceremony-1");
+        }
+
+        [TestMethod]
+        public async Task AdminCompleteRegistrationAsync_RefusedRequest_ReturnsNull()
+        {
+            var (sut, _) = Create(HttpStatusCode.BadRequest, "{}");
+
+            IssuedTokens? tokens = await sut.AdminCompleteRegistrationAsync("secret", "credential", "ceremony", TestContext.CancellationToken);
+
+            tokens.Should().BeNull();
+        }
+
+        [TestMethod]
+        public async Task AdminAuthenticationOptionsAsync_Success_ReturnsTheCeremony()
+        {
+            var (sut, handler) = Create(HttpStatusCode.OK, CeremonyBody);
+
+            AdminCeremony? ceremony = await sut.AdminAuthenticationOptionsAsync(TestContext.CancellationToken);
+
+            ceremony.Should().NotBeNull();
+            ceremony!.CeremonyId.Should().Be("ceremony-1");
+            handler.Request!.RequestUri!.AbsolutePath.Should().Be("/api/v1/admin-authentication/authentication/options");
+        }
+
+        [TestMethod]
+        public async Task AdminAuthenticationOptionsAsync_RefusedRequest_ReturnsNull()
+        {
+            var (sut, _) = Create(HttpStatusCode.BadRequest, "{}");
+
+            AdminCeremony? ceremony = await sut.AdminAuthenticationOptionsAsync(TestContext.CancellationToken);
+
+            ceremony.Should().BeNull();
+        }
+
+        [TestMethod]
+        public async Task AdminCompleteAuthenticationAsync_ValidAssertion_PostsCredentialAndCeremonyAndReturnsTokens()
+        {
+            var (sut, handler) = Create(HttpStatusCode.OK, TokensBody);
+
+            IssuedTokens? tokens = await sut.AdminCompleteAuthenticationAsync("the-credential", "ceremony-1", TestContext.CancellationToken);
+
+            tokens.Should().NotBeNull();
+            handler.Request!.RequestUri!.AbsolutePath.Should().Be("/api/v1/admin-authentication/authentication");
+            handler.RequestBody.Should().Contain("the-credential").And.Contain("ceremony-1");
+        }
+
+        [TestMethod]
+        public async Task AdminCompleteAuthenticationAsync_RefusedRequest_ReturnsNull()
+        {
+            var (sut, _) = Create(HttpStatusCode.BadRequest, "{}");
+
+            IssuedTokens? tokens = await sut.AdminCompleteAuthenticationAsync("credential", "ceremony", TestContext.CancellationToken);
+
+            tokens.Should().BeNull();
+        }
     }
 }

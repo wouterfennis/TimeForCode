@@ -11,7 +11,6 @@ using TimeForCode.Authorization.Application.Interfaces;
 using TimeForCode.Authorization.Domain.Entities;
 using TimeForCode.Authorization.Specifications.Mocking;
 using TimeForCode.Authorization.Specifications.TestBuilder;
-using TimeForCode.Shared.Api.Authentication;
 using IServiceProvider = System.IServiceProvider;
 
 namespace TimeForCode.Authorization.Specifications.Steps
@@ -73,7 +72,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
         [Given("The user has deleted their account")]
         public async Task GivenTheUserHasDeletedTheirAccountAsync()
         {
-            if (_cookieContainer.GetAllCookies()[CookieConstants.TokenKey] == null)
+            if (_cookieContainer.GetAllCookies()[TokenWallet.CookieName] == null)
             {
                 _logoutSteps.GivenTheUserHasAnAccessToken();
             }

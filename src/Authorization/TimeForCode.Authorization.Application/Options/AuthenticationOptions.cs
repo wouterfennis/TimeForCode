@@ -31,17 +31,6 @@ namespace TimeForCode.Authorization.Application.Options
         public required List<string> ValidRedirectUris { get; init; }
 
         /// <summary>
-        /// The refresh cookie path when clients call the API on its own path, without a proxy or gateway that publishes it under another prefix.
-        /// </summary>
-        public const string DefaultRefreshCookiePath = "/api/v1/Authentication/session";
-
-        /// <summary>
-        /// The <c>Path</c> of the refresh token cookie that the admin passkey login still sets (issue #196 moves that login to the BFF session and removes it).
-        /// The GitHub sign-in sets no cookie at all.
-        /// </summary>
-        public string RefreshCookiePath { get; init; } = DefaultRefreshCookiePath;
-
-        /// <summary>
         /// How long a single-use login code can be exchanged for tokens, in seconds. Defaults to 60.
         /// </summary>
         public int LoginCodeLifetimeInSeconds { get; init; } = DefaultLoginCodeLifetimeInSeconds;
@@ -58,7 +47,6 @@ namespace TimeForCode.Authorization.Application.Options
                 Audience = configuration.GetSection(SectionName).GetValue<string>(nameof(Audience))!,
                 Issuer = configuration.GetSection(SectionName).GetValue<string>(nameof(Issuer))!,
                 ValidRedirectUris = configuration.GetSection($"{SectionName}:{nameof(ValidRedirectUris)}").Get<List<string>>() ?? [],
-                RefreshCookiePath = configuration.GetSection(SectionName).GetValue<string>(nameof(RefreshCookiePath)) ?? DefaultRefreshCookiePath,
                 LoginCodeLifetimeInSeconds = configuration.GetSection(SectionName).GetValue<int?>(nameof(LoginCodeLifetimeInSeconds)) ?? DefaultLoginCodeLifetimeInSeconds,
             };
 

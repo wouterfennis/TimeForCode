@@ -2,7 +2,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Web;
-using TimeForCode.Shared.Api.Authentication;
+using TimeForCode.Authorization.Specifications.TestBuilder;
 using TimeForCode.Shared.Api.Authentication.Models;
 
 namespace TimeForCode.Authorization.Specifications.Mocking
@@ -18,7 +18,7 @@ namespace TimeForCode.Authorization.Specifications.Mocking
 
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            var tokenCookie = _cookieContainer.GetAllCookies()[CookieConstants.TokenKey];
+            var tokenCookie = _cookieContainer.GetAllCookies()[TokenWallet.CookieName];
             if (tokenCookie != null)
             {
                 try

@@ -76,6 +76,11 @@ namespace TimeForCode.Frontend.Bff.Sessions
     /// <summary>
     /// The tokens the Authorization API issued, in the BFF own terms.
     /// </summary>
+    /// <summary>
+    /// The start of an admin passkey ceremony: the options for the browser and the id that completes it. The ceremony state stays at the Authorization API.
+    /// </summary>
+    public sealed record AdminCeremony(string CeremonyId, string OptionsJson);
+
     public sealed record IssuedTokens(
         string AccessToken,
         DateTimeOffset AccessTokenExpiresAt,

@@ -43,7 +43,7 @@ namespace TimeForCode.Authorization.Application.Tests.Handlers.Admin
                 CreatedAt = DateTimeOffset.UtcNow
             });
             _ceremonyServiceMock.Setup(x => x.CreateAuthenticationOptionsAsync())
-                .ReturnsAsync(new PasskeyCeremonyOptionsResult { OptionsJson = "{}", ProtectedCeremonyState = "state" });
+                .ReturnsAsync(new PasskeyCeremonyOptionsResult { OptionsJson = "{}", CeremonyId = "state" });
 
             var result = await _sut.Handle(new CreateAdminAuthenticationOptionsCommand(), CancellationToken.None);
 

@@ -36,10 +36,20 @@ namespace TimeForCode.Authorization.Infrastructure.Persistence.Database.Admin
             }
         }
 
-        public Task UpdateSignCountAsync(long signCount)
+        // One conditional update, so two assertions that race on the same stored counter cannot both advance it.
+        internal static FilterDefinition<AdminCredential> AdvanceFilter(long presented)
         {
-            var update = Builders<AdminCredential>.Update.Set(x => x.SignCount, signCount);
-            return _collection.UpdateOneAsync(Builders<AdminCredential>.Filter.Eq(x => x.Id, AdminCredential.SingletonId), update);
+            var isSingleton = Builders<AdminCredential>.Filter.Eq(x => x.Id, AdminCredential.SingletonId);
+            var counter = presented == 0
+                ? Builders<AdminCredential>.Filter.Eq(x => x.SignCount, 0)
+                : Builders<AdminCredential>.Filter.Lt(x => x.SignCount, presented);
+            return isSingleton & counter;
+        }
+
+        public async Task<bool> TryAdvanceSignCountAsync(long presented)
+        {
+            var result = await _collection.UpdateOneAsync(AdvanceFilter(presented), Builders<AdminCredential>.Update.Set(x => x.SignCount, presented));
+            return result.MatchedCount == 1;
         }
     }
 }

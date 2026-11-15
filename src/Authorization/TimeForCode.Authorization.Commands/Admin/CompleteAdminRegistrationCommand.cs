@@ -10,6 +10,6 @@ namespace TimeForCode.Authorization.Commands.Admin
     {
         public required string BootstrapSecret { get; init; }
         public required string CredentialJson { get; init; }
-        public required string ProtectedCeremonyState { get; init; }
+        public required string CeremonyId { get; init; }
     }
 }

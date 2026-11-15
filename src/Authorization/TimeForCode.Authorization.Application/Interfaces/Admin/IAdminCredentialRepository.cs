@@ -15,6 +15,10 @@ namespace TimeForCode.Authorization.Application.Interfaces.Admin
         /// </summary>
         Task<bool> TryClaimAsync(AdminCredential credential);
 
-        Task UpdateSignCountAsync(long signCount);
+        /// <summary>
+        /// Atomically stores the signature counter of an assertion, but only when it advances: higher than the stored one, or 0 on both sides
+        /// (authenticators without a counter). False when it did not, which also covers two concurrent assertions racing on the same counter.
+        /// </summary>
+        Task<bool> TryAdvanceSignCountAsync(long presented);
     }
 }

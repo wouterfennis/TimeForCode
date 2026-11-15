@@ -3,6 +3,7 @@
 
 export type SessionInfo = {
   isNewUser: boolean
+  isAdmin?: boolean
   userId: string
   login?: string | null
   avatarUrl?: string | null
@@ -20,7 +21,7 @@ export async function fetchSession(signal?: AbortSignal): Promise<SessionResult>
     if (response.status === 401) return { status: 'signed-out' }
     if (!response.ok) return { status: 'error' }
     const body = (await response.json()) as SessionInfo
-    return { status: 'signed-in', session: { isNewUser: body.isNewUser, userId: body.userId, login: body.login, avatarUrl: body.avatarUrl } }
+    return { status: 'signed-in', session: { isNewUser: body.isNewUser, isAdmin: body.isAdmin, userId: body.userId, login: body.login, avatarUrl: body.avatarUrl } }
   } catch {
     return { status: 'error' }
   }

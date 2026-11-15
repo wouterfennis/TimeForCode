@@ -164,17 +164,17 @@ views {
     title 'Administrator passkey sign-in'
     description 'ADR-011: WebAuthn ceremony with the ASP.NET Core passkey handler'
 
-    admin -> timeforcode.authorization.authApi.adminController 'GET /api/v1/admin-authentication/authentication/options'
+    admin -> timeforcode.authorization.authApi.adminController 'POST /api/v1/admin-authentication/authentication/options (through the BFF)'
     timeforcode.authorization.authApi.adminController -> timeforcode.authorization.authApplication.adminHandlers 'dispatch options command'
     timeforcode.authorization.authApplication.adminHandlers -> timeforcode.authorization.authInfrastructure.passkeyService 'create the challenge'
-    timeforcode.authorization.authApi.adminController -> admin 'assertion options'
-    admin -> timeforcode.authorization.authApi.adminController 'POST /api/v1/admin-authentication/authentication (assertion)'
+    timeforcode.authorization.authApi.adminController -> admin 'assertion options and a single-use ceremony id'
+    admin -> timeforcode.authorization.authApi.adminController 'POST /api/v1/admin-authentication/authentication (assertion and ceremony id)'
     timeforcode.authorization.authApi.adminController -> timeforcode.authorization.authApplication.adminHandlers 'dispatch completion command'
     timeforcode.authorization.authApplication.adminHandlers -> timeforcode.authorization.authInfrastructure.passkeyService 'verify the assertion'
     timeforcode.authorization.authApplication.adminHandlers -> timeforcode.authorization.authInfrastructure.adminCredentialRepository 'load the credential, update its counter'
     timeforcode.authorization.authInfrastructure.adminCredentialRepository -> mongodb.authDb 'persist'
     timeforcode.authorization.authApplication.adminHandlers -> timeforcode.authorization.authApplication.tokenService 'issue an admin-scope token'
-    timeforcode.authorization.authApi.adminController -> admin '200, token cookies'
+    timeforcode.authorization.authApi.adminController -> admin '200, access and refresh token in the body (to the BFF, which keeps them)'
   }
 
   dynamic view registerProject {

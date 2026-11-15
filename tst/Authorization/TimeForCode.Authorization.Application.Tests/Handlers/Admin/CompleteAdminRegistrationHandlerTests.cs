@@ -51,7 +51,7 @@ namespace TimeForCode.Authorization.Application.Tests.Handlers.Admin
         {
             BootstrapSecret = "correct-secret",
             CredentialJson = "credential-json",
-            ProtectedCeremonyState = "state"
+            CeremonyId = "state"
         };
 
         [TestMethod]
@@ -88,7 +88,7 @@ namespace TimeForCode.Authorization.Application.Tests.Handlers.Admin
             {
                 BootstrapSecret = "wrong-secret",
                 CredentialJson = "credential-json",
-                ProtectedCeremonyState = "state"
+                CeremonyId = "state"
             };
 
             var result = await _sut.Handle(invalidCommand, CancellationToken.None);

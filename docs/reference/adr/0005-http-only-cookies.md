@@ -29,4 +29,4 @@ Under [ADR-014](0014-no-backwards-compatibility-before-release.md) the refresh a
 
 ## Superseded (2026-11-14, #194)
 
-[ADR-019](0019-browser-session-in-the-bff.md) moves the browser session to the BFF. The Authorization API no longer sets or reads token cookies for the GitHub sign-in, so the cookie design and the #193 amendment above no longer apply: refresh and logout are back at `.../authentication/refresh` and `.../logout`, take the refresh token in the body, and the cookie path setting only remains for the admin passkey login until #196. The goal of this ADR stands: no token is readable by script.
+[ADR-019](0019-browser-session-in-the-bff.md) moves the browser session to the BFF. The Authorization API no longer sets or reads token cookies for the GitHub sign-in, so the cookie design and the #193 amendment above no longer apply: refresh and logout are back at `.../authentication/refresh` and `.../logout`, take the refresh token in the body, and the cookie path setting was removed with #196, which moved the admin passkey login onto the same model. The goal of this ADR stands: no token is readable by script.

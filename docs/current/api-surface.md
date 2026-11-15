@@ -14,8 +14,12 @@ The host at `http://localhost:8084` (locally) serves the SPA and the browser-fac
 | --- | --- | --- | --- |
 | `GET` | `/bff/login?returnUrl=` | ✅ | Starts the sign-in: `302` to the Authorization API login with a PKCE challenge; sets the short-lived `__Host-login` cookie. `returnUrl` must be a local path |
 | `GET` | `/bff/callback?code=` | ✅ | Completes the sign-in: exchanges the code with the stored verifier, opens the session (`__Host-session` cookie) and redirects to `returnUrl`; on failure redirects to `/?signInError=1` |
-| `GET` | `/bff/session` | ✅ | `200` with `{ isSignedIn, isNewUser, userId, login, avatarUrl }` (never a token), `401` when not signed in; not cached |
+| `GET` | `/bff/session` | ✅ | `200` with `{ isSignedIn, isNewUser, isAdmin, userId, login, avatarUrl }` (never a token), `401` when not signed in; not cached |
 | `POST` | `/bff/logout` | ✅ | Revokes the refresh token, ends the session, clears the cookie; `204` (also without a session), `403` without the header or from another origin |
+| `POST` | `/bff/admin/registration/options` | ✅ | Body `{ bootstrapSecret }`; `200` with `{ ceremonyId, optionsJson }` for `navigator.credentials.create`; `400` without a reason |
+| `POST` | `/bff/admin/registration` | ✅ | Body `{ bootstrapSecret, credentialJson, ceremonyId }`; claims the admin role, opens the session (`__Host-session` cookie) and returns `{ isSignedIn, isNewUser, isAdmin, userId, login, avatarUrl }`, never a token; `400` without a reason |
+| `POST` | `/bff/admin/authentication/options` | ✅ | `200` with `{ ceremonyId, optionsJson }` for `navigator.credentials.get`; `400` when no passkey is registered |
+| `POST` | `/bff/admin/authentication` | ✅ | Body `{ credentialJson, ceremonyId }`; opens the admin session like the registration; `400` without a reason |
 | `*` | `/api/donation/{**rest}` | ✅ | Forwarded to the Donation API as `/api/{rest}` with the session bearer token; no `Cookie` header and no `Set-Cookie` pass |
 | `*` | `/api/auth/v1/user{**rest}` | ✅ | Forwarded to the Authorization API user endpoints; every other `/api/auth/...` path is `404` |
 
@@ -37,6 +41,17 @@ The Authorization API exposes OAuth 2.0 endpoints and an OpenID Connect discover
 | `POST` | `/api/v1/authentication/token` | ✅ | Exchanges the one-time code and the PKCE `codeVerifier` for the access and refresh token; the code is single use and expires after 60 seconds |
 | `POST` | `/api/v1/authentication/refresh` | ✅ | Takes the refresh token in the body, returns new access and refresh tokens and invalidates the sent token (POST only; GET returns 405); `400` for an unknown, expired or replayed token |
 | `POST` | `/api/v1/authentication/logout` | ✅ | Takes the refresh token in the body and revokes it; `204`; no cookie is set |
+
+### Admin passkey endpoints
+
+The administrator signs in with a WebAuthn passkey ([ADR-011](../reference/adr/0011-webauthn-admin-authentication.md)). The browser reaches these only through the BFF (`/bff/admin/...`, see above); the Authorization API sets no cookie here. A ceremony id from an options call works once and expires (`AdminPasskeyOptions:CeremonyLifetimeInSeconds`, default 300). Rate limit policy `admin-auth`.
+
+| Method | Path | Status | Description |
+| --- | --- | --- | --- |
+| `POST` | `/api/v1/admin-authentication/registration/options` | ✅ | Body `{ "bootstrapSecret" }`. `200` with `{ ceremonyId, optionsJson }` while no admin passkey is registered; `400` for a wrong secret or a claimed role |
+| `POST` | `/api/v1/admin-authentication/registration` | ✅ | Body `{ bootstrapSecret, credentialJson, ceremonyId }`. Claims the admin role once; `200` with `{ accessToken, refreshToken, isNewUser }` in the body; `400` otherwise |
+| `POST` | `/api/v1/admin-authentication/authentication/options` | ✅ | `200` with `{ ceremonyId, optionsJson }`; `400` when no passkey is registered |
+| `POST` | `/api/v1/admin-authentication/authentication` | ✅ | Body `{ credentialJson, ceremonyId }`. `200` with the tokens; `400` for an unknown, expired or used ceremony, a wrong device or a signature counter that did not increase |
 
 ### Test-only admin endpoint
 

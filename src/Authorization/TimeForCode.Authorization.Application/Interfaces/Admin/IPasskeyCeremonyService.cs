@@ -12,7 +12,7 @@ namespace TimeForCode.Authorization.Application.Interfaces.Admin
     {
         Task<PasskeyCeremonyOptionsResult> CreateRegistrationOptionsAsync();
 
-        Task<AdminAttestationOutcome> CompleteRegistrationAsync(string credentialJson, string ceremonyState);
+        Task<AdminAttestationOutcome> CompleteRegistrationAsync(string credentialJson, string ceremonyId);
 
         /// <summary>
         /// Builds request options whose <c>allowCredentials</c> list contains only the single registered
@@ -20,6 +20,6 @@ namespace TimeForCode.Authorization.Application.Interfaces.Admin
         /// </summary>
         Task<PasskeyCeremonyOptionsResult> CreateAuthenticationOptionsAsync();
 
-        Task<AdminAssertionOutcome> CompleteAuthenticationAsync(string credentialJson, string ceremonyState);
+        Task<AdminAssertionOutcome> CompleteAuthenticationAsync(string credentialJson, string ceremonyId);
     }
 }

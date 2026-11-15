@@ -10,7 +10,7 @@ using TimeForCode.Authorization.Api.Client;
 using TimeForCode.Authorization.Api.Client.Extensions;
 using TimeForCode.Authorization.Application.Interfaces;
 using TimeForCode.Authorization.Application.Services;
-using TimeForCode.Shared.Api.Authentication;
+using TimeForCode.Authorization.Specifications.TestBuilder;
 
 namespace TimeForCode.Authorization.Specifications.Steps
 {
@@ -50,7 +50,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
 
             var uri = new Uri("http://localhost:8084");
             var cookieValue = HttpUtility.UrlEncode(JsonSerializer.Serialize(accessToken));
-            _cookieContainer.Add(uri, new Cookie(CookieConstants.TokenKey, cookieValue));
+            _cookieContainer.Add(uri, new Cookie(TokenWallet.CookieName, cookieValue));
         }
 
         [When("The user logs out from the external platform")]
