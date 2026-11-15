@@ -45,10 +45,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Begins the admin passkey authentication ceremony. Requires an admin credential to already exist. */
-        get: operations["AdminAuthenticationOptions"];
+        get?: never;
         put?: never;
-        post?: never;
+        /** Begins the admin passkey authentication ceremony. Requires an admin credential to already exist. */
+        post: operations["AdminAuthenticationOptions"];
         delete?: never;
         options?: never;
         head?: never;
@@ -708,6 +708,8 @@ export interface components {
         AdminCompleteAuthenticationRequestModel: {
             /** @description The JSON-serialised `PublicKeyCredential` returned by `navigator.credentials.get()`. */
             credentialJson: string;
+            /** @description The ceremony id returned by the options call. It works once and expires after a short time. */
+            ceremonyId: string;
         };
         /** @description Completes the one-time admin passkey registration ceremony. The bootstrap secret is re-validated here. */
         AdminCompleteRegistrationRequestModel: {
@@ -715,26 +717,20 @@ export interface components {
             bootstrapSecret: string;
             /** @description The JSON-serialised `PublicKeyCredential` returned by `navigator.credentials.create()`. */
             credentialJson: string;
+            /** @description The ceremony id returned by the options call. It works once and expires after a short time. */
+            ceremonyId: string;
         };
         /** @description WebAuthn creation/request options for the browser to pass to `navigator.credentials`. */
         AdminPasskeyOptionsResponseModel: {
             /** @description The JSON-serialised WebAuthn options for the browser to pass to `navigator.credentials`. */
             optionsJson: string;
+            /** @description The opaque id of the ceremony. Send it back when the ceremony completes; the ceremony state itself stays on the server. */
+            ceremonyId: string;
         };
         /** @description Request to begin the one-time admin passkey registration ceremony. */
         AdminRegistrationOptionsRequestModel: {
             /** @description Shared secret guarding who may claim the admin role. */
             bootstrapSecret: string;
-        };
-        /** @description Represents the model for a sign-in or refresh response. It carries no token: both tokens are only in HttpOnly cookies (ADR-005). */
-        CallbackResponseModel: {
-            /**
-             * Format: date-time
-             * @description When the new access token, which only the HttpOnly cookie carries, expires. The client schedules its next refresh from this.
-             */
-            expiresAfter: string;
-            /** @description Indicates whether this is the user's first login (new account was created). */
-            isNewUser?: boolean;
         };
         /** @description Response model for the discovery document endpoint. */
         DiscoveryDocumentResponse: {
@@ -872,7 +868,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description The passkey creation options (JSON) for the browser; the ceremony state is set in a short-lived cookie. */
+            /** @description The passkey creation options (JSON) for the browser and the ceremony id to send back when the ceremony completes. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -908,7 +904,7 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        /** @description The bootstrap secret and the credential (JSON) created by the browser. */
+        /** @description The bootstrap secret, the credential (JSON) created by the browser and the ceremony id of the options call. */
         requestBody: {
             content: {
                 "application/json": components["schemas"]["AdminCompleteRegistrationRequestModel"];
@@ -917,16 +913,16 @@ export interface operations {
             };
         };
         responses: {
-            /** @description The admin credential was claimed; the tokens are only set as HttpOnly cookies, never in the body. */
+            /** @description The admin credential was claimed; the access token and refresh token are returned. */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CallbackResponseModel"];
+                    "application/json": components["schemas"]["TokenResponseModel"];
                 };
             };
-            /** @description No registration ceremony is in progress or the registration was rejected. */
+            /** @description The ceremony is unknown, expired or already used, or the registration was rejected. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -955,7 +951,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description The passkey request options (JSON) for the browser; the ceremony state is set in a short-lived cookie. */
+            /** @description The passkey request options (JSON) for the browser and the ceremony id to send back when the ceremony completes. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -991,7 +987,7 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        /** @description The assertion credential (JSON) produced by the browser. */
+        /** @description The assertion credential (JSON) produced by the browser and the ceremony id of the options call. */
         requestBody: {
             content: {
                 "application/json": components["schemas"]["AdminCompleteAuthenticationRequestModel"];
@@ -1000,16 +996,16 @@ export interface operations {
             };
         };
         responses: {
-            /** @description The admin signed in; the tokens are only set as HttpOnly cookies, never in the body. */
+            /** @description The admin signed in; the access token and refresh token are returned. */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CallbackResponseModel"];
+                    "application/json": components["schemas"]["TokenResponseModel"];
                 };
             };
-            /** @description No authentication ceremony is in progress or the assertion was rejected. */
+            /** @description The ceremony is unknown, expired or already used, or the assertion was rejected (including a signature counter that did not increase). */
             400: {
                 headers: {
                     [name: string]: unknown;
