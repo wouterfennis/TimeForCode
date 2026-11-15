@@ -9,7 +9,7 @@ namespace TimeForCode.Frontend.Bff.Tests
     [TestClass]
     public sealed class AdminEndpointsTests : BffTestBase
     {
-        private Task<HttpResponseMessage> PostAsync(string path, object? body, string? cookie = null, bool csrf = true, string? origin = null)
+        private Task<HttpResponseMessage> PostAsync(string path, object? body, string? cookie = null, bool csrf = true, string? origin = SpaOrigin)
         {
             var request = new HttpRequestMessage(HttpMethod.Post, path) { Content = JsonContent.Create(body ?? new { }) };
             if (cookie is not null)

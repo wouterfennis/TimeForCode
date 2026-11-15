@@ -60,10 +60,25 @@ namespace TimeForCode.Frontend.Bff.Tests
         {
             using var request = new HttpRequestMessage(new HttpMethod(method), "/api/donation/v1/Project");
             request.Headers.Add("X-Requested-With", "XMLHttpRequest");
+            request.Headers.Add("Origin", "http://localhost");
 
             await _browser.SendAsync(request, TestContext.CancellationToken);
 
             _factory.Upstream.Requests.Should().ContainSingle().Which.Method.Method.Should().Be(method);
+        }
+
+        [TestMethod]
+        [DataRow("POST")]
+        [DataRow("DELETE")]
+        public async Task StateChangingRequest_WithTheCsrfHeaderButNoOrigin_IsForbiddenAndNeverReachesTheApi(string method)
+        {
+            using var request = new HttpRequestMessage(new HttpMethod(method), "/api/donation/v1/Project");
+            request.Headers.Add("X-Requested-With", "XMLHttpRequest");
+
+            var response = await _browser.SendAsync(request, TestContext.CancellationToken);
+
+            response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+            _factory.Upstream.Requests.Should().BeEmpty();
         }
 
         [TestMethod]

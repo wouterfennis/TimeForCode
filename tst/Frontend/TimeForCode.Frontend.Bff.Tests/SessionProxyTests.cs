@@ -159,15 +159,24 @@ namespace TimeForCode.Frontend.Bff.Tests
         }
 
         [TestMethod]
-        [DataRow("http://localhost")]
-        [DataRow(null)]
-        public async Task Post_FromTheSpaOrigin_IsForwarded(string? origin)
+        public async Task Post_FromTheSpaOrigin_IsForwarded()
         {
             var sessionId = await SignInAsync();
 
-            await SendAsync(HttpMethod.Post, "/api/donation/v1/Project", cookie: SessionCookie(sessionId), csrf: true, origin: origin);
+            await SendAsync(HttpMethod.Post, "/api/donation/v1/Project", cookie: SessionCookie(sessionId), csrf: true, origin: SpaOrigin);
 
             Factory.Upstream.Requests.Should().ContainSingle();
+        }
+
+        [TestMethod]
+        public async Task Post_WithoutAnOrigin_IsForbiddenAndNotForwarded()
+        {
+            var sessionId = await SignInAsync();
+
+            var response = await SendAsync(HttpMethod.Post, "/api/donation/v1/Project", cookie: SessionCookie(sessionId), csrf: true, origin: null);
+
+            response.StatusCode.Should().Be(System.Net.HttpStatusCode.Forbidden);
+            Factory.Upstream.Requests.Should().BeEmpty();
         }
 
         [TestMethod]
