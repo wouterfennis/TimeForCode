@@ -85,7 +85,7 @@ The Frontend is a React + TypeScript single-page application (Vite) that serves 
 
 **What is implemented:**
 
-- SPA scaffold with a placeholder page, served by nginx.
+- SPA scaffold with a placeholder page and the public project list, served by the BFF, which also forwards the API routes.
 
 **What is missing:**
 

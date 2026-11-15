@@ -15,4 +15,4 @@ Tokens are stored exclusively in HttpOnly, Secure cookies. The access token and 
 
 **Positive**: Tokens cannot be accessed by JavaScript, preventing XSS-based token theft. Cookies are automatically sent with requests to the same origin.
 
-**Negative**: Requires careful `SameSite` and CORS configuration. CSRF protection must be considered for state-changing API calls.
+**Negative**: Requires careful `SameSite` and CORS configuration. CSRF protection must be considered for state-changing API calls: for the React SPA the BFF requires the `X-Requested-With` header on them ([ADR-012](0012-react-spa-frontend.md#amendment-2026-11-08-the-bff-replaces-nginx)).

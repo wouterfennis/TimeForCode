@@ -61,7 +61,7 @@ The Identity Provider Mock replaces GitHub in local development. The Authorizati
 
 | Service | URL | Notes |
 | --- | --- | --- |
-| Frontend (SPA) | <http://localhost:8084> | React SPA served by nginx; not yet wired to the APIs |
+| Frontend (BFF + SPA) | <http://localhost:8084> | The BFF serves the React SPA and forwards `/api/donation/*` and `/api/auth/*` to the APIs, with the access-token cookie as bearer token |
 | Authorization API | <http://localhost:8080> | OAuth 2.0 + JWT |
 | Identity Provider Mock | <http://localhost:8081> | Simulates GitHub OAuth and GitHub REST API |
 | Donation API | <http://localhost:8082> | Project and donation management |

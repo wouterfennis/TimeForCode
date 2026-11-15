@@ -14,7 +14,7 @@ views {
 
   view frontend of timeforcode.frontend {
     title 'Front-end'
-    description 'React single-page application served by nginx'
+    description 'React single-page application served by the BFF'
     include *
     include timeforcode.bff
   }

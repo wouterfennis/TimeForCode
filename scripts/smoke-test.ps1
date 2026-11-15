@@ -37,7 +37,7 @@
     Front-end origin the login redirects back to (must be a configured valid redirect URI). No front-end needs to run. Default: http://localhost:8084
 
 .PARAMETER FrontendBaseUrl
-    Base URL of the front-end (the SPA served by nginx). Default: http://localhost:8084
+    Base URL of the front-end (the SPA and its API routes, served by the BFF). Default: http://localhost:8084
 
 .PARAMETER ContainerCli
     Container CLI used to inspect the Mongo container (check 8). Default: podman, and the check is skipped when it is missing. CI passes docker explicitly, and then a missing CLI fails the check.
@@ -251,6 +251,14 @@ try {
         Write-Fail "Auth API GET /api/v1/user" "Status=$(Get-StatusCode $r5)"
     }
 
+    # The BFF turns the AccessToken cookie into the bearer header: the same call through the front-end, with only the cookie.
+    $r5b = curl -si -H "Cookie: AccessToken=$($accessCookie[0].Groups[1].Value)" "$FrontendBaseUrl/api/auth/v1/user" 2>&1
+    if ((Get-StatusCode $r5b) -eq 200 -and ($r5b | Select-String '"login"')) {
+        Write-Pass "Front-end BFF forwards the AccessToken cookie as bearer: GET /api/auth/v1/user -> 200 with profile"
+    } else {
+        Write-Fail "Front-end BFF GET /api/auth/v1/user with the AccessToken cookie" "Status=$(Get-StatusCode $r5b)"
+    }
+
     # Donation API accepts the Auth JWT: one Mongo-backed write, then read it back.
     $projectUrl   = "$DonationApiBaseUrl/api/v1/project"
     $repoName     = "smoke-" + [guid]::NewGuid().ToString("N").Substring(0, 12)
@@ -316,7 +324,7 @@ if (Get-Command $ContainerCli -ErrorAction SilentlyContinue) {
 }
 
 # ---------------------------------------------------------------------------
-# 5. Front-end (SPA served by nginx)
+# 5. Front-end (SPA and API routes served by the BFF)
 # ---------------------------------------------------------------------------
 
 Write-Section "5. Front-end"
@@ -343,19 +351,23 @@ if ((Get-StatusCode $rootPage) -eq 0) {
     if ($sMissing -eq 404) { Write-Pass "Missing asset /assets/missing.js -> 404, no SPA fallback" }
     else                   { Write-Fail "Missing asset /assets/missing.js" "Status=$sMissing (expected 404)" }
 
-    # The same-origin route to the Donation API (nginx, until the BFF of #113): /api/donation/v1/Project -> /api/v1/Project
+    # The BFF's same-origin routes: /api/donation/v1/Project -> Donation API /api/v1/Project, /api/auth/* -> Authorization API /api/*
     $projectList = curl -s -w "`n%{http_code}" "$FrontendBaseUrl/api/donation/v1/Project?pageSize=1" 2>&1
     $projectListStatus = [int]($projectList | Select-Object -Last 1)
     $projectListJson = try { ($projectList | Select-Object -SkipLast 1) -join "`n" | ConvertFrom-Json } catch { $null }
     if ($projectListStatus -eq 200 -and $null -ne $projectListJson -and $null -ne $projectListJson.PSObject.Properties["projects"]) {
         Write-Pass "Front-end forwards /api/donation/v1/Project to the Donation API ($($projectListJson.totalCount) active project(s))"
     } else {
-        Write-Fail "Front-end Donation API route" "Status=$projectListStatus, body has no 'projects' list (is donation-api running and DONATION_API_UPSTREAM correct?)"
+        Write-Fail "Front-end Donation API route" "Status=$projectListStatus, body has no 'projects' list (is donation-api running and the BFF's donation destination correct?)"
     }
 
+    $sAuthAnon = [int](curl -s -o NUL -w "%{http_code}" "$FrontendBaseUrl/api/auth/v1/user" 2>&1)
+    if ($sAuthAnon -eq 401) { Write-Pass "Front-end forwards /api/auth/ to the Authorization API (anonymous GET /api/auth/v1/user -> 401)" }
+    else                    { Write-Fail "Front-end Authorization API route" "Status=$sAuthAnon (expected 401)" }
+
     $sWrite = [int](curl -s -o NUL -w "%{http_code}" -X POST "$FrontendBaseUrl/api/donation/v1/Project" 2>&1)
-    if ($sWrite -eq 403) { Write-Pass "Front-end refuses writes on /api/donation/ (POST -> 403)" }
-    else                 { Write-Fail "Front-end Donation API route is read-only" "POST status=$sWrite (expected 403)" }
+    if ($sWrite -eq 403) { Write-Pass "Front-end refuses a write without the CSRF header X-Requested-With (POST -> 403)" }
+    else                 { Write-Fail "Front-end CSRF header check" "POST status=$sWrite (expected 403)" }
 
     $frontendResponses = [ordered]@{ "/" = $rootPage; "/projects/123" = $deepLink; "script" = $builtAsset; "/assets/missing.js" = $missingAsset }
     $headerProblems = @(foreach ($entry in $frontendResponses.GetEnumerator()) {

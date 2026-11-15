@@ -1,5 +1,5 @@
 # Build the React SPA with the Node version the project targets
-FROM node:26-alpine AS build
+FROM node:26-alpine AS spa
 
 WORKDIR /app
 
@@ -11,21 +11,28 @@ RUN npm ci --ignore-scripts
 COPY src/Frontend/TimeForCode.Frontend/ ./
 RUN npm run build
 
-# Serve the static files with nginx running as a non-root user (listens on 8080).
-# Pinned to the minor version: nginx.conf needs `add_header_inherit` (nginx 1.29.3 or later).
-FROM nginxinc/nginx-unprivileged:1.30-alpine AS runtime
+# Publish the BFF (ASP.NET host that serves the SPA and forwards /api/* to the APIs)
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS bff
 
-# The image entrypoint renders the template with envsubst at start; the resolver comes from the container's /etc/resolv.conf.
-COPY src/Frontend/nginx.conf /etc/nginx/templates/default.conf.template
-ENV NGINX_ENTRYPOINT_LOCAL_RESOLVERS=1 \
-    DONATION_API_UPSTREAM=donation-api:8080
-COPY --from=build /app/dist /usr/share/nginx/html
+WORKDIR /src
 
-# Fail the image build on an invalid nginx configuration. The entrypoint renders the template first (as at
-# container start), then tests it. This runs without the compose network: a literal `proxy_pass http://donation-api`
-# fails here with "host not found in upstream", so the upstream is a variable resolved per request.
-# The rendered file is removed again: it holds the build host's resolver and must not be served if the
-# container cannot render the template at start (for example with a read-only file system).
-RUN /docker-entrypoint.sh nginx -t && rm /etc/nginx/conf.d/default.conf
+COPY Directory.Packages.props Directory.Build.props ./
+COPY src/Shared ./src/Shared
+COPY src/Frontend/TimeForCode.Frontend.Bff ./src/Frontend/TimeForCode.Frontend.Bff
+RUN dotnet publish ./src/Frontend/TimeForCode.Frontend.Bff/TimeForCode.Frontend.Bff.csproj \
+    --configuration Release \
+    --output /app/publish
+
+# Run the BFF as the image's non-root user (listens on 8080); the SPA build output is its web root
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
+
+WORKDIR /app
+
+COPY --from=bff /app/publish .
+COPY --from=spa /app/dist ./wwwroot
+
+USER $APP_UID
 
 EXPOSE 8080
+
+ENTRYPOINT ["dotnet", "TimeForCode.Frontend.Bff.dll"]

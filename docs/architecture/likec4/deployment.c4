@@ -26,8 +26,9 @@ deployment {
 
       composeNetwork network 'app-network' {
         frontendService = composeService 'frontend :8084' {
-          description 'nginx with the built SPA, Dockerfile.frontend'
+          description 'The BFF serving the built SPA, Dockerfile.frontend'
           instanceOf timeforcode.frontend
+          instanceOf timeforcode.bff
         }
         authService = composeService 'authorization-api :8080' {
           description 'Dockerfile.authorization-api, bound to localhost'
@@ -72,10 +73,8 @@ deployment {
       }
       resourceGroup targetApp 'Application' {
         targetFrontend = appService 'Front-end App Service' {
-          description 'Container with nginx and the SPA'
+          description 'Container with the BFF serving the SPA'
           instanceOf timeforcode.frontend
-        }
-        targetBff = appService 'BFF App Service' {
           instanceOf timeforcode.bff
         }
         targetAuth = appService 'Authorization API App Service' {
