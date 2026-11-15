@@ -119,7 +119,7 @@ Login starts with a browser navigation to the Authorization API login endpoint (
 ### Session handling in the SPA
 
 - Determine who is signed in with `GET /api/v1/User` on app start (cache with TanStack Query).
-- On a 401, the API layer tries one refresh (`POST /api/v1/Authentication/refresh`), then retries the request once. If that fails, the user is treated as signed out.
+- On a 401, the API layer tries one refresh (`POST /api/v1/Authentication/session/refresh`), then retries the request once. If that fails, the user is treated as signed out.
 - Roles for UI decisions come from the user endpoint or token claims exposed by the BFF. The backend remains the enforcer.
 
 ## API client generation

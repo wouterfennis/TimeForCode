@@ -116,10 +116,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
         public void ThenAnAdminSessionTokenIsIssuedContainingTheAdminRoleAndTheAdminScope()
         {
             _result!.Response.Should().NotBeNull();
-            _result!.Response!.AccessToken.Should().NotBeNull();
-
-            var jwt = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler()
-                .ReadJwtToken(_result!.Response!.AccessToken.Token);
+            var jwt = TokenCookieReader.ReadAccessToken(_cookieContainer);
 
             jwt.Claims.Should().Contain(c => c.Type == "role" && c.Value == "admin");
             jwt.Claims.Should().Contain(c => c.Type == "scope" && c.Value == "admin");

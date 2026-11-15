@@ -6,7 +6,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddReverseProxy()
     .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"))
-    .AddTransforms(LocationRewrite.Add);
+    .AddTransforms(LocationRewrite.Add)
+    .AddTransforms(ForwardOnlyCookie.Add);
 builder.Services.AddSingleton<IForwarderHttpClientFactory, BearerTokenForwarderHttpClientFactory>();
 
 var app = builder.Build();

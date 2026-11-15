@@ -100,7 +100,7 @@
         },
         "responses": {
           "200": {
-            "description": "The admin credential was claimed; the access token and refresh token are returned and set as cookies.",
+            "description": "The admin credential was claimed; the tokens are only set as HttpOnly cookies, never in the body.",
             "content": {
               "application/json": {
                 "schema": {
@@ -207,7 +207,7 @@
         },
         "responses": {
           "200": {
-            "description": "The admin signed in; the access token and refresh token are returned and set as cookies.",
+            "description": "The admin signed in; the tokens are only set as HttpOnly cookies, never in the body.",
             "content": {
               "application/json": {
                 "schema": {
@@ -332,7 +332,7 @@
         ],
         "responses": {
           "200": {
-            "description": "The access token and refresh token; both are also set as cookies.",
+            "description": "The expiry of the new access token and whether the user is new; both tokens are only set as HttpOnly cookies, never in the body.",
             "content": {
               "application/json": {
                 "schema": {
@@ -378,7 +378,7 @@
         }
       }
     },
-    "/api/v1/Authentication/logout": {
+    "/api/v1/Authentication/session/logout": {
       "post": {
         "tags": [
           "Authentication"
@@ -400,7 +400,7 @@
         }
       }
     },
-    "/api/v1/Authentication/refresh": {
+    "/api/v1/Authentication/session/refresh": {
       "post": {
         "tags": [
           "Authentication"
@@ -408,7 +408,7 @@
         "summary": "Refresh endpoint.",
         "responses": {
           "200": {
-            "description": "A new access token and refresh token; both are also set as cookies.",
+            "description": "The expiry of the new access token; both new tokens are only set as HttpOnly cookies, never in the body.",
             "content": {
               "application/json": {
                 "schema": {
@@ -721,25 +721,6 @@
   },
   "components": {
     "schemas": {
-      "AccessToken": {
-        "required": [
-          "token",
-          "expiresAfter"
-        ],
-        "type": "object",
-        "properties": {
-          "token": {
-            "type": "string",
-            "description": "The signed JSON Web Token (JWT, RS256); send it as a bearer token. Verify it with the keys of the JWKS endpoint."
-          },
-          "expiresAfter": {
-            "type": "string",
-            "description": "The moment the token expires, as an ISO 8601 date and time with offset; the token is invalid after this instant.",
-            "format": "date-time"
-          }
-        },
-        "description": "A short-lived access token issued by the Authorization API."
-      },
       "AdminCompleteAuthenticationRequestModel": {
         "required": [
           "credentialJson"
@@ -803,25 +784,21 @@
       },
       "CallbackResponseModel": {
         "required": [
-          "accessToken",
-          "refreshToken"
+          "expiresAfter"
         ],
         "type": "object",
         "properties": {
-          "accessToken": {
-            "description": "The access token.",
-            "$ref": "#/components/schemas/AccessToken"
-          },
-          "refreshToken": {
-            "description": "The access token.",
-            "$ref": "#/components/schemas/RefreshToken"
+          "expiresAfter": {
+            "type": "string",
+            "description": "When the new access token, which only the HttpOnly cookie carries, expires. The client schedules its next refresh from this.",
+            "format": "date-time"
           },
           "isNewUser": {
             "type": "boolean",
             "description": "Indicates whether this is the user's first login (new account was created)."
           }
         },
-        "description": "Represents the model for a callback response."
+        "description": "Represents the model for a sign-in or refresh response. It carries no token: both tokens are only in HttpOnly cookies (ADR-005)."
       },
       "DiscoveryDocumentResponse": {
         "required": [
@@ -939,25 +916,6 @@
             ]
           }
         }
-      },
-      "RefreshToken": {
-        "required": [
-          "token",
-          "expiresAfter"
-        ],
-        "type": "object",
-        "properties": {
-          "token": {
-            "type": "string",
-            "description": "The opaque refresh token value; single use, it is replaced by a new one on every refresh."
-          },
-          "expiresAfter": {
-            "type": "string",
-            "description": "The moment the refresh token expires, as an ISO 8601 date and time with offset; the token is invalid after this instant.",
-            "format": "date-time"
-          }
-        },
-        "description": "A long-lived refresh token that is exchanged for a new access token and a new refresh token."
       },
       "RepositoryResponse": {
         "required": [

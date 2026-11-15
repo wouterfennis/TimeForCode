@@ -54,14 +54,49 @@ namespace TimeForCode.Frontend.Bff.Tests
         }
 
         [TestMethod]
-        public async Task Get_WithCookies_ForwardsTheCookiesToTheApi()
+        public async Task Get_DonationRouteWithCookies_ForwardsNoCookieHeader()
+        {
+            using var request = new HttpRequestMessage(HttpMethod.Get, "/api/donation/v1/Project");
+            request.Headers.Add("Cookie", "AccessToken=a; RefreshToken=r; Other=o");
+
+            await _browser.SendAsync(request, TestContext.CancellationToken);
+
+            _factory.Upstream.Requests.Should().ContainSingle().Which.Headers.Should().NotContainKey("Cookie");
+        }
+
+        [TestMethod]
+        public async Task Get_AuthRouteWithCookies_ForwardsOnlyTheRefreshTokenCookie()
         {
             using var request = new HttpRequestMessage(HttpMethod.Get, "/api/auth/v1/user");
-            request.Headers.Add("Cookie", "RefreshToken=refresh-value");
+            request.Headers.Add("Cookie", "AccessToken=a; RefreshToken=refresh-value; Other=o");
 
             await _browser.SendAsync(request, TestContext.CancellationToken);
 
             _factory.Upstream.Requests.Should().ContainSingle().Which.Headers["Cookie"].Should().Be("RefreshToken=refresh-value");
+        }
+
+        [TestMethod]
+        public async Task Get_AuthRouteWithoutARefreshTokenCookie_ForwardsNoCookieHeader()
+        {
+            using var request = new HttpRequestMessage(HttpMethod.Get, "/api/auth/v1/user");
+            request.Headers.Add("Cookie", "AccessToken=a; Other=o");
+
+            await _browser.SendAsync(request, TestContext.CancellationToken);
+
+            _factory.Upstream.Requests.Should().ContainSingle().Which.Headers.Should().NotContainKey("Cookie");
+        }
+
+        [TestMethod]
+        public async Task Get_AuthRouteWithAnEncodedJsonRefreshTokenCookie_ForwardsTheValueAsTheApiWroteIt()
+        {
+            var value = Uri.EscapeDataString("{\"Token\":\"abc\",\"ExpiresAfter\":\"2030-01-01T00:00:00+00:00\"}");
+            using var request = new HttpRequestMessage(HttpMethod.Post, "/api/auth/v1/Authentication/session/refresh");
+            request.Headers.Add("Cookie", $"RefreshToken={value}");
+            request.Headers.Add("X-Requested-With", "XMLHttpRequest");
+
+            await _browser.SendAsync(request, TestContext.CancellationToken);
+
+            _factory.Upstream.Requests.Should().ContainSingle().Which.Headers["Cookie"].Should().Be($"RefreshToken={value}");
         }
 
         [TestMethod]

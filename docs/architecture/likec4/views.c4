@@ -132,7 +132,7 @@ views {
     title 'Scenario 2: Token refresh'
     description 'Runtime scenario 2 in 06-runtime-view.md'
 
-    donor -> timeforcode.authorization.authApi.authController 'POST /api/v1/authentication/refresh (refresh cookie)'
+    donor -> timeforcode.authorization.authApi.authController 'POST /api/v1/authentication/session/refresh (refresh cookie)'
     timeforcode.authorization.authApi.authController -> timeforcode.authorization.authApplication.authHandlers 'dispatch refresh command'
     timeforcode.authorization.authApplication.authHandlers -> timeforcode.authorization.authApplication.refreshTokenService 'validate and replace the refresh token'
     timeforcode.authorization.authApplication.refreshTokenService -> timeforcode.authorization.authInfrastructure.refreshTokenRepository 'look up the hash, store the replacement'

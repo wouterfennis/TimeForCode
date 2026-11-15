@@ -72,9 +72,9 @@ namespace TimeForCode.Authorization.Api.Controllers
         /// </summary>
         /// <param name="callbackModel">The model containing the authorization code from the external identity provider</param>
         /// <returns> 
-        /// The internal access token.
+        /// The expiry of the internal access token.
         /// </returns>
-        /// <response code="200">The access token and refresh token; both are also set as cookies.</response>
+        /// <response code="200">The expiry of the new access token and whether the user is new; both tokens are only set as HttpOnly cookies, never in the body.</response>
         /// <response code="302">Sign-in succeeded and the browser is redirected to the redirect uri given at login; the tokens are set as cookies.</response>
         /// <response code="400">The authorization code or state is missing, invalid or expired.</response>
         /// <response code="500">The sign-in could not be completed because of an unexpected server error.</response>
@@ -112,7 +112,7 @@ namespace TimeForCode.Authorization.Api.Controllers
         /// <response code="204">The refresh token was revoked, if present, and the token cookies were removed.</response>
         /// <response code="500">The logout failed because of an unexpected server error.</response>
         [HttpPost]
-        [Route("logout")]
+        [Route("session/logout")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> LogoutAsync()
@@ -126,7 +126,7 @@ namespace TimeForCode.Authorization.Api.Controllers
 
             await _sender.Send(command);
 
-            TokenCookies.Expire(HttpContext.Response);
+            TokenCookies.Expire(HttpContext.Response, _authenticationOptions.Value.RefreshCookiePath);
 
             return NoContent();
         }
@@ -143,12 +143,12 @@ namespace TimeForCode.Authorization.Api.Controllers
         /// <summary>
         /// Refresh endpoint.
         /// </summary>
-        /// <returns>New access token and refresh token</returns>
-        /// <response code="200">A new access token and refresh token; both are also set as cookies.</response>
+        /// <returns>The expiry of the new access token.</returns>
+        /// <response code="200">The expiry of the new access token; both new tokens are only set as HttpOnly cookies, never in the body.</response>
         /// <response code="400">The refresh token is missing, unknown or expired.</response>
         /// <response code="500">The refresh failed because of an unexpected server error.</response>
         [HttpPost]
-        [Route("refresh")]
+        [Route("session/refresh")]
         [EnableRateLimiting("auth")]
         [ProducesResponseType(typeof(CallbackResponseModel), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
@@ -186,23 +186,16 @@ namespace TimeForCode.Authorization.Api.Controllers
 
             SetTokenResponseCookies(result);
 
-            var response = new CallbackResponseModel
+            return new CallbackResponseModel
             {
-                AccessToken = result.InternalAccessToken,
-                RefreshToken = result.RefreshToken,
+                ExpiresAfter = result.InternalAccessToken.ExpiresAfter,
                 IsNewUser = result.IsNewUser
             };
-
-            return response;
         }
 
         private void SetTokenResponseCookies(TokenResult result)
         {
-            var accessTokenCookieOptions = TokenCookies.CreateOptions(result.InternalAccessToken.ExpiresAfter);
-            var refreshTokenCookieOptions = TokenCookies.CreateOptions(result.RefreshToken.ExpiresAfter);
-
-            HttpContext.Response.Cookies.Append(CookieConstants.TokenKey, JsonSerializer.Serialize(result.InternalAccessToken), accessTokenCookieOptions);
-            HttpContext.Response.Cookies.Append(CookieConstants.RefreshTokenKey, JsonSerializer.Serialize(result.RefreshToken), refreshTokenCookieOptions);
+            TokenCookies.Append(HttpContext.Response, result, _authenticationOptions.Value.RefreshCookiePath);
 
             if (result.IsNewUser)
             {
@@ -214,12 +207,20 @@ namespace TimeForCode.Authorization.Api.Controllers
 
         private RefreshToken? GetRefreshToken()
         {
-            if (HttpContext.Request.Cookies.TryGetValue(CookieConstants.RefreshTokenKey, out var refreshToken))
+            if (!HttpContext.Request.Cookies.TryGetValue(CookieConstants.RefreshTokenKey, out var refreshToken))
+            {
+                return null;
+            }
+
+            try
             {
                 return JsonSerializer.Deserialize<RefreshToken>(refreshToken);
             }
-
-            return null;
+            catch (JsonException)
+            {
+                // A corrupt cookie is the same as no cookie.
+                return null;
+            }
         }
 
         private static string SanitizeForLog(string? value)

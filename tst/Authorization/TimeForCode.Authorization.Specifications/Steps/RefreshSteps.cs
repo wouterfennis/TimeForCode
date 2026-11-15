@@ -10,7 +10,9 @@ using System.Web;
 using TimeForCode.Authorization.Api.Client;
 using TimeForCode.Authorization.Api.Client.Extensions;
 using TimeForCode.Authorization.Application.Interfaces;
+using TimeForCode.Authorization.Application.Options;
 using TimeForCode.Authorization.Application.Services;
+using TimeForCode.Authorization.Specifications.TestBuilder;
 using TimeForCode.Shared.Api.Authentication;
 using IServiceProvider = System.IServiceProvider;
 
@@ -47,7 +49,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
         [When("The user calls the refresh token endpoint with a read-only request")]
         public async Task WhenTheUserCallsTheRefreshTokenEndpointWithAReadOnlyRequestAsync()
         {
-            _session.ReadOnlyRequestResponse = await _httpClient.GetAsync("/api/v1/authentication/refresh");
+            _session.ReadOnlyRequestResponse = await _httpClient.GetAsync("/api/v1/authentication/session/refresh");
         }
 
         [Then("The following refresh error message is returned: {string}")]
@@ -134,14 +136,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
             jwt.Claims.Should().Contain(c => c.Type == "scope" && c.Value == "user");
         }
 
-        private JwtSecurityToken ReadAccessTokenCookie()
-        {
-            var cookie = _cookieContainer.GetAllCookies()[CookieConstants.TokenKey];
-            cookie.Should().NotBeNull();
-
-            var accessToken = JsonSerializer.Deserialize<AccessToken>(HttpUtility.UrlDecode(cookie!.Value))!;
-            return new JwtSecurityTokenHandler().ReadJwtToken(accessToken.Token);
-        }
+        private JwtSecurityToken ReadAccessTokenCookie() => TokenCookieReader.ReadAccessToken(_cookieContainer);
 
         private void SeedRefreshToken(DateTime expiresAfter)
         {
@@ -153,7 +148,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
 
             var uri = new Uri("http://localhost:8084");
             var cookieValue = HttpUtility.UrlEncode(JsonSerializer.Serialize(refreshToken));
-            _cookieContainer.Add(uri, new Cookie(CookieConstants.RefreshTokenKey, cookieValue));
+            _cookieContainer.Add(uri, new Cookie(CookieConstants.RefreshTokenKey, cookieValue, AuthenticationOptions.DefaultRefreshCookiePath));
 
             _storedRefreshToken = new Domain.Entities.RefreshToken
             {

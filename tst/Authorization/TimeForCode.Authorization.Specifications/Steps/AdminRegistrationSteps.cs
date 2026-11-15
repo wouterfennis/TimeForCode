@@ -98,7 +98,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
         public void ThenTheTimeForCodePlatformPermanentlyClaimsTheAdminRoleForTheUsersDevice()
         {
             _firstResult!.Response.Should().NotBeNull();
-            _firstResult!.Response!.AccessToken.Should().NotBeNull();
+            TokenCookieReader.ReadAccessToken(_cookieContainer).Should().NotBeNull();
         }
 
         [Then("The time for code platform still has no registered admin credential")]

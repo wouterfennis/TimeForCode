@@ -71,6 +71,6 @@ The UI hides what a user cannot do, but the backend is the authority. The UI mus
 | --- | --- |
 | Not signed in, page needs sign-in | Show a sign-in prompt in place, with a return to the same page after login |
 | Signed in, lacks role | Show a "not allowed" message with a link home; do not redirect silently |
-| Session expired | Try one silent refresh (`POST /api/v1/Authentication/refresh`); if that fails, show the sign-in prompt |
+| Session expired | Try one silent refresh (`POST /api/v1/Authentication/session/refresh`); if that fails, show the sign-in prompt |
 | API returns 404 | Show a "not found" page |
 | API returns 5xx or network error | Show an error state with a retry action |
