@@ -174,6 +174,30 @@ sequenceDiagram
 
 ---
 
+## Scenario 3h — Badges of an organization or a contributor
+
+A visitor sends `GET /api/v1/reporting/donororganization/{id}/badges` (or `.../contributor/{id}/badges`) without a token. `GetOrganizationBadgesHandler` reads the hours from the anonymous Donation endpoint `GET /api/v1/donororganization/{id}/hours` (or `GET /api/v1/contributor/{id}/hours`); an unknown organization or contributor ends the request with `404`. `BadgeAwarder` then lists the tiers of the recipient type and asks `IBadgeAwardRepository.AwardAsync` for every tier whose threshold the hours reached. Awarding is an upsert on a unique index over recipient type, recipient and tier, so requests at the same time store one award; the response lists the badges the recipient holds, as names and award dates only.
+
+```mermaid
+sequenceDiagram
+    participant Visitor
+    participant ReportingAPI as Reporting API
+    participant DonationAPI as Donation API
+    participant ReportingDB as Reporting MongoDB
+
+    Visitor->>ReportingAPI: GET .../donororganization/{id}/badges
+    ReportingAPI->>DonationAPI: GET .../donororganization/{id}/hours (no token)
+    DonationAPI-->>ReportingAPI: 200 { hoursLogged }
+    ReportingAPI->>ReportingDB: List tiers of the recipient type
+    ReportingAPI->>ReportingDB: Upsert one award per reached tier (unique index)
+    ReportingAPI->>ReportingDB: List awards of the recipient
+    ReportingAPI-->>Visitor: 200 { badges: [ { name, awardedAt } ] }
+```
+
+Administrators define the tiers with `PUT /api/v1/reporting/badge-tier/{recipientType}/{name}` (policy `ApiAdmin`: `401` without a token, `403` for a user token). `GET /api/v1/reporting/statistics` reads `GET /api/v1/statistics` from the Donation API and passes the two totals on.
+
+---
+
 ## Scenario 4 — Log Hours Against a Donation (Target)
 
 ```mermaid

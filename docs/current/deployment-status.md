@@ -65,7 +65,7 @@ The Identity Provider Mock replaces GitHub in local development. The Authorizati
 | Authorization API | <http://localhost:8080> | OAuth 2.0 + JWT |
 | Identity Provider Mock | <http://localhost:8081> | Simulates GitHub OAuth and GitHub REST API |
 | Donation API | <http://localhost:8082> | Project and donation management |
-| Reporting API | <http://localhost:8083> | Impact report and contribution history export; reads from the Donation API, no database; started in the CI compose stack, covered by the smoke test and by the `@live` Reporting scenarios |
+| Reporting API | <http://localhost:8083> | Impact report, contribution history export, project reports, badges and statistics; reads from the Donation API and keeps badge tiers and awards in its own MongoDB database (`TimeForCodeReporting`); started in the CI compose stack, covered by the smoke test and by the `@live` Reporting scenarios |
 | MongoDB | mongodb://localhost:27017 | Shared database instance |
 
 ### Container port note
@@ -89,7 +89,7 @@ All services are configured via environment variables defined in `docker-compose
 - **Token lifetime**: Access token expires in 60 minutes; refresh token in 7 days.
 - **Redirect URIs**: The Authorization API validates redirect URIs against an allowlist.
 - **Test-only admin access**: the Authorization API gets `TestAdminAccess__Enabled` and `TestAdminAccess__Secret` from `TEST_ADMIN_ACCESS_SECRET`. When that variable is unset (plain `podman compose up`) the feature stays disabled; `scripts/start-local.ps1` sets a random value. The Authorization API port is bound to `127.0.0.1`. The Azure deployment runs as `Production` and never sets these values.
-- **Database**: The Authorization API and the Donation API connect to MongoDB using a connection string from `DbOptions__ConnectionString`. The Reporting API has no database.
+- **Database**: The Authorization API and the Donation API connect to MongoDB using a connection string from `DbOptions__ConnectionString`. The Reporting API has its own database (`DbOptions__DatabaseName=TimeForCodeReporting`, same MongoDB server locally) for badge tiers and awarded badges; it shares no data with the Donation API.
 - **Reporting to Donation**: the Reporting API reads from the Donation API at `DonationApiOptions__BaseUri` and forwards the caller's own access token, so the token must list both APIs as audiences (`TokenCreationOptions__Audiences__1` and `__2` of the Authorization API). A missing or invalid address fails the first request that needs the Donation API, not the start of the service.
 
 > Credentials and secrets in `docker-compose.yaml` are for local development only. Do not use them in any other environment.
