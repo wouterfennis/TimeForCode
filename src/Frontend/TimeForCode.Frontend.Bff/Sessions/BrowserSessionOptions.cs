@@ -31,5 +31,10 @@ namespace TimeForCode.Frontend.Bff.Sessions
         /// The user counts as new for this many minutes after the first sign-in, so the SPA can show the first-login welcome once.
         /// </summary>
         public int NewUserMinutes { get; init; } = 5;
+
+        /// <summary>
+        /// How many sign-in requests (start, callback, admin passkey ceremonies) one client address may make per minute.
+        /// </summary>
+        public int SignInRequestsPerMinute { get; init; } = 20;
     }
 }
