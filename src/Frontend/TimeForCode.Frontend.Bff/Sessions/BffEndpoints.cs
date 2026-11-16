@@ -54,6 +54,7 @@ namespace TimeForCode.Frontend.Bff.Sessions
     internal static class BffEndpoints
     {
         private const string SignInFailedLocation = "/?signInError=1";
+        private const string NoStore = "no-store";
 
         public static void MapBffEndpoints(this WebApplication app)
         {
@@ -126,7 +127,7 @@ namespace TimeForCode.Frontend.Bff.Sessions
 
         private static async Task<IResult> GetSessionAsync(HttpContext context, SessionService sessions)
         {
-            context.Response.Headers.CacheControl = "no-store";
+            context.Response.Headers.CacheControl = NoStore;
             var session = await BrowserSession.ResolveAsync(context, sessions);
             if (session is null)
             {
@@ -176,28 +177,28 @@ namespace TimeForCode.Frontend.Bff.Sessions
 
         private static async Task<IResult> AdminRegistrationOptionsAsync(HttpContext context, IAuthorizationApi api, AdminRegistrationOptionsRequest request)
         {
-            context.Response.Headers.CacheControl = "no-store";
+            context.Response.Headers.CacheControl = NoStore;
             var ceremony = await api.AdminRegistrationOptionsAsync(request.BootstrapSecret, context.RequestAborted);
             return ceremony is null ? AdminRejected() : Results.Ok(new AdminCeremonyResponse(ceremony.CeremonyId, ceremony.OptionsJson));
         }
 
         private static async Task<IResult> AdminRegistrationAsync(HttpContext context, IAuthorizationApi api, SessionService sessions, AdminRegistrationRequest request)
         {
-            context.Response.Headers.CacheControl = "no-store";
+            context.Response.Headers.CacheControl = NoStore;
             var tokens = await api.AdminCompleteRegistrationAsync(request.BootstrapSecret, request.CredentialJson, request.CeremonyId, context.RequestAborted);
             return await OpenAdminSessionAsync(context, sessions, tokens);
         }
 
         private static async Task<IResult> AdminAuthenticationOptionsAsync(HttpContext context, IAuthorizationApi api)
         {
-            context.Response.Headers.CacheControl = "no-store";
+            context.Response.Headers.CacheControl = NoStore;
             var ceremony = await api.AdminAuthenticationOptionsAsync(context.RequestAborted);
             return ceremony is null ? AdminRejected() : Results.Ok(new AdminCeremonyResponse(ceremony.CeremonyId, ceremony.OptionsJson));
         }
 
         private static async Task<IResult> AdminAuthenticationAsync(HttpContext context, IAuthorizationApi api, SessionService sessions, AdminAuthenticationRequest request)
         {
-            context.Response.Headers.CacheControl = "no-store";
+            context.Response.Headers.CacheControl = NoStore;
             var tokens = await api.AdminCompleteAuthenticationAsync(request.CredentialJson, request.CeremonyId, context.RequestAborted);
             return await OpenAdminSessionAsync(context, sessions, tokens);
         }
