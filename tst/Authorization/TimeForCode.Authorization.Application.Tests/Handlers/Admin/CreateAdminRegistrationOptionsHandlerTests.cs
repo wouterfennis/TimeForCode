@@ -60,6 +60,26 @@ namespace TimeForCode.Authorization.Application.Tests.Handlers.Admin
         }
 
         [TestMethod]
+        public async Task Handle_NoSecretConfiguredAndEmptySecretProvided_ReturnsFailure()
+        {
+            var sut = new CreateAdminRegistrationOptionsHandler(
+                _repositoryMock.Object,
+                _ceremonyServiceMock.Object,
+                Microsoft.Extensions.Options.Options.Create(new AdminPasskeyOptions
+                {
+                    ServerDomain = "localhost",
+                    RelyingPartyName = "TimeForCode Admin",
+                    BootstrapSecret = ""
+                }),
+                NullLogger<CreateAdminRegistrationOptionsHandler>.Instance);
+
+            var result = await sut.Handle(new CreateAdminRegistrationOptionsCommand { BootstrapSecret = "" }, CancellationToken.None);
+
+            result.IsFailure.Should().BeTrue();
+            _ceremonyServiceMock.Verify(x => x.CreateRegistrationOptionsAsync(), Times.Never);
+        }
+
+        [TestMethod]
         public async Task Handle_CredentialAlreadyClaimed_ReturnsFailure()
         {
             _repositoryMock.Setup(x => x.GetAsync()).ReturnsAsync(new AdminCredential
