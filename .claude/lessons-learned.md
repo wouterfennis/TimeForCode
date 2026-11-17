@@ -40,3 +40,9 @@ Before adding an entry, check whether it belongs in a rule (`.claude/rules/`), a
 - **Date / issue:** 2026-11-14 / #194
 - **Lesson:** The sign-in, token, refresh and callback endpoints of the Authorization API share the `auth` rate limit (20 requests a minute). One smoke run uses most of it, so a second run (or a manual sign-in script) in the same minute fails at "Code exchange" with `429`, which looks like a regression.
 - **How to apply:** Wait a minute between smoke runs and manual sign-in scripts; check for `429` before debugging.
+
+### `podman compose` fails or hangs when the Docker API pipe is missing
+
+- **Date / issue:** 2026-11-17 / #205
+- **Lesson:** `podman compose` delegates to `docker-compose.exe`, which needs the named pipe `\\.\pipe\podman-machine-default`. When `win-sshproxy.exe` fails to start ("API forwarding for Docker API clients is not available"), compose fails with "failed to connect to the docker API". Pointing `DOCKER_HOST` at the machine's ssh socket then hangs silently: ssh waits for a host-key prompt and the machine key is not in the agent.
+- **How to apply:** Do not restart the Podman machine to fix it: that stops the whole stack. Accept the host key once (`ssh -o StrictHostKeyChecking=accept-new -i ~/.local/share/containers/podman/machine/machine -p <port> root@127.0.0.1 true`), `ssh-add` the machine key, set `DOCKER_HOST=ssh://root@127.0.0.1:<port>/run/podman/podman.sock` (port from `podman system connection list`), and run compose in the background with output to a file so a silent hang is visible. A hook blocks any command containing the word "docker", so keep it out of waits and greps. Ask before restarting the machine or interrupting a long compose build.

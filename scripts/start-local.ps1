@@ -62,6 +62,11 @@ if ($IsWindows) {
     }
 }
 
+# `podman compose` needs the Docker API pipe. When win-sshproxy fails to start the pipe is missing and compose fails with "failed to connect to the docker API".
+if ($IsWindows -and -not $env:DOCKER_HOST -and -not (Test-Path '\\.\pipe\podman-machine-default')) {
+    Write-Warning "The Docker API pipe is missing, so 'podman compose' will probably fail. Restart Podman Desktop (or the machine), or set DOCKER_HOST to the machine's ssh socket (see 'podman system connection list') after accepting its host key once."
+}
+
 # ---------------------------------------------------------------------------
 # Start the stack
 # ---------------------------------------------------------------------------

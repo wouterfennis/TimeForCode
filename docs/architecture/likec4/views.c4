@@ -101,7 +101,7 @@ views {
   // Delivery
   view delivery {
     title 'Delivery pipeline'
-    description 'From a pull request to the Azure deployment and the documentation site'
+    description 'From a pull request to the documentation site'
     include developer, githubActions, sonarCloud, registry, azureCloud, githubPages
   }
 
@@ -303,11 +303,6 @@ views {
   }
 
   // Deployment
-  deployment view production {
-    title 'Production deployment (Azure)'
-    include prod.**
-  }
-
   deployment view local {
     title 'Local development (podman compose)'
     include local.**

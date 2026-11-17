@@ -1,25 +1,4 @@
 deployment {
-  environment prod 'Production' {
-    description 'Only the Authorization API is deployed to Azure today (deploy/*.bicep)'
-
-    azure subscription 'Azure subscription' {
-      resourceGroup infra 'rg-platform-infra' {
-        description 'deploy/applicationInfrastructure.bicep'
-        plan = appService 'ApplicationAppServicePlan' {
-          description 'Shared App Service plan, SKU F1'
-        }
-      }
-      resourceGroup app 'rg-auth-app' {
-        description 'deploy/application.bicep'
-        authSite = appService 'timeforcode-auth-api' {
-          description 'Linux container from ghcr.io, with a MongoDB sidecar container'
-          instanceOf timeforcode.authorization
-          instanceOf mongodb
-        }
-      }
-    }
-  }
-
   environment local 'Local' {
     developerMachine machine 'Developer machine' {
       description 'docker-compose.yaml, started with scripts/start-local.ps1 or podman compose up --build'
@@ -55,7 +34,7 @@ deployment {
   }
 
   environment target 'Target production (planned)' {
-    description 'Full platform on Azure as described in arc42 chapter 7; not defined in Bicep yet'
+    description 'Full platform on Azure as described in arc42 chapter 7; no deployment definition yet'
 
     azure targetSubscription 'Azure subscription' {
       resourceGroup targetShared 'Shared infrastructure' {
@@ -84,7 +63,7 @@ deployment {
           instanceOf timeforcode.donation
         }
         targetReporting = appService 'Reporting API App Service' {
-          description 'Planned: not deployed yet, no Bicep definition (DEBT-22)'
+          description 'Planned: not deployed yet'
           instanceOf timeforcode.reporting
         }
       }

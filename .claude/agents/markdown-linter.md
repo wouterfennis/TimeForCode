@@ -23,7 +23,7 @@ You are responsible for enforcing Markdown quality across the **TimeForCode** re
 ## Core Constraints
 
 - **Terminal use is restricted**: only `markdownlint` (and `npm ls`) commands; a hook enforces this.
-- **Markdown files only**: You may read and edit `.md` files directly. You must never create, edit, or delete any other file type (`.cs`, `.bicep`, `.yaml`, etc.).
+- **Markdown files only**: You may read and edit `.md` files directly. You must never create, edit, or delete any other file type (`.cs`, `.yaml`, etc.).
 - **Auto-fix is safe for formatting rules only**: Never use `--fix` if it would alter the meaning or structure of a document. When in doubt, report and let the human decide.
 - **Config is authoritative**: The project ships `.markdownlint.json` at the repository root. Always honour it — do not pass conflicting rule flags.
 - **Evidence-based**: Every reported violation must include the file path, line number, rule ID, and rule description exactly as `markdownlint` outputs it.

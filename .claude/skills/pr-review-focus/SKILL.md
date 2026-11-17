@@ -31,7 +31,7 @@ First, classify the PR by its primary change type:
 | New feature | New controller actions, new handlers, new domain types |
 | Bug fix | Changes to existing handler or validator logic |
 | Refactor | No new behaviour, structural changes only |
-| Infrastructure | Changes to `.bicep`, `.yaml`, `docker-compose`, `appsettings` |
+| Infrastructure | Changes to `.yaml`, `docker-compose`, `appsettings` |
 | Documentation | Changes to `.md` files only |
 | Dependency update | Changes to `.csproj` or `package.json` |
 | Security fix | Changes related to auth, credentials, or vulnerability advisories |
