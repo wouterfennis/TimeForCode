@@ -15,7 +15,7 @@ The Authorization API has a test-only endpoint, `POST /api/v1/test-admin-access/
 - **Fails closed.** At startup the API throws if the feature is enabled in any environment other than `Development` or `Test` (allow-list, ordinal match), or if the secret is shorter than 16 characters.
 - **Contained token.** The token carries the admin identity plus the claim `amr=test`, lasts at most 15 minutes and is issued without a refresh token or cookies, so a test session is recognisable and cannot be renewed.
 - **Guarded secret.** The secret is compared in constant time; refused attempts are logged with the caller address; the endpoint is hidden from the OpenAPI document.
-- **Enabled for the local stack only.** `docker-compose.yaml` turns it on only when `TEST_ADMIN_ACCESS_SECRET` is set (`scripts/start-local.ps1` generates one) and binds the Authorization API port to loopback. `deploy/` runs as `Production` and never sets the flag.
+- **Enabled for the local stack only.** `docker-compose.yaml` turns it on only when `TEST_ADMIN_ACCESS_SECRET` is set (`scripts/start-local.ps1` generates one) and binds the Authorization API port to loopback. The production deployment (not yet defined, DEBT-26) must run as `Production` and never set the flag.
 
 Alternatives rejected: a scripted virtual WebAuthn authenticator (heavy and fragile in CI), and a seeded admin credential (still needs the private key to sign assertions).
 
