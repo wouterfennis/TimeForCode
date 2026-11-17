@@ -14,7 +14,6 @@ This section lists all constraints that are not negotiable. They must be respect
 | Frontend must be a React + TypeScript SPA | Decided in ADR-012; better design-system, accessibility and component-testing ecosystem. |
 | Storage must use MongoDB | Existing decision; document model suits the domain's flexible schemas. |
 | Containerisation with Docker | Local development and cloud deployment both rely on container images. |
-| Infrastructure as Code using Azure Bicep | Deployment must be reproducible and auditable. |
 | Deployment target is Microsoft Azure | Cloud provider selected; services run on Azure App Service. |
 | CI/CD via GitHub Actions | Pipeline is already in place; test and quality gates run on every pull request. |
 | Code quality gate via SonarCloud | All pull requests must pass the SonarCloud quality gate. |

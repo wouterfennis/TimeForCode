@@ -18,7 +18,7 @@ Documents that reflect the system as it exists in code today.
 | [Capability Status](current/capability-status.md) | Feature-level implementation status (done / partial / missing) |
 | [API Surface](current/api-surface.md) | Existing endpoints and contracts |
 | [Testing](current/testing.md) | Current test projects and verification strategy |
-| [Deployment Status](current/deployment-status.md) | Local docker and Azure Bicep topology |
+| [Deployment Status](current/deployment-status.md) | Local docker topology |
 
 ---
 

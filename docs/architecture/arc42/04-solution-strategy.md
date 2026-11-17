@@ -15,7 +15,6 @@ This section summarises the fundamental decisions and strategies that shape the 
 | Storage | MongoDB | Document model accommodates evolving schemas; well-supported in .NET |
 | Authentication | Internal JWT over OAuth 2.0 (GitHub) | Decouples internal auth from external provider; allows future provider additions without changing downstream services |
 | Infrastructure | Azure App Service + Docker containers | Portable container images; cost-effective for the current scale |
-| IaC | Azure Bicep | Native Azure IaC; better tooling support than ARM templates |
 | CI/CD | GitHub Actions | Already integrated with the repository; free for open-source projects |
 | Code quality | SonarCloud | Automated quality gate on every pull request |
 

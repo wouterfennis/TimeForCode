@@ -183,6 +183,5 @@ List files skipped because they describe future plans.
 | `src/Authorization/TimeForCode.Authorization.Api/V1/Controllers/` | `docs/current/api-surface.md` |
 | `tst/` (all test projects) | `docs/current/testing.md` |
 | `docker-compose.yaml` | `docs/current/deployment-status.md` |
-| `deploy/*.bicep` | `docs/current/deployment-status.md` |
 | `src/Donation/TimeForCode.Donation.Application/Handlers/` | `docs/donation/donation-sequence-diagrams.md` (Wf1) |
 | `tst/Authorization/TimeForCode.Authorization.Architecture.Tests/` | `docs/architecture/arc42/08-crosscutting-concepts.md` |

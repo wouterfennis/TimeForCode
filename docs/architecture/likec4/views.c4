@@ -303,11 +303,6 @@ views {
   }
 
   // Deployment
-  deployment view production {
-    title 'Production deployment (Azure)'
-    include prod.**
-  }
-
   deployment view local {
     title 'Local development (podman compose)'
     include local.**

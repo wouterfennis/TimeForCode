@@ -47,36 +47,9 @@ podman compose up --build
 
 ---
 
-## Current Cloud Deployment (Azure)
-
-Only the Authorization API is currently deployed to Azure. The Bicep templates in `deploy/` define the infrastructure.
-
-```mermaid
-graph LR
-    subgraph Azure Subscription
-        subgraph Resource Group - Infrastructure
-            AppServicePlan["App Service Plan\n(shared)"]
-        end
-        subgraph Resource Group - Application
-            AuthAppService["Authorization API\nAzure App Service"]
-        end
-    end
-
-    ContainerRegistry["Container Registry\n(image source)"] -->|pull image| AuthAppService
-    AppServicePlan -->|hosts| AuthAppService
-```
-
-> **Current**: Only the Authorization API has a Bicep definition. The Donation API, the Reporting API and the Frontend are not yet configured for Azure deployment.
-
----
-
-### Trusted proxy assumption
-
-Azure terminates TLS in front of the App Service container, so the API sees HTTP and the original scheme arrives in `X-Forwarded-Proto`. The API trusts those headers only from `ForwardedHeaders:KnownNetworks` (the `trustedProxyNetwork` parameter of `deploy/application.bicep`, default `169.254.0.0/16`, the App Service front-end network; verify it for the plan in use). The access token lifetime is set explicitly to 15 minutes in the same file. Details: [chapter 8](08-crosscutting-concepts.md#transport-and-browser-security-headers).
-
 ## Target Cloud Deployment (Azure)
 
-The full platform should eventually run on Azure with each service as an independent App Service container, a managed MongoDB instance, and secrets stored in Azure Key Vault.
+No cloud deployment definition exists at present; it is being rewritten. The full platform should eventually run on Azure with each service as an independent App Service container, a managed MongoDB instance, and secrets stored in Azure Key Vault.
 
 ```mermaid
 graph LR
@@ -110,7 +83,7 @@ graph LR
 | Component | Technology | Notes |
 | --- | --- | --- |
 | Frontend | Azure App Service (container) | The BFF serving the SPA, holding the browser session (MongoDB) and forwarding the API routes (one container, `Dockerfile.frontend`) |
-| Authorization API | Azure App Service (container) | Current deployment extended |
+| Authorization API | Azure App Service (container) | Not yet deployed |
 | Donation API | Azure App Service (container) | Not yet deployed |
 | Reporting API | Azure App Service (container) | Not yet deployed; needs the Donation API address (`DonationApiOptions__BaseUri`), the token settings and its own MongoDB database (`DbOptions__ConnectionString`, `DbOptions__DatabaseName`) for badge tiers and awards |
 | Database | Azure Cosmos DB for MongoDB API | Drop-in replacement for MongoDB driver |
@@ -125,5 +98,4 @@ graph LR
 | Environment | Services | Notes |
 | --- | --- | --- |
 | Local (`docker-compose`) | All services + IdP Mock + MongoDB | Dev only; HTTP; uses mock identity provider |
-| Production (Azure) | Authorization API | Only service currently deployed |
-| Target Production | All services | Full deployment not yet defined in Bicep |
+| Target Production | All services | Deployment definition not yet written |

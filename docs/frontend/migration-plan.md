@@ -47,7 +47,7 @@ Each phase is independently shippable and ends with working, tested software, in
 
 ### Phase 4 — Hardening and deployment
 
-- Deploy the front-end to Azure (Bicep templates in `deploy/`).
+- Deploy the front-end to Azure.
 - Update documentation: move the status of these documents to `Current`, update [Current Overview](../current/overview.md), the Arc42 sections listed in the ADR, and the glossary.
 
 After Phase 3, new platform features (donations, contributors, reports) are built only in the new front-end, using [page-specs.md](page-specs.md).
@@ -71,7 +71,7 @@ A developer ticks an item only when it is verified in the new front-end.
 - [ ] All `data-testid` values preserved
 - [ ] No serious or critical axe violations on any page
 - [ ] Docker Compose and local start scripts (`scripts/start-local.ps1`) work with the new setup
-- [ ] Production deployment tested (Bicep templates in `deploy/` updated if needed)
+- [ ] Production deployment tested
 
 ## What to keep, change, and remove
 

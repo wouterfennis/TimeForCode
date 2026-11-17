@@ -1,6 +1,6 @@
 # Stop hook: warns (never blocks) when
 #  1. C# files changed after the last successful dotnet build/test (quiet-run.ps1 writes .agent-state/last-dotnet-run), or
-#  2. architecture-relevant files under src/ or deploy/ changed on this branch without a docs/architecture/arc42/ change.
+#  2. architecture-relevant files under src/ changed on this branch without a docs/architecture/arc42/ change.
 $ErrorActionPreference = 'SilentlyContinue'
 $root = (git rev-parse --show-toplevel 2>$null)
 if (-not $root) { exit 0 }
@@ -23,7 +23,7 @@ if ($changed.Count) {
 $base = (git merge-base HEAD main 2>$null)
 $branchFiles = @(if ($base) { git diff --name-only $base HEAD 2>$null }) + $status | Sort-Object -Unique
 $architectural = @($branchFiles | Where-Object {
-    $_ -match '^src/.*(\.csproj|Program\.cs|Controller\.cs)$' -or $_ -match '^deploy/' -or $_ -match '(^|/)(docker|podman)?-?compose[^/]*\.ya?ml$' -or $_ -match '(^|/)Dockerfile'
+    $_ -match '^src/.*(\.csproj|Program\.cs|Controller\.cs)$' -or $_ -match '(^|/)(docker|podman)?-?compose[^/]*\.ya?ml$' -or $_ -match '(^|/)Dockerfile'
 })
 if ($architectural.Count -and -not @($branchFiles | Where-Object { $_ -match '^docs/architecture/arc42/' }).Count) {
     $messages += "Architecture-relevant files changed (e.g. $($architectural[0])) but docs/architecture/arc42/ was not updated. Update the arc42 docs if a service, API boundary or dependency changed."
