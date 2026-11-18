@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using System.Net;
 
 namespace TimeForCode.Shared.Api.Extensions
@@ -31,6 +33,11 @@ namespace TimeForCode.Shared.Api.Extensions
             var proxies = configuration.GetSection($"{SectionName}:KnownProxies").Get<List<string>>() ?? [];
             var networks = configuration.GetSection($"{SectionName}:KnownNetworks").Get<List<string>>() ?? [];
 
+            if (proxies.Count == 0 && networks.Count == 0)
+            {
+                services.AddHostedService<UntrustedProxyWarning>();
+            }
+
             return services.Configure<ForwardedHeadersOptions>(options =>
             {
                 options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedHost;
@@ -52,6 +59,28 @@ namespace TimeForCode.Shared.Api.Extensions
                     options.KnownIPNetworks.Add(Parse(network, "KnownNetworks", System.Net.IPNetwork.Parse));
                 }
             });
+        }
+
+        /// <summary>
+        /// Says at start that no proxy is trusted. Outside Development that usually means a proxy is missing from the configuration:
+        /// every client then shares the proxy's address, so a per-address rate limit becomes one bucket for everybody.
+        /// </summary>
+        private sealed class UntrustedProxyWarning(IHostEnvironment environment, ILogger<UntrustedProxyWarning> logger) : IHostedService
+        {
+            public Task StartAsync(CancellationToken cancellationToken)
+            {
+                if (!environment.IsDevelopment())
+                {
+                    logger.LogWarning(
+                        "{Section}:KnownProxies and {Section}:KnownNetworks are empty, so only loopback may set the X-Forwarded-* headers. Behind a proxy or ingress, name its address or network (and nothing wider), or all clients share the proxy's address.",
+                        SectionName,
+                        SectionName);
+                }
+
+                return Task.CompletedTask;
+            }
+
+            public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
         }
 
         private static T Parse<T>(string value, string setting, Func<string, T> parse)

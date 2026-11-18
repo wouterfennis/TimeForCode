@@ -115,7 +115,18 @@ namespace TimeForCode.Frontend.Bff.Sessions
             BrowserSession.ClearLoginCookie(context);
 
             context.Request.Cookies.TryGetValue(BrowserSession.SessionCookie, out var previousSessionId);
-            var signedIn = await sessions.CompleteLoginAsync(loginId, code, previousSessionId, context.RequestAborted);
+            SignedIn? signedIn;
+            try
+            {
+                signedIn = await sessions.CompleteLoginAsync(loginId, code, previousSessionId, context.RequestAborted);
+            }
+            catch (Exception exception) when (UpstreamFailureHandler.IsUpstreamFailure(exception, context.RequestAborted))
+            {
+                // The one-time code is spent either way: the person lands on the sign-in page with the error, not on a blank 500.
+                context.RequestServices.GetRequiredService<ILogger<SessionService>>().LogError(exception, "The sign-in could not be completed: the Authorization API call failed");
+                return Results.Redirect(SignInFailedLocation);
+            }
+
             if (signedIn is null)
             {
                 return Results.Redirect(SignInFailedLocation);
