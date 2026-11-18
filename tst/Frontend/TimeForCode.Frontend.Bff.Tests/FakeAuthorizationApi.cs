@@ -29,9 +29,18 @@ namespace TimeForCode.Frontend.Bff.Tests
 
         public Exception? LogoutFailure { get; set; }
 
+        public Exception? ExchangeFailure { get; set; }
+
+        public Exception? AdminFailure { get; set; }
+
         public Task<IssuedTokens?> ExchangeCodeAsync(string code, string codeVerifier, CancellationToken cancellationToken)
         {
             Exchanges.Add((code, codeVerifier));
+            if (ExchangeFailure is not null)
+            {
+                throw ExchangeFailure;
+            }
+
             var accepted = code == ValidCode && (ValidVerifier is null || codeVerifier == ValidVerifier);
             return Task.FromResult(accepted ? Issue(IsNewUser) : null);
         }
@@ -76,7 +85,7 @@ namespace TimeForCode.Frontend.Bff.Tests
         public HashSet<string> UsedCeremonies { get; } = [];
 
         public Task<AdminCeremony?> AdminRegistrationOptionsAsync(string bootstrapSecret, CancellationToken cancellationToken) =>
-            Task.FromResult(bootstrapSecret == AdminBootstrapSecret && !AdminRegistered ? new AdminCeremony("registration-ceremony", "{\"challenge\":\"r\"}") : null);
+            AdminFailure is not null ? throw AdminFailure : Task.FromResult(bootstrapSecret == AdminBootstrapSecret && !AdminRegistered ? new AdminCeremony("registration-ceremony", "{\"challenge\":\"r\"}") : null);
 
         public Task<IssuedTokens?> AdminCompleteRegistrationAsync(string bootstrapSecret, string credentialJson, string ceremonyId, CancellationToken cancellationToken)
         {

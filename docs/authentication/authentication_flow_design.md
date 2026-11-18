@@ -155,7 +155,7 @@ sequenceDiagram
     B->>Auth: forward call with the new bearer
 ```
 
-A refresh token may be used once. The Authorization API treats a second use as theft and revokes every refresh token of the user, so two requests must never refresh with the same token. The lease is one atomic conditional update on the session record (`RefreshLeaseUntil`, 15 seconds), so it holds across BFF instances and expires on its own if the BFF dies mid-refresh. The SPA notices nothing. If the Authorization API cannot be reached, the call goes out without a bearer header and the session is kept; if it rejects the refresh token, the session ends (next diagram).
+A refresh token may be used once. The Authorization API treats a second use as theft and revokes every refresh token of the user, so two requests must never refresh with the same token. The lease is one atomic conditional update on the session record (`RefreshLeaseUntil`, 30 seconds; waiting requests give up after 15 seconds), so it holds across BFF instances and expires on its own if the BFF dies mid-refresh. The SPA notices nothing. If the Authorization API cannot be reached, the call goes out without a bearer header and the session is kept; if it rejects the refresh token, the session ends (next diagram).
 
 ### An expired or revoked session
 
