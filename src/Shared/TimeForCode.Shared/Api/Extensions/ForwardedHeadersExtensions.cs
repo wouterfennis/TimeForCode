@@ -72,9 +72,9 @@ namespace TimeForCode.Shared.Api.Extensions
                 if (!environment.IsDevelopment())
                 {
                     logger.LogWarning(
-                        "{Section}:KnownProxies and {Section}:KnownNetworks are empty, so only loopback may set the X-Forwarded-* headers. Behind a proxy or ingress, name its address or network (and nothing wider), or all clients share the proxy's address.",
-                        SectionName,
-                        SectionName);
+                        "{ProxiesSetting} and {NetworksSetting} are empty, so only loopback may set the X-Forwarded-* headers. Behind a proxy or ingress, name its address or network (and nothing wider), or all clients share the proxy's address.",
+                        $"{SectionName}:KnownProxies",
+                        $"{SectionName}:KnownNetworks");
                 }
 
                 return Task.CompletedTask;
