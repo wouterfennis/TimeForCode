@@ -98,6 +98,34 @@ namespace TimeForCode.Authorization.Application.Tests.Handlers.Admin
         }
 
         [TestMethod]
+        public async Task Handle_NoSecretConfiguredAndEmptySecretProvided_ReturnsFailure()
+        {
+            var sut = new CompleteAdminRegistrationHandler(
+                _repositoryMock.Object,
+                _ceremonyServiceMock.Object,
+                _tokenServiceMock.Object,
+                _refreshTokenServiceMock.Object,
+                TimeProvider.System,
+                Microsoft.Extensions.Options.Options.Create(new AdminPasskeyOptions
+                {
+                    ServerDomain = "localhost",
+                    RelyingPartyName = "TimeForCode Admin",
+                    BootstrapSecret = ""
+                }),
+                NullLogger<CompleteAdminRegistrationHandler>.Instance);
+
+            var result = await sut.Handle(new CompleteAdminRegistrationCommand
+            {
+                BootstrapSecret = "",
+                CredentialJson = "credential-json",
+                CeremonyId = "state"
+            }, CancellationToken.None);
+
+            result.IsFailure.Should().BeTrue();
+            _ceremonyServiceMock.Verify(x => x.CompleteRegistrationAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        }
+
+        [TestMethod]
         public async Task Handle_AttestationFails_ReturnsFailure()
         {
             _ceremonyServiceMock.Setup(x => x.CompleteRegistrationAsync(It.IsAny<string>(), It.IsAny<string>()))
