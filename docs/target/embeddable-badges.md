@@ -1,6 +1,6 @@
 # Embeddable README badges: design
 
-Design for issue #190. Planned behaviour, not yet implemented; once built, the routes move to `docs/current/api-surface.md`.
+Design for issue #190, implemented in the Reporting API. The routes, texts, caching and status codes as built are in [api-surface](../current/api-surface.md#reporting-api); this page keeps the design and the example images.
 
 ## Example badges
 
@@ -85,3 +85,9 @@ The label background is `#555`, text is white at 11 px Verdana/sans-serif. The S
 
 - **Timing**: a known contributor without badges and an unknown contributor may differ in response time (one extra lookup). The result is identical, which meets the criterion; timing equalisation is out of scope.
 - **Proxy range**: the existing `public` policy partitions by client address. Behind GitHub's image proxy many visitors share a few addresses, so the policy may throttle legitimate README views. Related to the open proxy-range debt; the cache header is the main protection, and a dedicated `badge` policy with a higher limit can be added if the smoke test shows throttling.
+
+## Differences in the implementation
+
+- The badge states are `HoursReceived`, `Progress`, `Tier`, `NoBadgeYet`, `NotFound` and `Unavailable`: the renderer needs to know which kind of value it draws to pick the icon and the colour.
+- The controller does not catch unexpected exceptions: the application layer never catches generic exceptions, so a defect still answers `500` and a Donation API failure is the only case that renders "unavailable".
+- A malformed identifier is rejected by a plain 24-hexadecimal-digit check, not a regular expression, because the end anchor of a .NET regular expression also accepts a trailing line feed.

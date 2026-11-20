@@ -15,6 +15,8 @@ namespace TimeForCode.Reporting.Specifications.Steps
 
         public string? LastBody { get; private set; }
 
+        public string? LastCacheControl { get; private set; }
+
         /// <summary>Sends the request and keeps what the Then-steps assert on: the status, the content type and the body.</summary>
         public Task GetAsync(HttpClient client, string url) => SendAsync(() => client.GetAsync(new Uri(url, UriKind.Relative)));
 
@@ -24,6 +26,7 @@ namespace TimeForCode.Reporting.Specifications.Steps
             using HttpResponseMessage response = await send();
             LastStatusCode = response.StatusCode;
             LastContentType = response.Content.Headers.ContentType?.MediaType;
+            LastCacheControl = response.Headers.CacheControl?.ToString();
             LastBody = await response.Content.ReadAsStringAsync();
         }
     }

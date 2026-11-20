@@ -11,7 +11,7 @@ namespace TimeForCode.Seeder
                 SeederOptions options = SeederOptions.Resolve(args, Environment.GetEnvironmentVariable);
 
                 using var probeClient = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
-                await StackProbe.CheckAsync(probeClient, options.AuthorizationUrl, options.DonationUrl);
+                await StackProbe.CheckAsync(probeClient, options.AuthorizationUrl, options.DonationUrl, options.ReportingUrl);
 
                 await new SeedRunner(new LiveSeedSession(options), Console.WriteLine).RunAsync(ScenarioCatalog.All);
 

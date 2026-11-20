@@ -183,6 +183,10 @@ Implemented as `GET /api/v1/reporting/donororganization/{id}/impact-report` and 
 
 Implemented in the Reporting API as `GET /api/v1/reporting/donororganization/{id}/badges`, `GET /api/v1/reporting/contributor/{id}/badges`, `GET /api/v1/reporting/statistics` and `GET /api/v1/reporting/badge-tier` (all anonymous), and the admin-only `PUT` and `DELETE /api/v1/reporting/badge-tier/{recipientType}/{name}`. Routes, schemas, status codes and examples: [api-surface](../current/api-surface.md#reporting-api).
 
+#### Embeddable badge images ✅
+
+Implemented in the Reporting API as anonymous `GET /api/v1/reporting/project/{id}/badge/hours-received.svg`, `.../project/{id}/badge/progress.svg`, `.../donororganization/{id}/badge.svg` and `.../contributor/{id}/badge.svg`, answering `image/svg+xml` with `200` in every case. Routes, texts, caching and status codes: [api-surface](../current/api-surface.md#reporting-api); design and example images: [embeddable-badges](embeddable-badges.md).
+
 #### Project donation report ✅
 
 Implemented as `GET /api/v1/reporting/project/{id}/donation-report` (maintainer or administrator) and `GET /api/v1/reporting/project/{id}/public-summary` (anonymous, aggregate totals only) in the Reporting API; replaces the earlier `GET /api/v1/project/{id}/report` design. See [docs/current/api-surface.md](../current/api-surface.md#reporting-api) for payloads and status codes.

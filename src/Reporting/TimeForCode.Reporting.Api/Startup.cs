@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using TimeForCode.Reporting.Api.V1.Rendering;
 using TimeForCode.Reporting.Application.Extensions;
 using TimeForCode.Reporting.Infrastructure.Extensions;
 using TimeForCode.Shared.Api.Extensions;
@@ -42,6 +43,7 @@ namespace TimeForCode.Reporting.Api
                     .AddPolicy("ApiAdmin", policy => policy.RequireClaim(AuthenticationExtensions.ScopeClaim, "admin"))
                     .AddPolicy("ApiUserOrAdmin", policy => policy.RequireClaim(AuthenticationExtensions.ScopeClaim, "user", "admin"));
 
+            services.Configure<BadgeImageOptions>(_configuration.GetSection(BadgeImageOptions.SectionName));
             services.AddApplicationLayer();
             services.AddInfrastructureLayer(_configuration);
             int apiPermitLimit = _configuration.GetApiPermitLimit();

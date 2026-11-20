@@ -101,6 +101,41 @@ namespace TimeForCode.Seeder.Tests
         }
 
         [TestMethod]
+        public async Task BadgeTiers_AdminDefinesTiersPerRecipientType()
+        {
+            var stack = new FakeStack();
+            await RunUpToAsync(stack, "badge-tiers");
+
+            stack.Calls.Where(c => c.StartsWith("admin:DefineBadgeTier:")).Should().Equal(
+                "admin:DefineBadgeTier:organization:Silver:5",
+                "admin:DefineBadgeTier:organization:Gold:10",
+                "admin:DefineBadgeTier:contributor:Bronze:5",
+                "admin:DefineBadgeTier:contributor:Silver:8");
+        }
+
+        [TestMethod]
+        public async Task BadgeTiers_RunsAfterTheDonationsAndContributions()
+        {
+            var stack = new FakeStack();
+            await RunUpToAsync(stack, "badge-tiers");
+
+            int tiers = stack.Calls.FindIndex(c => c.Contains(":DefineBadgeTier:"));
+            tiers.Should().BeGreaterThan(stack.Calls.FindLastIndex(c => c.Contains(":Activate:")));
+            tiers.Should().BeGreaterThan(stack.Calls.FindLastIndex(c => c.Contains(":AddContribution:")));
+        }
+
+        [TestMethod]
+        public void BadgeTiers_Thresholds_YieldDifferentTiersAndLeaveARecipientBelowTheFirstTier()
+        {
+            // Hours the other scenarios seed per contributor: alice 9 (5 + 4 after the correction), bob 6, carol 3.
+            int[] contributorHours = [9, 6, 3];
+            var thresholds = new BadgeTiersScenario().ContributorTiers.ToDictionary(t => t.Name, t => t.ThresholdHours);
+
+            contributorHours.Select(h => thresholds.Where(t => t.Value <= h).Select(t => t.Key).LastOrDefault())
+                .Should().Equal("Silver", "Bronze", null);
+        }
+
+        [TestMethod]
         public async Task ContributorProfiles_ContributorsJoinTheDonorOrganization()
         {
             var stack = new FakeStack();

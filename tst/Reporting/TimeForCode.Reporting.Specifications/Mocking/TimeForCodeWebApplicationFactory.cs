@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using System.Threading.RateLimiting;
 using TimeForCode.Reporting.Api;
 using TimeForCode.Reporting.Application.Interfaces;
 using TimeForCode.Shared.Api.Extensions;
@@ -36,9 +37,23 @@ namespace TimeForCode.Reporting.Specifications.Mocking
 
                 // One host serves every scenario of a run, so the production limit of 60 requests a minute would reject later scenarios.
                 services.RemoveAll<IConfigureOptions<RateLimiterOptions>>();
-                services.Configure<RateLimiterOptions>(options => options
-                    .AddDefaultSlidingWindowPolicy("api", int.MaxValue)
-                    .AddDefaultSlidingWindowPolicy("public", int.MaxValue));
+                var publicRateLimit = new PublicRateLimit();
+                services.AddSingleton(publicRateLimit);
+                services.Configure<RateLimiterOptions>(options =>
+                {
+                    options.AddDefaultSlidingWindowPolicy("api", int.MaxValue);
+
+                    // Unlimited, until a scenario lowers it; the partition key changes with every reset, so each scenario starts with a fresh window.
+                    options.AddPolicy("public", _ => RateLimitPartition.GetSlidingWindowLimiter(
+                        $"public-{publicRateLimit.Window}",
+                        _ => new SlidingWindowRateLimiterOptions
+                        {
+                            Window = TimeSpan.FromMinutes(1),
+                            SegmentsPerWindow = 6,
+                            PermitLimit = publicRateLimit.PermitLimit,
+                            QueueLimit = 0
+                        }));
+                });
 
                 // Override JWT validation to accept symmetric test tokens
                 services.PostConfigure<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme, options =>
@@ -67,6 +82,7 @@ namespace TimeForCode.Reporting.Specifications.Mocking
             Services.GetRequiredService<InMemoryDonationDataSource>().Clear();
             Services.GetRequiredService<InMemoryBadgeTierRepository>().Clear();
             Services.GetRequiredService<InMemoryBadgeAwardRepository>().Clear();
+            Services.GetRequiredService<PublicRateLimit>().Reset();
         }
     }
 }

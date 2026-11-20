@@ -255,6 +255,27 @@ Badges, tiers and statistics:
 | `PUT` | `/api/v1/reporting/badge-tier/{recipientType}/{name}` | ✅ | Defines a badge tier or changes the threshold of the tier with that recipient type and name (admin JWT only); body `{ "thresholdHours": 10 }`; `200` with the tier; `400` for a threshold below 1 or a name of 0 or more than 100 characters (the name limit is declared on the route parameter in the OpenAPI document), `409` when another tier of the recipient type already has the threshold, `401` without a token, `403` for a user token. Name and threshold are unique per recipient type; the two recipient types are independent and may share a threshold |
 | `DELETE` | `/api/v1/reporting/badge-tier/{recipientType}/{name}` | ✅ | Removes a badge tier (admin JWT only); `204`, `404` for an unknown tier, `401`, `403`; badges already awarded stay |
 
+Embeddable badge images (SVG for a README, anonymous; see [Show your TimeForCode badge](../../README.md#show-your-timeforcode-badge)):
+
+| Method | Endpoint | Status | Notes |
+| --- | --- | --- | --- |
+| `GET` | `/api/v1/reporting/project/{id}/badge/hours-received.svg` | ✅ | The hours a published project received, for example `120 hours` (green) |
+| `GET` | `/api/v1/reporting/project/{id}/badge/progress.svg` | ✅ | The hours logged out of the hours received with the percentage, for example `45 / 120 hours (38%)` (blue), from the same data as the public summary |
+| `GET` | `/api/v1/reporting/donororganization/{id}/badge.svg` | ✅ | The highest tier of a donor organization, for example `Gold` |
+| `GET` | `/api/v1/reporting/contributor/{id}/badge.svg` | ✅ | The highest tier of a contributor |
+
+Every badge answers `200` with `Content-Type: image/svg+xml`, so a README never shows a broken image. What the right-hand side says:
+
+| Situation | Text | Cache |
+| --- | --- | --- |
+| A value or a tier | the value or the tier name | `public, max-age=300` |
+| A recipient without a badge | `no badge yet` | `public, max-age=300` |
+| An unknown, malformed or unpublished project, an unknown or malformed organization | `not found` | `public, max-age=300` |
+| An unknown or malformed contributor | `no badge yet`, exactly the image of a known contributor without badges, so the badge does not confirm that an identifier exists | `public, max-age=300` |
+| The Donation API fails | `unavailable` | `public, max-age=30` |
+
+The lifetimes are configuration (`BadgeImageOptions:CacheSeconds` and `BadgeImageOptions:UnavailableCacheSeconds`). The routes fall under the `public` rate-limit policy, so too many requests get `429` without an image. A badge shows only the label "TimeForCode", totals, tier names and fixed texts, never names, logins or identifiers, and every text is XML-escaped. Reading a badge awards newly reached badges exactly like the JSON endpoints.
+
 Badges are awarded when they are requested, so a tier added or lowered reaches recipients who already qualify the next time their badges are read; a raised or removed tier takes no badge away. An award is stored once per recipient type, recipient and tier (unique index), so requests at the same time store one award and keep the first award date. The hours come from three anonymous, totals-only endpoints of the Donation API (see Public totals), read without a token.
 
 Project donation report (`donation-report`):
