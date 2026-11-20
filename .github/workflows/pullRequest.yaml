@@ -249,10 +249,6 @@ jobs:
     - name: Live scenarios
       run: dotnet test tst/Donation/TimeForCode.Donation.Specifications --configuration Release --filter "TestCategory=live" --logger trx --results-directory TestResults
 
-    # The auth endpoints allow 20 requests per minute; the smoke test and the Donation scenarios have used the window.
-    - name: Wait for the sign-in rate limit window
-      run: sleep 65
-
     - name: Live scenarios (Reporting)
       run: dotnet test tst/Reporting/TimeForCode.Reporting.Specifications --configuration Release --filter "TestCategory=live" --logger trx --results-directory TestResults
 
