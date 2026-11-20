@@ -55,3 +55,11 @@ app.MapReverseProxy();
 app.MapSpaFiles();
 
 await app.RunAsync();
+
+/// <summary>
+/// Starting point of the BFF (top-level statements); excluded from coverage like the other entry points.
+/// </summary>
+[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage(Justification = "Application entrypoint")]
+public partial class Program
+{
+}

@@ -1,7 +1,9 @@
+using System.Diagnostics.CodeAnalysis;
 using TimeForCode.Authorization.Api.Client;
 
 namespace TimeForCode.Seeder
 {
+    [ExcludeFromCodeCoverage(Justification = "Application entrypoint")]
     internal static class Program
     {
         private static async Task<int> Main(string[] args)

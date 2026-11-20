@@ -93,6 +93,52 @@ namespace TimeForCode.Reporting.Api.Tests
         }
 
         [TestMethod]
+        [DataRow('i')]
+        [DataRow('l')]
+        [DataRow('j')]
+        [DataRow('I')]
+        [DataRow('.')]
+        [DataRow(',')]
+        [DataRow(':')]
+        [DataRow(';')]
+        [DataRow('|')]
+        [DataRow('!')]
+        [DataRow('\'')]
+        public void Render_NarrowCharacters_AreNarrowerThanOrdinaryOnes(char narrow)
+        {
+            WidthOfTier(new string(narrow, 10)).Should().BeLessThan(WidthOfTier("xxxxxxxxxx"));
+        }
+
+        [TestMethod]
+        [DataRow('A')]
+        [DataRow('Z')]
+        [DataRow('%')]
+        public void Render_CapitalsAndPercent_AreWiderThanOrdinaryOnes(char wide)
+        {
+            WidthOfTier(new string(wide, 10)).Should().BeGreaterThan(WidthOfTier("xxxxxxxxxx"));
+        }
+
+        [TestMethod]
+        [DataRow('m')]
+        [DataRow('w')]
+        [DataRow('M')]
+        [DataRow('W')]
+        [DataRow('@')]
+        public void Render_WideCharacters_AreWiderThanCapitals(char wide)
+        {
+            WidthOfTier(new string(wide, 10)).Should().BeGreaterThan(WidthOfTier("AAAAAAAAAA"));
+        }
+
+        [TestMethod]
+        public void Render_Spaces_AreNarrowerThanOrdinaryCharacters()
+        {
+            WidthOfTier("          ").Should().BeLessThan(WidthOfTier("xxxxxxxxxx"));
+        }
+
+        private static int WidthOfTier(string tier) =>
+            int.Parse(Parse(SvgBadgeRenderer.Render(new BadgeImageContent(BadgeImageState.Tier, tier))).Attribute("width")!.Value);
+
+        [TestMethod]
         public void Render_SameContent_GivesTheSameImage()
         {
             string first = SvgBadgeRenderer.Render(new BadgeImageContent(BadgeImageState.NoBadgeYet));

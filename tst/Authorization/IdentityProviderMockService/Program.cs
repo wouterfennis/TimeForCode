@@ -3,10 +3,12 @@ using IdentityProviderMockService.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography.X509Certificates;
 
 namespace IdentityProviderMockService
 {
+    [ExcludeFromCodeCoverage(Justification = "Application entrypoint")]
     public static class Program
     {
         public static void Main(string[] args)
