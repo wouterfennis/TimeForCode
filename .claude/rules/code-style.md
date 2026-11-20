@@ -9,24 +9,23 @@ This file defines the mandatory code-style gate for every agent or contributor t
 
 ---
 
-## Mandatory: Run `dotnet format` Before Every Commit
+## Mandatory: Run `dotnet format` as the last step
 
-**Every agent must run `dotnet format` on the solution before committing any C# changes.**
+**Every agent must run `dotnet format` on the solution once, as the last step before the final commit/PR, not before each intermediate step commit.**
 
 ```bash
 dotnet format ./TimeForCode.sln
 ```
 
-A `PostToolUse` hook already formats every `.cs` file you edit or write (`dotnet format whitespace --folder --include <file>`, whitespace and editorconfig only). The solution-wide run above (skill `dotnet-format`) is still required before `git commit`.
+A `PostToolUse` hook already formats every `.cs` file you edit or write (`dotnet format whitespace --folder --include <file>`, whitespace and editorconfig only). The solution-wide run above (skill `dotnet-format`) is still required once at the end of the work.
 
 ### When to run
 
 | Situation | Action |
 | --- | --- |
-| After writing new C# files | Run `dotnet format` |
-| After editing existing C# files | Run `dotnet format` |
+| Last step of the work, before shipping | Run `dotnet format` |
 | After resolving merge conflicts in C# files | Run `dotnet format` |
-| Before calling `git commit` / committing | Run `dotnet format` |
+| Intermediate step commits | Skip (the hook covers edited files) |
 
 ### Verify the build after formatting
 
