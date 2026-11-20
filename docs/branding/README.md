@@ -43,7 +43,7 @@ The ring track is the ring color at 28 percent opacity.
 - Do not stretch, rotate, recolor, outline or add effects to the mark. Do not change the arc length except to show a real percentage.
 - The arc starts at 12 o'clock and runs clockwise. In a badge, set it to the real hours logged out of hours received.
 - The name is written TimeForCode, one word with capital T, F and C.
-- Keep the mark and the logo separate: the mark alone is for small or square spaces (favicon, avatar, badge), the lockup for places with room for the name. Do not rearrange the lockup or set the name in another typeface.
+- Keep the mark and the lockup separate: the mark alone is for small or square spaces (favicon, avatar, badge), the lockup for places with room for the name. Do not rearrange the lockup or set the name in another typeface.
 - The name is Space Grotesk, bold for "Time" and "Code" and light for "For". The font is only a build dependency; the shipped files hold outlines.
 
 ## Rebuilding
@@ -51,7 +51,7 @@ The ring track is the ring color at 28 percent opacity.
 Requires Node. From this folder:
 
 ```powershell
-npm install
+npm ci
 npm run build
 ```
 

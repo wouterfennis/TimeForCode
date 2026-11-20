@@ -1,6 +1,6 @@
 // Builds every logo asset from one mark definition.
-// Usage: npm install && npm run build   (in docs/branding)
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+// Usage: npm ci && npm run build   (in docs/branding)
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Resvg } from '@resvg/resvg-js';
@@ -70,6 +70,9 @@ const social = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640" f
 const fontFile = (weight) =>
   join(root, 'node_modules/@fontsource/space-grotesk/files', `space-grotesk-latin-${weight}-normal.woff`);
 const loadFont = (weight) => {
+  if (!existsSync(fontFile(weight))) {
+    throw new Error(`Font file not found: ${fontFile(weight)}. Run "npm ci" in docs/branding first.`);
+  }
   const b = readFileSync(fontFile(weight));
   return opentype.parse(b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength));
 };
@@ -93,11 +96,16 @@ const lockupHeight = 48;
 const lockupSize = ` width="${wordmarkPaths.width * 1.5}" height="${lockupHeight * 1.5}"`;
 const lockup = (c, trackOpacity) =>
   `${open(`0 0 ${wordmarkPaths.width} ${lockupHeight}`, lockupSize)}${geometry(c, trackOpacity)}\n  <path d="${wordmarkPaths.d}" fill="${c.code}" stroke="none"/>\n</svg>\n`;
-const lockupAdaptive = adaptive
-  .replace('viewBox="0 0 48 48"', `viewBox="0 0 ${wordmarkPaths.width} ${lockupHeight}"${lockupSize}`)
-  .replace('.code { stroke: ' + colors.light.code + '; }', `.code { stroke: ${colors.light.code}; }\n    .word { fill: ${colors.light.code}; }`)
-  .replace('.code { stroke: ' + colors.dark.code + '; }', `.code { stroke: ${colors.dark.code}; }\n      .word { fill: ${colors.dark.code}; }`)
-  .replace('</svg>', `  <path class="word" d="${wordmarkPaths.d}" stroke="none"/>\n</svg>`);
+// Derives the adaptive lockup from the adaptive mark; fails loudly when the template no longer matches.
+const mustReplace = (text, search, replacement) => {
+  if (!text.includes(search)) throw new Error(`Adaptive lockup: template no longer contains "${search}"`);
+  return text.replace(search, replacement);
+};
+let lockupAdaptive = adaptive;
+lockupAdaptive = mustReplace(lockupAdaptive, 'viewBox="0 0 48 48"', `viewBox="0 0 ${wordmarkPaths.width} ${lockupHeight}"${lockupSize}`);
+lockupAdaptive = mustReplace(lockupAdaptive, `.code { stroke: ${colors.light.code}; }`, `.code { stroke: ${colors.light.code}; }\n    .word { fill: ${colors.light.code}; }`);
+lockupAdaptive = mustReplace(lockupAdaptive, `.code { stroke: ${colors.dark.code}; }`, `.code { stroke: ${colors.dark.code}; }\n      .word { fill: ${colors.dark.code}; }`);
+lockupAdaptive = mustReplace(lockupAdaptive, '</svg>', `  <path class="word" d="${wordmarkPaths.d}" stroke="none"/>\n</svg>`);
 
 const svgs = {
   'logo-lockup.svg': lockupAdaptive,
