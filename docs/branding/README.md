@@ -2,6 +2,10 @@
 
 The logo is a progress ring around a code prompt. The ring is the time: the amber arc is the share of donated hours that has been logged, the same measure as the progress badge. The prompt `>_` is the code. Because the ring can show a real percentage, the same mark can be used in badges and statistics.
 
+## License
+
+The logo and the other brand assets in this folder are licensed under CC BY-ND 4.0 (share unchanged, with credit; no modified versions). The name and the logo are also trademarks, so they may not be used as the name or logo of another product or to suggest endorsement. See [LICENSE.md](LICENSE.md). The scripts (`build.mjs`, `package.json`) are covered by the repository's MIT License.
+
 ## Files
 
 | Path | Use |

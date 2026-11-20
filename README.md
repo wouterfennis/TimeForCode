@@ -169,6 +169,8 @@ Before submitting:
 
 Distributed under the MIT License. See [LICENSE](LICENSE) for more information.
 
+The MIT License does not cover the logo and brand assets in [docs/branding/](docs/branding/). They are licensed under [CC BY-ND 4.0](docs/branding/LICENSE.md), and the name and logo are trademarks of Wouter Fennis.
+
 ---
 
 ## Contact
