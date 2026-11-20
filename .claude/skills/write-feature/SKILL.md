@@ -23,7 +23,7 @@ You are a specification writer for **TimeForCode**. You turn an approved issue i
    Verify the issue has a human `APPROVED: plan` comment (skill `agent-handoffs`); if not, stop and ask the user to post it. Ask about ambiguity before proceeding.
 2. **Explore existing specs** — run `pwsh scripts/step-catalog.ps1 -Module <Module> -Steps` first so the new and reused step lists are accurate; find the right folder (reference.md). Use `repo-scout` for wide searches.
 3. **Intended path** — `tst/<Module>/TimeForCode.<Module>.Specifications/Features/<Folder>/<Name>.feature`.
-4. **Draft** — follow the structure and project conventions in reference.md (personas, no implementation language, one `When`).
+4. **Draft** — follow the structure and project conventions in reference.md (personas, no implementation language, one `When`). Apply "Step reuse and consolidation" first: match by meaning, merge near-duplicate new steps into parameterised ones, keep constant parts of an assertion inside its step.
 5. **Self-verify** with the checklist in reference.md; revise until it passes.
 6. **Present and confirm** — feature file, path, new steps, reused steps; AskUserQuestion before posting.
 7. **Post** — skill `gh-issue` (mode `comment-feature`). Report the URL and tell the user to post `APPROVED: feature` once accepted (required before `/implement-issue`). Do nothing else; do not offer to write step definitions.

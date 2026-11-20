@@ -19,6 +19,17 @@ Intended path of a new file: `tst/<Module>/TimeForCode.<Module>.Specifications/F
 
 Glob the `Features/` tree and Grep `*Steps.cs` for candidate step text. Read only the matching feature and step files. Record steps reusable verbatim, steps that need new definitions (note, never write code), and the target folder. Check `docs/current/` for API/capability context.
 
+## Step reuse and consolidation (do this before drafting)
+
+Reuse is the default; every new step needs a reason.
+
+1. Run the step catalog and match each scenario's Givens, Whens and Thens against it by meaning, not only by wording. Existing steps often have regex parameters such as `(organization|contributor)`; extend those instead of adding a sibling.
+2. Draft the scenarios, then list every distinct new step. Merge steps that differ only by a value into one parameterised step (`{string}`, `{int}` or a regex alternation).
+3. A fixed part of the expected result (a constant label, a response kind such as "is an image") belongs inside the one assertion step and its definition, not repeated as an extra `Then` or an extra argument in every scenario.
+4. Do not split an assertion and its variants into separate steps (valid, escaped, plain text): one step, one definition that checks all.
+5. Put a new step in the existing step class of its kind (for example a new rejection in `RejectionSteps`) and say so in the new-steps list.
+6. State the count of new versus reused steps in the confirmation message and justify any new step that has no reuse (it is used by one scenario only) in one line.
+
 ## Gherkin structure
 
 ```gherkin
@@ -64,7 +75,7 @@ Parameterised text uses `{string}` in definitions: `Then The following callback 
 | --- | --- | --- |
 | 1 | Feature header | Has As a / I want / So that with business value |
 | 2 | Scenario titles | Complete plain-English sentences |
-| 3 | Step reuse | Existing wording used wherever the meaning matches |
+| 3 | Step reuse | Existing wording used wherever the meaning matches; no two new steps differ only by a value; no constant label or response kind repeated per scenario; new-versus-reused count stated |
 | 4 | No implementation language | No classes, HTTP, DB terms, identifiers |
 | 5 | One When | Exactly one `When` per scenario |
 | 6 | Testability | Each scenario has a specific, independently verifiable `Then` |
