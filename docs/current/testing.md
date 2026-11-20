@@ -410,7 +410,7 @@ The `Documentation Site` workflow (`.github/workflows/docs-site.yaml`) runs on p
 
 ### E2E tests
 
-The `frontend` job ("Front-end checks") in `pullRequest.yaml` and `build.yaml` runs `npm ci --ignore-scripts`, the "API types up to date" check (`check:api`), lint, typecheck, tests with coverage and the build. It uploads the lcov file as the `frontend-coverage` artifact, which the `build` job (`needs: frontend`) downloads before the SonarCloud scan end. The scan start sets `sonar.log.level=WARN`, so the job log shows only warnings and errors, and excludes verified snapshots, the generated front-end API types and `obj` folders from analysis. On `main`, `release-please` also depends on this job.
+The `frontend` job ("Front-end checks") in `pullRequest.yaml` and `build.yaml` runs `npm ci --ignore-scripts`, the "API types up to date" check (`check:api`), lint, typecheck, tests with coverage and the build. It uploads the lcov file as the `frontend-coverage` artifact, which the `build` job (`needs: frontend`) downloads before the SonarCloud scan end. The scan end step ignores `sonar.log.level`, so its output is filtered to warnings, errors and the result lines. The scan start excludes verified snapshots, the generated front-end API types and `obj` folders from analysis. On `main`, `release-please` also depends on this job.
 
 ### Specification baseline
 
