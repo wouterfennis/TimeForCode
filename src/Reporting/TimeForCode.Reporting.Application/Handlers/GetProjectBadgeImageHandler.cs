@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.Extensions.Logging;
 using System.Net;
 using TimeForCode.Reporting.Commands;
 
@@ -7,10 +8,12 @@ namespace TimeForCode.Reporting.Application.Handlers
     internal class GetProjectBadgeImageHandler : IRequestHandler<GetProjectBadgeImageQuery, Result<BadgeImageContent>>
     {
         private readonly IMediator _mediator;
+        private readonly ILogger<GetProjectBadgeImageHandler> _logger;
 
-        public GetProjectBadgeImageHandler(IMediator mediator)
+        public GetProjectBadgeImageHandler(IMediator mediator, ILogger<GetProjectBadgeImageHandler> logger)
         {
             _mediator = mediator;
+            _logger = logger;
         }
 
         public async Task<Result<BadgeImageContent>> Handle(GetProjectBadgeImageQuery request, CancellationToken cancellationToken)
@@ -19,9 +22,14 @@ namespace TimeForCode.Reporting.Application.Handlers
             if (summary.IsFailure)
             {
                 // The Donation context answers not found for an unknown and for an unpublished project alike.
-                return Result<BadgeImageContent>.Success(summary.FailureStatusCode is HttpStatusCode.NotFound or HttpStatusCode.BadRequest
-                    ? new BadgeImageContent(BadgeImageState.NotFound)
-                    : new BadgeImageContent(BadgeImageState.Unavailable));
+                if (summary.FailureStatusCode is HttpStatusCode.NotFound or HttpStatusCode.BadRequest)
+                {
+                    return Result<BadgeImageContent>.Success(new BadgeImageContent(BadgeImageState.NotFound));
+                }
+
+                // Shown as "unavailable" so a README never breaks, but not silently: the cause may be a defect of ours.
+                _logger.LogWarning("The badge of project {ProjectId} is unavailable: {Reason}", request.ProjectId, summary.ErrorMessage);
+                return Result<BadgeImageContent>.Success(new BadgeImageContent(BadgeImageState.Unavailable));
             }
 
             string text = request.Kind == ProjectBadgeKind.Progress

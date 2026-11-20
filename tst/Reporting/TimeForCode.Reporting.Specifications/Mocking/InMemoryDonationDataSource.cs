@@ -25,9 +25,10 @@ namespace TimeForCode.Reporting.Specifications.Mocking
             _unavailable = true;
         }
 
-        internal void RemoveProject(string id)
+        /// <summary>The project stays, with its maintainer, but its public reads answer not found, like an unpublished project of the Donation context.</summary>
+        internal void Unpublish(string id)
         {
-            _projects.Remove(id);
+            _projects[id].Published = false;
         }
 
         private static Result<T> Unreachable<T>() => Result<T>.Failure("The Donation API could not be reached.", HttpStatusCode.BadGateway);
@@ -179,7 +180,7 @@ namespace TimeForCode.Reporting.Specifications.Mocking
 
         private Result<IReadOnlyList<T>> ReadProject<T>(string projectId, Func<Project, List<T>> select)
         {
-            return _projects.TryGetValue(projectId, out Project? project)
+            return _projects.TryGetValue(projectId, out Project? project) && project.Published
                 ? Result<IReadOnlyList<T>>.Success(select(project).ToList())
                 : Result<IReadOnlyList<T>>.Failure("Project not found.", HttpStatusCode.NotFound);
         }
@@ -212,6 +213,7 @@ namespace TimeForCode.Reporting.Specifications.Mocking
         private sealed class Project
         {
             internal string? MaintainerUserId { get; set; }
+            internal bool Published { get; set; } = true;
             internal List<ProjectDonation> Donations { get; } = [];
             internal List<ProjectContribution> Contributions { get; } = [];
         }

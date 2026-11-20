@@ -1,5 +1,6 @@
 using AwesomeAssertions;
 using MediatR;
+using Microsoft.Extensions.Logging;
 using Moq;
 using System.Net;
 using TimeForCode.Reporting.Application.Handlers;
@@ -62,11 +63,85 @@ namespace TimeForCode.Reporting.Application.Tests.Handlers
             _mediator.Setup(m => m.Send(It.IsAny<GetContributorBadgesQuery>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(Result<IReadOnlyList<BadgeDto>>.Failure("failed", statusCode));
 
-        private GetProjectBadgeImageHandler ProjectHandler() => new(_mediator.Object);
+        private readonly RecordingLogger<GetProjectBadgeImageHandler> _projectLogger = new();
+        private readonly RecordingLogger<GetOrganizationBadgeImageHandler> _organizationLogger = new();
+        private readonly RecordingLogger<GetContributorBadgeImageHandler> _contributorLogger = new();
 
-        private GetOrganizationBadgeImageHandler OrganizationHandler() => new(_mediator.Object, _tiers.Object);
+        private GetProjectBadgeImageHandler ProjectHandler() => new(_mediator.Object, _projectLogger);
 
-        private GetContributorBadgeImageHandler ContributorHandler() => new(_mediator.Object, _tiers.Object);
+        private GetOrganizationBadgeImageHandler OrganizationHandler() => new(_mediator.Object, _tiers.Object, _organizationLogger);
+
+        private GetContributorBadgeImageHandler ContributorHandler() => new(_mediator.Object, _tiers.Object, _contributorLogger);
+
+        /// <summary>Moq cannot proxy a logger of an internal type, so the warnings are recorded by hand.</summary>
+        private sealed class RecordingLogger<T> : ILogger<T>
+        {
+            public int Warnings { get; private set; }
+
+            public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+
+            public bool IsEnabled(LogLevel logLevel) => true;
+
+            public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+            {
+                if (logLevel == LogLevel.Warning)
+                {
+                    Warnings++;
+                }
+            }
+        }
+
+        // Unexpected failures: shown as "unavailable", but never silently
+
+        [TestMethod]
+        public async Task Project_DonationDataFails_LogsAWarning()
+        {
+            GivenSummaryFails(HttpStatusCode.BadGateway);
+
+            await ProjectHandler().Handle(new GetProjectBadgeImageQuery { ProjectId = Id, Kind = ProjectBadgeKind.HoursReceived }, CancellationToken.None);
+
+            _projectLogger.Warnings.Should().Be(1);
+        }
+
+        [TestMethod]
+        public async Task Project_Unknown_LogsNoWarning()
+        {
+            GivenSummaryFails(HttpStatusCode.NotFound);
+
+            await ProjectHandler().Handle(new GetProjectBadgeImageQuery { ProjectId = Id, Kind = ProjectBadgeKind.HoursReceived }, CancellationToken.None);
+
+            _projectLogger.Warnings.Should().Be(0);
+        }
+
+        [TestMethod]
+        public async Task Organization_DonationDataFails_LogsAWarning()
+        {
+            GivenOrganizationBadgesFail(HttpStatusCode.InternalServerError);
+
+            await OrganizationHandler().Handle(new GetOrganizationBadgeImageQuery { DonorOrganizationId = Id }, CancellationToken.None);
+
+            _organizationLogger.Warnings.Should().Be(1);
+        }
+
+        [TestMethod]
+        public async Task Contributor_DonationDataFails_LogsAWarning()
+        {
+            GivenContributorBadgesFail(HttpStatusCode.BadGateway);
+
+            await ContributorHandler().Handle(new GetContributorBadgeImageQuery { ContributorId = Id }, CancellationToken.None);
+
+            _contributorLogger.Warnings.Should().Be(1);
+        }
+
+        [TestMethod]
+        public async Task Contributor_Unknown_LogsNoWarning()
+        {
+            GivenContributorBadgesFail(HttpStatusCode.NotFound);
+
+            await ContributorHandler().Handle(new GetContributorBadgeImageQuery { ContributorId = Id }, CancellationToken.None);
+
+            _contributorLogger.Warnings.Should().Be(0);
+        }
 
         // Project
 

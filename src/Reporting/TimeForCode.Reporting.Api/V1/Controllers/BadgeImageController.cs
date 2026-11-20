@@ -34,7 +34,6 @@ namespace TimeForCode.Reporting.Api.V1.Controllers
             _options = options.Value;
         }
 
-
         // Not a regular expression: its end anchor also accepts a trailing line feed, which a route value can carry.
         private static bool IsObjectId(string id) => id.Length == 24 && id.All(Uri.IsHexDigit);
 
@@ -125,7 +124,8 @@ namespace TimeForCode.Reporting.Api.V1.Controllers
         {
             Result<BadgeImageContent> content = await _mediator.Send(query);
 
-            return Image(content.Value);
+            // The handlers always succeed; should one ever fail, the README still gets an image.
+            return Image(content.IsSuccess ? content.Value : new BadgeImageContent(BadgeImageState.Unavailable));
         }
 
         private ContentResult Image(BadgeImageContent content)

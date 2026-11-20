@@ -97,6 +97,18 @@ namespace TimeForCode.Reporting.Api.Tests
         }
 
         [TestMethod]
+        public async Task GetProjectHoursReceivedBadge_ApplicationFails_ReturnsTheUnavailableImageWithAShortCache()
+        {
+            _mediator.Setup(m => m.Send(It.IsAny<GetProjectBadgeImageQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(Result<BadgeImageContent>.Failure("unexpected"));
+
+            IActionResult result = await CreateSut().GetProjectHoursReceivedBadge(Id);
+
+            Svg(result).Content.Should().Be(SvgBadgeRenderer.Render(new BadgeImageContent(BadgeImageState.Unavailable)));
+            CacheControl.Should().Be("public, max-age=30");
+        }
+
+        [TestMethod]
         public async Task GetOrganizationBadge_MalformedIdentifier_ReturnsTheNotFoundImageWithoutAskingTheApplication()
         {
             IActionResult result = await CreateSut().GetOrganizationBadge(Malformed);

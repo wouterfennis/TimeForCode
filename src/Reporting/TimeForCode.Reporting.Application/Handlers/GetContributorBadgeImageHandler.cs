@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.Extensions.Logging;
 using System.Net;
 using TimeForCode.Reporting.Application.Interfaces;
 using TimeForCode.Reporting.Commands;
@@ -10,11 +11,13 @@ namespace TimeForCode.Reporting.Application.Handlers
     {
         private readonly IMediator _mediator;
         private readonly IBadgeTierRepository _tiers;
+        private readonly ILogger<GetContributorBadgeImageHandler> _logger;
 
-        public GetContributorBadgeImageHandler(IMediator mediator, IBadgeTierRepository tiers)
+        public GetContributorBadgeImageHandler(IMediator mediator, IBadgeTierRepository tiers, ILogger<GetContributorBadgeImageHandler> logger)
         {
             _mediator = mediator;
             _tiers = tiers;
+            _logger = logger;
         }
 
         public async Task<Result<BadgeImageContent>> Handle(GetContributorBadgeImageQuery request, CancellationToken cancellationToken)
@@ -23,9 +26,14 @@ namespace TimeForCode.Reporting.Application.Handlers
             if (badges.IsFailure)
             {
                 // An unknown contributor looks exactly like one without badges, so the image does not confirm that an identifier exists.
-                return Result<BadgeImageContent>.Success(badges.FailureStatusCode is HttpStatusCode.NotFound or HttpStatusCode.BadRequest
-                    ? new BadgeImageContent(BadgeImageState.NoBadgeYet)
-                    : new BadgeImageContent(BadgeImageState.Unavailable));
+                if (badges.FailureStatusCode is HttpStatusCode.NotFound or HttpStatusCode.BadRequest)
+                {
+                    return Result<BadgeImageContent>.Success(new BadgeImageContent(BadgeImageState.NoBadgeYet));
+                }
+
+                // The identifier is deliberately left out of the log message: an unavailable badge is a failure of ours or of Donation, not of the contributor.
+                _logger.LogWarning("The badge of a contributor is unavailable: {Reason}", badges.ErrorMessage);
+                return Result<BadgeImageContent>.Success(new BadgeImageContent(BadgeImageState.Unavailable));
             }
 
             return Result<BadgeImageContent>.Success(HighestBadge.From(badges.Value, await _tiers.ListAsync(BadgeRecipientType.Contributor, cancellationToken)));

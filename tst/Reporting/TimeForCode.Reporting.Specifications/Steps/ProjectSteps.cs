@@ -67,8 +67,8 @@ namespace TimeForCode.Reporting.Specifications.Steps
         [Given("The project is not published")]
         public void GivenTheProjectIsNotPublished()
         {
-            // Like the Donation context, the fake answers not found for an unpublished project, as for an unknown one.
-            _donationData.RemoveProject(_context.ProjectId!);
+            // The project exists and keeps its maintainer; like the Donation context, its public reads answer not found.
+            _donationData.Unpublish(_context.ProjectId!);
         }
 
         [Given("The project has a donation of {int} hours with status {string}")]
