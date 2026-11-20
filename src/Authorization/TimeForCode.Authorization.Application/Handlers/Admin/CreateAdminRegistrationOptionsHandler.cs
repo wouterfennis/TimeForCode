@@ -57,6 +57,12 @@ namespace TimeForCode.Authorization.Application.Handlers.Admin
     {
         public static bool Matches(string provided, string expected)
         {
+            // A deployment without a configured secret must not be claimable with an empty one.
+            if (string.IsNullOrEmpty(expected))
+            {
+                return false;
+            }
+
             var providedBytes = Encoding.UTF8.GetBytes(provided);
             var expectedBytes = Encoding.UTF8.GetBytes(expected);
 

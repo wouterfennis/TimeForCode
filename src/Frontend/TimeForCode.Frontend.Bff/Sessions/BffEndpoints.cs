@@ -54,6 +54,7 @@ namespace TimeForCode.Frontend.Bff.Sessions
     internal static class BffEndpoints
     {
         private const string SignInFailedLocation = "/?signInError=1";
+        private const string NoStore = "no-store";
 
         public static void MapBffEndpoints(this WebApplication app)
         {
@@ -62,12 +63,16 @@ namespace TimeForCode.Frontend.Bff.Sessions
             group.MapGet("/login", LoginAsync)
                 .WithSummary("Starts the sign-in.")
                 .WithDescription("Redirects the browser to the Authorization API, which redirects to the identity provider. The PKCE verifier stays on the server; a short-lived opaque cookie finds it again at the callback.")
-                .Produces(StatusCodes.Status302Found);
+                .Produces(StatusCodes.Status302Found)
+                .ProducesProblem(StatusCodes.Status429TooManyRequests)
+                .RequireRateLimiting(SignInRateLimit.PolicyName);
 
             group.MapGet("/callback", CallbackAsync)
                 .WithSummary("Completes the sign-in.")
                 .WithDescription("The Authorization API redirects here with a single-use code. The BFF exchanges it, opens a session and redirects to the page the user came from. On any failure it redirects to /?signInError=1.")
-                .Produces(StatusCodes.Status302Found);
+                .Produces(StatusCodes.Status302Found)
+                .ProducesProblem(StatusCodes.Status429TooManyRequests)
+                .RequireRateLimiting(SignInRateLimit.PolicyName);
 
             group.MapGet("/session", GetSessionAsync)
                 .WithSummary("Tells whether the user is signed in.")
@@ -110,7 +115,18 @@ namespace TimeForCode.Frontend.Bff.Sessions
             BrowserSession.ClearLoginCookie(context);
 
             context.Request.Cookies.TryGetValue(BrowserSession.SessionCookie, out var previousSessionId);
-            var signedIn = await sessions.CompleteLoginAsync(loginId, code, previousSessionId, context.RequestAborted);
+            SignedIn? signedIn;
+            try
+            {
+                signedIn = await sessions.CompleteLoginAsync(loginId, code, previousSessionId, context.RequestAborted);
+            }
+            catch (Exception exception) when (UpstreamFailureHandler.IsUpstreamFailure(exception, context.RequestAborted))
+            {
+                // The one-time code is spent either way: the person lands on the sign-in page with the error, not on a blank 500.
+                context.RequestServices.GetRequiredService<ILogger<SessionService>>().LogError(exception, "The sign-in could not be completed: the Authorization API call failed");
+                return Results.Redirect(SignInFailedLocation);
+            }
+
             if (signedIn is null)
             {
                 return Results.Redirect(SignInFailedLocation);
@@ -122,7 +138,7 @@ namespace TimeForCode.Frontend.Bff.Sessions
 
         private static async Task<IResult> GetSessionAsync(HttpContext context, SessionService sessions)
         {
-            context.Response.Headers.CacheControl = "no-store";
+            context.Response.Headers.CacheControl = NoStore;
             var session = await BrowserSession.ResolveAsync(context, sessions);
             if (session is null)
             {
@@ -142,6 +158,8 @@ namespace TimeForCode.Frontend.Bff.Sessions
         private static void MapAdminEndpoints(RouteGroupBuilder group)
         {
             var admin = group.MapGroup("/admin");
+            admin.RequireRateLimiting(SignInRateLimit.PolicyName);
+            admin.WithMetadata(new ProducesResponseTypeAttribute(typeof(ProblemDetails), StatusCodes.Status429TooManyRequests, "application/problem+json"));
 
             admin.MapPost("/registration/options", AdminRegistrationOptionsAsync)
                 .WithSummary("Starts the admin passkey registration.")
@@ -170,28 +188,28 @@ namespace TimeForCode.Frontend.Bff.Sessions
 
         private static async Task<IResult> AdminRegistrationOptionsAsync(HttpContext context, IAuthorizationApi api, AdminRegistrationOptionsRequest request)
         {
-            context.Response.Headers.CacheControl = "no-store";
+            context.Response.Headers.CacheControl = NoStore;
             var ceremony = await api.AdminRegistrationOptionsAsync(request.BootstrapSecret, context.RequestAborted);
             return ceremony is null ? AdminRejected() : Results.Ok(new AdminCeremonyResponse(ceremony.CeremonyId, ceremony.OptionsJson));
         }
 
         private static async Task<IResult> AdminRegistrationAsync(HttpContext context, IAuthorizationApi api, SessionService sessions, AdminRegistrationRequest request)
         {
-            context.Response.Headers.CacheControl = "no-store";
+            context.Response.Headers.CacheControl = NoStore;
             var tokens = await api.AdminCompleteRegistrationAsync(request.BootstrapSecret, request.CredentialJson, request.CeremonyId, context.RequestAborted);
             return await OpenAdminSessionAsync(context, sessions, tokens);
         }
 
         private static async Task<IResult> AdminAuthenticationOptionsAsync(HttpContext context, IAuthorizationApi api)
         {
-            context.Response.Headers.CacheControl = "no-store";
+            context.Response.Headers.CacheControl = NoStore;
             var ceremony = await api.AdminAuthenticationOptionsAsync(context.RequestAborted);
             return ceremony is null ? AdminRejected() : Results.Ok(new AdminCeremonyResponse(ceremony.CeremonyId, ceremony.OptionsJson));
         }
 
         private static async Task<IResult> AdminAuthenticationAsync(HttpContext context, IAuthorizationApi api, SessionService sessions, AdminAuthenticationRequest request)
         {
-            context.Response.Headers.CacheControl = "no-store";
+            context.Response.Headers.CacheControl = NoStore;
             var tokens = await api.AdminCompleteAuthenticationAsync(request.CredentialJson, request.CeremonyId, context.RequestAborted);
             return await OpenAdminSessionAsync(context, sessions, tokens);
         }

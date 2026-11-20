@@ -44,7 +44,7 @@ model {
   }
   githubActions = system 'GitHub Actions' {
     #external
-    description 'Builds, tests and releases (release-please), deploys the Bicep templates, publishes the documentation site'
+    description 'Builds, tests and releases (release-please), publishes the documentation site'
   }
   sonarCloud = system 'SonarCloud' {
     #external
@@ -56,7 +56,7 @@ model {
   }
   azureCloud = system 'Microsoft Azure' {
     #external
-    description 'Hosts the production App Service, deployed from deploy/*.bicep'
+    description 'Planned hosting platform; nothing is deployed yet'
   }
 
   timeforcode = system 'TimeForCode' {
@@ -517,7 +517,5 @@ model {
   developer -> githubActions 'pushes, opens pull requests' 'HTTPS'
   githubActions -> sonarCloud 'sends analysis and coverage' 'HTTPS'
   githubActions -> registry 'pushes the Authorization API image' 'HTTPS'
-  githubActions -> azureCloud 'deploys the Bicep templates' 'az deployment sub create'
   githubActions -> githubPages 'publishes the documentation site' 'HTTPS'
-  azureCloud -> registry 'pulls the Authorization API image' 'HTTPS'
 }

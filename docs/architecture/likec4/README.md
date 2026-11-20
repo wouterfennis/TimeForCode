@@ -10,7 +10,7 @@ Published site: <https://wouterfennis.github.io/TimeForCode/architecture-model/>
 | --- | --- |
 | `specification.c4` | Element kinds, tags and deployment node kinds |
 | `model.c4` | Actors, external systems, the front-end, the bounded contexts (Authorization, Donation, Shared) with their layers and components, and the delivery pipeline |
-| `deployment.c4` | Production (Azure, from `deploy/`), local (`docker-compose.yaml`) and the planned target deployment |
+| `deployment.c4` | Local (`docker-compose.yaml`) and the planned target deployment |
 | `views.c4` | Static views per level, the delivery view, dynamic views of the runtime scenarios and the deployment views |
 
 The deprecated Website project is not modelled.
@@ -64,12 +64,11 @@ npm run build        # static site in dist/ (gitignored)
 | Scenario 3d1: Correct or delete a contribution | `correctOrDeleteContribution` | 06 |
 | Scenario 3d2: Maintainer projects and donations | `maintainerOverview` | 06 |
 | Scenario 3e: Contributor profile | `contributorProfile` | 06 |
-| Production deployment | `production` | 07 |
 | Local development | `local` | 07 |
 | Target production deployment (planned) | `target` | 07 |
 
 ## Keeping it in sync
 
-Update the model when the building blocks, the runtime flows or the resources in `deploy/` change. The `Documentation Site` workflow validates the model on pull requests. On push to `main` it publishes the Jekyll docs at the site root and this model at `/architecture-model/` to GitHub Pages.
+Update the model when the building blocks, the runtime flows or the planned deployment changes. The `Documentation Site` workflow validates the model on pull requests. On push to `main` it publishes the Jekyll docs at the site root and this model at `/architecture-model/` to GitHub Pages.
 
 Repository setup (one time, manual): Settings, Pages, Source set to "GitHub Actions".

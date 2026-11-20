@@ -372,7 +372,7 @@ try {
         Write-Output "  [SKIP] BFF silent refresh: $ContainerCli not found"
     }
 
-    $sToken = [int](curl -s -o /dev/null -w "%{http_code}" -X POST -H $csrf -H "Cookie: __Host-session=$sessionCookie" "$FrontendBaseUrl/api/auth/v1/authentication/refresh" 2>&1 | Select-Object -Last 1)
+    $sToken = [int](curl -s -o /dev/null -w "%{http_code}" -X POST -H $csrf -H $origin -H "Cookie: __Host-session=$sessionCookie" "$FrontendBaseUrl/api/auth/v1/authentication/refresh" 2>&1 | Select-Object -Last 1)
     if ($sToken -eq 404) { Write-Pass "The Authorization API token endpoints are not reachable through the BFF: POST /api/auth/v1/authentication/refresh -> 404" }
     else                 { Write-Fail "BFF exposes a token endpoint" "Status=$sToken (expected 404)" }
 
@@ -410,7 +410,7 @@ try {
     if ($sAdminCsrf -eq 403) { Write-Pass "BFF refuses an admin call without the CSRF header: POST /bff/admin/authentication/options -> 403" }
     else                     { Write-Fail "BFF admin call without the CSRF header" "Status=$sAdminCsrf (expected 403)" }
 
-    $sAdminDirect = [int](curl -s -o /dev/null -w "%{http_code}" -X POST -H $csrf -H "Content-Type: application/json" --data-raw "{}" "$FrontendBaseUrl/api/auth/v1/admin-authentication/authentication" 2>&1 | Select-Object -Last 1)
+    $sAdminDirect = [int](curl -s -o /dev/null -w "%{http_code}" -X POST -H $csrf -H $origin -H "Content-Type: application/json" --data-raw "{}" "$FrontendBaseUrl/api/auth/v1/admin-authentication/authentication" 2>&1 | Select-Object -Last 1)
     if ($sAdminDirect -eq 404) { Write-Pass "The Authorization API admin endpoints are not reachable through the proxy: -> 404" }
     else                       { Write-Fail "BFF proxies the admin endpoints" "Status=$sAdminDirect (expected 404)" }
 

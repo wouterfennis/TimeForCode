@@ -16,7 +16,7 @@ All production code in **TimeForCode** is written test-first. No production line
 
 Rules:
 
-- Never write production code without a red test first. Exceptions (pure wiring such as DI registration, DTO mapping boilerplate, Bicep/Docker) must be exercised by an existing higher-level test (Specification or Infrastructure test) that is red first.
+- Never write production code without a red test first. Exceptions (pure wiring such as DI registration, DTO mapping boilerplate, Docker) must be exercised by an existing higher-level test (Specification or Infrastructure test) that is red first.
 - Never edit a test to make it green. Change a test only when the requirement changed, and say so in the implementation log.
 - Never commit a red test. A deliberately failing test is only allowed locally mid-cycle.
 - Bug fixes start with a failing regression test that reproduces the bug (skill `fix-bug`).

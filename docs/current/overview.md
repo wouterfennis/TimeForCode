@@ -107,7 +107,6 @@ The Shared context provides common utilities used across services.
 
 - **Storage**: MongoDB, one database per service.
 - **Containerisation**: Docker Compose orchestrates all services for local development.
-- **Deployment**: Azure App Service via Azure Bicep IaC templates.
 - **CI/CD**: GitHub Actions with SonarCloud quality gate.
 
 ---

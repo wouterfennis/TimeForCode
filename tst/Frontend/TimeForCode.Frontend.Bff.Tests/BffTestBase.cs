@@ -6,6 +6,8 @@ namespace TimeForCode.Frontend.Bff.Tests
     /// <summary>A BFF in memory plus a browser that keeps no cookies of its own: each test sends the cookies it wants.</summary>
     public abstract class BffTestBase
     {
+        protected const string SpaOrigin = "http://localhost";
+
         public TestContext TestContext { get; set; } = null!;
 
         internal BffFactory Factory { get; private set; } = null!;
@@ -26,7 +28,7 @@ namespace TimeForCode.Frontend.Bff.Tests
             Factory.Dispose();
         }
 
-        protected Task<HttpResponseMessage> SendAsync(HttpMethod method, string path, string? cookie = null, bool csrf = false, string? origin = null)
+        protected Task<HttpResponseMessage> SendAsync(HttpMethod method, string path, string? cookie = null, bool csrf = false, string? origin = SpaOrigin)
         {
             var request = new HttpRequestMessage(method, path);
             if (cookie is not null)

@@ -14,6 +14,9 @@ builder.Services.AddOpenApi("v1", options =>
     BffOpenApi.Describe(options);
 });
 builder.Services.AddTrustedForwardedHeaders(builder.Configuration);
+builder.Services.AddSignInRateLimit();
+builder.Services.AddExceptionHandler<UpstreamFailureHandler>();
+builder.Services.AddProblemDetails();
 builder.Services.Configure<BrowserSessionOptions>(builder.Configuration.GetSection(BrowserSessionOptions.SectionName));
 builder.Services.Configure<AuthorizationOptions>(builder.Configuration.GetSection(AuthorizationOptions.SectionName));
 builder.Services.Configure<DbOptions>(builder.Configuration.GetSection(DbOptions.SectionName));
@@ -41,7 +44,10 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+app.UseExceptionHandler();
 app.UseBrowserSecurityHeaders();
+app.UseAdminBodyLimit();
+app.UseRateLimiter();
 app.UseCsrfHeaderCheck();
 app.UseAuthRouteAllowlist();
 app.MapBffEndpoints();

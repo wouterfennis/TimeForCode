@@ -36,7 +36,7 @@ This repository contains:
 - **Authorization API** — OAuth 2.0 login via GitHub, JWT issuance and refresh.
 - **Donation API** — Project registration, donation management, and contribution tracking.
 - **Front-end** — React single-page application for donors, contributors, and project maintainers.
-- **Infrastructure** — Azure Bicep deployment templates and Docker Compose local setup.
+- **Infrastructure** — Docker Compose local setup.
 - **Documentation** — Architecture (Arc42), product requirements, and implementation guides.
 
 ---
@@ -69,7 +69,7 @@ See [docs/current/capability-status.md](docs/current/capability-status.md) for t
 | Database | MongoDB |
 | Authentication | OAuth 2.0 (GitHub), JWT (RSA-signed) |
 | Containerisation | Podman, Docker Compose |
-| Infrastructure | Azure App Service, Azure Bicep (IaC) |
+| Infrastructure | Docker Compose (local) |
 | CI/CD | GitHub Actions |
 | Code quality | SonarCloud |
 | API documentation | Swagger / OpenAPI |
