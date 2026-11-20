@@ -1,0 +1,12 @@
+{
+  "name": "timeforcode-branding",
+  "private": true,
+  "type": "module",
+  "description": "Builds every TimeForCode logo asset from the single mark definition in build.mjs",
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "devDependencies": {
+    "@resvg/resvg-js": "2.6.2"
+  }
+}
