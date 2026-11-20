@@ -1,6 +1,4 @@
-# TimeForCode
-
-![Project banner](docs/images/banner.png)
+# ![TimeForCode](docs/branding/svg/logo-lockup.svg)
 
 [![Continuous Integration](https://github.com/wouterfennis/TimeForCode/actions/workflows/build.yaml/badge.svg)](https://github.com/wouterfennis/TimeForCode/actions/workflows/build.yaml)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=wouterfennis_TimeForCode&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=wouterfennis_TimeForCode)

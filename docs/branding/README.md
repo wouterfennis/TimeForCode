@@ -10,6 +10,9 @@ The logo is a progress ring around a code prompt. The ring is the time: the ambe
 | `svg/logo-mark-light.svg` | Fixed colors for light backgrounds, where media queries are not supported (documents, slides, e-mail). |
 | `svg/logo-mark-dark.svg` | Fixed colors for dark backgrounds. |
 | `svg/logo-mark-mono-black.svg`, `svg/logo-mark-mono-white.svg` | One color, for print, stamps, embroidery and fax-like contexts. |
+| `svg/logo-lockup.svg` | Horizontal lockup (mark plus the name in Space Grotesk, outlined). Adaptive like the master; use for README headers, site headers, slides and signatures. |
+| `svg/logo-lockup-light.svg`, `svg/logo-lockup-dark.svg`, `svg/logo-lockup-mono-black.svg`, `svg/logo-lockup-mono-white.svg` | Fixed-color and mono versions of the lockup. |
+| `png/logo-lockup-light-<width>.png`, `png/logo-lockup-dark-<width>.png` | Transparent lockup PNGs, 400, 800 and 1600 px wide. |
 | `svg/logo-app-icon.svg` | Mark on a rounded dark square, for app icons and avatars. |
 | `svg/social-preview.svg` | 1280 x 640 social image. |
 | `png/logo-mark-light-<size>.png`, `png/logo-mark-dark-<size>.png` | Transparent PNGs at 64, 128, 256, 512 and 1024 px, for tools that cannot use SVG. |
@@ -40,6 +43,8 @@ The ring track is the ring color at 28 percent opacity.
 - Do not stretch, rotate, recolor, outline or add effects to the mark. Do not change the arc length except to show a real percentage.
 - The arc starts at 12 o'clock and runs clockwise. In a badge, set it to the real hours logged out of hours received.
 - The name is written TimeForCode, one word with capital T, F and C.
+- Keep the mark and the logo separate: the mark alone is for small or square spaces (favicon, avatar, badge), the lockup for places with room for the name. Do not rearrange the lockup or set the name in another typeface.
+- The name is Space Grotesk, bold for "Time" and "Code" and light for "For". The font is only a build dependency; the shipped files hold outlines.
 
 ## Rebuilding
 
@@ -54,5 +59,5 @@ The build renders the PNGs with `@resvg/resvg-js`, so it needs no other tools. I
 
 ## Not yet included
 
-- A wordmark or horizontal lockup (mark plus the name). It needs a chosen typeface, converted to outlines so it does not depend on installed fonts.
+- A stacked lockup (name below the mark).
 - Using the mark in the front-end and in the Reporting badge images. That is application work and goes through the normal issue workflow.
