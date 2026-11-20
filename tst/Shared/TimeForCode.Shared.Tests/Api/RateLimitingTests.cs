@@ -41,11 +41,11 @@ namespace TimeForCode.Shared.Tests.Api
         }
 
         [TestMethod]
-        public void GetApiPermitLimit_NothingConfigured_Is60()
+        public void GetApiPermitLimit_NothingConfigured_Is120()
         {
             IConfiguration configuration = new ConfigurationBuilder().Build();
 
-            configuration.GetApiPermitLimit().Should().Be(60);
+            configuration.GetApiPermitLimit().Should().Be(120);
         }
 
         [TestMethod]

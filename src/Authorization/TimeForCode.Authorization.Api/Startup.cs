@@ -72,8 +72,8 @@ namespace TimeForCode.Authorization.Api
 
             services.AddRateLimiter(options =>
             {
-                options.AddDefaultSlidingWindowPolicy("auth", 20);
-                options.AddDefaultSlidingWindowPolicy("admin-auth", 20);
+                options.AddDefaultSlidingWindowPolicy("auth", 40);
+                options.AddDefaultSlidingWindowPolicy("admin-auth", 40);
             });
         }
 

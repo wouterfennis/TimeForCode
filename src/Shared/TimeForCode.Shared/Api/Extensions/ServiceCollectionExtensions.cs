@@ -15,7 +15,7 @@ namespace TimeForCode.Shared.Api.Extensions
     /// </summary>
     public static class ServiceCollectionExtensions
     {
-        private const int DefaultApiPermitLimit = 60;
+        private const int DefaultApiPermitLimit = 120;
 
         /// <summary>
         /// Adds controllers with the default JSON serialisation options (enum values as strings).
@@ -30,7 +30,7 @@ namespace TimeForCode.Shared.Api.Extensions
         }
 
         /// <summary>
-        /// Reads the permit limit per minute of the "api" rate-limit policy (<c>RateLimiting:ApiPermitLimit</c>, default 60).
+        /// Reads the permit limit per minute of the "api" rate-limit policy (<c>RateLimiting:ApiPermitLimit</c>, default 120).
         /// </summary>
         public static int GetApiPermitLimit(this IConfiguration configuration)
         {

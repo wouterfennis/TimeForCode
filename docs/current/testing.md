@@ -312,12 +312,12 @@ code "$env:TEMP\badges-preview.md"   # then open the Markdown preview
 
 The images load from `http://localhost:8083`; if the preview shows none, allow insecure local content in the preview (command "Markdown: Change preview security settings"). Expect the project badges to read `40 hours` and `12 / 40 hours (30%)`, Acme to read `Gold`, the three contributors to read `Silver`, `Bronze` and `no badge yet`, and every unknown, malformed or unpublished target to read `not found`. The unknown contributor and the contributor without a badge must look identical.
 
-Headers, rate limit and the unavailable badge (the local stack allows 300 public requests a minute per address):
+Headers, rate limit and the unavailable badge (the local stack allows 600 public requests a minute per address):
 
 ```powershell
 $url = "$reporting/api/v1/reporting/project/$($toolkit.id)/badge/hours-received.svg"
 curl.exe -i $url                          # 200, Content-Type: image/svg+xml, Cache-Control: public, max-age=300
-1..350 | ForEach-Object { curl.exe -s -o NUL -w "%{http_code}\n" $url } | Group-Object   # 200 first, then 429
+1..700 | ForEach-Object { curl.exe -s -o NUL -w "%{http_code}\n" $url } | Group-Object   # 200 first, then 429
 podman compose stop donation-api
 curl.exe -i $url                          # 200, an "unavailable" badge, Cache-Control: public, max-age=30
 podman compose start donation-api
