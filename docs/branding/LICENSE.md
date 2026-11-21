@@ -13,7 +13,7 @@ The MIT License of the repository does not apply to the brand assets. It applies
 
 ## Trademark notice
 
-"TimeForCode" and the logo are trademarks of Wouter Fennis. The CC BY-ND 4.0 license grants copyright permissions only and no trademark rights. Without written permission you may not:
+"TimeForCode" and the logo are claimed as trademarks of Wouter Fennis. The CC BY-ND 4.0 license grants copyright permissions only and no trademark rights. Without written permission you may not:
 
 - use the name or the logo as the name or logo of your own product, service, company, project, domain or social media account, or in a way that is confusingly similar;
 - suggest that Wouter Fennis or TimeForCode endorses, sponsors or is affiliated with you or your work;

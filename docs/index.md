@@ -1,6 +1,6 @@
 # Time For Code — Documentation
 
-![TimeForCode](branding/svg/logo-lockup.svg)
+![TimeForCode](branding/svg/logo-lockup-light.svg)
 
 This is the documentation anchor for the TimeForCode platform. All requirements, architecture decisions, implementation references, and product designs live here. AI agents and human contributors should treat this folder as the single source of truth.
 
