@@ -16,6 +16,8 @@ namespace TimeForCode.Reporting.Specifications.Mocking
 {
     public class TimeForCodeWebApplicationFactory : WebApplicationFactory<Startup>
     {
+        private static readonly string[] LimitedPolicies = ["public", "badge"];
+
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
             builder.ConfigureServices(services =>
@@ -45,7 +47,7 @@ namespace TimeForCode.Reporting.Specifications.Mocking
 
                     // Unlimited, until a scenario lowers it; the partition key changes with every reset, so each scenario starts with a fresh window.
                     // The "badge" policy of the badge images follows the same limit.
-                    foreach (string policy in new[] { "public", "badge" })
+                    foreach (string policy in LimitedPolicies)
                     {
                         options.AddPolicy(policy, _ => RateLimitPartition.GetSlidingWindowLimiter(
                             $"{policy}-{publicRateLimit.Window}",

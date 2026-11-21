@@ -128,17 +128,13 @@ namespace TimeForCode.Reporting.Api.V1.Rendering
         // XML cannot hold control characters or an unpaired surrogate, and the writer throws on them: they are left out.
         private static string Clean(string text)
         {
+            // Enumerating runes keeps a surrogate pair together; an unpaired surrogate comes out as U+FFFD, which XML can hold.
             StringBuilder clean = new(text.Length);
-            for (int i = 0; i < text.Length; i++)
+            foreach (Rune rune in text.EnumerateRunes())
             {
-                if (char.IsHighSurrogate(text[i]) && i + 1 < text.Length && char.IsLowSurrogate(text[i + 1]))
+                if (!rune.IsBmp || XmlConvert.IsXmlChar((char)rune.Value))
                 {
-                    clean.Append(text[i]).Append(text[i + 1]);
-                    i++;
-                }
-                else if (XmlConvert.IsXmlChar(text[i]))
-                {
-                    clean.Append(text[i]);
+                    clean.Append(rune.ToString());
                 }
             }
 
