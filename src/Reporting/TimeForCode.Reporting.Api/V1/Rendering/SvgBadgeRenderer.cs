@@ -7,22 +7,40 @@ using TimeForCode.Reporting.Commands;
 namespace TimeForCode.Reporting.Api.V1.Rendering
 {
     /// <summary>
-    /// Draws a flat badge in the style of shields.io: a grey "TimeForCode" label on the left and a coloured value with an icon on
-    /// the right. The image is built as XML, so every text and attribute value is escaped and the output is always well-formed.
-    /// It holds nothing but the label, the fixed texts and the text of the content: totals and tier names.
+    /// Draws a flat badge in the style of shields.io: the TimeForCode logo on a grey label on the left and a coloured value with an
+    /// icon on the right. The image is built as XML, so every text and attribute value is escaped and the output is always well-formed.
+    /// It holds nothing but the logo, the fixed texts and the text of the content: totals and tier names.
     /// </summary>
     public static class SvgBadgeRenderer
     {
         private const string Label = "TimeForCode";
         private const string LabelColour = "#555";
         private const string Font = "Verdana,Geneva,DejaVu Sans,sans-serif";
+        private const string HeightAttribute = "height";
         private const int Height = 20;
         private const int Padding = 10;
         private const int IconWidth = 16;
 
+        /// <summary>
+        /// The logo (docs/branding) is the label: 16 px high, with 5 px on both sides.
+        /// </summary>
+        private const int LogoHeight = 16;
+        private const int LogoPadding = 5;
+
         private const int MaxTextLength = 40;
 
         private static readonly XNamespace Svg = "http://www.w3.org/2000/svg";
+
+        /// <summary>
+        /// The horizontal lockup (mark and name, as outlines) in the colours for a dark surface (the label is dark grey). A badge cannot adapt to light and dark mode, so it uses the fixed variant.
+        /// It is the file docs/branding/svg/logo-lockup-dark.svg, embedded at build time, so the badge cannot drift from the brand kit.
+        /// </summary>
+        private static readonly XElement Lockup = LoadLockup();
+
+        /// <summary>
+        /// Scaled to the logo height, keeping the proportions of the view box.
+        /// </summary>
+        private static readonly int LogoWidth = (int)Math.Round(LogoHeight * ViewBoxSize(0) / ViewBoxSize(1));
 
         /// <summary>
         /// Icons are white shapes in a 12 x 12 box: no text, no emoji, so they look the same in every viewer.
@@ -50,7 +68,7 @@ namespace TimeForCode.Reporting.Api.V1.Rendering
             (string text, string colour, string icon) = StyleOf(content);
             text = Shorten(Clean(text));
 
-            int labelWidth = WidthOf(Label) + Padding;
+            int labelWidth = LogoWidth + (2 * LogoPadding);
             int valueWidth = WidthOf(text) + Padding + IconWidth;
             int width = labelWidth + valueWidth;
             string description = $"{Label}: {text}";
@@ -61,7 +79,7 @@ namespace TimeForCode.Reporting.Api.V1.Rendering
             XElement svg = new(
                 Svg + "svg",
                 new XAttribute("width", width),
-                new XAttribute("height", Height),
+                new XAttribute(HeightAttribute, Height),
                 new XAttribute("viewBox", $"0 0 {width} {Height}"),
                 new XAttribute("role", "img"),
                 new XAttribute("aria-label", description),
@@ -69,12 +87,13 @@ namespace TimeForCode.Reporting.Api.V1.Rendering
                 new XElement(
                     Svg + "clipPath",
                     new XAttribute("id", clipId),
-                    new XElement(Svg + "rect", new XAttribute("width", width), new XAttribute("height", Height), new XAttribute("rx", 3))),
+                    new XElement(Svg + "rect", new XAttribute("width", width), new XAttribute(HeightAttribute, Height), new XAttribute("rx", 3))),
                 new XElement(
                     Svg + "g",
                     new XAttribute("clip-path", $"url(#{clipId})"),
                     Rect(0, labelWidth, LabelColour),
                     Rect(labelWidth, valueWidth, colour)),
+                LogoOf(),
                 IconOf(icon, labelWidth + 6),
                 new XElement(
                     Svg + "g",
@@ -82,7 +101,6 @@ namespace TimeForCode.Reporting.Api.V1.Rendering
                     new XAttribute("text-anchor", "middle"),
                     new XAttribute("font-family", Font),
                     new XAttribute("font-size", 11),
-                    Text(Label, labelWidth / 2.0),
                     Text(text, labelWidth + IconWidth + ((valueWidth - IconWidth) / 2.0))));
 
             return svg.ToString(SaveOptions.DisableFormatting);
@@ -110,7 +128,7 @@ namespace TimeForCode.Reporting.Api.V1.Rendering
             Svg + "rect",
             new XAttribute("x", x),
             new XAttribute("width", width),
-            new XAttribute("height", Height),
+            new XAttribute(HeightAttribute, Height),
             new XAttribute("fill", colour));
 
         private static XElement Text(string text, double centre) => new(
@@ -176,6 +194,34 @@ namespace TimeForCode.Reporting.Api.V1.Rendering
 
             return group;
         }
+
+        private static XElement LoadLockup()
+        {
+            using Stream stream = typeof(SvgBadgeRenderer).Assembly.GetManifestResourceStream("logo-lockup-dark.svg")
+                ?? throw new InvalidOperationException("The embedded brand logo logo-lockup-dark.svg is missing.");
+            return XDocument.Load(stream).Root!;
+        }
+
+        /// <summary>
+        /// The width (axis 0) or the height (axis 1) of the view box of the brand logo.
+        /// </summary>
+        private static double ViewBoxSize(int axis) => double.Parse(Lockup.Attribute("viewBox")!.Value.Split(' ')[2 + axis], CultureInfo.InvariantCulture);
+
+        /// <summary>
+        /// A nested svg keeps the settings of the brand logo (view box, no fill, round caps) and scales it exactly to the logo height.
+        /// </summary>
+        private static XElement LogoOf() => new(
+            Svg + "svg",
+            new XAttribute("data-logo", "lockup"),
+            new XAttribute("x", LogoPadding),
+            new XAttribute("y", (Height - LogoHeight) / 2),
+            new XAttribute("width", LogoWidth),
+            new XAttribute(HeightAttribute, LogoHeight),
+            new XAttribute("viewBox", Lockup.Attribute("viewBox")!.Value),
+            new XAttribute("fill", Lockup.Attribute("fill")!.Value),
+            new XAttribute("stroke-linecap", Lockup.Attribute("stroke-linecap")!.Value),
+            new XAttribute("stroke-linejoin", Lockup.Attribute("stroke-linejoin")!.Value),
+            Lockup.Elements().Where(e => e.Name != Svg + "title"));
 
         private static XElement Shape(string elements) => XElement.Parse($"<g xmlns=\"{Svg.NamespaceName}\">{elements}</g>");
     }

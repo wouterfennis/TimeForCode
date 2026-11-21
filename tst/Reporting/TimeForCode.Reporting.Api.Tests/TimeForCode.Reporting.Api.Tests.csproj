@@ -36,6 +36,9 @@
     <Content Include="..\..\..\src\Reporting\TimeForCode.Reporting.Api\TimeForCode.Reporting.Api.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="..\..\..\docs\branding\svg\logo-lockup-dark.svg" Link="logo-lockup-dark.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>

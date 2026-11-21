@@ -1,6 +1,4 @@
-# TimeForCode
-
-![Project banner](docs/images/banner.png)
+# ![TimeForCode](docs/branding/svg/logo-lockup.svg)
 
 [![Continuous Integration](https://github.com/wouterfennis/TimeForCode/actions/workflows/build.yaml/badge.svg)](https://github.com/wouterfennis/TimeForCode/actions/workflows/build.yaml)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=wouterfennis_TimeForCode&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=wouterfennis_TimeForCode)
@@ -170,6 +168,8 @@ Before submitting:
 ## License
 
 Distributed under the MIT License. See [LICENSE](LICENSE) for more information.
+
+The MIT License does not cover the logo and brand assets in [docs/branding/](docs/branding/). They are licensed under [CC BY-ND 4.0](docs/branding/LICENSE.md), and the name and logo are trademarks of Wouter Fennis.
 
 ---
 
