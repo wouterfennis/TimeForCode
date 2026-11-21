@@ -31,9 +31,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\Shared\TimeForCode.Shared\TimeForCode.Shared.csproj" />
-    <!-- Same SetTargetFramework as the reference in Directory.Build.props: without it MSBuild builds the analyzer twice in parallel and both write the same deps.json. -->
-    <ProjectReference Include="..\..\..\src\Shared\TimeForCode.Shared.Analyzers\TimeForCode.Shared.Analyzers.csproj"
-                      SetTargetFramework="TargetFramework=netstandard2.0" />
+    <ProjectReference Include="..\..\..\src\Shared\TimeForCode.Shared.Analyzers\TimeForCode.Shared.Analyzers.csproj" />
     <ProjectReference Include="..\TimeForCode.Shared.Live\TimeForCode.Shared.Live.csproj" />
     <ProjectReference Include="..\TimeForCode.Shared.ApiDocs\TimeForCode.Shared.ApiDocs.csproj" />
   </ItemGroup>
