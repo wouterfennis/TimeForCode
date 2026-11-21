@@ -34,7 +34,8 @@ namespace TimeForCode.Donation.Specifications.Mocking
                     typeof(IDonationRepository),
                     typeof(IDonationAllocationRepository),
                     typeof(IGithubRepositoryApiService),
-                    typeof(RestClient)
+                    typeof(RestClient),
+                    typeof(TimeProvider)
                 };
 
                 var descriptors = services
@@ -47,6 +48,7 @@ namespace TimeForCode.Donation.Specifications.Mocking
                 }
 
                 MockDataAccess(services);
+                services.TryAddSingleton<TimeProvider>(new FixedTimeProvider(Constants.Now));
 
                 // One host serves every scenario of a run, so the production limit of 60 requests a minute would reject later scenarios.
                 services.RemoveAll<IConfigureOptions<RateLimiterOptions>>();

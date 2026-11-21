@@ -10,12 +10,14 @@ namespace TimeForCode.Donation.Application.Handlers
         private readonly IDonorOrganizationRepository _repository;
         private readonly IDonationRepository _donationRepository;
         private readonly ILogger<UpdateDonorOrganizationHandler> _logger;
+        private readonly TimeProvider _timeProvider;
 
-        public UpdateDonorOrganizationHandler(IDonorOrganizationRepository repository, IDonationRepository donationRepository, ILogger<UpdateDonorOrganizationHandler> logger)
+        public UpdateDonorOrganizationHandler(IDonorOrganizationRepository repository, IDonationRepository donationRepository, ILogger<UpdateDonorOrganizationHandler> logger, TimeProvider timeProvider)
         {
             _repository = repository;
             _donationRepository = donationRepository;
             _logger = logger;
+            _timeProvider = timeProvider;
         }
 
         public async Task<Result<UpdateDonorOrganizationResult>> Handle(UpdateDonorOrganizationCommand request, CancellationToken cancellationToken)
@@ -39,10 +41,7 @@ namespace TimeForCode.Donation.Application.Handlers
                 }
             }
 
-            organization.Name = request.Name;
-            organization.ContactEmail = request.ContactEmail;
-            organization.Website = request.Website;
-            organization.UpdatedAt = DateTimeOffset.UtcNow;
+            organization.Update(request.Name, request.ContactEmail, request.Website, _timeProvider.GetUtcNow());
 
             await _repository.UpdateAsync(organization);
 

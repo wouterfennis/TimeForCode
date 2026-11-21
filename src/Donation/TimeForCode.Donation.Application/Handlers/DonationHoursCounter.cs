@@ -13,15 +13,18 @@ namespace TimeForCode.Donation.Application.Handlers
         private readonly IDonationRepository _donationRepository;
         private readonly IDonationAllocationRepository _allocationRepository;
         private readonly ILogger<DonationHoursCounter> _logger;
+        private readonly TimeProvider _timeProvider;
 
         public DonationHoursCounter(
             IDonationRepository donationRepository,
             IDonationAllocationRepository allocationRepository,
-            ILogger<DonationHoursCounter> logger)
+            ILogger<DonationHoursCounter> logger,
+            TimeProvider timeProvider)
         {
             _donationRepository = donationRepository;
             _allocationRepository = allocationRepository;
             _logger = logger;
+            _timeProvider = timeProvider;
         }
 
         /// <summary>
@@ -36,12 +39,13 @@ namespace TimeForCode.Donation.Application.Handlers
             {
                 var donations = await _donationRepository.GetActiveByProjectIdAsync(projectId, cancellationToken);
                 DonationAllocation? unconfirmed = null;
+                var now = _timeProvider.GetUtcNow();
 
                 try
                 {
-                    foreach (var counted in Domain.Donation.CountHours(donations, remaining))
+                    foreach (var counted in Domain.Donation.CountHours(donations, remaining, now))
                     {
-                        unconfirmed = DonationAllocation.Create(contributionId, counted.Donation.Id, counted.Hours);
+                        unconfirmed = DonationAllocation.Create(contributionId, counted.Donation.Id, counted.Hours, now);
                         await _allocationRepository.CreateAsync(unconfirmed, cancellationToken);
                         await _donationRepository.UpdateAsync(counted.Donation);
                         unconfirmed = null;

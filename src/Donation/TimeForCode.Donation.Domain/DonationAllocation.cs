@@ -14,7 +14,7 @@ namespace TimeForCode.Donation.Domain
         public required int Hours { get; init; }
         public required DateTimeOffset CreatedAt { get; init; }
 
-        public static DonationAllocation Create(ObjectId contributionId, ObjectId donationId, int hours)
+        public static DonationAllocation Create(ObjectId contributionId, ObjectId donationId, int hours, DateTimeOffset createdAt)
         {
             if (hours <= 0)
             {
@@ -27,7 +27,7 @@ namespace TimeForCode.Donation.Domain
                 ContributionId = contributionId,
                 DonationId = donationId,
                 Hours = hours,
-                CreatedAt = DateTimeOffset.UtcNow
+                CreatedAt = createdAt
             };
         }
 

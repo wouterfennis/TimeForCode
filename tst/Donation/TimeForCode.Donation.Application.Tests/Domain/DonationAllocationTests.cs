@@ -1,5 +1,6 @@
 using AwesomeAssertions;
 using MongoDB.Bson;
+using TimeForCode.Donation.Application.Tests.Handlers;
 using TimeForCode.Donation.Domain;
 
 namespace TimeForCode.Donation.Application.Tests.Domain
@@ -13,13 +14,15 @@ namespace TimeForCode.Donation.Application.Tests.Domain
         [TestMethod]
         public void Create_ValidInput_LinksContributionToDonation()
         {
-            var allocation = DonationAllocation.Create(ContributionId, DonationId, 2);
+            var createdAt = new DateTimeOffset(2026, 11, 21, 10, 0, 0, TimeSpan.Zero);
+
+            var allocation = DonationAllocation.Create(ContributionId, DonationId, 2, createdAt);
 
             allocation.Id.Should().NotBe(ObjectId.Empty);
             allocation.ContributionId.Should().Be(ContributionId);
             allocation.DonationId.Should().Be(DonationId);
             allocation.Hours.Should().Be(2);
-            allocation.CreatedAt.Should().BeCloseTo(DateTimeOffset.UtcNow, TimeSpan.FromMinutes(1));
+            allocation.CreatedAt.Should().Be(createdAt);
         }
 
         [TestMethod]
@@ -27,14 +30,14 @@ namespace TimeForCode.Donation.Application.Tests.Domain
         [DataRow(-1)]
         public void Create_HoursNotPositive_Throws(int hours)
         {
-            var act = () => DonationAllocation.Create(ContributionId, DonationId, hours);
+            var act = () => DonationAllocation.Create(ContributionId, DonationId, hours, DonationTestData.Now);
 
             act.Should().Throw<ArgumentOutOfRangeException>();
         }
 
         private static DonationAllocation Allocation(int hours)
         {
-            return DonationAllocation.Create(ContributionId, ObjectId.GenerateNewId(), hours);
+            return DonationAllocation.Create(ContributionId, ObjectId.GenerateNewId(), hours, DonationTestData.Now);
         }
 
         [TestMethod]
@@ -86,7 +89,7 @@ namespace TimeForCode.Donation.Application.Tests.Domain
         [TestMethod]
         public void Reduce_FewerHoursThanAllocated_KeepsTheRemainder()
         {
-            var allocation = DonationAllocation.Create(ContributionId, DonationId, 5);
+            var allocation = DonationAllocation.Create(ContributionId, DonationId, 5, DonationTestData.Now);
 
             var reduced = allocation.Reduce(2);
 
@@ -103,7 +106,7 @@ namespace TimeForCode.Donation.Application.Tests.Domain
         [DataRow(5)]
         public void Reduce_NotBetweenZeroAndAllocatedHours_Throws(int hours)
         {
-            var allocation = DonationAllocation.Create(ContributionId, DonationId, 5);
+            var allocation = DonationAllocation.Create(ContributionId, DonationId, 5, DonationTestData.Now);
 
             var act = () => allocation.Reduce(hours);
 

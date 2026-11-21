@@ -13,15 +13,18 @@ namespace TimeForCode.Donation.Application.Handlers
         private readonly IDonationRepository _donationRepository;
         private readonly IDonationAllocationRepository _allocationRepository;
         private readonly ILogger<DonationHoursReleaser> _logger;
+        private readonly TimeProvider _timeProvider;
 
         public DonationHoursReleaser(
             IDonationRepository donationRepository,
             IDonationAllocationRepository allocationRepository,
-            ILogger<DonationHoursReleaser> logger)
+            ILogger<DonationHoursReleaser> logger,
+            TimeProvider timeProvider)
         {
             _donationRepository = donationRepository;
             _allocationRepository = allocationRepository;
             _logger = logger;
+            _timeProvider = timeProvider;
         }
 
         /// <summary>
@@ -65,7 +68,7 @@ namespace TimeForCode.Donation.Application.Handlers
                     return true;
                 }
 
-                donation.ReleaseHours(hours);
+                donation.ReleaseHours(hours, _timeProvider.GetUtcNow());
 
                 try
                 {

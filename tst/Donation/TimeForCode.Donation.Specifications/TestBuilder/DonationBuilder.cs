@@ -17,26 +17,26 @@ namespace TimeForCode.Donation.Specifications.TestBuilder
             int logged,
             ObjectId? organizationId = null)
         {
-            var donation = DonationEntity.Create(projectId, organizationId, pledgedByUserId, committed);
+            var donation = DonationEntity.Create(projectId, organizationId, pledgedByUserId, committed, Constants.Now);
 
             if (status != DonationStatus.Pending)
             {
-                donation.Activate();
+                donation.Activate(Constants.Now);
             }
 
             if (logged > 0)
             {
-                donation.LogHours(logged);
+                donation.LogHours(logged, Constants.Now);
             }
 
             if (status == DonationStatus.Completed)
             {
-                donation.LogHours(committed - logged);
+                donation.LogHours(committed - logged, Constants.Now);
             }
 
             if (status == DonationStatus.Cancelled)
             {
-                donation.Cancel();
+                donation.Cancel(Constants.Now);
             }
 
             return donation;

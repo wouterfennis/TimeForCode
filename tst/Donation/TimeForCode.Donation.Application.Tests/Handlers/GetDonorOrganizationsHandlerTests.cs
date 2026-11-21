@@ -31,8 +31,8 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
             // Arrange
             var orgs = new List<DonorOrganization>
             {
-                DonorOrganization.Create("Org A", "a@test.com", null),
-                DonorOrganization.Create("Org B", null, "https://orgb.com")
+                DonorOrganization.Create("Org A", "a@test.com", null, DonationTestData.Now),
+                DonorOrganization.Create("Org B", null, "https://orgb.com", DonationTestData.Now)
             };
             _mockRepository.Setup(r => r.GetAllAsync(1, 20))
                 .ReturnsAsync((orgs as IReadOnlyList<DonorOrganization>, 2));
@@ -53,7 +53,7 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
         [TestMethod]
         public async Task Handle_OrganizationWithDonation_ReturnsItsHours()
         {
-            var org = DonorOrganization.Create("Org A", null, null);
+            var org = DonorOrganization.Create("Org A", null, null, DonationTestData.Now);
             _mockRepository.Setup(r => r.GetAllAsync(1, 20))
                 .ReturnsAsync(((IReadOnlyList<DonorOrganization>)new List<DonorOrganization> { org }, 1));
             _mockDonationRepository.Setup(r => r.GetByDonorOrganizationIdsAsync(It.IsAny<IReadOnlyCollection<string>>(), It.IsAny<CancellationToken>()))

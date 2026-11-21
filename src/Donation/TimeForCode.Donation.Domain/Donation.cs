@@ -35,7 +35,7 @@ namespace TimeForCode.Donation.Domain
 
         public int ProgressPercentage => HoursLogged * 100 / HoursCommitted;
 
-        public static Donation Create(ObjectId projectId, ObjectId? donorOrganizationId, string pledgedByUserId, int hoursCommitted)
+        public static Donation Create(ObjectId projectId, ObjectId? donorOrganizationId, string pledgedByUserId, int hoursCommitted, DateTimeOffset createdAt)
         {
             if (hoursCommitted <= 0)
             {
@@ -49,7 +49,7 @@ namespace TimeForCode.Donation.Domain
                 DonorOrganizationId = donorOrganizationId,
                 PledgedByUserId = pledgedByUserId,
                 HoursCommitted = hoursCommitted,
-                CreatedAt = DateTimeOffset.UtcNow
+                CreatedAt = createdAt
             };
         }
 
@@ -58,7 +58,7 @@ namespace TimeForCode.Donation.Domain
             return isAdministrator || PledgedByUserId == userId;
         }
 
-        public DonationTransitionResult Activate()
+        public DonationTransitionResult Activate(DateTimeOffset at)
         {
             if (Status != DonationStatus.Pending)
             {
@@ -66,11 +66,11 @@ namespace TimeForCode.Donation.Domain
             }
 
             Status = DonationStatus.Active;
-            UpdatedAt = DateTimeOffset.UtcNow;
+            UpdatedAt = at;
             return DonationTransitionResult.Success();
         }
 
-        public DonationTransitionResult Cancel()
+        public DonationTransitionResult Cancel(DateTimeOffset at)
         {
             if (Status is not (DonationStatus.Pending or DonationStatus.Active))
             {
@@ -78,7 +78,7 @@ namespace TimeForCode.Donation.Domain
             }
 
             Status = DonationStatus.Cancelled;
-            UpdatedAt = DateTimeOffset.UtcNow;
+            UpdatedAt = at;
             return DonationTransitionResult.Success();
         }
 
@@ -87,7 +87,7 @@ namespace TimeForCode.Donation.Domain
         /// Lazy: a donation only takes its hours when the sequence reaches it, so the caller can save each one before the next is touched.
         /// </summary>
         /// <returns>The donations that took hours, with the number of hours each took.</returns>
-        public static IEnumerable<CountedHours> CountHours(IEnumerable<Donation> donations, int hours)
+        public static IEnumerable<CountedHours> CountHours(IEnumerable<Donation> donations, int hours, DateTimeOffset at)
         {
             var remaining = hours;
 
@@ -98,7 +98,7 @@ namespace TimeForCode.Donation.Domain
                     yield break;
                 }
 
-                var applied = donation.LogHours(remaining);
+                var applied = donation.LogHours(remaining, at);
                 if (applied == 0)
                 {
                     continue;
@@ -114,7 +114,7 @@ namespace TimeForCode.Donation.Domain
         /// a Cancelled donation stays Cancelled.
         /// </summary>
         /// <returns>The number of hours that were released; never more than are logged.</returns>
-        public int ReleaseHours(int hours)
+        public int ReleaseHours(int hours, DateTimeOffset at)
         {
             var released = Math.Min(hours, HoursLogged);
             HoursLogged -= released;
@@ -123,7 +123,7 @@ namespace TimeForCode.Donation.Domain
                 Status = DonationStatus.Active;
             }
 
-            UpdatedAt = DateTimeOffset.UtcNow;
+            UpdatedAt = at;
             return released;
         }
 
@@ -131,7 +131,7 @@ namespace TimeForCode.Donation.Domain
         /// Counts logged hours toward the commitment of an Active donation and completes it once all pledged hours are logged.
         /// </summary>
         /// <returns>The number of hours that were counted; the rest is left for other donations.</returns>
-        public int LogHours(int hours)
+        public int LogHours(int hours, DateTimeOffset at)
         {
             if (Status != DonationStatus.Active)
             {
@@ -145,7 +145,7 @@ namespace TimeForCode.Donation.Domain
                 Status = DonationStatus.Completed;
             }
 
-            UpdatedAt = DateTimeOffset.UtcNow;
+            UpdatedAt = at;
             return applied;
         }
     }

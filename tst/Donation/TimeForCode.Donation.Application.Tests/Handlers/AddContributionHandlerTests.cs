@@ -46,8 +46,8 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
                 _projectRepository.Object,
                 _contributorRepository.Object,
                 _contributionRepository.Object,
-                new DonationHoursCounter(_donationRepository.Object, _allocationRepository.Object, NullLogger<DonationHoursCounter>.Instance),
-                NullLogger<AddContributionHandler>.Instance);
+                new DonationHoursCounter(_donationRepository.Object, _allocationRepository.Object, NullLogger<DonationHoursCounter>.Instance, new FixedTimeProvider(DonationTestData.Now)),
+                NullLogger<AddContributionHandler>.Instance, new FixedTimeProvider(DonationTestData.Now));
         }
 
         private static AddContributionCommand Valid(Uri? githubReference = null) => new()
@@ -84,7 +84,7 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
             stored.ContributorGitHubLogin.Should().Be("octocat");
             stored.ContributorAvatarUrl.Should().Be("https://avatars.githubusercontent.com/u/1");
             stored.Hours.Should().Be(3);
-            stored.LoggedAt.Should().BeCloseTo(DateTimeOffset.UtcNow, TimeSpan.FromMinutes(1));
+            stored.LoggedAt.Should().Be(DonationTestData.Now);
             result.Value.Contribution.Id.Should().Be(stored.Id.ToString());
             result.Value.Contribution.ContributorId.Should().Be(ContributorId.ToString());
             result.Value.Contribution.Hours.Should().Be(3);

@@ -9,5 +9,10 @@ namespace TimeForCode.Donation.Specifications
         internal const string TestProjectId = "507f1f77bcf86cd799439012";
         internal const string TestDonorOrganizationId = "507f1f77bcf86cd799439013";
         internal const string TestJwtSigningKey = "donation-specs-signing-key-for-tests-only";
+
+        /// <summary>
+        /// The time the application under test runs at, so scenarios can assert exact timestamps.
+        /// </summary>
+        internal static readonly DateTimeOffset Now = new(2026, 11, 21, 10, 0, 0, TimeSpan.Zero);
     }
 }

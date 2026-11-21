@@ -13,7 +13,7 @@ namespace TimeForCode.Donation.Domain
         public DateTimeOffset? UpdatedAt { get; set; }
         public List<Contributor> EmployeeContributors { get; init; } = [];
 
-        public static DonorOrganization Create(string name, string? contactEmail, string? website)
+        public static DonorOrganization Create(string name, string? contactEmail, string? website, DateTimeOffset createdAt)
         {
             return new DonorOrganization
             {
@@ -21,8 +21,19 @@ namespace TimeForCode.Donation.Domain
                 Name = name,
                 ContactEmail = contactEmail,
                 Website = website,
-                CreatedAt = DateTimeOffset.UtcNow
+                CreatedAt = createdAt
             };
+        }
+
+        /// <summary>
+        /// Changes the details of the organization and records when.
+        /// </summary>
+        public void Update(string name, string? contactEmail, string? website, DateTimeOffset at)
+        {
+            Name = name;
+            ContactEmail = contactEmail;
+            Website = website;
+            UpdatedAt = at;
         }
 
         /// <summary>

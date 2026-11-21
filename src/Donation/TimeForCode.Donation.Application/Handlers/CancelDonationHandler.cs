@@ -10,11 +10,13 @@ namespace TimeForCode.Donation.Application.Handlers
     {
         private readonly IDonationRepository _donationRepository;
         private readonly ILogger<CancelDonationHandler> _logger;
+        private readonly TimeProvider _timeProvider;
 
-        public CancelDonationHandler(IDonationRepository donationRepository, ILogger<CancelDonationHandler> logger)
+        public CancelDonationHandler(IDonationRepository donationRepository, ILogger<CancelDonationHandler> logger, TimeProvider timeProvider)
         {
             _donationRepository = donationRepository;
             _logger = logger;
+            _timeProvider = timeProvider;
         }
 
         public async Task<Result<DonationResult>> Handle(CancelDonationCommand request, CancellationToken cancellationToken)
@@ -34,7 +36,7 @@ namespace TimeForCode.Donation.Application.Handlers
                 return Result<DonationResult>.Forbidden("Only the donor or an administrator can change a donation.");
             }
 
-            var transition = donation.Cancel();
+            var transition = donation.Cancel(_timeProvider.GetUtcNow());
             if (!transition.IsSuccess)
             {
                 return Result<DonationResult>.Conflict(transition.ErrorMessage);
