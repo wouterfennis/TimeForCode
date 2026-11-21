@@ -37,10 +37,34 @@ namespace TimeForCode.Reporting.Api.Tests
             XElement svg = Parse(SvgBadgeRenderer.Render(new BadgeImageContent(state, text)));
 
             XElement logo = svg.Descendants().Single(e => e.Attribute("data-logo") != null);
-            double logoX = double.Parse(logo.Attribute("transform")!.Value.Split('(', ' ')[1], System.Globalization.CultureInfo.InvariantCulture);
+            double logoX = double.Parse(logo.Attribute("x")!.Value, System.Globalization.CultureInfo.InvariantCulture);
             double labelX = double.Parse(svg.Descendants().First(e => e.Name.LocalName == "text").Attribute("x")!.Value, System.Globalization.CultureInfo.InvariantCulture);
             logoX.Should().BeLessThan(labelX);
             logo.Descendants().Select(e => e.Attribute("stroke")?.Value).Should().Contain(new[] { "#2fc2ad", "#f7b733", "#e8f0ef" });
+        }
+
+        [TestMethod]
+        public void Render_Logo_KeepsTheSettingsOfTheBrandMark()
+        {
+            XElement svg = Parse(SvgBadgeRenderer.Render(new BadgeImageContent(BadgeImageState.Tier, "Gold")));
+
+            XElement logo = svg.Descendants().Single(e => e.Attribute("data-logo") != null);
+            logo.Attribute("viewBox")!.Value.Should().Be("0 0 48 48");
+            logo.Attribute("fill")!.Value.Should().Be("none");
+            logo.Attribute("stroke-linecap")!.Value.Should().Be("round");
+            logo.Attribute("stroke-linejoin")!.Value.Should().Be("round");
+            logo.Attribute("width")!.Value.Should().Be("14");
+            logo.Attribute("height")!.Value.Should().Be("14");
+        }
+
+        [TestMethod]
+        public void Render_Logo_HasTheShapesOfTheBrandMarkFile()
+        {
+            XElement svg = Parse(SvgBadgeRenderer.Render(new BadgeImageContent(BadgeImageState.Tier, "Gold")));
+            XElement brandMark = XDocument.Load(Path.Combine(AppContext.BaseDirectory, "logo-mark-dark.svg")).Root!;
+
+            XElement logo = svg.Descendants().Single(e => e.Attribute("data-logo") != null);
+            logo.Elements().Select(e => e.ToString()).Should().Equal(brandMark.Elements().Where(e => e.Name.LocalName != "title").Select(e => e.ToString()));
         }
 
         [TestMethod]

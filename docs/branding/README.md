@@ -68,4 +68,4 @@ The build renders the PNGs with `@resvg/resvg-js`, so it needs no other tools. I
 - A stacked lockup (name below the mark).
 - Using the mark in the front-end. That is application work and goes through the normal issue workflow.
 
-The Reporting badge images show the mark on the left of the label. `SvgBadgeRenderer` holds its own copy of the mark in the dark-surface colors (the label is dark grey), drawn at 14 px. When the mark changes in `build.mjs`, update that copy too.
+The Reporting badge images show the mark on the left of the label. The Reporting API embeds `svg/logo-mark-dark.svg` (the label is dark grey) and draws it at 14 px, so a rebuilt and committed mark reaches the badges without further changes. The file is also copied in `Dockerfile.reporting-api`; keep that line when moving or renaming it.

@@ -29,15 +29,9 @@ namespace TimeForCode.Reporting.Api.V1.Rendering
 
         private static readonly XNamespace Svg = "http://www.w3.org/2000/svg";
 
-        // The mark in the colours for a dark surface (the label is dark grey), on the 48 x 48 grid of docs/branding/build.mjs.
-        // A badge cannot adapt to light and dark mode, so it uses the fixed variant.
-        private static readonly XElement Mark = XElement.Parse(
-            $"<g xmlns=\"{Svg.NamespaceName}\" fill=\"none\" stroke-linecap=\"round\" stroke-linejoin=\"round\">"
-            + "<circle cx=\"24\" cy=\"24\" r=\"19\" stroke=\"#2fc2ad\" stroke-opacity=\".28\" stroke-width=\"5\"/>"
-            + "<circle cx=\"24\" cy=\"24\" r=\"19\" stroke=\"#f7b733\" stroke-width=\"5\" stroke-dasharray=\"85.95 33.43\" transform=\"rotate(-90 24 24)\"/>"
-            + "<polyline points=\"16,17 24,24 16,31\" stroke=\"#e8f0ef\" stroke-width=\"4\"/>"
-            + "<line x1=\"27\" y1=\"32\" x2=\"34\" y2=\"32\" stroke=\"#e8f0ef\" stroke-width=\"4\"/>"
-            + "</g>");
+        // The brand mark in the colours for a dark surface (the label is dark grey). A badge cannot adapt to light and dark mode, so it uses the fixed variant.
+        // It is the file docs/branding/svg/logo-mark-dark.svg, embedded at build time, so the badge cannot drift from the brand kit.
+        private static readonly XElement Mark = LoadMark();
 
         // Icons are white shapes in a 12 x 12 box: no text, no emoji, so they look the same in every viewer.
         // Parsed once; adding the elements of one to an image copies them.
@@ -183,11 +177,26 @@ namespace TimeForCode.Reporting.Api.V1.Rendering
             return group;
         }
 
+        private static XElement LoadMark()
+        {
+            using Stream stream = typeof(SvgBadgeRenderer).Assembly.GetManifestResourceStream("logo-mark-dark.svg")
+                ?? throw new InvalidOperationException("The embedded brand mark logo-mark-dark.svg is missing.");
+            return XDocument.Load(stream).Root!;
+        }
+
+        // A nested svg keeps the settings of the brand mark (view box, no fill, round caps) and scales it exactly to the logo size.
         private static XElement LogoOf() => new(
-            Svg + "g",
+            Svg + "svg",
             new XAttribute("data-logo", "mark"),
-            new XAttribute("transform", $"translate({LogoOffset} {(Height - LogoSize) / 2}) scale({(LogoSize / 48.0).ToString("0.####", CultureInfo.InvariantCulture)})"),
-            Mark.Elements());
+            new XAttribute("x", LogoOffset),
+            new XAttribute("y", (Height - LogoSize) / 2),
+            new XAttribute("width", LogoSize),
+            new XAttribute("height", LogoSize),
+            new XAttribute("viewBox", Mark.Attribute("viewBox")!.Value),
+            new XAttribute("fill", Mark.Attribute("fill")!.Value),
+            new XAttribute("stroke-linecap", Mark.Attribute("stroke-linecap")!.Value),
+            new XAttribute("stroke-linejoin", Mark.Attribute("stroke-linejoin")!.Value),
+            Mark.Elements().Where(e => e.Name != Svg + "title"));
 
         private static XElement Shape(string elements) => XElement.Parse($"<g xmlns=\"{Svg.NamespaceName}\">{elements}</g>");
     }
