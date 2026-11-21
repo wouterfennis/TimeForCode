@@ -33,7 +33,7 @@ async function readSession(response: Response): Promise<PasskeyResult> {
   }
 }
 
-// The user dismissing or timing out the browser prompt is not an error.
+/** The user dismissing or timing out the browser prompt is not an error. */
 function isCancellation(error: unknown): boolean {
   return error instanceof DOMException && (error.name === 'NotAllowedError' || error.name === 'AbortError')
 }
