@@ -321,7 +321,8 @@ All implemented endpoints follow these conventions:
 - Error format: standard ASP.NET Core `ProblemDetails`. Input that violates a declared limit returns `400` with validation problem details (title `One or more validation errors occurred.`, an `errors` entry per parameter).
 - Input limits are declared in the OpenAPI document (`minimum`, `maximum`, `minLength`, `maxLength`, `pattern`, `format`) and enforced; generated clients can read them. Property examples come from the XML documentation.
 - Rate limiting: rate-limited operations document a `429 Too Many Requests` response. The response carries a `Retry-After` header with the number of seconds to wait.
-- API documentation: Swagger UI available at `/swagger` in Development mode.
+- API documentation: the OpenAPI document is at `/openapi/v1.json` and the Scalar API reference at `/scalar/v1`, in every environment.
+- Root redirect: `GET /` on the Authorization API, the Donation API, the Reporting API and the Identity Provider Mock answers `302` with `Location: /scalar/v1`. It needs no authentication and is not part of the OpenAPI document.
 
 ### Declared input limits
 
