@@ -1,7 +1,8 @@
 /**
  * oxlint plugin: a `//` comment directly above a declaration must be a `/** ... *\/` doc comment, so it shows in
- * editor tooltips. Comments inside bodies, TODO markers, `///` directives and comments separated from the
- * declaration by a blank line stay allowed. The C# counterpart is the analyzer TFC0001.
+ * editor tooltips. Comments inside bodies, TODO markers, tool directives (`@ts-expect-error`, `oxlint-disable-next-line`,
+ * `prettier-ignore`, `#region`), `///` directives and comments separated from the declaration by a blank line stay
+ * allowed. The C# counterpart is the analyzer TFC0001.
  */
 
 const DECLARATIONS = new Set([
@@ -19,7 +20,13 @@ const DECLARATIONS = new Set([
   'TSAbstractPropertyDefinition',
   'TSPropertySignature',
   'TSMethodSignature',
+  'TSIndexSignature',
+  'TSCallSignatureDeclaration',
+  'TSConstructSignatureDeclaration',
 ])
+
+/** Comments that instruct a tool and say nothing about the declaration: suppressions, type directives, regions. */
+const TOOL_DIRECTIVE = /^\s*(?:@ts-|eslint-|oxlint-|prettier-ignore|istanbul |c8 |v8 |#region|#endregion)/
 
 const EXPORTS = new Set(['ExportNamedDeclaration', 'ExportDefaultDeclaration'])
 
@@ -46,11 +53,19 @@ function isChecked(node) {
   return DECLARATIONS.has(node.type)
 }
 
-/** Finds the first line of the `//` block that touches the node, or null when there is none or it is a TODO. */
+/**
+ * Finds the first line of the `//` block that touches the node, or null when there is none, the block starts with a
+ * TODO marker, or its last line is a tool directive.
+ */
 function findLeadingBlock(sourceCode, node) {
   const comments = sourceCode.getCommentsBefore(node)
   let expectedEndLine = node.loc.start.line - 1
   let first = null
+  const last = comments.at(-1)
+
+  if (last !== undefined && TOOL_DIRECTIVE.test(last.value)) {
+    return null
+  }
 
   for (let index = comments.length - 1; index >= 0; index--) {
     const comment = comments[index]

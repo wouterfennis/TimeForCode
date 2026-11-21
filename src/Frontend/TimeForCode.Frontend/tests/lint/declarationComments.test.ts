@@ -16,6 +16,11 @@ const rejected = [
   ['class', '// A cache.\nexport class Cache {\n  size = 0\n}\n'],
   ['class method', 'export class Cache {\n  // Clears it.\n  clear(): void {}\n}\n'],
   ['multi-line comment', '// Adds two numbers,\n// slowly.\nexport function add(): void {}\n'],
+  ['default export', '// Adds two numbers.\nexport default function add(): void {}\n'],
+  ['ambient declaration', '// Adds two numbers.\ndeclare function add(): void\n'],
+  ['function overload', '// Adds a number.\nexport function add(a: number): number\nexport function add(a: string): string\nexport function add(a: number | string): number | string {\n  return a\n}\n'],
+  ['index signature', 'export interface Lookup {\n  // Any key.\n  [key: string]: number\n}\n'],
+  ['decorated class member', 'declare function track(...args: unknown[]): void\nexport class Cache {\n  // Clears it.\n  @track\n  clear(): void {}\n}\n'],
 ] as const
 
 const accepted = [
@@ -26,6 +31,9 @@ const accepted = [
   ['a line comment separated by a blank line', '// A section heading.\n\nexport function add(): void {}\n'],
   ['a line comment above an import', "// The side effect is the point.\nimport { add } from './add'\n\nexport const total = add\n"],
   ['a line comment above a local const', 'export function add(): number {\n  // The seed.\n  const seed = 1\n  return seed\n}\n'],
+  ['an oxlint directive', '// oxlint-disable-next-line no-unused-vars\nexport function add(unused: number): void {}\n'],
+  ['a TypeScript directive', 'declare const value: number\n// @ts-expect-error the string is on purpose\nexport const text: number = \'a\' + value\n'],
+  ['a formatter directive', '// prettier-ignore\nexport const matrix = [1, 0, 0, 1]\n'],
 ] as const
 
 const sampleDirectory = mkdtempSync(join(tmpdir(), 'declaration-comments-'))
@@ -42,6 +50,9 @@ function lintSamples() {
     encoding: 'utf8',
     shell: true,
   })
+  if (!result.stdout.startsWith('{')) {
+    throw new Error(`oxlint gave no JSON report: ${result.stdout}${result.stderr}`)
+  }
   const report = JSON.parse(result.stdout) as { diagnostics: { code: string; filename: string }[] }
   for (const { file } of samples) {
     codesByFile.set(

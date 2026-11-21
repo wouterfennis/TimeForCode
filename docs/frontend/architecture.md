@@ -65,11 +65,11 @@ Choices that differ from the latest versions or the usual defaults, with the rea
 
 Write a `/** ... */` doc comment above every hand-written declaration: function, class, type, interface, exported or module-level const, and class or interface members. A plain `//` comment directly above one does not show in editor tooltips, so `npm run lint` rejects it with the project rule `timeforcode/doc-comment-above-declaration` (`lint/declaration-comments-plugin.js`, an oxlint JS plugin registered in `.oxlintrc.json`).
 
-- **Allowed**: `//` inside function bodies and above object properties, `// TODO(review): ...` markers, and a `//` comment separated from the declaration by a blank line.
+- **Allowed**: `//` inside function bodies and above object properties, comments that start with `TODO` (such as `// TODO(review): ...`), tool directives (`@ts-expect-error`, `oxlint-disable-next-line`, `prettier-ignore`, `#region`), and a `//` comment separated from the declaration by a blank line.
 - **Excluded**: the generated `src/api/*.d.ts` files, through an `overrides` entry in `.oxlintrc.json`.
 - **Proof**: `tests/lint/declarationComments.test.ts` lints sample sources with the repository configuration and checks that each violating sample is reported and each allowed sample is clean.
 
-The C# counterpart is the build-time analyzer `TFC0001`, which asks for XML docs (`///`) above type and member declarations.
+The back end has the same convention for C# (XML docs above type and member declarations), enforced at build time by an analyzer.
 
 ## Authentication and the BFF
 
