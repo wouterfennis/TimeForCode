@@ -1,8 +1,8 @@
-using System.Collections.Immutable;
 using AwesomeAssertions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
+using System.Collections.Immutable;
 using TimeForCode.Shared.Analyzers;
 
 namespace TimeForCode.Shared.Tests.Analyzers
@@ -24,6 +24,22 @@ namespace TimeForCode.Shared.Tests.Analyzers
             ImmutableArray<Diagnostic> diagnostics = await AnalyzeAsync(source);
 
             diagnostics.Select(d => d.Id).Should().Equal(DeclarationCommentAnalyzer.DiagnosticId);
+        }
+
+        [TestMethod]
+        public async Task Analyze_LineCommentAboveMethod_ReportsAnErrorThatFailsTheBuild()
+        {
+            const string source = """
+                public class Sample
+                {
+                    // Explains the method.
+                    public void Run() { }
+                }
+                """;
+
+            ImmutableArray<Diagnostic> diagnostics = await AnalyzeAsync(source);
+
+            diagnostics.Single().Severity.Should().Be(DiagnosticSeverity.Error);
         }
 
         [TestMethod]

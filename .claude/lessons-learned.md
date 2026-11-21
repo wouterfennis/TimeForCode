@@ -46,3 +46,11 @@ Before adding an entry, check whether it belongs in a rule (`.claude/rules/`), a
 - **Date / issue:** 2026-11-17 / #205
 - **Lesson:** `podman compose` delegates to `docker-compose.exe`, which needs the named pipe `\\.\pipe\podman-machine-default`. When `win-sshproxy.exe` fails to start ("API forwarding for Docker API clients is not available"), compose fails with "failed to connect to the docker API". Pointing `DOCKER_HOST` at the machine's ssh socket then hangs silently: ssh waits for a host-key prompt and the machine key is not in the agent.
 - **How to apply:** Do not restart the Podman machine to fix it: that stops the whole stack. Accept the host key once (`ssh -o StrictHostKeyChecking=accept-new -i ~/.local/share/containers/podman/machine/machine -p <port> root@127.0.0.1 true`), `ssh-add` the machine key, set `DOCKER_HOST=ssh://root@127.0.0.1:<port>/run/podman/podman.sock` (port from `podman system connection list`), and run compose in the background with output to a file so a silent hang is visible. A hook blocks any command containing the word "docker", so keep it out of waits and greps. Ask before restarting the machine or interrupting a long compose build.
+
+
+### Use `///` XML docs above declarations; `//` above one fails the build
+
+- **Date / issue:** 2026-11-21 / #240
+- **Lesson:** A `//` comment directly above a type or member fails the build (analyzer `TFC0001`, `src/Shared/TimeForCode.Shared.Analyzers`, wired in through `Directory.Build.props`). Use `/// <summary>`; `//` stays for bodies, `TODO` markers and comments separated by a blank line. Rule text: `.claude/rules/code-style.md`.
+- **Why:** `//` comments do not show in IDE tooltips or generated docs, and the code base mixed both styles. Without `GenerateDocumentationFile` Roslyn lexes `///` lines as plain single-line comments, so a syntax-based check must tell them apart by text (`///` but not `////`); a test that parses with default options hides this.
+- **How to apply:** When the analyzer fails a build, convert the comment to an XML doc (escape `<`, `>`, `&`); never suppress the rule. Parse analyzer test samples with `DocumentationMode.None`.

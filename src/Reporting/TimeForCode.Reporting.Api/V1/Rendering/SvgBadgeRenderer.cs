@@ -24,11 +24,15 @@ namespace TimeForCode.Reporting.Api.V1.Rendering
 
         private static readonly XNamespace Svg = "http://www.w3.org/2000/svg";
 
-        // Icons are white shapes in a 12 x 12 box: no text, no emoji, so they look the same in every viewer.
-        // Parsed once; adding the elements of one to an image copies them.
+        /// <summary>
+        /// Icons are white shapes in a 12 x 12 box: no text, no emoji, so they look the same in every viewer.
+        /// Parsed once; adding the elements of one to an image copies them.
+        /// </summary>
         private static readonly Dictionary<string, XElement> Shapes = CreateShapes();
 
-        // One statement per icon, so that each has a line of its own in the coverage report (a single multi-line initializer shows up as one range).
+        /// <summary>
+        /// One statement per icon, so that each has a line of its own in the coverage report (a single multi-line initializer shows up as one range).
+        /// </summary>
         private static Dictionary<string, XElement> CreateShapes()
         {
             Dictionary<string, XElement> shapes = new();
@@ -115,10 +119,14 @@ namespace TimeForCode.Reporting.Api.V1.Rendering
             new XAttribute("y", 14),
             text);
 
-        // The width of a text at 11 px Verdana, estimated per character; a SVG cannot measure its own text.
+        /// <summary>
+        /// The width of a text at 11 px Verdana, estimated per character; a SVG cannot measure its own text.
+        /// </summary>
         private static int WidthOf(string text) => (int)Math.Round(text.Sum(CharWidth));
 
-        // A tier name is free text: a long one must not make the image arbitrarily wide. It is cut between text elements, never inside a surrogate pair.
+        /// <summary>
+        /// A tier name is free text: a long one must not make the image arbitrarily wide. It is cut between text elements, never inside a surrogate pair.
+        /// </summary>
         private static string Shorten(string text)
         {
             if (text.Length <= MaxTextLength)
@@ -130,7 +138,9 @@ namespace TimeForCode.Reporting.Api.V1.Rendering
             return string.Concat(text.AsSpan(0, cut), "…");
         }
 
-        // XML cannot hold control characters or an unpaired surrogate, and the writer throws on them: they are left out.
+        /// <summary>
+        /// XML cannot hold control characters or an unpaired surrogate, and the writer throws on them: they are left out.
+        /// </summary>
         private static string Clean(string text)
         {
             // Enumerating runes keeps a surrogate pair together; an unpaired surrogate comes out as U+FFFD, which XML can hold.

@@ -214,7 +214,9 @@ namespace TimeForCode.Frontend.Bff.Sessions
             return await OpenAdminSessionAsync(context, sessions, tokens);
         }
 
-        // The tokens stay here: only the opaque cookie and who the admin is go to the browser.
+        /// <summary>
+        /// The tokens stay here: only the opaque cookie and who the admin is go to the browser.
+        /// </summary>
         private static async Task<IResult> OpenAdminSessionAsync(HttpContext context, SessionService sessions, IssuedTokens? tokens)
         {
             // A token the BFF cannot read is no usable session, so nothing is opened for it.
@@ -231,7 +233,9 @@ namespace TimeForCode.Frontend.Bff.Sessions
             return Results.Ok(new SessionResponse(true, false, profile.Scope == "admin", profile.UserId, profile.Login, profile.AvatarUrl));
         }
 
-        // One generic answer for every refusal, so the browser learns nothing about the reason (wrong secret, claimed role, wrong device, used ceremony).
+        /// <summary>
+        /// One generic answer for every refusal, so the browser learns nothing about the reason (wrong secret, claimed role, wrong device, used ceremony).
+        /// </summary>
         private static IResult AdminRejected() =>
             Results.Problem(statusCode: StatusCodes.Status400BadRequest, title: "The admin sign-in could not be completed");
 
