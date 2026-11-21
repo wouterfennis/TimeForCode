@@ -1,7 +1,7 @@
 using FluentValidation;
-using MongoDB.Bson;
 using TimeForCode.Donation.Commands;
 using TimeForCode.Donation.Values;
+using TimeForCode.Shared.Identifiers;
 
 namespace TimeForCode.Donation.Application.Validators
 {
@@ -27,7 +27,7 @@ namespace TimeForCode.Donation.Application.Validators
                 .WithMessage($"Hours available must be between 0 and {ContributorProfileLimits.MaxHoursAvailable}.");
 
             RuleFor(x => x.DonorOrganizationId)
-                .Must(id => ObjectId.TryParse(id, out _))
+                .Must(ObjectIdFormat.IsValid)
                 .When(x => x.DonorOrganizationId != null)
                 .WithMessage("The donor organization identifier is not valid.");
         }

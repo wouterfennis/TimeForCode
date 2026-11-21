@@ -13,6 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Shared\TimeForCode.Shared\TimeForCode.Shared.csproj" />
     <ProjectReference Include="..\TimeForCode.Reporting.Commands\TimeForCode.Reporting.Commands.csproj" />
     <ProjectReference Include="..\TimeForCode.Reporting.Domain\TimeForCode.Reporting.Domain.csproj" />
   </ItemGroup>
