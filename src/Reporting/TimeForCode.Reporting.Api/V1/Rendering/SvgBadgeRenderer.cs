@@ -1,4 +1,6 @@
 using System.Globalization;
+using System.Text;
+using System.Xml;
 using System.Xml.Linq;
 using TimeForCode.Reporting.Commands;
 
@@ -37,27 +39,31 @@ namespace TimeForCode.Reporting.Api.V1.Rendering
         public static string Render(BadgeImageContent content)
         {
             (string text, string colour, string icon) = StyleOf(content);
-            text = Shorten(text);
+            text = Shorten(Clean(text));
 
             int labelWidth = WidthOf(Label) + Padding;
             int valueWidth = WidthOf(text) + Padding + IconWidth;
             int width = labelWidth + valueWidth;
             string description = $"{Label}: {text}";
 
+            // Prefixed, and the same for the same width (so the same width gives the same clip), so an image inlined into a page cannot clash with its ids.
+            string clipId = $"tfc-clip-{width}";
+
             XElement svg = new(
                 Svg + "svg",
                 new XAttribute("width", width),
                 new XAttribute("height", Height),
+                new XAttribute("viewBox", $"0 0 {width} {Height}"),
                 new XAttribute("role", "img"),
                 new XAttribute("aria-label", description),
                 new XElement(Svg + "title", description),
                 new XElement(
                     Svg + "clipPath",
-                    new XAttribute("id", "r"),
+                    new XAttribute("id", clipId),
                     new XElement(Svg + "rect", new XAttribute("width", width), new XAttribute("height", Height), new XAttribute("rx", 3))),
                 new XElement(
                     Svg + "g",
-                    new XAttribute("clip-path", "url(#r)"),
+                    new XAttribute("clip-path", $"url(#{clipId})"),
                     Rect(0, labelWidth, LabelColour),
                     Rect(labelWidth, valueWidth, colour)),
                 IconOf(icon, labelWidth + 6),
@@ -105,12 +111,41 @@ namespace TimeForCode.Reporting.Api.V1.Rendering
             text);
 
         // The width of a text at 11 px Verdana, estimated per character; a SVG cannot measure its own text.
-        private static int WidthOf(string text) => (int)Math.Round(text.Sum(WidthOf));
+        private static int WidthOf(string text) => (int)Math.Round(text.Sum(CharWidth));
 
-        // A tier name is free text: a long one must not make the image arbitrarily wide.
-        private static string Shorten(string text) => text.Length <= MaxTextLength ? text : string.Concat(text.AsSpan(0, MaxTextLength - 1), "…");
+        // A tier name is free text: a long one must not make the image arbitrarily wide. It is cut between text elements, never inside a surrogate pair.
+        private static string Shorten(string text)
+        {
+            if (text.Length <= MaxTextLength)
+            {
+                return text;
+            }
 
-        private static double WidthOf(char c) => c switch
+            int cut = char.IsLowSurrogate(text[MaxTextLength - 1]) ? MaxTextLength - 2 : MaxTextLength - 1;
+            return string.Concat(text.AsSpan(0, cut), "…");
+        }
+
+        // XML cannot hold control characters or an unpaired surrogate, and the writer throws on them: they are left out.
+        private static string Clean(string text)
+        {
+            StringBuilder clean = new(text.Length);
+            for (int i = 0; i < text.Length; i++)
+            {
+                if (char.IsHighSurrogate(text[i]) && i + 1 < text.Length && char.IsLowSurrogate(text[i + 1]))
+                {
+                    clean.Append(text[i]).Append(text[i + 1]);
+                    i++;
+                }
+                else if (XmlConvert.IsXmlChar(text[i]))
+                {
+                    clean.Append(text[i]);
+                }
+            }
+
+            return clean.ToString();
+        }
+
+        private static double CharWidth(char c) => c switch
         {
             'i' or 'l' or 'j' or 'I' or '.' or ',' or ':' or ';' or '|' or '!' or '\'' => 3.5,
             ' ' => 3.8,

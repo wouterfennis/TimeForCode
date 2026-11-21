@@ -41,6 +41,33 @@ namespace TimeForCode.Shared.Tests.Api
         }
 
         [TestMethod]
+        public void GetClientPartitionKey_RemoteAddress_IsTheAddress()
+        {
+            var http = new DefaultHttpContext();
+            http.Connection.RemoteIpAddress = System.Net.IPAddress.Parse("203.0.113.7");
+
+            ServiceCollectionExtensions.GetClientPartitionKey(http).Should().Be("203.0.113.7");
+        }
+
+        [TestMethod]
+        public void GetClientPartitionKey_NoRemoteAddress_IsOneSharedFallbackKey()
+        {
+            ServiceCollectionExtensions.GetClientPartitionKey(new DefaultHttpContext()).Should().Be("unknown");
+        }
+
+        [TestMethod]
+        public async Task AddPerClientSlidingWindowPolicy_RejectsWithRetryAfter()
+        {
+            var options = new RateLimiterOptions().AddPerClientSlidingWindowPolicy("badge", 60);
+            var context = BuildContext(new RetryAfterLease(TimeSpan.FromSeconds(3)));
+
+            await options.OnRejected!(context, CancellationToken.None);
+
+            options.RejectionStatusCode.Should().Be(StatusCodes.Status429TooManyRequests);
+            context.HttpContext.Response.Headers.RetryAfter.ToString().Should().Be("3");
+        }
+
+        [TestMethod]
         public void GetApiPermitLimit_NothingConfigured_Is120()
         {
             IConfiguration configuration = new ConfigurationBuilder().Build();

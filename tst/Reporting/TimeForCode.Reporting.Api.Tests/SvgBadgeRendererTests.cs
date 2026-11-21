@@ -162,6 +162,45 @@ namespace TimeForCode.Reporting.Api.Tests
             int.Parse(Parse(SvgBadgeRenderer.Render(new BadgeImageContent(BadgeImageState.Tier, tier))).Attribute("width")!.Value);
 
         [TestMethod]
+        [DataRow("\u0001")]
+        [DataRow("\uD800")]
+        [DataRow("Gold￾")]
+        public void Render_TextWithCharactersXmlCannotHold_StillGivesWellFormedSvg(string tier)
+        {
+            string svg = SvgBadgeRenderer.Render(new BadgeImageContent(BadgeImageState.Tier, tier));
+
+            Action parse = () => Parse(svg);
+            parse.Should().NotThrow();
+        }
+
+        [TestMethod]
+        public void Render_EmojiCutByTheLengthLimit_DoesNotLeaveAHalfSurrogate()
+        {
+            string svg = SvgBadgeRenderer.Render(new BadgeImageContent(BadgeImageState.Tier, new string('a', 38) + "😀😀"));
+
+            Action parse = () => Parse(svg);
+            parse.Should().NotThrow();
+        }
+
+        [TestMethod]
+        public void Render_Image_HasAViewBoxOfItsOwnSize()
+        {
+            XElement svg = Parse(SvgBadgeRenderer.Render(new BadgeImageContent(BadgeImageState.Tier, "Gold")));
+
+            svg.Attribute("viewBox")!.Value.Should().Be($"0 0 {svg.Attribute("width")!.Value} 20");
+        }
+
+        [TestMethod]
+        public void Render_ClipPathId_IsPrefixedAndMatchesItsReference()
+        {
+            XElement svg = Parse(SvgBadgeRenderer.Render(new BadgeImageContent(BadgeImageState.Tier, "Gold")));
+
+            string id = svg.Descendants().Single(e => e.Name.LocalName == "clipPath").Attribute("id")!.Value;
+            id.Should().StartWith("tfc-");
+            svg.Descendants().Should().Contain(e => e.Attribute("clip-path") != null && e.Attribute("clip-path")!.Value == $"url(#{id})");
+        }
+
+        [TestMethod]
         public void Render_SameContent_GivesTheSameImage()
         {
             string first = SvgBadgeRenderer.Render(new BadgeImageContent(BadgeImageState.NoBadgeYet));

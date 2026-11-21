@@ -54,6 +54,36 @@ namespace TimeForCode.Shared.Api.Extensions
                 limiterOptions.QueueLimit = 0;
             });
 
+            return RejectWithRetryAfter(options);
+        }
+
+        /// <summary>
+        /// Like <see cref="AddDefaultSlidingWindowPolicy"/>, but every client (remote address, after the trusted forwarded headers) gets its own window,
+        /// so one noisy client cannot use up the permits of all the others.
+        /// </summary>
+        public static RateLimiterOptions AddPerClientSlidingWindowPolicy(this RateLimiterOptions options, string policyName, int permitLimit)
+        {
+            options.AddPolicy(policyName, context => RateLimitPartition.GetSlidingWindowLimiter(
+                GetClientPartitionKey(context),
+                _ => new SlidingWindowRateLimiterOptions
+                {
+                    Window = TimeSpan.FromMinutes(1),
+                    SegmentsPerWindow = 6,
+                    PermitLimit = permitLimit,
+                    QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                    QueueLimit = 0
+                }));
+
+            return RejectWithRetryAfter(options);
+        }
+
+        /// <summary>
+        /// The partition key of a request: the remote address, or one shared key when there is none.
+        /// </summary>
+        public static string GetClientPartitionKey(HttpContext context) => context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+
+        private static RateLimiterOptions RejectWithRetryAfter(RateLimiterOptions options)
+        {
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
             options.OnRejected = (context, _) =>
             {
