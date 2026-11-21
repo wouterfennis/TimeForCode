@@ -79,70 +79,30 @@ namespace TimeForCode.Donation.Specifications.Steps
         [When("The user requests the list of donor organizations( without an account)")]
         public async Task WhenTheUserRequestsTheListOfDonorOrganizationsAsync()
         {
-            try
-            {
-                _getOrganizationsResult = await _donationClient.GetDonorOrganizationsAsync(null, null);
-            }
-            catch (ApiException<ProblemDetails> ex)
-            {
-                _context.LastException = ex;
-            }
-            catch (ApiException ex)
-            {
-                _context.LastException = ex;
-            }
+            await _context.CaptureAsync(async () =>
+                _getOrganizationsResult = await _donationClient.GetDonorOrganizationsAsync(null, null));
         }
 
         [When("The user requests page {int} of the donor organizations with {int} donor organizations per page")]
         public async Task WhenTheUserRequestsPageOfTheDonorOrganizationsAsync(int pageNumber, int pageSize)
         {
-            try
-            {
-                _getOrganizationsResult = await _donationClient.GetDonorOrganizationsAsync(pageNumber, pageSize);
-            }
-            catch (ApiException<ProblemDetails> ex)
-            {
-                _context.LastException = ex;
-            }
-            catch (ApiException ex)
-            {
-                _context.LastException = ex;
-            }
+            await _context.CaptureAsync(async () =>
+                _getOrganizationsResult = await _donationClient.GetDonorOrganizationsAsync(pageNumber, pageSize));
         }
 
         [When("The user requests the donor organization with the identifier {string}")]
         public async Task WhenTheUserRequestsTheDonorOrganizationWithTheIdentifierAsync(string identifier)
         {
-            try
-            {
-                _getOrganizationByIdResult = await _donationClient.GetDonorOrganizationByIdAsync(identifier);
-            }
-            catch (ApiException<ProblemDetails> ex)
-            {
-                _context.LastException = ex;
-            }
-            catch (ApiException ex)
-            {
-                _context.LastException = ex;
-            }
+            await _context.CaptureAsync(async () =>
+                _getOrganizationByIdResult = await _donationClient.GetDonorOrganizationByIdAsync(identifier));
         }
 
         [When("The user requests the donor organization details")]
         public async Task WhenTheUserRequestsTheDonorOrganizationDetailsAsync()
         {
             var id = _registeredOrganizationId ?? Constants.TestDonorOrganizationId;
-            try
-            {
-                _getOrganizationByIdResult = await _donationClient.GetDonorOrganizationByIdAsync(id);
-            }
-            catch (ApiException<ProblemDetails> ex)
-            {
-                _context.LastException = ex;
-            }
-            catch (ApiException ex)
-            {
-                _context.LastException = ex;
-            }
+            await _context.CaptureAsync(async () =>
+                _getOrganizationByIdResult = await _donationClient.GetDonorOrganizationByIdAsync(id));
         }
 
         [When("The user registers a donor organization with a valid name")]
@@ -152,21 +112,11 @@ namespace TimeForCode.Donation.Specifications.Steps
             mockRepo.Setup(x => x.CreateAsync(It.IsAny<DonorOrganization>()))
                 .Returns(Task.CompletedTask);
 
-            try
-            {
+            await _context.CaptureAsync(async () =>
                 _createResult = await _donationClient.CreateDonorOrganizationAsync(new CreateDonorOrganizationRequest
                 {
                     Name = "Acme Corp"
-                });
-            }
-            catch (ApiException<ProblemDetails> ex)
-            {
-                _context.LastException = ex;
-            }
-            catch (ApiException ex)
-            {
-                _context.LastException = ex;
-            }
+                }));
         }
 
         [When("The user registers a donor organization with a blank name")]
@@ -221,18 +171,8 @@ namespace TimeForCode.Donation.Specifications.Steps
         private async Task RegisterAsync(CreateDonorOrganizationRequest request)
         {
             // No repository mock is set up here: this path also runs on a live host, where in-process services do not exist.
-            try
-            {
-                _createResult = await _donationClient.CreateDonorOrganizationAsync(request);
-            }
-            catch (ApiException<ProblemDetails> ex)
-            {
-                _context.LastException = ex;
-            }
-            catch (ApiException ex)
-            {
-                _context.LastException = ex;
-            }
+            await _context.CaptureAsync(async () =>
+                _createResult = await _donationClient.CreateDonorOrganizationAsync(request));
         }
 
         [When("The user updates the donor organization with a new name")]
@@ -245,21 +185,11 @@ namespace TimeForCode.Donation.Specifications.Steps
             mockRepo.Setup(x => x.GetByNameAsync("Updated Corp"))
                 .ReturnsAsync((DonorOrganization?)null);
 
-            try
-            {
+            await _context.CaptureAsync(async () =>
                 _updateResult = await _donationClient.UpdateDonorOrganizationAsync(id, new UpdateDonorOrganizationRequest
                 {
                     Name = "Updated Corp"
-                });
-            }
-            catch (ApiException<ProblemDetails> ex)
-            {
-                _context.LastException = ex;
-            }
-            catch (ApiException ex)
-            {
-                _context.LastException = ex;
-            }
+                }));
         }
 
         [When("The user updates the donor organization with a name already in use")]
@@ -267,21 +197,11 @@ namespace TimeForCode.Donation.Specifications.Steps
         {
             var id = _registeredOrganizationId ?? Constants.TestDonorOrganizationId;
 
-            try
-            {
+            await _context.CaptureAsync(async () =>
                 _updateResult = await _donationClient.UpdateDonorOrganizationAsync(id, new UpdateDonorOrganizationRequest
                 {
                     Name = "Conflicting Corp"
-                });
-            }
-            catch (ApiException<ProblemDetails> ex)
-            {
-                _context.LastException = ex;
-            }
-            catch (ApiException ex)
-            {
-                _context.LastException = ex;
-            }
+                }));
         }
 
         [When("The user deletes the donor organization")]
@@ -292,18 +212,7 @@ namespace TimeForCode.Donation.Specifications.Steps
             mockRepo.Setup(x => x.DeleteAsync(It.IsAny<string>()))
                 .Returns(Task.CompletedTask);
 
-            try
-            {
-                await _donationClient.DeleteDonorOrganizationAsync(id);
-            }
-            catch (ApiException<ProblemDetails> ex)
-            {
-                _context.LastException = ex;
-            }
-            catch (ApiException ex)
-            {
-                _context.LastException = ex;
-            }
+            await _context.CaptureAsync(() => _donationClient.DeleteDonorOrganizationAsync(id));
         }
 
         [Then("A paginated list of donor organizations is returned")]
