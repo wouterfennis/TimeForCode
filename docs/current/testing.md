@@ -408,6 +408,8 @@ The React SPA (`src/Frontend/TimeForCode.Frontend`) is tested with Vitest, Testi
 
 The `Documentation Site` workflow (`.github/workflows/docs-site.yaml`) runs on pull requests that touch `docs/`. It runs `likec4 validate` on the architecture model in `docs/architecture/likec4/` and builds the Jekyll docs and the model. The pull request run does not deploy; the Pages artifact upload and the deploy happen only on push to `main`.
 
+The `Brand Assets` workflow (`.github/workflows/brand-assets.yaml`) runs on pull requests and pushes to `main` that touch `docs/branding/`. It builds the brand kit with `build.mjs`, fails when the committed SVGs in `docs/branding/svg/` differ from the build output, and uploads the SVGs, PNGs and `favicon.ico` as the `brand-assets` artifact. The PNGs and the favicon are not committed.
+
 ### E2E tests
 
 The `frontend` job ("Front-end checks") in `pullRequest.yaml` and `build.yaml` runs `npm ci --ignore-scripts`, the "API types up to date" check (`check:api`), lint, typecheck, tests with coverage and the build. It uploads the lcov file as the `frontend-coverage` artifact, which the `build` job (`needs: frontend`) downloads before the SonarCloud scan end. The scan end step ignores `sonar.log.level`, so its output is filtered to warnings, errors and the result lines. The scan start excludes verified snapshots, the generated front-end API types and `obj` folders from analysis. On `main`, `release-please` also depends on this job.

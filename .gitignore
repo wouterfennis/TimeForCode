@@ -121,3 +121,7 @@ npm-debug.log*
 # LikeC4 dependencies
 docs/architecture/likec4/node_modules/
 docs/architecture/likec4/dist/
+
+# Brand assets built in CI (docs/branding/build.mjs); the SVGs stay committed
+docs/branding/png/
+docs/branding/favicon.ico

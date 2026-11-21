@@ -28,6 +28,8 @@ The logo and the other brand assets in this folder are licensed under CC BY-ND 4
 
 Never edit the generated files by hand. Change `build.mjs` or `colors.json` and rebuild.
 
+Only the SVGs in `svg/` are committed, because the README and the docs site reference them. The PNGs (`png/`) and `favicon.ico` are not in git: the `Brand Assets` workflow builds them on every change to this folder and publishes them as the `brand-assets` artifact of the run, together with the SVGs. The same workflow fails when the committed SVGs differ from what `build.mjs` produces, so rebuild and commit `svg/` after every change to `build.mjs` or `colors.json`.
+
 ## Colors
 
 | Role | Light background | Dark background |
@@ -59,7 +61,7 @@ npm ci
 npm run build
 ```
 
-The build renders the PNGs with `@resvg/resvg-js`, so it needs no other tools. It writes the files into `svg/` and `png/` and overwrites `favicon.ico`.
+The build renders the PNGs with `@resvg/resvg-js`, so it needs no other tools. It writes the files into `svg/` and `png/` and overwrites `favicon.ico`. `png/` and `favicon.ico` are gitignored, so a local build leaves nothing to commit except `svg/`.
 
 ## Not yet included
 
