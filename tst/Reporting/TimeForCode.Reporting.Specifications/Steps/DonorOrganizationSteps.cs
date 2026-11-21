@@ -68,7 +68,9 @@ namespace TimeForCode.Reporting.Specifications.Steps
             }
         }
 
-        // Registered with the Donation API directly and with its own token, so the scenario's own identity (or absence of one) stays untouched.
+        /// <summary>
+        /// Registered with the Donation API directly and with its own token, so the scenario's own identity (or absence of one) stays untouched.
+        /// </summary>
         private async Task<string> RegisterLiveDonorOrganizationAsync()
         {
             using HttpClient donation = CreateDonationClient(await LiveAuthentication.GetUserTokenAsync());

@@ -31,7 +31,9 @@ namespace IdentityProviderMockService.Models
         public static string LoginFor(string? persona) =>
             string.IsNullOrWhiteSpace(persona) ? DefaultLogin : Normalize(persona);
 
-        // Id and login share one normalisation so "Alice" and "alice " are the same user.
+        /// <summary>
+        /// Id and login share one normalisation so "Alice" and "alice " are the same user.
+        /// </summary>
         private static string Normalize(string persona) => persona.Trim().ToLowerInvariant();
     }
 }

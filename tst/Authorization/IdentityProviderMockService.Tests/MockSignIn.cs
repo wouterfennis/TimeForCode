@@ -13,7 +13,9 @@ namespace IdentityProviderMockService.Tests
     internal sealed partial class MockSignIn : IDisposable
     {
         private const string RedirectUri = "http://localhost/callback";
-        // Program is static and cannot be a type argument, so any public type of the assembly marks it.
+        /// <summary>
+        /// Program is static and cannot be a type argument, so any public type of the assembly marks it.
+        /// </summary>
         private readonly WebApplicationFactory<LoginController> _factory = new();
         private readonly HttpClient _client;
 

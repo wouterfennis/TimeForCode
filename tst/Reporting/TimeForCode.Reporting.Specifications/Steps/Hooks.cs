@@ -73,7 +73,9 @@ namespace TimeForCode.Reporting.Specifications.Steps
             }
         }
 
-        // Hooks without an order run at 10000, so this must be higher to dispose the client after the clean-up hooks used it.
+        /// <summary>
+        /// Hooks without an order run at 10000, so this must be higher to dispose the client after the clean-up hooks used it.
+        /// </summary>
         [AfterScenario(Order = 20000)]
         public void DisposeLiveClient()
         {

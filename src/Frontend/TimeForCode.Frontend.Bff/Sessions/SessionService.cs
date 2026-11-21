@@ -42,7 +42,9 @@ namespace TimeForCode.Frontend.Bff.Sessions
         TimeProvider time,
         ILogger<SessionService> logger)
     {
-        // The Authorization API client times out well before the lease ends, so a slow refresh never outlives its lease.
+        /// <summary>
+        /// The Authorization API client times out well before the lease ends, so a slow refresh never outlives its lease.
+        /// </summary>
         private static readonly TimeSpan RefreshLease = TimeSpan.FromSeconds(30);
         private static readonly TimeSpan RefreshWait = TimeSpan.FromSeconds(15);
         private static readonly TimeSpan TouchInterval = TimeSpan.FromMinutes(1);
@@ -300,8 +302,10 @@ namespace TimeForCode.Frontend.Bff.Sessions
             }
         }
 
-        // The Authorization API has already rotated the refresh token, so these tokens are the only usable ones. Losing them would
-        // make the next refresh reuse the old token, which counts as theft and revokes every token of the user.
+        /// <summary>
+        /// The Authorization API has already rotated the refresh token, so these tokens are the only usable ones. Losing them would
+        /// make the next refresh reuse the old token, which counts as theft and revokes every token of the user.
+        /// </summary>
         private async Task<AccessTokenResult> SaveRotatedTokensAsync(string idHash, string leaseId, IssuedTokens tokens)
         {
             for (var attempt = 1; attempt <= SaveAttempts; attempt++)
@@ -357,8 +361,10 @@ namespace TimeForCode.Frontend.Bff.Sessions
 
         private static DateTimeOffset Earlier(DateTimeOffset a, DateTimeOffset b) => a < b ? a : b;
 
-        // A local path only: it starts with a single slash and holds no control character or backslash, which browsers
-        // strip or turn into a slash ("/<TAB>/evil.test" would become "//evil.test").
+        /// <summary>
+        /// A local path only: it starts with a single slash and holds no control character or backslash, which browsers
+        /// strip or turn into a slash ("/&lt;TAB&gt;/evil.test" would become "//evil.test").
+        /// </summary>
         private static string LocalPathOrRoot(string? returnUrl)
         {
             var isLocalPath = !string.IsNullOrEmpty(returnUrl)

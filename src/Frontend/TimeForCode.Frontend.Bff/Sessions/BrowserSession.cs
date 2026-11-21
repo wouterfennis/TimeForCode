@@ -33,11 +33,15 @@ namespace TimeForCode.Frontend.Bff.Sessions
             return session;
         }
 
-        // Strict: no cross-site request carries it. It is set during a cross-site redirect chain and sent from the next same-site request on.
+        /// <summary>
+        /// Strict: no cross-site request carries it. It is set during a cross-site redirect chain and sent from the next same-site request on.
+        /// </summary>
         public static void SetSessionCookie(HttpContext context, string sessionId) =>
             context.Response.Cookies.Append(SessionCookie, sessionId, Options(SameSiteMode.Strict));
 
-        // Added as the response starts, so the proxy header transforms (which remove Set-Cookie of the API) cannot strip it.
+        /// <summary>
+        /// Added as the response starts, so the proxy header transforms (which remove Set-Cookie of the API) cannot strip it.
+        /// </summary>
         public static void ClearSessionCookieWhenTheResponseStarts(HttpContext context) =>
             context.Response.OnStarting(() =>
             {
@@ -48,7 +52,9 @@ namespace TimeForCode.Frontend.Bff.Sessions
         public static void ClearSessionCookie(HttpContext context) =>
             context.Response.Cookies.Delete(SessionCookie, Options(SameSiteMode.Strict));
 
-        // Lax: the browser comes back from another site (the Authorization API) with a top-level GET and must still send it.
+        /// <summary>
+        /// Lax: the browser comes back from another site (the Authorization API) with a top-level GET and must still send it.
+        /// </summary>
         public static void SetLoginCookie(HttpContext context, string loginId, TimeSpan lifetime) =>
             context.Response.Cookies.Append(LoginCookie, loginId, Options(SameSiteMode.Lax, lifetime));
 

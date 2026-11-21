@@ -211,7 +211,9 @@ namespace TimeForCode.Reporting.Specifications.Steps
         private List<string> BadgeNames() =>
             Body().GetProperty("badges").EnumerateArray().Select(b => b.GetProperty("name").GetString()!).ToList();
 
-        // The tier list is public, so reading it back does not need (and must not disturb) the identity of the scenario.
+        /// <summary>
+        /// The tier list is public, so reading it back does not need (and must not disturb) the identity of the scenario.
+        /// </summary>
         private async Task<List<JsonElement>> ListedTiersAsync(string recipientType)
         {
             using HttpResponseMessage response = await _httpClient.GetAsync(new Uri($"api/v1/reporting/badge-tier?recipientType={TypeOf(recipientType)}", UriKind.Relative));

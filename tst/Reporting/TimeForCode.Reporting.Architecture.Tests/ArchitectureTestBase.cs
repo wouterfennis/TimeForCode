@@ -14,7 +14,9 @@ namespace TimeForCode.Reporting.Architecture.Tests
         protected IObjectProvider<IType> DomainLayer = default!;
         protected IObjectProvider<IType> InfrastructureLayer = default!;
 
-        // Anchored to the Reporting context: the Reporting infrastructure legitimately uses the generated TimeForCode.Donation.Api.Client.
+        /// <summary>
+        /// Anchored to the Reporting context: the Reporting infrastructure legitimately uses the generated TimeForCode.Donation.Api.Client.
+        /// </summary>
         private const string ApiLayerNamespace = @"^TimeForCode\.Reporting\.Api(\..*)?$";
         private const string ApplicationLayerNamespace = @"^TimeForCode\.Reporting\.Application(\..*)?$";
         private const string DomainLayerNamespace = @"^TimeForCode\.Reporting\.Domain(\..*)?$";

@@ -21,7 +21,9 @@ namespace TimeForCode.Reporting.Api.V1.Rendering
         private const int Padding = 10;
         private const int IconWidth = 16;
 
-        // The logo (docs/branding) is the label: 16 px high, with 5 px on both sides.
+        /// <summary>
+        /// The logo (docs/branding) is the label: 16 px high, with 5 px on both sides.
+        /// </summary>
         private const int LogoHeight = 16;
         private const int LogoPadding = 5;
 
@@ -29,18 +31,26 @@ namespace TimeForCode.Reporting.Api.V1.Rendering
 
         private static readonly XNamespace Svg = "http://www.w3.org/2000/svg";
 
-        // The horizontal lockup (mark and name, as outlines) in the colours for a dark surface (the label is dark grey). A badge cannot adapt to light and dark mode, so it uses the fixed variant.
-        // It is the file docs/branding/svg/logo-lockup-dark.svg, embedded at build time, so the badge cannot drift from the brand kit.
+        /// <summary>
+        /// The horizontal lockup (mark and name, as outlines) in the colours for a dark surface (the label is dark grey). A badge cannot adapt to light and dark mode, so it uses the fixed variant.
+        /// It is the file docs/branding/svg/logo-lockup-dark.svg, embedded at build time, so the badge cannot drift from the brand kit.
+        /// </summary>
         private static readonly XElement Lockup = LoadLockup();
 
-        // Scaled to the logo height, keeping the proportions of the view box.
+        /// <summary>
+        /// Scaled to the logo height, keeping the proportions of the view box.
+        /// </summary>
         private static readonly int LogoWidth = (int)Math.Round(LogoHeight * ViewBoxSize(0) / ViewBoxSize(1));
 
-        // Icons are white shapes in a 12 x 12 box: no text, no emoji, so they look the same in every viewer.
-        // Parsed once; adding the elements of one to an image copies them.
+        /// <summary>
+        /// Icons are white shapes in a 12 x 12 box: no text, no emoji, so they look the same in every viewer.
+        /// Parsed once; adding the elements of one to an image copies them.
+        /// </summary>
         private static readonly Dictionary<string, XElement> Shapes = CreateShapes();
 
-        // One statement per icon, so that each has a line of its own in the coverage report (a single multi-line initializer shows up as one range).
+        /// <summary>
+        /// One statement per icon, so that each has a line of its own in the coverage report (a single multi-line initializer shows up as one range).
+        /// </summary>
         private static Dictionary<string, XElement> CreateShapes()
         {
             Dictionary<string, XElement> shapes = new();
@@ -127,10 +137,14 @@ namespace TimeForCode.Reporting.Api.V1.Rendering
             new XAttribute("y", 14),
             text);
 
-        // The width of a text at 11 px Verdana, estimated per character; a SVG cannot measure its own text.
+        /// <summary>
+        /// The width of a text at 11 px Verdana, estimated per character; a SVG cannot measure its own text.
+        /// </summary>
         private static int WidthOf(string text) => (int)Math.Round(text.Sum(CharWidth));
 
-        // A tier name is free text: a long one must not make the image arbitrarily wide. It is cut between text elements, never inside a surrogate pair.
+        /// <summary>
+        /// A tier name is free text: a long one must not make the image arbitrarily wide. It is cut between text elements, never inside a surrogate pair.
+        /// </summary>
         private static string Shorten(string text)
         {
             if (text.Length <= MaxTextLength)
@@ -142,7 +156,9 @@ namespace TimeForCode.Reporting.Api.V1.Rendering
             return string.Concat(text.AsSpan(0, cut), "…");
         }
 
-        // XML cannot hold control characters or an unpaired surrogate, and the writer throws on them: they are left out.
+        /// <summary>
+        /// XML cannot hold control characters or an unpaired surrogate, and the writer throws on them: they are left out.
+        /// </summary>
         private static string Clean(string text)
         {
             // Enumerating runes keeps a surrogate pair together; an unpaired surrogate comes out as U+FFFD, which XML can hold.
@@ -186,10 +202,14 @@ namespace TimeForCode.Reporting.Api.V1.Rendering
             return XDocument.Load(stream).Root!;
         }
 
-        // The width (axis 0) or the height (axis 1) of the view box of the brand logo.
+        /// <summary>
+        /// The width (axis 0) or the height (axis 1) of the view box of the brand logo.
+        /// </summary>
         private static double ViewBoxSize(int axis) => double.Parse(Lockup.Attribute("viewBox")!.Value.Split(' ')[2 + axis], CultureInfo.InvariantCulture);
 
-        // A nested svg keeps the settings of the brand logo (view box, no fill, round caps) and scales it exactly to the logo height.
+        /// <summary>
+        /// A nested svg keeps the settings of the brand logo (view box, no fill, round caps) and scales it exactly to the logo height.
+        /// </summary>
         private static XElement LogoOf() => new(
             Svg + "svg",
             new XAttribute("data-logo", "lockup"),
