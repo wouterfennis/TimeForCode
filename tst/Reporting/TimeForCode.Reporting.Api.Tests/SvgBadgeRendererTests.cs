@@ -16,6 +16,8 @@ namespace TimeForCode.Reporting.Api.Tests
 
         private static string IconOf(XElement svg) => svg.Descendants().Single(e => e.Attribute("data-icon") != null).Attribute("data-icon")!.Value;
 
+        private static readonly string[] LogoStrokes = ["#2fc2ad", "#f7b733", "#e8f0ef"];
+
         [TestMethod]
         public void Render_Value_IsWellFormedSvgWithTheLogoAndTheValue()
         {
@@ -41,7 +43,7 @@ namespace TimeForCode.Reporting.Api.Tests
             double valueX = double.Parse(svg.Descendants().Single(e => e.Name.LocalName == "text").Attribute("x")!.Value, System.Globalization.CultureInfo.InvariantCulture);
             logoX.Should().BeLessThan(valueX);
             TextsOf(svg).Should().NotContain("TimeForCode");
-            logo.Descendants().Select(e => e.Attribute("stroke")?.Value).Should().Contain(new[] { "#2fc2ad", "#f7b733", "#e8f0ef" });
+            logo.Descendants().Select(e => e.Attribute("stroke")?.Value).Should().Contain(LogoStrokes);
             logo.Descendants().Select(e => e.Attribute("fill")?.Value).Should().Contain("#e8f0ef");
         }
 

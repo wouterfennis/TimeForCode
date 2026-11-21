@@ -16,6 +16,7 @@ namespace TimeForCode.Reporting.Api.V1.Rendering
         private const string Label = "TimeForCode";
         private const string LabelColour = "#555";
         private const string Font = "Verdana,Geneva,DejaVu Sans,sans-serif";
+        private const string HeightAttribute = "height";
         private const int Height = 20;
         private const int Padding = 10;
         private const int IconWidth = 16;
@@ -68,7 +69,7 @@ namespace TimeForCode.Reporting.Api.V1.Rendering
             XElement svg = new(
                 Svg + "svg",
                 new XAttribute("width", width),
-                new XAttribute("height", Height),
+                new XAttribute(HeightAttribute, Height),
                 new XAttribute("viewBox", $"0 0 {width} {Height}"),
                 new XAttribute("role", "img"),
                 new XAttribute("aria-label", description),
@@ -76,7 +77,7 @@ namespace TimeForCode.Reporting.Api.V1.Rendering
                 new XElement(
                     Svg + "clipPath",
                     new XAttribute("id", clipId),
-                    new XElement(Svg + "rect", new XAttribute("width", width), new XAttribute("height", Height), new XAttribute("rx", 3))),
+                    new XElement(Svg + "rect", new XAttribute("width", width), new XAttribute(HeightAttribute, Height), new XAttribute("rx", 3))),
                 new XElement(
                     Svg + "g",
                     new XAttribute("clip-path", $"url(#{clipId})"),
@@ -117,7 +118,7 @@ namespace TimeForCode.Reporting.Api.V1.Rendering
             Svg + "rect",
             new XAttribute("x", x),
             new XAttribute("width", width),
-            new XAttribute("height", Height),
+            new XAttribute(HeightAttribute, Height),
             new XAttribute("fill", colour));
 
         private static XElement Text(string text, double centre) => new(
@@ -195,7 +196,7 @@ namespace TimeForCode.Reporting.Api.V1.Rendering
             new XAttribute("x", LogoPadding),
             new XAttribute("y", (Height - LogoHeight) / 2),
             new XAttribute("width", LogoWidth),
-            new XAttribute("height", LogoHeight),
+            new XAttribute(HeightAttribute, LogoHeight),
             new XAttribute("viewBox", Lockup.Attribute("viewBox")!.Value),
             new XAttribute("fill", Lockup.Attribute("fill")!.Value),
             new XAttribute("stroke-linecap", Lockup.Attribute("stroke-linecap")!.Value),
