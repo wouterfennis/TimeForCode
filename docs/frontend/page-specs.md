@@ -14,7 +14,7 @@ Keep these `data-testid` values; the E2E tests rely on them: `project-list`, `pr
 
 **Purpose**: explain the product in one screen and route each persona to their next step.
 **Personas**: all (see [Personas and Journeys](../target/personas-and-journeys.md)).
-**Data**: current user (`GET /api/v1/User`) to decide between signed-in and anonymous variants.
+**Data**: session status (`GET /bff/session`) to decide between signed-in and anonymous variants.
 
 ```text
 +--------------------------------------------------------------+
