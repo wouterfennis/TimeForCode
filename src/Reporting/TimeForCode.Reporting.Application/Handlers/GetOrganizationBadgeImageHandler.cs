@@ -21,26 +21,14 @@ namespace TimeForCode.Reporting.Application.Handlers
             _logger = logger;
         }
 
-        public async Task<Result<BadgeImageContent>> Handle(GetOrganizationBadgeImageQuery request, CancellationToken cancellationToken)
+        public Task<Result<BadgeImageContent>> Handle(GetOrganizationBadgeImageQuery request, CancellationToken cancellationToken)
         {
-            if (!ObjectIdFormat.IsValid(request.DonorOrganizationId))
-            {
-                return Result<BadgeImageContent>.Success(new BadgeImageContent(BadgeImageState.NotFound));
-            }
-
-            Result<IReadOnlyList<BadgeDto>> badges = await _mediator.Send(new GetOrganizationBadgesQuery { DonorOrganizationId = request.DonorOrganizationId }, cancellationToken);
-            if (badges.IsFailure)
-            {
-                if (badges.FailureStatusCode is HttpStatusCode.NotFound)
-                {
-                    return Result<BadgeImageContent>.Success(new BadgeImageContent(BadgeImageState.NotFound));
-                }
-
-                _logger.LogWarning("The badge of donor organization {DonorOrganizationId} is unavailable: {Reason}", request.DonorOrganizationId, badges.ErrorMessage);
-                return Result<BadgeImageContent>.Success(new BadgeImageContent(BadgeImageState.Unavailable));
-            }
-
-            return Result<BadgeImageContent>.Success(HighestBadge.From(badges.Value, await _tiers.ListAsync(BadgeRecipientType.Organization, cancellationToken)));
+            return BadgeImageFlow.RunAsync(
+                ObjectIdFormat.IsValid(request.DonorOrganizationId),
+                BadgeImageState.NotFound,
+                () => _mediator.Send(new GetOrganizationBadgesQuery { DonorOrganizationId = request.DonorOrganizationId }, cancellationToken),
+                async badges => HighestBadge.From(badges, await _tiers.ListAsync(BadgeRecipientType.Organization, cancellationToken)),
+                reason => _logger.LogWarning("The badge of donor organization {DonorOrganizationId} is unavailable: {Reason}", request.DonorOrganizationId, reason));
         }
     }
 }
