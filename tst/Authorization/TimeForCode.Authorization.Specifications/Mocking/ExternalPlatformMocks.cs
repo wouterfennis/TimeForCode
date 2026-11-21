@@ -29,6 +29,20 @@ namespace TimeForCode.Authorization.Specifications.Mocking
             IsPrivate = true
         };
 
+        /// <summary>Makes the external platform answer a request to <paramref name="path"/> with 404 and a problem detail.</summary>
+        public static void RegisterNotFound(MockHttpMessageHandler mockHttp, string path, string message)
+        {
+            var problemDetails = new Microsoft.AspNetCore.Mvc.ProblemDetails
+            {
+                Title = message,
+                Status = (int)HttpStatusCode.NotFound,
+                Detail = message
+            };
+
+            mockHttp.When($"{BaseUrl}{path}")
+                .Respond(HttpStatusCode.NotFound, "application/json", JsonSerializer.Serialize(problemDetails));
+        }
+
         public static void RegisterPublicRepositories(MockHttpMessageHandler mockHttp)
         {
             mockHttp.When($"{BaseUrl}/users/johndoe/repos*")
