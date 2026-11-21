@@ -29,7 +29,7 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
         public async Task Handle_ExistingId_ReturnsSuccess()
         {
             // Arrange
-            var org = DonorOrganization.Create("Test Org", "test@org.com", "https://test.org");
+            var org = DonorOrganization.Create("Test Org", "test@org.com", "https://test.org", DonationTestData.Now);
             _mockRepository.Setup(r => r.GetByIdAsync(org.Id.ToString()))
                 .ReturnsAsync(org);
 
@@ -48,7 +48,7 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
         [TestMethod]
         public async Task Handle_OrganizationWithDonations_ReturnsHoursSpentAndAvailable()
         {
-            var org = DonorOrganization.Create("Test Org", null, null);
+            var org = DonorOrganization.Create("Test Org", null, null, DonationTestData.Now);
             _mockRepository.Setup(r => r.GetByIdAsync(org.Id.ToString())).ReturnsAsync(org);
             _mockDonationRepository.Setup(r => r.GetByDonorOrganizationIdsAsync(
                     It.Is<IReadOnlyCollection<string>>(ids => ids.Contains(org.Id.ToString())), It.IsAny<CancellationToken>()))

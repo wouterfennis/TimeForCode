@@ -12,17 +12,20 @@ namespace TimeForCode.Donation.Application.Handlers
         private readonly IContributorRepository _contributorRepository;
         private readonly IDonationHoursReleaser _hoursReleaser;
         private readonly ILogger<DeleteContributionHandler> _logger;
+        private readonly TimeProvider _timeProvider;
 
         public DeleteContributionHandler(
             IContributionRepository contributionRepository,
             IContributorRepository contributorRepository,
             IDonationHoursReleaser hoursReleaser,
-            ILogger<DeleteContributionHandler> logger)
+            ILogger<DeleteContributionHandler> logger,
+            TimeProvider timeProvider)
         {
             _contributionRepository = contributionRepository;
             _contributorRepository = contributorRepository;
             _hoursReleaser = hoursReleaser;
             _logger = logger;
+            _timeProvider = timeProvider;
         }
 
         public async Task<Result<ContributionChangedResult>> Handle(DeleteContributionCommand request, CancellationToken cancellationToken)
@@ -37,7 +40,7 @@ namespace TimeForCode.Donation.Application.Handlers
             }
 
             var contributor = await _contributorRepository.GetByIdAsync(contribution.ContributorId);
-            var change = contribution.MarkDeleted(request.UserId, request.IsAdministrator, contributor, DateTimeOffset.UtcNow);
+            var change = contribution.MarkDeleted(request.UserId, request.IsAdministrator, contributor, _timeProvider.GetUtcNow());
             if (!change.IsSuccess)
             {
                 _logger.LogWarning("Contribution {ContributionId} was not deleted for user {UserId}: {Failure}", request.ContributionId, request.UserId, change.Failure);

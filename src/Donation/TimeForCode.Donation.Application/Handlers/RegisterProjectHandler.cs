@@ -14,17 +14,20 @@ namespace TimeForCode.Donation.Application.Handlers
         private readonly IProjectRepository _projectRepository;
         private readonly IMaintainerRepository _maintainerRepository;
         private readonly ILogger<RegisterProjectHandler> _logger;
+        private readonly TimeProvider _timeProvider;
 
         public RegisterProjectHandler(
             IGithubRepositoryApiService githubService,
             IProjectRepository projectRepository,
             IMaintainerRepository maintainerRepository,
-            ILogger<RegisterProjectHandler> logger)
+            ILogger<RegisterProjectHandler> logger,
+            TimeProvider timeProvider)
         {
             _githubService = githubService;
             _projectRepository = projectRepository;
             _maintainerRepository = maintainerRepository;
             _logger = logger;
+            _timeProvider = timeProvider;
         }
 
         public async Task<Result<RegisterProjectResult>> Handle(RegisterProjectCommand request, CancellationToken cancellationToken)
@@ -85,7 +88,7 @@ namespace TimeForCode.Donation.Application.Handlers
                 snapshot,
                 normalizedUrl,
                 request.UserId,
-                DateTimeOffset.UtcNow);
+                _timeProvider.GetUtcNow());
 
             // Upserted before the project is stored: the upsert is idempotent, so a retry after a failure still ends with both documents.
             await _maintainerRepository.UpsertAsync(Maintainer.Create(request.UserId, request.GithubLogin, request.AvatarUrl));

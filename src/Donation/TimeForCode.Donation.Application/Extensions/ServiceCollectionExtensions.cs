@@ -1,6 +1,7 @@
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using System.Diagnostics.CodeAnalysis;
 using TimeForCode.Donation.Application.Handlers;
 using TimeForCode.Donation.Application.Interfaces;
@@ -21,6 +22,7 @@ namespace TimeForCode.Donation.Application.Extensions
             });
 
             services.AddValidatorsFromAssemblyContaining<RegisterProjectCommandValidator>(ServiceLifetime.Transient);
+            services.TryAddSingleton(TimeProvider.System);
             services.AddScoped<IDonationHoursCounter, DonationHoursCounter>();
             services.AddScoped<IDonationHoursReleaser, DonationHoursReleaser>();
 

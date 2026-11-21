@@ -34,7 +34,7 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
         public async Task Handle_ExistingOrganization_ReturnsItsContributors()
         {
             _organizationRepository.Setup(r => r.GetByIdAsync(OrganizationId.ToString()))
-                .ReturnsAsync(DonorOrganization.Create("Acme", null, null));
+                .ReturnsAsync(DonorOrganization.Create("Acme", null, null, DonationTestData.Now));
             var contributor = Contributor.Create("user-1", "octocat", "https://avatars.githubusercontent.com/u/1");
             contributor.UpdateProfile("Designer", null, null, OrganizationId);
             _contributorRepository.Setup(r => r.GetByDonorOrganizationIdAsync(OrganizationId, It.IsAny<CancellationToken>()))
@@ -53,7 +53,7 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
         public async Task Handle_OrganizationWithoutContributors_ReturnsAnEmptyList()
         {
             _organizationRepository.Setup(r => r.GetByIdAsync(OrganizationId.ToString()))
-                .ReturnsAsync(DonorOrganization.Create("Acme", null, null));
+                .ReturnsAsync(DonorOrganization.Create("Acme", null, null, DonationTestData.Now));
             _contributorRepository.Setup(r => r.GetByDonorOrganizationIdAsync(OrganizationId, It.IsAny<CancellationToken>()))
                 .ReturnsAsync([]);
 

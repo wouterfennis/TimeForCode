@@ -14,19 +14,22 @@ namespace TimeForCode.Donation.Application.Handlers
         private readonly IContributionRepository _contributionRepository;
         private readonly IDonationHoursCounter _hoursCounter;
         private readonly ILogger<AddContributionHandler> _logger;
+        private readonly TimeProvider _timeProvider;
 
         public AddContributionHandler(
             IProjectRepository projectRepository,
             IContributorRepository contributorRepository,
             IContributionRepository contributionRepository,
             IDonationHoursCounter hoursCounter,
-            ILogger<AddContributionHandler> logger)
+            ILogger<AddContributionHandler> logger,
+            TimeProvider timeProvider)
         {
             _projectRepository = projectRepository;
             _contributorRepository = contributorRepository;
             _contributionRepository = contributionRepository;
             _hoursCounter = hoursCounter;
             _logger = logger;
+            _timeProvider = timeProvider;
         }
 
         public async Task<Result<AddContributionResult>> Handle(AddContributionCommand request, CancellationToken cancellationToken)
@@ -48,7 +51,7 @@ namespace TimeForCode.Donation.Application.Handlers
                 contributor,
                 request.Hours,
                 request.GithubReference,
-                DateTimeOffset.UtcNow);
+                _timeProvider.GetUtcNow());
 
             await _contributionRepository.CreateAsync(contribution);
             await _hoursCounter.CountAsync(project.Id.ToString(), contribution.Id, request.Hours, cancellationToken);

@@ -28,7 +28,7 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
             _sut = new DonationHoursReleaser(
                 _donationRepository.Object,
                 _allocationRepository.Object,
-                NullLogger<DonationHoursReleaser>.Instance);
+                NullLogger<DonationHoursReleaser>.Instance, new FixedTimeProvider(DonationTestData.Now));
         }
 
         private DonationEntity GivenDonation(DonationStatus status, int committed, int logged)
@@ -40,7 +40,7 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
 
         private static DonationAllocation GivenAllocation(DonationEntity donation, int hours)
         {
-            return DonationAllocation.Create(ContributionId, donation.Id, hours);
+            return DonationAllocation.Create(ContributionId, donation.Id, hours, DonationTestData.Now);
         }
 
         private void GivenAllocations(params DonationAllocation[] allocations)

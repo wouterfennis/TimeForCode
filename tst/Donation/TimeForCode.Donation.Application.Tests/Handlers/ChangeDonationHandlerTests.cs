@@ -22,8 +22,8 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
         public void Setup()
         {
             _donationRepository = new Mock<IDonationRepository>();
-            _activate = new ActivateDonationHandler(_donationRepository.Object, NullLogger<ActivateDonationHandler>.Instance);
-            _cancel = new CancelDonationHandler(_donationRepository.Object, NullLogger<CancelDonationHandler>.Instance);
+            _activate = new ActivateDonationHandler(_donationRepository.Object, NullLogger<ActivateDonationHandler>.Instance, new FixedTimeProvider(DonationTestData.Now));
+            _cancel = new CancelDonationHandler(_donationRepository.Object, NullLogger<CancelDonationHandler>.Instance, new FixedTimeProvider(DonationTestData.Now));
         }
 
         private DonationEntity GivenDonation(DonationStatus status)

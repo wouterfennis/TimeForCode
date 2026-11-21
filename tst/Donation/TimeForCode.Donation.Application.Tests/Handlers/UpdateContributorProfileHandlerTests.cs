@@ -105,7 +105,7 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
         {
             GivenContributorOfCaller();
             _organizationRepository.Setup(r => r.GetByIdAsync(OrganizationId.ToString()))
-                .ReturnsAsync(DonorOrganization.Create("Acme", null, null));
+                .ReturnsAsync(DonorOrganization.Create("Acme", null, null, DonationTestData.Now));
 
             var result = await _sut.Handle(Command(donorOrganizationId: OrganizationId.ToString()), CancellationToken.None);
 

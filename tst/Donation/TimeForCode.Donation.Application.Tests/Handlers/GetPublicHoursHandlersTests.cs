@@ -52,7 +52,7 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
         {
             var organizations = new Mock<IDonorOrganizationRepository>();
             var donations = new Mock<IDonationRepository>();
-            organizations.Setup(r => r.GetByIdAsync(OrganizationId.ToString())).ReturnsAsync(DonorOrganization.Create("Acme", null, null));
+            organizations.Setup(r => r.GetByIdAsync(OrganizationId.ToString())).ReturnsAsync(DonorOrganization.Create("Acme", null, null, DonationTestData.Now));
             donations.Setup(r => r.GetByDonorOrganizationIdsAsync(It.Is<IReadOnlyCollection<string>>(ids => ids.Single() == OrganizationId.ToString()), It.IsAny<CancellationToken>()))
                 .ReturnsAsync([
                     DonationTestData.Build(DonationStatus.Active, committed: 20, logged: 7, organizationId: OrganizationId),

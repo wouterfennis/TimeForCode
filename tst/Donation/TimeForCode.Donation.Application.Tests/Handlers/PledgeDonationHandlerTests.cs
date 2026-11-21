@@ -29,7 +29,7 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
                 _projectRepository.Object,
                 _organizationRepository.Object,
                 _donationRepository.Object,
-                NullLogger<PledgeDonationHandler>.Instance);
+                NullLogger<PledgeDonationHandler>.Instance, new FixedTimeProvider(DonationTestData.Now));
         }
 
         private static PledgeDonationCommand Command(string? organizationId = null) => new()

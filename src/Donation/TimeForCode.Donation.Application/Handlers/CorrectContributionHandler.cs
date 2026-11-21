@@ -13,19 +13,22 @@ namespace TimeForCode.Donation.Application.Handlers
         private readonly IDonationHoursCounter _hoursCounter;
         private readonly IDonationHoursReleaser _hoursReleaser;
         private readonly ILogger<CorrectContributionHandler> _logger;
+        private readonly TimeProvider _timeProvider;
 
         public CorrectContributionHandler(
             IContributionRepository contributionRepository,
             IContributorRepository contributorRepository,
             IDonationHoursCounter hoursCounter,
             IDonationHoursReleaser hoursReleaser,
-            ILogger<CorrectContributionHandler> logger)
+            ILogger<CorrectContributionHandler> logger,
+            TimeProvider timeProvider)
         {
             _contributionRepository = contributionRepository;
             _contributorRepository = contributorRepository;
             _hoursCounter = hoursCounter;
             _hoursReleaser = hoursReleaser;
             _logger = logger;
+            _timeProvider = timeProvider;
         }
 
         public async Task<Result<ContributionChangedResult>> Handle(CorrectContributionCommand request, CancellationToken cancellationToken)
@@ -40,7 +43,7 @@ namespace TimeForCode.Donation.Application.Handlers
             }
 
             var contributor = await _contributorRepository.GetByIdAsync(contribution.ContributorId);
-            var change = contribution.Correct(request.UserId, request.IsAdministrator, contributor, request.Hours, request.GithubReference, DateTimeOffset.UtcNow);
+            var change = contribution.Correct(request.UserId, request.IsAdministrator, contributor, request.Hours, request.GithubReference, _timeProvider.GetUtcNow());
             if (!change.IsSuccess)
             {
                 _logger.LogWarning("Contribution {ContributionId} was not corrected for user {UserId}: {Failure}", request.ContributionId, request.UserId, change.Failure);

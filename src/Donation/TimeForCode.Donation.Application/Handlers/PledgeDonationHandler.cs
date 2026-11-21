@@ -12,17 +12,20 @@ namespace TimeForCode.Donation.Application.Handlers
         private readonly IDonorOrganizationRepository _organizationRepository;
         private readonly IDonationRepository _donationRepository;
         private readonly ILogger<PledgeDonationHandler> _logger;
+        private readonly TimeProvider _timeProvider;
 
         public PledgeDonationHandler(
             IProjectRepository projectRepository,
             IDonorOrganizationRepository organizationRepository,
             IDonationRepository donationRepository,
-            ILogger<PledgeDonationHandler> logger)
+            ILogger<PledgeDonationHandler> logger,
+            TimeProvider timeProvider)
         {
             _projectRepository = projectRepository;
             _organizationRepository = organizationRepository;
             _donationRepository = donationRepository;
             _logger = logger;
+            _timeProvider = timeProvider;
         }
 
         public async Task<Result<DonationResult>> Handle(PledgeDonationCommand request, CancellationToken cancellationToken)
@@ -56,7 +59,7 @@ namespace TimeForCode.Donation.Application.Handlers
                 organizationId = organization.Id;
             }
 
-            var donation = Domain.Donation.Create(project.Id, organizationId, request.UserId, request.Hours);
+            var donation = Domain.Donation.Create(project.Id, organizationId, request.UserId, request.Hours, _timeProvider.GetUtcNow());
             await _donationRepository.CreateAsync(donation);
 
             _logger.LogInformation("Donation {DonationId} pledged to project {ProjectId}", donation.Id, project.Id);
