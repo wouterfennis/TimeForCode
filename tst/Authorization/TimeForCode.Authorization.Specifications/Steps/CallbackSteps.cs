@@ -5,7 +5,6 @@ using Moq;
 using Reqnroll;
 using RichardSzalay.MockHttp;
 using System.Net;
-using System.Text.Json;
 using System.Web;
 using TimeForCode.Authorization.Api.Client;
 using TimeForCode.Authorization.Api.Client.Extensions;
@@ -39,17 +38,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
         [Given("The external platform does not return the access token")]
         public void GivenTheExternalPlatformDoesNotReturnTheAccessToken()
         {
-            var mockHttp = _provider.GetRequiredService<MockHttpMessageHandler>();
-
-            var problemDetails = new Microsoft.AspNetCore.Mvc.ProblemDetails
-            {
-                Title = "Access token cannot be received",
-                Status = (int)HttpStatusCode.NotFound,
-                Detail = "Access token cannot be received"
-            };
-
-            mockHttp.When("http://localhost:8081/login/oauth/access_token")
-                .Respond(HttpStatusCode.NotFound, "application/json", JsonSerializer.Serialize(problemDetails));
+            ExternalPlatformMocks.RegisterNotFound(_provider.GetRequiredService<MockHttpMessageHandler>(), "/login/oauth/access_token", "Access token cannot be received");
         }
 
         [Given("The external platform calls the time for code platform to complete the authorization")]

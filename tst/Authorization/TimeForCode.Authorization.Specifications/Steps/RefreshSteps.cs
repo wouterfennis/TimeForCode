@@ -15,6 +15,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
     internal class RefreshSteps
     {
         private const string PlainRefreshToken = "token";
+        private const string ExpiredArticle = "an expired";
 
         private readonly IAuthClient _authClient;
         private readonly HttpClient _httpClient;
@@ -61,16 +62,10 @@ namespace TimeForCode.Authorization.Specifications.Steps
             problemDetails.Detail.Should().Be(errorMessage);
         }
 
-        [Given("The user has an expired refresh token")]
-        public void GivenTheUserHasAnExpiredRefreshToken()
+        [Given($"^The user has ({ExpiredArticle}|a) refresh token$")]
+        public void GivenTheUserHasARefreshToken(string kind)
         {
-            SeedRefreshToken(DateTime.UtcNow.AddHours(-1));
-        }
-
-        [Given("The user has a refresh token")]
-        public void GivenTheUserHasARefreshToken()
-        {
-            SeedRefreshToken(DateTime.UtcNow.AddHours(1));
+            SeedRefreshToken(DateTime.UtcNow.AddHours(kind == ExpiredArticle ? -1 : 1));
         }
 
         [Given("The user has already refreshed with that refresh token")]
