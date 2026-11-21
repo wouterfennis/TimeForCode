@@ -30,6 +30,12 @@ namespace TimeForCode.Donation.Application.Tests.Domain
         }
 
         [TestMethod]
+        public void ForUser_UserId_IsNeverAdministrator()
+        {
+            Actor.ForUser("user-1").Should().Be(new Actor("user-1", false));
+        }
+
+        [TestMethod]
         public void Equality_SameUserAndFlag_IsEqual()
         {
             new Actor("user-1", false).Should().Be(new Actor("user-1", false));

@@ -16,6 +16,13 @@ namespace TimeForCode.Donation.Values
             IsAdministrator = isAdministrator;
         }
 
+        /// <summary>Creates a non-administrator actor, for endpoints that act only on the caller's own data.</summary>
+        /// <param name="userId">The platform user id of the caller.</param>
+        public static Actor ForUser(string userId)
+        {
+            return new Actor(userId, false);
+        }
+
         /// <summary>The platform user id of the caller.</summary>
         public string UserId { get; }
 

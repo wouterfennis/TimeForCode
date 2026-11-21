@@ -20,7 +20,6 @@ namespace TimeForCode.Donation.Api.V1.Controllers
     [EnableRateLimiting("api")]
     public class DonationController : ControllerBase
     {
-
         private readonly IMediator _mediator;
 
         /// <summary>

@@ -57,7 +57,7 @@ namespace TimeForCode.Donation.Api.V1.Controllers
                 return MissingIdentity();
             }
 
-            var result = await _mediator.Send(new GetContributorProfileQuery { Actor = new Actor(userId, false) });
+            var result = await _mediator.Send(new GetContributorProfileQuery { Actor = Actor.ForUser(userId) });
 
             return result.IsFailure
                 ? ToProblem(result.FailureStatusCode, "Cannot get contributor profile", result.ErrorMessage)
@@ -91,7 +91,7 @@ namespace TimeForCode.Donation.Api.V1.Controllers
                 return MissingIdentity();
             }
 
-            var result = await _mediator.Send(ToCommand(request, new Actor(userId, false), login, avatarUrl, contributorId: null));
+            var result = await _mediator.Send(ToCommand(request, Actor.ForUser(userId), login, avatarUrl, contributorId: null));
 
             return result.IsFailure
                 ? ToProblem(result.FailureStatusCode, "Cannot update contributor profile", result.ErrorMessage)
