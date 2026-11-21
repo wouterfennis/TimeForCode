@@ -21,28 +21,16 @@ namespace TimeForCode.Reporting.Application.Handlers
             _logger = logger;
         }
 
-        public async Task<Result<BadgeImageContent>> Handle(GetContributorBadgeImageQuery request, CancellationToken cancellationToken)
+        public Task<Result<BadgeImageContent>> Handle(GetContributorBadgeImageQuery request, CancellationToken cancellationToken)
         {
             // An unknown or malformed contributor looks exactly like one without badges, so the image does not confirm that an identifier exists.
-            if (!ObjectIdFormat.IsValid(request.ContributorId))
-            {
-                return Result<BadgeImageContent>.Success(new BadgeImageContent(BadgeImageState.NoBadgeYet));
-            }
-
-            Result<IReadOnlyList<BadgeDto>> badges = await _mediator.Send(new GetContributorBadgesQuery { ContributorId = request.ContributorId }, cancellationToken);
-            if (badges.IsFailure)
-            {
-                if (badges.FailureStatusCode is HttpStatusCode.NotFound)
-                {
-                    return Result<BadgeImageContent>.Success(new BadgeImageContent(BadgeImageState.NoBadgeYet));
-                }
-
-                // The identifier is deliberately left out of the log message: an unavailable badge is a failure of ours or of Donation, not of the contributor.
-                _logger.LogWarning("The badge of a contributor is unavailable: {Reason}", badges.ErrorMessage);
-                return Result<BadgeImageContent>.Success(new BadgeImageContent(BadgeImageState.Unavailable));
-            }
-
-            return Result<BadgeImageContent>.Success(HighestBadge.From(badges.Value, await _tiers.ListAsync(BadgeRecipientType.Contributor, cancellationToken)));
+            // The identifier is deliberately left out of the log message: an unavailable badge is a failure of ours or of Donation, not of the contributor.
+            return BadgeImageFlow.RunAsync(
+                ObjectIdFormat.IsValid(request.ContributorId),
+                BadgeImageState.NoBadgeYet,
+                () => _mediator.Send(new GetContributorBadgesQuery { ContributorId = request.ContributorId }, cancellationToken),
+                async badges => HighestBadge.From(badges, await _tiers.ListAsync(BadgeRecipientType.Contributor, cancellationToken)),
+                reason => _logger.LogWarning("The badge of a contributor is unavailable: {Reason}", reason));
         }
     }
 }
