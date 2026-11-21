@@ -19,6 +19,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="MongoDB.Bson" />
     <PackageReference Include="Moq" />
@@ -28,6 +29,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\Shared\TimeForCode.Shared\TimeForCode.Shared.csproj" />
+    <ProjectReference Include="..\..\..\src\Shared\TimeForCode.Shared.Analyzers\TimeForCode.Shared.Analyzers.csproj" />
     <ProjectReference Include="..\TimeForCode.Shared.Live\TimeForCode.Shared.Live.csproj" />
     <ProjectReference Include="..\TimeForCode.Shared.ApiDocs\TimeForCode.Shared.ApiDocs.csproj" />
   </ItemGroup>
