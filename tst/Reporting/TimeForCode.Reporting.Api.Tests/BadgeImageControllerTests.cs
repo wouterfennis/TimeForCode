@@ -17,7 +17,6 @@ namespace TimeForCode.Reporting.Api.Tests
     public class BadgeImageControllerTests
     {
         private const string Id = "507f1f77bcf86cd799439011";
-        private const string Malformed = "not-an-identifier";
 
         private readonly Mock<IMediator> _mediator = new();
         private readonly DefaultHttpContext _httpContext = new();
@@ -88,15 +87,6 @@ namespace TimeForCode.Reporting.Api.Tests
         }
 
         [TestMethod]
-        public async Task GetProjectHoursReceivedBadge_MalformedIdentifier_ReturnsTheNotFoundImageWithoutAskingTheApplication()
-        {
-            IActionResult result = await CreateSut().GetProjectHoursReceivedBadge(Malformed);
-
-            Svg(result).Content.Should().Be(SvgBadgeRenderer.Render(new BadgeImageContent(BadgeImageState.NotFound)));
-            _mediator.VerifyNoOtherCalls();
-        }
-
-        [TestMethod]
         public async Task GetProjectHoursReceivedBadge_ApplicationFails_ReturnsTheUnavailableImageWithAShortCache()
         {
             _mediator.Setup(m => m.Send(It.IsAny<GetProjectBadgeImageQuery>(), It.IsAny<CancellationToken>()))
@@ -106,24 +96,6 @@ namespace TimeForCode.Reporting.Api.Tests
 
             Svg(result).Content.Should().Be(SvgBadgeRenderer.Render(new BadgeImageContent(BadgeImageState.Unavailable)));
             CacheControl.Should().Be("public, max-age=30");
-        }
-
-        [TestMethod]
-        public async Task GetOrganizationBadge_MalformedIdentifier_ReturnsTheNotFoundImageWithoutAskingTheApplication()
-        {
-            IActionResult result = await CreateSut().GetOrganizationBadge(Malformed);
-
-            Svg(result).Content.Should().Be(SvgBadgeRenderer.Render(new BadgeImageContent(BadgeImageState.NotFound)));
-            _mediator.VerifyNoOtherCalls();
-        }
-
-        [TestMethod]
-        public async Task GetContributorBadge_MalformedIdentifier_ReturnsTheNoBadgeYetImage()
-        {
-            IActionResult result = await CreateSut().GetContributorBadge(Malformed);
-
-            Svg(result).Content.Should().Be(SvgBadgeRenderer.Render(new BadgeImageContent(BadgeImageState.NoBadgeYet)));
-            _mediator.VerifyNoOtherCalls();
         }
 
         [TestMethod]
@@ -186,13 +158,13 @@ namespace TimeForCode.Reporting.Api.Tests
         [DataRow(nameof(BadgeImageController.GetProjectProgressBadge))]
         [DataRow(nameof(BadgeImageController.GetOrganizationBadge))]
         [DataRow(nameof(BadgeImageController.GetContributorBadge))]
-        public void BadgeActions_AreAnonymousAndUseThePublicRateLimit(string action)
+        public void BadgeActions_AreAnonymousAndUseTheBadgeRateLimit(string action)
         {
             MethodInfo method = typeof(BadgeImageController).GetMethod(action)!;
 
             method.GetCustomAttributes(typeof(AllowAnonymousAttribute), inherit: false).Should().NotBeEmpty();
             method.GetCustomAttributes(typeof(EnableRateLimitingAttribute), inherit: false)
-                .Cast<EnableRateLimitingAttribute>().Should().ContainSingle().Which.PolicyName.Should().Be("public");
+                .Cast<EnableRateLimitingAttribute>().Should().ContainSingle().Which.PolicyName.Should().Be("badge");
         }
     }
 }

@@ -18,11 +18,17 @@ namespace TimeForCode.Reporting.Application.Handlers
 
         public async Task<Result<BadgeImageContent>> Handle(GetProjectBadgeImageQuery request, CancellationToken cancellationToken)
         {
+            if (!ObjectIdFormat.IsValid(request.ProjectId))
+            {
+                return Result<BadgeImageContent>.Success(new BadgeImageContent(BadgeImageState.NotFound));
+            }
+
             Result<ProjectPublicSummaryResult> summary = await _mediator.Send(new GetProjectPublicSummaryQuery { ProjectId = request.ProjectId }, cancellationToken);
             if (summary.IsFailure)
             {
                 // The Donation context answers not found for an unknown and for an unpublished project alike.
-                if (summary.FailureStatusCode is HttpStatusCode.NotFound or HttpStatusCode.BadRequest)
+                // A bad request is not an unknown project (the identifier was valid): it is a defect, so it is logged below.
+                if (summary.FailureStatusCode is HttpStatusCode.NotFound)
                 {
                     return Result<BadgeImageContent>.Success(new BadgeImageContent(BadgeImageState.NotFound));
                 }

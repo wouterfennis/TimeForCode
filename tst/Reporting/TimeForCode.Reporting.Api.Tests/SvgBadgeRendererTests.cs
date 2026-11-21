@@ -135,6 +135,29 @@ namespace TimeForCode.Reporting.Api.Tests
             WidthOfTier("          ").Should().BeLessThan(WidthOfTier("xxxxxxxxxx"));
         }
 
+        [TestMethod]
+        public void Render_Digits_AreWiderThanOrdinaryCharacters()
+        {
+            WidthOfTier("0000000000").Should().BeGreaterThan(WidthOfTier("xxxxxxxxxx"));
+        }
+
+        [TestMethod]
+        public void Render_VeryLongText_IsShortenedWithAnEllipsisAndStaysBounded()
+        {
+            string svg = SvgBadgeRenderer.Render(new BadgeImageContent(BadgeImageState.Tier, new string('W', 500)));
+
+            TextsOf(Parse(svg)).Should().Contain(t => t.EndsWith('…') && t.Length <= 40);
+            int.Parse(Parse(svg).Attribute("width")!.Value).Should().BeLessThan(600);
+        }
+
+        [TestMethod]
+        public void Render_TextOfTheMaximumLength_IsNotShortened()
+        {
+            string text = new('a', 40);
+
+            TextsOf(Parse(SvgBadgeRenderer.Render(new BadgeImageContent(BadgeImageState.Tier, text)))).Should().Contain(text);
+        }
+
         private static int WidthOfTier(string tier) =>
             int.Parse(Parse(SvgBadgeRenderer.Render(new BadgeImageContent(BadgeImageState.Tier, tier))).Attribute("width")!.Value);
 

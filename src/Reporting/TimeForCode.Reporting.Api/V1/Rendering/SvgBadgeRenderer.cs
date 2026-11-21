@@ -18,12 +18,26 @@ namespace TimeForCode.Reporting.Api.V1.Rendering
         private const int Padding = 10;
         private const int IconWidth = 16;
 
+        private const int MaxTextLength = 40;
+
         private static readonly XNamespace Svg = "http://www.w3.org/2000/svg";
+
+        // Icons are white shapes in a 12 x 12 box: no text, no emoji, so they look the same in every viewer.
+        // Parsed once; adding the elements of one to an image copies them.
+        private static readonly Dictionary<string, XElement> Shapes = new()
+        {
+            ["clock"] = Shape("<circle cx=\"6\" cy=\"6\" r=\"4.8\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.4\"/><path d=\"M6 3.2V6l2 1.3\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.4\" stroke-linecap=\"round\"/>"),
+            ["star"] = Shape("<circle cx=\"6\" cy=\"6\" r=\"4.6\" fill=\"#fff\" fill-opacity=\".25\" stroke=\"#fff\" stroke-width=\"1.4\"/><path d=\"M6 3.4l.8 1.7 1.8.2-1.3 1.2.4 1.8L6 7.4l-1.7.9.4-1.8-1.3-1.2 1.8-.2z\" fill=\"#fff\"/>"),
+            ["empty"] = Shape("<circle cx=\"6\" cy=\"6\" r=\"4.6\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.4\" stroke-dasharray=\"2 1.6\"/>"),
+            ["help"] = Shape("<circle cx=\"6\" cy=\"6\" r=\"4.8\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.4\"/><path d=\"M4.6 4.7c0-1.7 2.8-1.7 2.8 0 0 1.1-1.4 1.1-1.4 2.2\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.2\" stroke-linecap=\"round\"/><circle cx=\"6\" cy=\"8.7\" r=\".7\" fill=\"#fff\"/>"),
+            ["warning"] = Shape("<path d=\"M6 1.2l5 9H1z\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.4\" stroke-linejoin=\"round\"/><path d=\"M6 4.6v2.6\" stroke=\"#fff\" stroke-width=\"1.4\" stroke-linecap=\"round\"/><circle cx=\"6\" cy=\"8.8\" r=\".8\" fill=\"#fff\"/>")
+        };
 
         /// <summary>Renders the content as an SVG image.</summary>
         public static string Render(BadgeImageContent content)
         {
             (string text, string colour, string icon) = StyleOf(content);
+            text = Shorten(text);
 
             int labelWidth = WidthOf(Label) + Padding;
             int valueWidth = WidthOf(text) + Padding + IconWidth;
@@ -93,37 +107,30 @@ namespace TimeForCode.Reporting.Api.V1.Rendering
         // The width of a text at 11 px Verdana, estimated per character; a SVG cannot measure its own text.
         private static int WidthOf(string text) => (int)Math.Round(text.Sum(WidthOf));
 
+        // A tier name is free text: a long one must not make the image arbitrarily wide.
+        private static string Shorten(string text) => text.Length <= MaxTextLength ? text : string.Concat(text.AsSpan(0, MaxTextLength - 1), "…");
+
         private static double WidthOf(char c) => c switch
         {
             'i' or 'l' or 'j' or 'I' or '.' or ',' or ':' or ';' or '|' or '!' or '\'' => 3.5,
             ' ' => 3.8,
             'm' or 'w' or 'M' or 'W' or '@' => 10,
             >= 'A' and <= 'Z' or '%' => 7.8,
+            >= '0' and <= '9' => 7,
             _ => 6.6
         };
 
         private static XElement IconOf(string icon, int x)
         {
-            XElement shapes = XElement.Parse(Shapes[icon]);
             XElement group = new(
                 Svg + "g",
                 new XAttribute("data-icon", icon),
                 new XAttribute("transform", $"translate({x} 4)"),
-                shapes.Elements());
+                Shapes[icon].Elements());
 
             return group;
         }
 
-        // Icons are white shapes in a 12 x 12 box: no text, no emoji, so they look the same in every viewer.
-        private static readonly Dictionary<string, string> Shapes = new()
-        {
-            ["clock"] = Shape("<circle cx=\"6\" cy=\"6\" r=\"4.8\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.4\"/><path d=\"M6 3.2V6l2 1.3\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.4\" stroke-linecap=\"round\"/>"),
-            ["star"] = Shape("<circle cx=\"6\" cy=\"6\" r=\"4.6\" fill=\"#fff\" fill-opacity=\".25\" stroke=\"#fff\" stroke-width=\"1.4\"/><path d=\"M6 3.4l.8 1.7 1.8.2-1.3 1.2.4 1.8L6 7.4l-1.7.9.4-1.8-1.3-1.2 1.8-.2z\" fill=\"#fff\"/>"),
-            ["empty"] = Shape("<circle cx=\"6\" cy=\"6\" r=\"4.6\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.4\" stroke-dasharray=\"2 1.6\"/>"),
-            ["help"] = Shape("<circle cx=\"6\" cy=\"6\" r=\"4.8\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.4\"/><path d=\"M4.6 4.7c0-1.7 2.8-1.7 2.8 0 0 1.1-1.4 1.1-1.4 2.2\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.2\" stroke-linecap=\"round\"/><circle cx=\"6\" cy=\"8.7\" r=\".7\" fill=\"#fff\"/>"),
-            ["warning"] = Shape("<path d=\"M6 1.2l5 9H1z\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.4\" stroke-linejoin=\"round\"/><path d=\"M6 4.6v2.6\" stroke=\"#fff\" stroke-width=\"1.4\" stroke-linecap=\"round\"/><circle cx=\"6\" cy=\"8.8\" r=\".8\" fill=\"#fff\"/>")
-        };
-
-        private static string Shape(string elements) => $"<g xmlns=\"{Svg.NamespaceName}\">{elements}</g>";
+        private static XElement Shape(string elements) => XElement.Parse($"<g xmlns=\"{Svg.NamespaceName}\">{elements}</g>");
     }
 }

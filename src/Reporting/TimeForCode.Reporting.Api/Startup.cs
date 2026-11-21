@@ -49,7 +49,9 @@ namespace TimeForCode.Reporting.Api
             int apiPermitLimit = _configuration.GetApiPermitLimit();
             services.AddRateLimiter(options => options
                 .AddDefaultSlidingWindowPolicy("api", apiPermitLimit)
-                .AddDefaultSlidingWindowPolicy("public", Math.Max(1, apiPermitLimit / 2)));
+                .AddDefaultSlidingWindowPolicy("public", Math.Max(1, apiPermitLimit / 2))
+                // README badges are fetched by a few shared image proxies for every viewer, and a 429 is not an image, so the limit is generous.
+                .AddDefaultSlidingWindowPolicy("badge", Math.Max(1, apiPermitLimit * 10)));
         }
 
         /// <summary>

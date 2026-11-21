@@ -22,11 +22,16 @@ namespace TimeForCode.Reporting.Application.Handlers
 
         public async Task<Result<BadgeImageContent>> Handle(GetContributorBadgeImageQuery request, CancellationToken cancellationToken)
         {
+            // An unknown or malformed contributor looks exactly like one without badges, so the image does not confirm that an identifier exists.
+            if (!ObjectIdFormat.IsValid(request.ContributorId))
+            {
+                return Result<BadgeImageContent>.Success(new BadgeImageContent(BadgeImageState.NoBadgeYet));
+            }
+
             Result<IReadOnlyList<BadgeDto>> badges = await _mediator.Send(new GetContributorBadgesQuery { ContributorId = request.ContributorId }, cancellationToken);
             if (badges.IsFailure)
             {
-                // An unknown contributor looks exactly like one without badges, so the image does not confirm that an identifier exists.
-                if (badges.FailureStatusCode is HttpStatusCode.NotFound or HttpStatusCode.BadRequest)
+                if (badges.FailureStatusCode is HttpStatusCode.NotFound)
                 {
                     return Result<BadgeImageContent>.Success(new BadgeImageContent(BadgeImageState.NoBadgeYet));
                 }

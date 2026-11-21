@@ -34,9 +34,6 @@ namespace TimeForCode.Reporting.Api.V1.Controllers
             _options = options.Value;
         }
 
-        // Not a regular expression: its end anchor also accepts a trailing line feed, which a route value can carry.
-        private static bool IsObjectId(string id) => id.Length == 24 && id.All(Uri.IsHexDigit);
-
         /// <summary>
         /// The badge with the hours a published project received.
         /// </summary>
@@ -48,7 +45,7 @@ namespace TimeForCode.Reporting.Api.V1.Controllers
         [ProducesResponseType(typeof(string), StatusCodes.Status200OK, SvgContentType)]
         [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
         [AllowAnonymous]
-        [EnableRateLimiting("public")]
+        [EnableRateLimiting("badge")]
         public Task<IActionResult> GetProjectHoursReceivedBadge(string id) => ProjectBadgeAsync(id, ProjectBadgeKind.HoursReceived);
 
         /// <summary>
@@ -62,7 +59,7 @@ namespace TimeForCode.Reporting.Api.V1.Controllers
         [ProducesResponseType(typeof(string), StatusCodes.Status200OK, SvgContentType)]
         [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
         [AllowAnonymous]
-        [EnableRateLimiting("public")]
+        [EnableRateLimiting("badge")]
         public Task<IActionResult> GetProjectProgressBadge(string id) => ProjectBadgeAsync(id, ProjectBadgeKind.Progress);
 
         /// <summary>
@@ -76,16 +73,8 @@ namespace TimeForCode.Reporting.Api.V1.Controllers
         [ProducesResponseType(typeof(string), StatusCodes.Status200OK, SvgContentType)]
         [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
         [AllowAnonymous]
-        [EnableRateLimiting("public")]
-        public async Task<IActionResult> GetOrganizationBadge(string id)
-        {
-            if (!IsObjectId(id))
-            {
-                return Image(new BadgeImageContent(BadgeImageState.NotFound));
-            }
-
-            return await ImageOfAsync(new GetOrganizationBadgeImageQuery { DonorOrganizationId = id });
-        }
+        [EnableRateLimiting("badge")]
+        public Task<IActionResult> GetOrganizationBadge(string id) => ImageOfAsync(new GetOrganizationBadgeImageQuery { DonorOrganizationId = id });
 
         /// <summary>
         /// The badge with the highest tier of a contributor. An unknown or malformed contributor shows the same image as a
@@ -99,26 +88,10 @@ namespace TimeForCode.Reporting.Api.V1.Controllers
         [ProducesResponseType(typeof(string), StatusCodes.Status200OK, SvgContentType)]
         [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
         [AllowAnonymous]
-        [EnableRateLimiting("public")]
-        public async Task<IActionResult> GetContributorBadge(string id)
-        {
-            if (!IsObjectId(id))
-            {
-                return Image(new BadgeImageContent(BadgeImageState.NoBadgeYet));
-            }
+        [EnableRateLimiting("badge")]
+        public Task<IActionResult> GetContributorBadge(string id) => ImageOfAsync(new GetContributorBadgeImageQuery { ContributorId = id });
 
-            return await ImageOfAsync(new GetContributorBadgeImageQuery { ContributorId = id });
-        }
-
-        private async Task<IActionResult> ProjectBadgeAsync(string id, ProjectBadgeKind kind)
-        {
-            if (!IsObjectId(id))
-            {
-                return Image(new BadgeImageContent(BadgeImageState.NotFound));
-            }
-
-            return await ImageOfAsync(new GetProjectBadgeImageQuery { ProjectId = id, Kind = kind });
-        }
+        private Task<IActionResult> ProjectBadgeAsync(string id, ProjectBadgeKind kind) => ImageOfAsync(new GetProjectBadgeImageQuery { ProjectId = id, Kind = kind });
 
         private async Task<IActionResult> ImageOfAsync(IRequest<Result<BadgeImageContent>> query)
         {

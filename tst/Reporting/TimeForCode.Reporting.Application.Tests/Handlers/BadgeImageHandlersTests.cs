@@ -15,6 +15,7 @@ namespace TimeForCode.Reporting.Application.Tests.Handlers
     public class BadgeImageHandlersTests
     {
         private const string Id = "507f1f77bcf86cd799439013";
+        private const string Malformed = "not-an-identifier";
         private static readonly DateTimeOffset Now = new(2026, 11, 1, 9, 0, 0, TimeSpan.Zero);
 
         private Mock<IMediator> _mediator = default!;
@@ -176,15 +177,33 @@ namespace TimeForCode.Reporting.Application.Tests.Handlers
         }
 
         [TestMethod]
-        [DataRow(HttpStatusCode.NotFound)]
-        [DataRow(HttpStatusCode.BadRequest)]
-        public async Task Project_UnknownOrUnpublished_IsNotFound(HttpStatusCode statusCode)
+        public async Task Project_UnknownOrUnpublished_IsNotFound()
         {
-            GivenSummaryFails(statusCode);
+            GivenSummaryFails(HttpStatusCode.NotFound);
 
             BadgeImageContent content = (await ProjectHandler().Handle(new GetProjectBadgeImageQuery { ProjectId = Id, Kind = ProjectBadgeKind.HoursReceived }, CancellationToken.None)).Value;
 
             content.State.Should().Be(BadgeImageState.NotFound);
+        }
+
+        [TestMethod]
+        public async Task Project_MalformedIdentifier_IsNotFoundWithoutAskingDonation()
+        {
+            BadgeImageContent content = (await ProjectHandler().Handle(new GetProjectBadgeImageQuery { ProjectId = Malformed, Kind = ProjectBadgeKind.HoursReceived }, CancellationToken.None)).Value;
+
+            content.State.Should().Be(BadgeImageState.NotFound);
+            _mediator.VerifyNoOtherCalls();
+        }
+
+        [TestMethod]
+        public async Task Project_DonationRejectsTheRequest_IsUnavailableAndLogsAWarning()
+        {
+            GivenSummaryFails(HttpStatusCode.BadRequest);
+
+            BadgeImageContent content = (await ProjectHandler().Handle(new GetProjectBadgeImageQuery { ProjectId = Id, Kind = ProjectBadgeKind.HoursReceived }, CancellationToken.None)).Value;
+
+            content.State.Should().Be(BadgeImageState.Unavailable);
+            _projectLogger.Warnings.Should().Be(1);
         }
 
         [TestMethod]
@@ -239,15 +258,49 @@ namespace TimeForCode.Reporting.Application.Tests.Handlers
         }
 
         [TestMethod]
-        [DataRow(HttpStatusCode.NotFound)]
-        [DataRow(HttpStatusCode.BadRequest)]
-        public async Task Organization_Unknown_IsNotFound(HttpStatusCode statusCode)
+        public async Task Organization_SameThreshold_ShowsTheSameTierWhateverTheOrderOfTheBadges()
         {
-            GivenOrganizationBadgesFail(statusCode);
+            GivenTiers(
+                BadgeRecipientType.Organization,
+                new BadgeTier("Silver", BadgeRecipientType.Organization, 10),
+                new BadgeTier("Argent", BadgeRecipientType.Organization, 10));
+
+            GivenOrganizationBadges("Silver", "Argent");
+            BadgeImageContent first = (await OrganizationHandler().Handle(new GetOrganizationBadgeImageQuery { DonorOrganizationId = Id }, CancellationToken.None)).Value;
+            GivenOrganizationBadges("Argent", "Silver");
+            BadgeImageContent second = (await OrganizationHandler().Handle(new GetOrganizationBadgeImageQuery { DonorOrganizationId = Id }, CancellationToken.None)).Value;
+
+            second.Should().Be(first);
+        }
+
+        [TestMethod]
+        public async Task Organization_Unknown_IsNotFound()
+        {
+            GivenOrganizationBadgesFail(HttpStatusCode.NotFound);
 
             BadgeImageContent content = (await OrganizationHandler().Handle(new GetOrganizationBadgeImageQuery { DonorOrganizationId = Id }, CancellationToken.None)).Value;
 
             content.State.Should().Be(BadgeImageState.NotFound);
+        }
+
+        [TestMethod]
+        public async Task Organization_MalformedIdentifier_IsNotFoundWithoutAskingDonation()
+        {
+            BadgeImageContent content = (await OrganizationHandler().Handle(new GetOrganizationBadgeImageQuery { DonorOrganizationId = Malformed }, CancellationToken.None)).Value;
+
+            content.State.Should().Be(BadgeImageState.NotFound);
+            _mediator.VerifyNoOtherCalls();
+        }
+
+        [TestMethod]
+        public async Task Organization_DonationRejectsTheRequest_IsUnavailableAndLogsAWarning()
+        {
+            GivenOrganizationBadgesFail(HttpStatusCode.BadRequest);
+
+            BadgeImageContent content = (await OrganizationHandler().Handle(new GetOrganizationBadgeImageQuery { DonorOrganizationId = Id }, CancellationToken.None)).Value;
+
+            content.State.Should().Be(BadgeImageState.Unavailable);
+            _organizationLogger.Warnings.Should().Be(1);
         }
 
         [TestMethod]
@@ -288,15 +341,33 @@ namespace TimeForCode.Reporting.Application.Tests.Handlers
         }
 
         [TestMethod]
-        [DataRow(HttpStatusCode.NotFound)]
-        [DataRow(HttpStatusCode.BadRequest)]
-        public async Task Contributor_Unknown_IsTheSameAsAContributorWithoutBadges(HttpStatusCode statusCode)
+        public async Task Contributor_Unknown_IsTheSameAsAContributorWithoutBadges()
         {
-            GivenContributorBadgesFail(statusCode);
+            GivenContributorBadgesFail(HttpStatusCode.NotFound);
 
             BadgeImageContent content = (await ContributorHandler().Handle(new GetContributorBadgeImageQuery { ContributorId = Id }, CancellationToken.None)).Value;
 
             content.Should().Be(new BadgeImageContent(BadgeImageState.NoBadgeYet, null));
+        }
+
+        [TestMethod]
+        public async Task Contributor_MalformedIdentifier_IsTheSameAsAContributorWithoutBadgesAndNotAskingDonation()
+        {
+            BadgeImageContent content = (await ContributorHandler().Handle(new GetContributorBadgeImageQuery { ContributorId = Malformed }, CancellationToken.None)).Value;
+
+            content.Should().Be(new BadgeImageContent(BadgeImageState.NoBadgeYet, null));
+            _mediator.VerifyNoOtherCalls();
+        }
+
+        [TestMethod]
+        public async Task Contributor_DonationRejectsTheRequest_IsUnavailableAndLogsAWarning()
+        {
+            GivenContributorBadgesFail(HttpStatusCode.BadRequest);
+
+            BadgeImageContent content = (await ContributorHandler().Handle(new GetContributorBadgeImageQuery { ContributorId = Id }, CancellationToken.None)).Value;
+
+            content.State.Should().Be(BadgeImageState.Unavailable);
+            _contributorLogger.Warnings.Should().Be(1);
         }
 
         [TestMethod]

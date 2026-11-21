@@ -44,15 +44,19 @@ namespace TimeForCode.Reporting.Specifications.Mocking
                     options.AddDefaultSlidingWindowPolicy("api", int.MaxValue);
 
                     // Unlimited, until a scenario lowers it; the partition key changes with every reset, so each scenario starts with a fresh window.
-                    options.AddPolicy("public", _ => RateLimitPartition.GetSlidingWindowLimiter(
-                        $"public-{publicRateLimit.Window}",
-                        _ => new SlidingWindowRateLimiterOptions
-                        {
-                            Window = TimeSpan.FromMinutes(1),
-                            SegmentsPerWindow = 6,
-                            PermitLimit = publicRateLimit.PermitLimit,
-                            QueueLimit = 0
-                        }));
+                    // The "badge" policy of the badge images follows the same limit.
+                    foreach (string policy in new[] { "public", "badge" })
+                    {
+                        options.AddPolicy(policy, _ => RateLimitPartition.GetSlidingWindowLimiter(
+                            $"{policy}-{publicRateLimit.Window}",
+                            _ => new SlidingWindowRateLimiterOptions
+                            {
+                                Window = TimeSpan.FromMinutes(1),
+                                SegmentsPerWindow = 6,
+                                PermitLimit = publicRateLimit.PermitLimit,
+                                QueueLimit = 0
+                            }));
+                    }
                 });
 
                 // Override JWT validation to accept symmetric test tokens

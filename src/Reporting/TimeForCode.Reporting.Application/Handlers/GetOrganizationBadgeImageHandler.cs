@@ -22,10 +22,15 @@ namespace TimeForCode.Reporting.Application.Handlers
 
         public async Task<Result<BadgeImageContent>> Handle(GetOrganizationBadgeImageQuery request, CancellationToken cancellationToken)
         {
+            if (!ObjectIdFormat.IsValid(request.DonorOrganizationId))
+            {
+                return Result<BadgeImageContent>.Success(new BadgeImageContent(BadgeImageState.NotFound));
+            }
+
             Result<IReadOnlyList<BadgeDto>> badges = await _mediator.Send(new GetOrganizationBadgesQuery { DonorOrganizationId = request.DonorOrganizationId }, cancellationToken);
             if (badges.IsFailure)
             {
-                if (badges.FailureStatusCode is HttpStatusCode.NotFound or HttpStatusCode.BadRequest)
+                if (badges.FailureStatusCode is HttpStatusCode.NotFound)
                 {
                     return Result<BadgeImageContent>.Success(new BadgeImageContent(BadgeImageState.NotFound));
                 }
