@@ -5,7 +5,6 @@ using Moq;
 using Reqnroll;
 using RichardSzalay.MockHttp;
 using System.Net;
-using System.Text.Json;
 using System.Web;
 using TimeForCode.Authorization.Api.Client;
 using TimeForCode.Authorization.Api.Client.Extensions;

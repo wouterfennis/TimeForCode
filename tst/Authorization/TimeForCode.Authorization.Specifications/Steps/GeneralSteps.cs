@@ -1,5 +1,4 @@
 ﻿using AwesomeAssertions;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Reqnroll;
 using RichardSzalay.MockHttp;
