@@ -177,6 +177,16 @@ namespace TimeForCode.Reporting.Application.Tests.Handlers
         }
 
         [TestMethod]
+        public async Task Project_Progress_OverLogged_CapsThePercentageAtOneHundred()
+        {
+            GivenSummary(10, 12, 120);
+
+            BadgeImageContent content = (await ProjectHandler().Handle(new GetProjectBadgeImageQuery { ProjectId = Id, Kind = ProjectBadgeKind.Progress }, CancellationToken.None)).Value;
+
+            content.Should().Be(new BadgeImageContent(BadgeImageState.Progress, "12 / 10 hours (100%)"));
+        }
+
+        [TestMethod]
         public async Task Project_UnknownOrUnpublished_IsNotFound()
         {
             GivenSummaryFails(HttpStatusCode.NotFound);

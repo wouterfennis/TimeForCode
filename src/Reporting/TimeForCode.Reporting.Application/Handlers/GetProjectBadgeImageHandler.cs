@@ -40,7 +40,7 @@ namespace TimeForCode.Reporting.Application.Handlers
             }
 
             string text = request.Kind == ProjectBadgeKind.Progress
-                ? $"{summary.Value.HoursLogged} / {Hours(summary.Value.HoursReceived)} ({summary.Value.ProgressPercentage}%)"
+                ? $"{summary.Value.HoursLogged} / {Hours(summary.Value.HoursReceived)} ({Math.Min(summary.Value.ProgressPercentage, 100)}%)"
                 : Hours(summary.Value.HoursReceived);
 
             return Result<BadgeImageContent>.Success(new BadgeImageContent(request.Kind == ProjectBadgeKind.Progress ? BadgeImageState.Progress : BadgeImageState.HoursReceived, text));
