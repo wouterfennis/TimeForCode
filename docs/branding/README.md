@@ -68,4 +68,4 @@ The build renders the PNGs with `@resvg/resvg-js`, so it needs no other tools. I
 - A stacked lockup (name below the mark).
 - Using the mark in the front-end. That is application work and goes through the normal issue workflow.
 
-The Reporting badge images show the mark on the left of the label. The Reporting API embeds `svg/logo-mark-dark.svg` (the label is dark grey) and draws it at 14 px, so a rebuilt and committed mark reaches the badges without further changes. The file is also copied in `Dockerfile.reporting-api`; keep that line when moving or renaming it.
+The Reporting badge images show the lockup as their label, on the left. The Reporting API embeds `svg/logo-lockup-dark.svg` (the label is dark grey) and draws it 16 px high, so a rebuilt and committed lockup reaches the badges without further changes. The file is also copied in `Dockerfile.reporting-api`; keep that line when moving or renaming it.

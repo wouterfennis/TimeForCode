@@ -8,8 +8,8 @@ WORKDIR /app
 COPY Directory.Packages.props .
 COPY Directory.Build.props .
 COPY ./src ./src
-# The brand mark that the badge images embed (see TimeForCode.Reporting.Api.csproj)
-COPY ./docs/branding/svg/logo-mark-dark.svg ./docs/branding/svg/logo-mark-dark.svg
+# The brand logo that the badge images embed (see TimeForCode.Reporting.Api.csproj)
+COPY ./docs/branding/svg/logo-lockup-dark.svg ./docs/branding/svg/logo-lockup-dark.svg
 RUN dotnet restore ./src/Reporting/TimeForCode.Reporting.Api/*.csproj
 
 # Build the application

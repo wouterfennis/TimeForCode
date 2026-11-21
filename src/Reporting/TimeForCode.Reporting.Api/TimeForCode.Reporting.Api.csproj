@@ -21,8 +21,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- The brand mark drawn on every badge; the single source is the brand kit (docs/branding). -->
-    <EmbeddedResource Include="..\..\..\docs\branding\svg\logo-mark-dark.svg" LogicalName="logo-mark-dark.svg" />
+    <!-- The brand logo drawn on every badge; the single source is the brand kit (docs/branding). -->
+    <EmbeddedResource Include="..\..\..\docs\branding\svg\logo-lockup-dark.svg" LogicalName="logo-lockup-dark.svg" />
   </ItemGroup>
 
   <ItemGroup>

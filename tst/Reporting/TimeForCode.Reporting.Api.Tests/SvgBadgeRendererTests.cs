@@ -17,14 +17,14 @@ namespace TimeForCode.Reporting.Api.Tests
         private static string IconOf(XElement svg) => svg.Descendants().Single(e => e.Attribute("data-icon") != null).Attribute("data-icon")!.Value;
 
         [TestMethod]
-        public void Render_Value_IsWellFormedSvgWithTheLabelAndTheValue()
+        public void Render_Value_IsWellFormedSvgWithTheLogoAndTheValue()
         {
             XElement svg = Parse(SvgBadgeRenderer.Render(new BadgeImageContent(BadgeImageState.HoursReceived, "120 hours")));
 
             svg.Name.LocalName.Should().Be("svg");
             svg.Attribute("role")!.Value.Should().Be("img");
             svg.Attribute("aria-label")!.Value.Should().Be("TimeForCode: 120 hours");
-            TextsOf(svg).Should().Contain("TimeForCode").And.Contain("120 hours");
+            TextsOf(svg).Should().Equal("120 hours");
         }
 
         [TestMethod]
@@ -32,39 +32,42 @@ namespace TimeForCode.Reporting.Api.Tests
         [DataRow(BadgeImageState.Tier, "Gold")]
         [DataRow(BadgeImageState.NoBadgeYet, null)]
         [DataRow(BadgeImageState.Unavailable, null)]
-        public void Render_Image_ShowsTheLogoMarkOnTheLeftOfTheLabel(BadgeImageState state, string? text)
+        public void Render_Image_ShowsTheLogoOnTheLeftAndNoLabelText(BadgeImageState state, string? text)
         {
             XElement svg = Parse(SvgBadgeRenderer.Render(new BadgeImageContent(state, text)));
 
             XElement logo = svg.Descendants().Single(e => e.Attribute("data-logo") != null);
             double logoX = double.Parse(logo.Attribute("x")!.Value, System.Globalization.CultureInfo.InvariantCulture);
-            double labelX = double.Parse(svg.Descendants().First(e => e.Name.LocalName == "text").Attribute("x")!.Value, System.Globalization.CultureInfo.InvariantCulture);
-            logoX.Should().BeLessThan(labelX);
+            double valueX = double.Parse(svg.Descendants().Single(e => e.Name.LocalName == "text").Attribute("x")!.Value, System.Globalization.CultureInfo.InvariantCulture);
+            logoX.Should().BeLessThan(valueX);
+            TextsOf(svg).Should().NotContain("TimeForCode");
             logo.Descendants().Select(e => e.Attribute("stroke")?.Value).Should().Contain(new[] { "#2fc2ad", "#f7b733", "#e8f0ef" });
+            logo.Descendants().Select(e => e.Attribute("fill")?.Value).Should().Contain("#e8f0ef");
         }
 
         [TestMethod]
-        public void Render_Logo_KeepsTheSettingsOfTheBrandMark()
+        public void Render_Logo_KeepsTheSettingsOfTheBrandLockup()
         {
             XElement svg = Parse(SvgBadgeRenderer.Render(new BadgeImageContent(BadgeImageState.Tier, "Gold")));
 
             XElement logo = svg.Descendants().Single(e => e.Attribute("data-logo") != null);
-            logo.Attribute("viewBox")!.Value.Should().Be("0 0 48 48");
+            logo.Attribute("data-logo")!.Value.Should().Be("lockup");
+            logo.Attribute("viewBox")!.Value.Should().Be("0 0 276 48");
             logo.Attribute("fill")!.Value.Should().Be("none");
             logo.Attribute("stroke-linecap")!.Value.Should().Be("round");
             logo.Attribute("stroke-linejoin")!.Value.Should().Be("round");
-            logo.Attribute("width")!.Value.Should().Be("14");
-            logo.Attribute("height")!.Value.Should().Be("14");
+            logo.Attribute("width")!.Value.Should().Be("92");
+            logo.Attribute("height")!.Value.Should().Be("16");
         }
 
         [TestMethod]
-        public void Render_Logo_HasTheShapesOfTheBrandMarkFile()
+        public void Render_Logo_HasTheShapesOfTheBrandLockupFile()
         {
             XElement svg = Parse(SvgBadgeRenderer.Render(new BadgeImageContent(BadgeImageState.Tier, "Gold")));
-            XElement brandMark = XDocument.Load(Path.Combine(AppContext.BaseDirectory, "logo-mark-dark.svg")).Root!;
+            XElement brandLockup = XDocument.Load(Path.Combine(AppContext.BaseDirectory, "logo-lockup-dark.svg")).Root!;
 
             XElement logo = svg.Descendants().Single(e => e.Attribute("data-logo") != null);
-            logo.Elements().Select(e => e.ToString()).Should().Equal(brandMark.Elements().Where(e => e.Name.LocalName != "title").Select(e => e.ToString()));
+            logo.Elements().Select(e => e.ToString()).Should().Equal(brandLockup.Elements().Where(e => e.Name.LocalName != "title").Select(e => e.ToString()));
         }
 
         [TestMethod]
