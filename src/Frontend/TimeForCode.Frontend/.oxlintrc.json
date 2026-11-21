@@ -1,11 +1,13 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
   "plugins": ["react", "typescript", "jsx-a11y", "import", "vitest", "oxc"],
+  "jsPlugins": ["./lint/declaration-comments-plugin.js"],
   "categories": {
     "correctness": "error",
     "suspicious": "error"
   },
   "rules": {
+    "timeforcode/doc-comment-above-declaration": "error",
     "react/rules-of-hooks": "error",
     "react/exhaustive-deps": "error",
     "react/only-export-components": ["error", { "allowConstantExport": true }],
@@ -13,5 +15,11 @@
     "react/react-in-jsx-scope": "off",
     "import/no-unassigned-import": ["error", { "allow": ["**/*.css", "@testing-library/jest-dom/vitest"] }]
   },
+  "overrides": [
+    {
+      "files": ["src/api/*.d.ts"],
+      "rules": { "timeforcode/doc-comment-above-declaration": "off" }
+    }
+  ],
   "ignorePatterns": ["dist", "coverage"]
 }
