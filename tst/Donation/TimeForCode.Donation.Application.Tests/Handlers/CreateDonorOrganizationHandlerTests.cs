@@ -18,7 +18,7 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
         public void Setup()
         {
             _mockRepository = new Mock<IDonorOrganizationRepository>();
-            _sut = new CreateDonorOrganizationHandler(_mockRepository.Object, NullLogger<CreateDonorOrganizationHandler>.Instance);
+            _sut = new CreateDonorOrganizationHandler(_mockRepository.Object, NullLogger<CreateDonorOrganizationHandler>.Instance, new FixedTimeProvider(DonationTestData.Now));
         }
 
         [TestMethod]
@@ -50,7 +50,7 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
         public async Task Handle_DuplicateName_ReturnsConflict()
         {
             // Arrange
-            var existing = DonorOrganization.Create("Existing Org", null, null);
+            var existing = DonorOrganization.Create("Existing Org", null, null, DonationTestData.Now);
             _mockRepository.Setup(r => r.GetByNameAsync("Existing Org"))
                 .ReturnsAsync(existing);
 

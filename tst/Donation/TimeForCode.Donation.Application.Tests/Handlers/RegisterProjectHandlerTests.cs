@@ -28,7 +28,7 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
                 _mockGithubService.Object,
                 _mockRepository.Object,
                 _mockMaintainerRepository.Object,
-                NullLogger<RegisterProjectHandler>.Instance);
+                NullLogger<RegisterProjectHandler>.Instance, new FixedTimeProvider(DonationTestData.Now));
         }
 
         [TestMethod]

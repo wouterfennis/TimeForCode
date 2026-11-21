@@ -57,9 +57,9 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
             _mockDonations
                 .Setup(r => r.GetReceivedByProjectIdsAsync(It.IsAny<IReadOnlyCollection<string>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync([
-                    DonationEntity.Create(new ObjectId(FirstProjectId), null, "donor-1", 10),
-                    DonationEntity.Create(new ObjectId(FirstProjectId), null, "donor-2", 5),
-                    DonationEntity.Create(new ObjectId(SecondProjectId), null, "donor-1", 7)]);
+                    DonationEntity.Create(new ObjectId(FirstProjectId), null, "donor-1", 10, DonationTestData.Now),
+                    DonationEntity.Create(new ObjectId(FirstProjectId), null, "donor-2", 5, DonationTestData.Now),
+                    DonationEntity.Create(new ObjectId(SecondProjectId), null, "donor-1", 7, DonationTestData.Now)]);
 
             var result = await _sut.Handle(new GetMyProjectsQuery { UserId = "user-1" }, CancellationToken.None);
 

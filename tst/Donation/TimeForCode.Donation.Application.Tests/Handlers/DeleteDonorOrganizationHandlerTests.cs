@@ -25,7 +25,7 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
         public async Task Handle_ExistingId_ReturnsSuccess()
         {
             // Arrange
-            var org = DonorOrganization.Create("To Delete", null, null);
+            var org = DonorOrganization.Create("To Delete", null, null, DonationTestData.Now);
             _mockRepository.Setup(r => r.GetByIdAsync(org.Id.ToString()))
                 .ReturnsAsync(org);
 

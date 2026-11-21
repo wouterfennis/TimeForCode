@@ -58,7 +58,7 @@ namespace TimeForCode.Donation.Specifications.Steps
         [Given("The user has already deleted the contribution")]
         public async Task GivenTheUserHasAlreadyDeletedTheContributionAsync()
         {
-            ContributionChange deletion = StoredContribution().MarkDeleted(new Actor(Constants.TestUserId, false), _fixtures.TestUserContributor(), DateTimeOffset.UtcNow);
+            ContributionChange deletion = StoredContribution().MarkDeleted(new Actor(Constants.TestUserId, false), _fixtures.TestUserContributor(), Constants.Now);
             await _fixtures.Contributions.UpdateAsync(deletion.Contribution!, CancellationToken.None);
         }
 
@@ -275,7 +275,7 @@ namespace TimeForCode.Donation.Specifications.Steps
                 : (stored.DeletedByUserId, stored.DeletedAt);
 
             changedBy.Should().Be(userId);
-            changedAt.Should().BeCloseTo(DateTimeOffset.UtcNow, TimeSpan.FromMinutes(1));
+            changedAt.Should().Be(Constants.Now);
         }
 
         [Then("^The contribution(?: of \\d+ hours)? is no longer listed for the project$")]

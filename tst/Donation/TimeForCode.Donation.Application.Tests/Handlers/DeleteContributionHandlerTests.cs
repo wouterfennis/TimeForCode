@@ -40,7 +40,7 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
                 _contributionRepository.Object,
                 _contributorRepository.Object,
                 _releaser.Object,
-                NullLogger<DeleteContributionHandler>.Instance);
+                NullLogger<DeleteContributionHandler>.Instance, new FixedTimeProvider(DonationTestData.Now));
         }
 
         private DeleteContributionCommand Command(string userId = "user-1", bool isAdministrator = false) => new()

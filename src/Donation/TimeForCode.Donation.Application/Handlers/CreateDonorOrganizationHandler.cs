@@ -10,11 +10,13 @@ namespace TimeForCode.Donation.Application.Handlers
     {
         private readonly IDonorOrganizationRepository _repository;
         private readonly ILogger<CreateDonorOrganizationHandler> _logger;
+        private readonly TimeProvider _timeProvider;
 
-        public CreateDonorOrganizationHandler(IDonorOrganizationRepository repository, ILogger<CreateDonorOrganizationHandler> logger)
+        public CreateDonorOrganizationHandler(IDonorOrganizationRepository repository, ILogger<CreateDonorOrganizationHandler> logger, TimeProvider timeProvider)
         {
             _repository = repository;
             _logger = logger;
+            _timeProvider = timeProvider;
         }
 
         public async Task<Result<CreateDonorOrganizationResult>> Handle(CreateDonorOrganizationCommand request, CancellationToken cancellationToken)
@@ -28,7 +30,7 @@ namespace TimeForCode.Donation.Application.Handlers
                 return Result<CreateDonorOrganizationResult>.Conflict($"A donor organization with name '{request.Name}' already exists.");
             }
 
-            var organization = DonorOrganization.Create(request.Name, request.ContactEmail, request.Website);
+            var organization = DonorOrganization.Create(request.Name, request.ContactEmail, request.Website, _timeProvider.GetUtcNow());
             await _repository.CreateAsync(organization);
 
             _logger.LogInformation("Donor organization {Id} created successfully", organization.Id);

@@ -44,7 +44,7 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
                 _contributorRepository.Object,
                 _counter.Object,
                 _releaser.Object,
-                NullLogger<CorrectContributionHandler>.Instance);
+                NullLogger<CorrectContributionHandler>.Instance, new FixedTimeProvider(DonationTestData.Now));
         }
 
         private CorrectContributionCommand Command(string userId = "user-1", bool isAdministrator = false, int hours = 5, Uri? reference = null) => new()

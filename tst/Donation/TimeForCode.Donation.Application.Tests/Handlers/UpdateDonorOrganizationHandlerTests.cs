@@ -21,14 +21,14 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
             _mockRepository = new Mock<IDonorOrganizationRepository>();
             _mockDonationRepository = new Mock<IDonationRepository>();
             _mockDonationRepository.Setup(r => r.GetByDonorOrganizationIdsAsync(It.IsAny<IReadOnlyCollection<string>>(), It.IsAny<CancellationToken>())).ReturnsAsync([]);
-            _sut = new UpdateDonorOrganizationHandler(_mockRepository.Object, _mockDonationRepository.Object, NullLogger<UpdateDonorOrganizationHandler>.Instance);
+            _sut = new UpdateDonorOrganizationHandler(_mockRepository.Object, _mockDonationRepository.Object, NullLogger<UpdateDonorOrganizationHandler>.Instance, new FixedTimeProvider(DonationTestData.Now));
         }
 
         [TestMethod]
         public async Task Handle_ValidUpdate_ReturnsSuccess()
         {
             // Arrange
-            var org = DonorOrganization.Create("Original Name", "old@org.com", null);
+            var org = DonorOrganization.Create("Original Name", "old@org.com", null, DonationTestData.Now);
             _mockRepository.Setup(r => r.GetByIdAsync(org.Id.ToString()))
                 .ReturnsAsync(org);
             _mockRepository.Setup(r => r.GetByNameAsync("Updated Name"))
@@ -51,6 +51,18 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
             result.Value.Organization.ContactEmail.Should().Be("new@org.com");
             result.Value.Organization.Website.Should().Be("https://updated.org");
             _mockRepository.Verify(r => r.UpdateAsync(It.IsAny<DonorOrganization>()), Times.Once);
+        }
+
+        [TestMethod]
+        public async Task Handle_ValidUpdate_StampsUpdatedAtWithTheInjectedTime()
+        {
+            var org = DonorOrganization.Create("Original Name", null, null, DonationTestData.Now.AddDays(-1));
+            _mockRepository.Setup(r => r.GetByIdAsync(org.Id.ToString())).ReturnsAsync(org);
+            _mockRepository.Setup(r => r.GetByNameAsync("Updated Name")).ReturnsAsync((DonorOrganization?)null);
+
+            await _sut.Handle(new UpdateDonorOrganizationCommand { Id = org.Id.ToString(), Name = "Updated Name" }, CancellationToken.None);
+
+            org.UpdatedAt.Should().Be(DonationTestData.Now);
         }
 
         [TestMethod]
@@ -78,8 +90,8 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
         public async Task Handle_DuplicateName_ReturnsConflict()
         {
             // Arrange
-            var org = DonorOrganization.Create("Original Name", null, null);
-            var otherOrg = DonorOrganization.Create("Taken Name", null, null);
+            var org = DonorOrganization.Create("Original Name", null, null, DonationTestData.Now);
+            var otherOrg = DonorOrganization.Create("Taken Name", null, null, DonationTestData.Now);
             _mockRepository.Setup(r => r.GetByIdAsync(org.Id.ToString()))
                 .ReturnsAsync(org);
             _mockRepository.Setup(r => r.GetByNameAsync("Taken Name"))
@@ -104,7 +116,7 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
         public async Task Handle_SameName_SkipsUniquenessCheck()
         {
             // Arrange
-            var org = DonorOrganization.Create("Same Name", null, null);
+            var org = DonorOrganization.Create("Same Name", null, null, DonationTestData.Now);
             _mockRepository.Setup(r => r.GetByIdAsync(org.Id.ToString()))
                 .ReturnsAsync(org);
 
