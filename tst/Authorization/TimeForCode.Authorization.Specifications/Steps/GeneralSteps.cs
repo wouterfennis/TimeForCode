@@ -58,17 +58,7 @@ namespace TimeForCode.Authorization.Specifications.Steps
         [Given("The user has no account at the external platform")]
         public void GivenTheUserHasNoAccountAtTheExternalPlatform()
         {
-            var mockHttp = _provider.GetRequiredService<MockHttpMessageHandler>();
-
-            var problemDetails = new ProblemDetails
-            {
-                Title = "No account information",
-                Status = (int)HttpStatusCode.NotFound,
-                Detail = "No account information"
-            };
-
-            mockHttp.When("http://localhost:8081/user")
-                    .Respond(HttpStatusCode.NotFound, "application/json", JsonSerializer.Serialize(problemDetails));
+            ExternalPlatformMocks.RegisterNotFound(_provider.GetRequiredService<MockHttpMessageHandler>(), "/user", "No account information");
         }
 
         [Given("The user logs in at the external platform")]

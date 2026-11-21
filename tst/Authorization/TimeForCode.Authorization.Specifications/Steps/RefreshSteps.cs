@@ -61,16 +61,10 @@ namespace TimeForCode.Authorization.Specifications.Steps
             problemDetails.Detail.Should().Be(errorMessage);
         }
 
-        [Given("The user has an expired refresh token")]
-        public void GivenTheUserHasAnExpiredRefreshToken()
+        [Given("^The user has (an expired|a) refresh token$")]
+        public void GivenTheUserHasARefreshToken(string kind)
         {
-            SeedRefreshToken(DateTime.UtcNow.AddHours(-1));
-        }
-
-        [Given("The user has a refresh token")]
-        public void GivenTheUserHasARefreshToken()
-        {
-            SeedRefreshToken(DateTime.UtcNow.AddHours(1));
+            SeedRefreshToken(DateTime.UtcNow.AddHours(kind == "an expired" ? -1 : 1));
         }
 
         [Given("The user has already refreshed with that refresh token")]
