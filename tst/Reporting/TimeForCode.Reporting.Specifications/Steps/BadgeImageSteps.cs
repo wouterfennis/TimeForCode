@@ -93,8 +93,10 @@ namespace TimeForCode.Reporting.Specifications.Steps
             svg.Name.LocalName.Should().Be("svg");
             svg.Attribute("aria-label")!.Value.Should().Be($"{Label}: {value}");
 
+            // The label is the brand lockup (drawn as outlines), not a text element.
+            svg.Descendants().Should().Contain(e => e.Attribute("data-logo") != null && e.Attribute("data-logo")!.Value == "lockup");
+
             List<string> texts = svg.Descendants().Where(e => e.Name.LocalName == "text").Select(e => e.Value).ToList();
-            texts.Should().Contain(Label);
             texts.Should().Contain(value);
         }
 
