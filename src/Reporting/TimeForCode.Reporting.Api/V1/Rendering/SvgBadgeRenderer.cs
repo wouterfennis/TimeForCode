@@ -26,14 +26,19 @@ namespace TimeForCode.Reporting.Api.V1.Rendering
 
         // Icons are white shapes in a 12 x 12 box: no text, no emoji, so they look the same in every viewer.
         // Parsed once; adding the elements of one to an image copies them.
-        private static readonly Dictionary<string, XElement> Shapes = new()
+        private static readonly Dictionary<string, XElement> Shapes = CreateShapes();
+
+        // One statement per icon, so that each has a line of its own in the coverage report (a single multi-line initializer shows up as one range).
+        private static Dictionary<string, XElement> CreateShapes()
         {
-            ["clock"] = Shape("<circle cx=\"6\" cy=\"6\" r=\"4.8\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.4\"/><path d=\"M6 3.2V6l2 1.3\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.4\" stroke-linecap=\"round\"/>"),
-            ["star"] = Shape("<circle cx=\"6\" cy=\"6\" r=\"4.6\" fill=\"#fff\" fill-opacity=\".25\" stroke=\"#fff\" stroke-width=\"1.4\"/><path d=\"M6 3.4l.8 1.7 1.8.2-1.3 1.2.4 1.8L6 7.4l-1.7.9.4-1.8-1.3-1.2 1.8-.2z\" fill=\"#fff\"/>"),
-            ["empty"] = Shape("<circle cx=\"6\" cy=\"6\" r=\"4.6\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.4\" stroke-dasharray=\"2 1.6\"/>"),
-            ["help"] = Shape("<circle cx=\"6\" cy=\"6\" r=\"4.8\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.4\"/><path d=\"M4.6 4.7c0-1.7 2.8-1.7 2.8 0 0 1.1-1.4 1.1-1.4 2.2\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.2\" stroke-linecap=\"round\"/><circle cx=\"6\" cy=\"8.7\" r=\".7\" fill=\"#fff\"/>"),
-            ["warning"] = Shape("<path d=\"M6 1.2l5 9H1z\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.4\" stroke-linejoin=\"round\"/><path d=\"M6 4.6v2.6\" stroke=\"#fff\" stroke-width=\"1.4\" stroke-linecap=\"round\"/><circle cx=\"6\" cy=\"8.8\" r=\".8\" fill=\"#fff\"/>")
-        };
+            Dictionary<string, XElement> shapes = new();
+            shapes["clock"] = Shape("<circle cx=\"6\" cy=\"6\" r=\"4.8\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.4\"/><path d=\"M6 3.2V6l2 1.3\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.4\" stroke-linecap=\"round\"/>");
+            shapes["star"] = Shape("<circle cx=\"6\" cy=\"6\" r=\"4.6\" fill=\"#fff\" fill-opacity=\".25\" stroke=\"#fff\" stroke-width=\"1.4\"/><path d=\"M6 3.4l.8 1.7 1.8.2-1.3 1.2.4 1.8L6 7.4l-1.7.9.4-1.8-1.3-1.2 1.8-.2z\" fill=\"#fff\"/>");
+            shapes["empty"] = Shape("<circle cx=\"6\" cy=\"6\" r=\"4.6\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.4\" stroke-dasharray=\"2 1.6\"/>");
+            shapes["help"] = Shape("<circle cx=\"6\" cy=\"6\" r=\"4.8\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.4\"/><path d=\"M4.6 4.7c0-1.7 2.8-1.7 2.8 0 0 1.1-1.4 1.1-1.4 2.2\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.2\" stroke-linecap=\"round\"/><circle cx=\"6\" cy=\"8.7\" r=\".7\" fill=\"#fff\"/>");
+            shapes["warning"] = Shape("<path d=\"M6 1.2l5 9H1z\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.4\" stroke-linejoin=\"round\"/><path d=\"M6 4.6v2.6\" stroke=\"#fff\" stroke-width=\"1.4\" stroke-linecap=\"round\"/><circle cx=\"6\" cy=\"8.8\" r=\".8\" fill=\"#fff\"/>");
+            return shapes;
+        }
 
         /// <summary>Renders the content as an SVG image.</summary>
         public static string Render(BadgeImageContent content)
