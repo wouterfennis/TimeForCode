@@ -22,7 +22,7 @@ namespace TimeForCode.Donation.Application.Tests.Domain
 
         private static Contribution Deleted()
         {
-            return Logged().MarkDeleted("user-1", false, Owner, ChangedAt).Contribution!;
+            return Logged().MarkDeleted(new Actor("user-1", false), Owner, ChangedAt).Contribution!;
         }
 
         [TestMethod]
@@ -65,7 +65,7 @@ namespace TimeForCode.Donation.Application.Tests.Domain
         {
             var contribution = Logged(OldReference);
 
-            var change = contribution.Correct("user-1", false, Owner, 5, NewReference, ChangedAt);
+            var change = contribution.Correct(new Actor("user-1", false), Owner, 5, NewReference, ChangedAt);
 
             change.IsSuccess.Should().BeTrue();
             change.Contribution!.Hours.Should().Be(5);
@@ -80,7 +80,7 @@ namespace TimeForCode.Donation.Application.Tests.Domain
         [DataRow(1, -2)]
         public void Correct_NewHours_ReportsTheDifferenceInHours(int hours, int expectedDelta)
         {
-            var change = Logged().Correct("user-1", false, Owner, hours, null, ChangedAt);
+            var change = Logged().Correct(new Actor("user-1", false), Owner, hours, null, ChangedAt);
 
             change.HoursDelta.Should().Be(expectedDelta);
         }
@@ -88,7 +88,7 @@ namespace TimeForCode.Donation.Application.Tests.Domain
         [TestMethod]
         public void Correct_WithoutReference_RemovesReference()
         {
-            var change = Logged(OldReference).Correct("user-1", false, Owner, 3, null, ChangedAt);
+            var change = Logged(OldReference).Correct(new Actor("user-1", false), Owner, 3, null, ChangedAt);
 
             change.Contribution!.GithubReference.Should().BeNull();
         }
@@ -96,7 +96,7 @@ namespace TimeForCode.Donation.Application.Tests.Domain
         [TestMethod]
         public void Correct_Contribution_KeepsPreviousValuesAsHistory()
         {
-            var change = Logged(OldReference).Correct("admin-1", true, null, 5, null, ChangedAt);
+            var change = Logged(OldReference).Correct(new Actor("admin-1", true), null, 5, null, ChangedAt);
 
             var entry = change.Contribution!.History.Should().ContainSingle().Subject;
             entry.Hours.Should().Be(3);
@@ -108,9 +108,9 @@ namespace TimeForCode.Donation.Application.Tests.Domain
         [TestMethod]
         public void Correct_CorrectedTwice_AppendsHistoryInOrder()
         {
-            var first = Logged().Correct("user-1", false, Owner, 5, null, ChangedAt).Contribution!;
+            var first = Logged().Correct(new Actor("user-1", false), Owner, 5, null, ChangedAt).Contribution!;
 
-            var second = first.Correct("user-1", false, Owner, 7, null, ChangedAt.AddDays(1)).Contribution!;
+            var second = first.Correct(new Actor("user-1", false), Owner, 7, null, ChangedAt.AddDays(1)).Contribution!;
 
             second.History.Select(h => h.Hours).Should().Equal(3, 5);
         }
@@ -118,7 +118,7 @@ namespace TimeForCode.Donation.Application.Tests.Domain
         [TestMethod]
         public void Correct_OtherUser_IsNotAllowed()
         {
-            var change = Logged().Correct("user-2", false, Owner, 5, null, ChangedAt);
+            var change = Logged().Correct(new Actor("user-2", false), Owner, 5, null, ChangedAt);
 
             change.IsSuccess.Should().BeFalse();
             change.Failure.Should().Be(ContributionChangeFailure.NotAllowed);
@@ -128,7 +128,7 @@ namespace TimeForCode.Donation.Application.Tests.Domain
         [TestMethod]
         public void Correct_ContributorAnonymisedAndCallerNotAdministrator_IsNotAllowed()
         {
-            var change = Logged().Correct("user-1", false, null, 5, null, ChangedAt);
+            var change = Logged().Correct(new Actor("user-1", false), null, 5, null, ChangedAt);
 
             change.Failure.Should().Be(ContributionChangeFailure.NotAllowed);
         }
@@ -136,7 +136,7 @@ namespace TimeForCode.Donation.Application.Tests.Domain
         [TestMethod]
         public void Correct_Deleted_IsRefusedEvenForAdministrator()
         {
-            var change = Deleted().Correct("admin-1", true, null, 5, null, ChangedAt);
+            var change = Deleted().Correct(new Actor("admin-1", true), null, 5, null, ChangedAt);
 
             change.Failure.Should().Be(ContributionChangeFailure.Deleted);
         }
@@ -147,7 +147,7 @@ namespace TimeForCode.Donation.Application.Tests.Domain
         [DataRow(ContributionLimits.MaxHours + 1)]
         public void Correct_HoursOutOfRange_Throws(int hours)
         {
-            var act = () => Logged().Correct("user-1", false, Owner, hours, null, ChangedAt);
+            var act = () => Logged().Correct(new Actor("user-1", false), Owner, hours, null, ChangedAt);
 
             act.Should().Throw<ArgumentOutOfRangeException>();
         }
@@ -155,7 +155,7 @@ namespace TimeForCode.Donation.Application.Tests.Domain
         [TestMethod]
         public void Correct_ReferenceNotAnHttpsGithubLink_Throws()
         {
-            var act = () => Logged().Correct("user-1", false, Owner, 3, new Uri("https://example.com/owner/repo"), ChangedAt);
+            var act = () => Logged().Correct(new Actor("user-1", false), Owner, 3, new Uri("https://example.com/owner/repo"), ChangedAt);
 
             act.Should().Throw<ArgumentException>();
         }
@@ -165,7 +165,7 @@ namespace TimeForCode.Donation.Application.Tests.Domain
         {
             var contribution = Logged(OldReference);
 
-            var change = contribution.MarkDeleted("user-1", false, Owner, ChangedAt);
+            var change = contribution.MarkDeleted(new Actor("user-1", false), Owner, ChangedAt);
 
             change.IsSuccess.Should().BeTrue();
             change.Contribution!.IsDeleted.Should().BeTrue();
@@ -178,25 +178,25 @@ namespace TimeForCode.Donation.Application.Tests.Domain
         [TestMethod]
         public void MarkDeleted_Contribution_ReportsAllHoursAsRemoved()
         {
-            Logged(hours: 3).MarkDeleted("user-1", false, Owner, ChangedAt).HoursDelta.Should().Be(-3);
+            Logged(hours: 3).MarkDeleted(new Actor("user-1", false), Owner, ChangedAt).HoursDelta.Should().Be(-3);
         }
 
         [TestMethod]
         public void MarkDeleted_OtherUser_IsNotAllowed()
         {
-            Logged().MarkDeleted("user-2", false, Owner, ChangedAt).Failure.Should().Be(ContributionChangeFailure.NotAllowed);
+            Logged().MarkDeleted(new Actor("user-2", false), Owner, ChangedAt).Failure.Should().Be(ContributionChangeFailure.NotAllowed);
         }
 
         [TestMethod]
         public void MarkDeleted_Administrator_DeletesContributionOfAnotherUser()
         {
-            Logged().MarkDeleted("admin-1", true, null, ChangedAt).IsSuccess.Should().BeTrue();
+            Logged().MarkDeleted(new Actor("admin-1", true), null, ChangedAt).IsSuccess.Should().BeTrue();
         }
 
         [TestMethod]
         public void MarkDeleted_AlreadyDeleted_IsRefused()
         {
-            Deleted().MarkDeleted("user-1", false, Owner, ChangedAt).Failure.Should().Be(ContributionChangeFailure.Deleted);
+            Deleted().MarkDeleted(new Actor("user-1", false), Owner, ChangedAt).Failure.Should().Be(ContributionChangeFailure.Deleted);
         }
 
         [TestMethod]
@@ -208,7 +208,7 @@ namespace TimeForCode.Donation.Application.Tests.Domain
         [TestMethod]
         public void Correct_DeletedWithInvalidHours_IsRefusedInsteadOfThrowing()
         {
-            var change = Deleted().Correct("user-1", false, Owner, 0, null, ChangedAt);
+            var change = Deleted().Correct(new Actor("user-1", false), Owner, 0, null, ChangedAt);
 
             change.Failure.Should().Be(ContributionChangeFailure.Deleted);
         }
@@ -216,7 +216,7 @@ namespace TimeForCode.Donation.Application.Tests.Domain
         [TestMethod]
         public void Correct_OtherUserWithInvalidHours_IsRefusedInsteadOfThrowing()
         {
-            var change = Logged().Correct("user-2", false, Owner, 0, null, ChangedAt);
+            var change = Logged().Correct(new Actor("user-2", false), Owner, 0, null, ChangedAt);
 
             change.Failure.Should().Be(ContributionChangeFailure.NotAllowed);
         }
@@ -236,7 +236,7 @@ namespace TimeForCode.Donation.Application.Tests.Domain
                 Version = 4
             };
 
-            loaded.Correct("user-1", false, Owner, 5, null, ChangedAt).Contribution!.Version.Should().Be(4);
+            loaded.Correct(new Actor("user-1", false), Owner, 5, null, ChangedAt).Contribution!.Version.Should().Be(4);
         }
     }
 }

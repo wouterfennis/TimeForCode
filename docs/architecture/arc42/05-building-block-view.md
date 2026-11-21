@@ -111,7 +111,7 @@ graph LR
 | `TimeForCode.Donation.Domain` | Project entity with lifecycle state machine (Draft, PendingApproval, Active, Archived); GithubSnapshot record; DocumentEntity base class |
 | `TimeForCode.Donation.Infrastructure` | MongoDB project repository (including `ProjectSearchDefinitions`: the active-project search filter and the status, language and topic indexes created at startup); GitHub public REST API client |
 | `TimeForCode.Donation.Commands` | MediatR command, query, and result types |
-| `TimeForCode.Donation.Values` | Shared value objects (ProjectStatus and DonationStatus enums) |
+| `TimeForCode.Donation.Values` | Shared value objects: the ProjectStatus and DonationStatus enums and `Actor` (the signed-in caller: user id plus administrator flag, see [Authentication and Authorization](08-crosscutting-concepts.md#authentication-and-authorization)) |
 | `TimeForCode.Donation.Api.Client` | Typed HTTP client for the Donation API, generated from its OpenAPI document; used by the specification tests |
 
 ### Domain Entities

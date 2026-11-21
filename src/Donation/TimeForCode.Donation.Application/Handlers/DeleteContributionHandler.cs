@@ -27,7 +27,7 @@ namespace TimeForCode.Donation.Application.Handlers
 
         public async Task<Result<ContributionChangedResult>> Handle(DeleteContributionCommand request, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Deleting contribution {ContributionId} on project {ProjectId} for user {UserId}", request.ContributionId, request.ProjectId, request.UserId);
+            _logger.LogInformation("Deleting contribution {ContributionId} on project {ProjectId} for user {UserId}", request.ContributionId, request.ProjectId, request.Actor.UserId);
 
             var contribution = await _contributionRepository.GetByIdAsync(request.ProjectId, request.ContributionId, cancellationToken);
             if (contribution == null)
@@ -37,10 +37,10 @@ namespace TimeForCode.Donation.Application.Handlers
             }
 
             var contributor = await _contributorRepository.GetByIdAsync(contribution.ContributorId);
-            var change = contribution.MarkDeleted(request.UserId, request.IsAdministrator, contributor, DateTimeOffset.UtcNow);
+            var change = contribution.MarkDeleted(request.Actor, contributor, DateTimeOffset.UtcNow);
             if (!change.IsSuccess)
             {
-                _logger.LogWarning("Contribution {ContributionId} was not deleted for user {UserId}: {Failure}", request.ContributionId, request.UserId, change.Failure);
+                _logger.LogWarning("Contribution {ContributionId} was not deleted for user {UserId}: {Failure}", request.ContributionId, request.Actor.UserId, change.Failure);
                 return change.ToFailure();
             }
 

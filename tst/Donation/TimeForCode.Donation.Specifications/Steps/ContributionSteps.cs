@@ -9,6 +9,7 @@ using TimeForCode.Donation.Application.Interfaces;
 using TimeForCode.Donation.Domain;
 using TimeForCode.Donation.Specifications.Mocking;
 using TimeForCode.Donation.Specifications.TestBuilder;
+using TimeForCode.Donation.Values;
 
 namespace TimeForCode.Donation.Specifications.Steps
 {
@@ -57,7 +58,7 @@ namespace TimeForCode.Donation.Specifications.Steps
         [Given("The user has already deleted the contribution")]
         public async Task GivenTheUserHasAlreadyDeletedTheContributionAsync()
         {
-            ContributionChange deletion = StoredContribution().MarkDeleted(Constants.TestUserId, false, _fixtures.TestUserContributor(), DateTimeOffset.UtcNow);
+            ContributionChange deletion = StoredContribution().MarkDeleted(new Actor(Constants.TestUserId, false), _fixtures.TestUserContributor(), DateTimeOffset.UtcNow);
             await _fixtures.Contributions.UpdateAsync(deletion.Contribution!, CancellationToken.None);
         }
 

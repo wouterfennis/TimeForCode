@@ -1,4 +1,5 @@
 using MediatR;
+using TimeForCode.Donation.Values;
 
 namespace TimeForCode.Donation.Commands
 {
@@ -8,10 +9,9 @@ namespace TimeForCode.Donation.Commands
     /// </summary>
     public class UpdateContributorProfileCommand : IRequest<Result<ContributorProfileResult>>
     {
-        public required string CallerUserId { get; init; }
+        public required Actor Actor { get; init; }
         public required string GithubLogin { get; init; }
         public required string AvatarUrl { get; init; }
-        public bool IsAdministrator { get; init; }
         public string? ContributorId { get; init; }
         public string? Role { get; init; }
         public required IReadOnlyList<string> Skills { get; init; }

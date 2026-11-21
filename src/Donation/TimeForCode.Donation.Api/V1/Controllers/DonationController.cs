@@ -20,7 +20,6 @@ namespace TimeForCode.Donation.Api.V1.Controllers
     [EnableRateLimiting("api")]
     public class DonationController : ControllerBase
     {
-        private const string AdminScope = "admin";
 
         private readonly IMediator _mediator;
 
@@ -131,7 +130,7 @@ namespace TimeForCode.Donation.Api.V1.Controllers
             [FromQuery, Range(1, ApiConstraints.MaxPageNumber)] int pageNumber = 1,
             [FromQuery, Range(1, ApiConstraints.MaxPageSize)] int pageSize = 20)
         {
-            if (!TryGetUserId(out var userId))
+            if (!User.TryGetActor(out var actor))
             {
                 return MissingIdentity();
             }
@@ -139,8 +138,7 @@ namespace TimeForCode.Donation.Api.V1.Controllers
             var result = await _mediator.Send(new GetDonorOrganizationDonationsQuery
             {
                 DonorOrganizationId = id,
-                CallerUserId = userId,
-                IsAdministrator = User.HasClaim("scope", AdminScope),
+                Actor = actor,
                 PageNumber = pageNumber,
                 PageSize = pageSize
             });
@@ -205,7 +203,7 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         [Authorize(Policy = "ApiUserOrAdmin")]
         public async Task<IActionResult> ActivateDonation([ObjectId] string id)
         {
-            if (!TryGetUserId(out var userId))
+            if (!User.TryGetActor(out var actor))
             {
                 return MissingIdentity();
             }
@@ -213,8 +211,7 @@ namespace TimeForCode.Donation.Api.V1.Controllers
             var result = await _mediator.Send(new ActivateDonationCommand
             {
                 DonationId = id,
-                UserId = userId,
-                IsAdministrator = User.HasClaim("scope", AdminScope)
+                Actor = actor
             });
 
             return result.IsFailure
@@ -245,7 +242,7 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         [Authorize(Policy = "ApiUserOrAdmin")]
         public async Task<IActionResult> CancelDonation([ObjectId] string id)
         {
-            if (!TryGetUserId(out var userId))
+            if (!User.TryGetActor(out var actor))
             {
                 return MissingIdentity();
             }
@@ -253,8 +250,7 @@ namespace TimeForCode.Donation.Api.V1.Controllers
             var result = await _mediator.Send(new CancelDonationCommand
             {
                 DonationId = id,
-                UserId = userId,
-                IsAdministrator = User.HasClaim("scope", AdminScope)
+                Actor = actor
             });
 
             return result.IsFailure

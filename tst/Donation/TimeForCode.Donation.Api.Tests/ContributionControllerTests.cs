@@ -7,6 +7,7 @@ using System.Security.Claims;
 using TimeForCode.Donation.Api.V1.Controllers;
 using TimeForCode.Donation.Api.V1.Models;
 using TimeForCode.Donation.Commands;
+using TimeForCode.Donation.Values;
 
 namespace TimeForCode.Donation.Api.Tests
 {
@@ -62,7 +63,7 @@ namespace TimeForCode.Donation.Api.Tests
         public async Task GetDonorOrganizationContributions_Allowed_ReturnsTheContributions()
         {
             _mediator.Setup(m => m.Send(
-                    It.Is<GetDonorOrganizationContributionsQuery>(q => q.DonorOrganizationId == OrganizationId && q.CallerUserId == UserId && !q.IsAdministrator),
+                    It.Is<GetDonorOrganizationContributionsQuery>(q => q.DonorOrganizationId == OrganizationId && q.Actor == new Actor(UserId, false)),
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync(Result<GetDonorOrganizationContributionsResult>.Success(Page([Contribution()], totalCount: 1)));
 
@@ -97,7 +98,7 @@ namespace TimeForCode.Donation.Api.Tests
         public async Task GetDonorOrganizationContributions_Administrator_PassesTheAdministratorFlag()
         {
             _mediator.Setup(m => m.Send(
-                    It.Is<GetDonorOrganizationContributionsQuery>(q => q.IsAdministrator),
+                    It.Is<GetDonorOrganizationContributionsQuery>(q => q.Actor.IsAdministrator),
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync(Result<GetDonorOrganizationContributionsResult>.Success(Page([], totalCount: 0)));
 

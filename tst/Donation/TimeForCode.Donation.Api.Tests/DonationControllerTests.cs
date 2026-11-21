@@ -64,7 +64,7 @@ namespace TimeForCode.Donation.Api.Tests
         public async Task GetDonorOrganizationDonations_Allowed_ReturnsTheDonations()
         {
             _mediator.Setup(m => m.Send(
-                    It.Is<GetDonorOrganizationDonationsQuery>(q => q.DonorOrganizationId == OrganizationId && q.CallerUserId == UserId && !q.IsAdministrator),
+                    It.Is<GetDonorOrganizationDonationsQuery>(q => q.DonorOrganizationId == OrganizationId && q.Actor == new Actor(UserId, false)),
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync(Result<GetDonorOrganizationDonationsResult>.Success(Page([Donation()], totalCount: 1)));
 
@@ -99,7 +99,7 @@ namespace TimeForCode.Donation.Api.Tests
         public async Task GetDonorOrganizationDonations_Administrator_PassesTheAdministratorFlag()
         {
             _mediator.Setup(m => m.Send(
-                    It.Is<GetDonorOrganizationDonationsQuery>(q => q.IsAdministrator),
+                    It.Is<GetDonorOrganizationDonationsQuery>(q => q.Actor.IsAdministrator),
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync(Result<GetDonorOrganizationDonationsResult>.Success(Page([], totalCount: 0)));
 

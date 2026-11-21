@@ -35,7 +35,7 @@ namespace TimeForCode.Donation.Application.Handlers
                 return Result<ContributorProfileResult>.NotFound("Contributor not found.");
             }
 
-            if (!contributor.MayAccess(request.CallerUserId, request.IsAdministrator))
+            if (!contributor.MayAccess(request.Actor))
             {
                 _logger.LogWarning("Contributor {ContributorId} update refused: caller is neither the owner nor an administrator", contributor.Id);
                 return Result<ContributorProfileResult>.Forbidden("Only the contributor or an administrator can change this profile.");
@@ -63,10 +63,10 @@ namespace TimeForCode.Donation.Application.Handlers
 
         private async Task<Contributor> GetOrRegisterOwnContributorAsync(UpdateContributorProfileCommand request)
         {
-            var existing = await _contributorRepository.GetByPlatformUserIdAsync(request.CallerUserId);
+            var existing = await _contributorRepository.GetByPlatformUserIdAsync(request.Actor.UserId);
 
             return existing ?? await _contributorRepository.UpsertAsync(
-                Contributor.Create(request.CallerUserId, request.GithubLogin, request.AvatarUrl));
+                Contributor.Create(request.Actor.UserId, request.GithubLogin, request.AvatarUrl));
         }
     }
 }

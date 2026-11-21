@@ -21,7 +21,7 @@ namespace TimeForCode.Donation.Application.Handlers
         public async Task<Result<ContributorProfileResult>> Handle(GetContributorProfileQuery request, CancellationToken cancellationToken)
         {
             Contributor? contributor = request.ContributorId == null
-                ? await _contributorRepository.GetByPlatformUserIdAsync(request.CallerUserId)
+                ? await _contributorRepository.GetByPlatformUserIdAsync(request.Actor.UserId)
                 : await _contributorRepository.GetByIdAsync(ObjectId.Parse(request.ContributorId));
 
             if (contributor == null)
@@ -30,7 +30,7 @@ namespace TimeForCode.Donation.Application.Handlers
                 return Result<ContributorProfileResult>.NotFound("Contributor not found.");
             }
 
-            if (!contributor.MayAccess(request.CallerUserId, request.IsAdministrator))
+            if (!contributor.MayAccess(request.Actor))
             {
                 _logger.LogWarning("Contributor {ContributorId} requested by a user who may not see the profile", contributor.Id);
                 return Result<ContributorProfileResult>.Forbidden("Only the contributor or an administrator can access this profile.");

@@ -39,8 +39,7 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
         private static GetDonorOrganizationDonationsQuery Query(bool isAdministrator = false, int pageNumber = 1, int pageSize = 20) => new()
         {
             DonorOrganizationId = OrganizationId.ToString(),
-            CallerUserId = "user-1",
-            IsAdministrator = isAdministrator,
+            Actor = new Actor("user-1", isAdministrator),
             PageNumber = pageNumber,
             PageSize = pageSize
         };

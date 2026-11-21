@@ -38,7 +38,7 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
         {
             var donation = GivenDonation(DonationStatus.Pending);
 
-            var result = await _activate.Handle(new ActivateDonationCommand { DonationId = donation.Id.ToString(), UserId = "user-1" }, CancellationToken.None);
+            var result = await _activate.Handle(new ActivateDonationCommand { DonationId = donation.Id.ToString(), Actor = new Actor("user-1", false) }, CancellationToken.None);
 
             result.IsSuccess.Should().BeTrue();
             donation.Status.Should().Be(DonationStatus.Active);
@@ -51,7 +51,7 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
         {
             var donation = GivenDonation(DonationStatus.Pending);
 
-            var result = await _activate.Handle(new ActivateDonationCommand { DonationId = donation.Id.ToString(), UserId = "admin", IsAdministrator = true }, CancellationToken.None);
+            var result = await _activate.Handle(new ActivateDonationCommand { DonationId = donation.Id.ToString(), Actor = new Actor("admin", true) }, CancellationToken.None);
 
             result.IsSuccess.Should().BeTrue();
             donation.Status.Should().Be(DonationStatus.Active);
@@ -62,7 +62,7 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
         {
             var donation = GivenDonation(DonationStatus.Pending);
 
-            var result = await _activate.Handle(new ActivateDonationCommand { DonationId = donation.Id.ToString(), UserId = "user-2" }, CancellationToken.None);
+            var result = await _activate.Handle(new ActivateDonationCommand { DonationId = donation.Id.ToString(), Actor = new Actor("user-2", false) }, CancellationToken.None);
 
             result.FailureStatusCode.Should().Be(HttpStatusCode.Forbidden);
             donation.Status.Should().Be(DonationStatus.Pending);
@@ -74,7 +74,7 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
         {
             var donation = GivenDonation(DonationStatus.Active);
 
-            var result = await _activate.Handle(new ActivateDonationCommand { DonationId = donation.Id.ToString(), UserId = "user-1" }, CancellationToken.None);
+            var result = await _activate.Handle(new ActivateDonationCommand { DonationId = donation.Id.ToString(), Actor = new Actor("user-1", false) }, CancellationToken.None);
 
             result.FailureStatusCode.Should().Be(HttpStatusCode.Conflict);
             _donationRepository.Verify(r => r.UpdateAsync(It.IsAny<DonationEntity>()), Times.Never);
@@ -86,7 +86,7 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
             var donation = GivenDonation(DonationStatus.Pending);
             _donationRepository.Setup(r => r.UpdateAsync(donation)).ThrowsAsync(new RepositoryConflictException("changed"));
 
-            var result = await _activate.Handle(new ActivateDonationCommand { DonationId = donation.Id.ToString(), UserId = "user-1" }, CancellationToken.None);
+            var result = await _activate.Handle(new ActivateDonationCommand { DonationId = donation.Id.ToString(), Actor = new Actor("user-1", false) }, CancellationToken.None);
 
             result.FailureStatusCode.Should().Be(HttpStatusCode.Conflict);
         }
@@ -97,7 +97,7 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
             var donation = GivenDonation(DonationStatus.Active);
             _donationRepository.Setup(r => r.UpdateAsync(donation)).ThrowsAsync(new RepositoryConflictException("changed"));
 
-            var result = await _cancel.Handle(new CancelDonationCommand { DonationId = donation.Id.ToString(), UserId = "user-1" }, CancellationToken.None);
+            var result = await _cancel.Handle(new CancelDonationCommand { DonationId = donation.Id.ToString(), Actor = new Actor("user-1", false) }, CancellationToken.None);
 
             result.FailureStatusCode.Should().Be(HttpStatusCode.Conflict);
         }
@@ -107,7 +107,7 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
         {
             _donationRepository.Setup(r => r.GetByIdAsync(It.IsAny<string>())).ReturnsAsync((DonationEntity?)null);
 
-            var result = await _activate.Handle(new ActivateDonationCommand { DonationId = "5f43a0e74b12c84f1b0000ff", UserId = "user-1" }, CancellationToken.None);
+            var result = await _activate.Handle(new ActivateDonationCommand { DonationId = "5f43a0e74b12c84f1b0000ff", Actor = new Actor("user-1", false) }, CancellationToken.None);
 
             result.FailureStatusCode.Should().Be(HttpStatusCode.NotFound);
         }
@@ -119,7 +119,7 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
         {
             var donation = GivenDonation(status);
 
-            var result = await _cancel.Handle(new CancelDonationCommand { DonationId = donation.Id.ToString(), UserId = "user-1" }, CancellationToken.None);
+            var result = await _cancel.Handle(new CancelDonationCommand { DonationId = donation.Id.ToString(), Actor = new Actor("user-1", false) }, CancellationToken.None);
 
             result.IsSuccess.Should().BeTrue();
             donation.Status.Should().Be(DonationStatus.Cancelled);
@@ -131,7 +131,7 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
         {
             var donation = GivenDonation(DonationStatus.Active);
 
-            var result = await _cancel.Handle(new CancelDonationCommand { DonationId = donation.Id.ToString(), UserId = "user-2" }, CancellationToken.None);
+            var result = await _cancel.Handle(new CancelDonationCommand { DonationId = donation.Id.ToString(), Actor = new Actor("user-2", false) }, CancellationToken.None);
 
             result.FailureStatusCode.Should().Be(HttpStatusCode.Forbidden);
             donation.Status.Should().Be(DonationStatus.Active);
@@ -144,7 +144,7 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
         {
             var donation = GivenDonation(status);
 
-            var result = await _cancel.Handle(new CancelDonationCommand { DonationId = donation.Id.ToString(), UserId = "user-1" }, CancellationToken.None);
+            var result = await _cancel.Handle(new CancelDonationCommand { DonationId = donation.Id.ToString(), Actor = new Actor("user-1", false) }, CancellationToken.None);
 
             result.FailureStatusCode.Should().Be(HttpStatusCode.Conflict);
         }
@@ -154,7 +154,7 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
         {
             _donationRepository.Setup(r => r.GetByIdAsync(It.IsAny<string>())).ReturnsAsync((DonationEntity?)null);
 
-            var result = await _cancel.Handle(new CancelDonationCommand { DonationId = "5f43a0e74b12c84f1b0000ff", UserId = "user-1" }, CancellationToken.None);
+            var result = await _cancel.Handle(new CancelDonationCommand { DonationId = "5f43a0e74b12c84f1b0000ff", Actor = new Actor("user-1", false) }, CancellationToken.None);
 
             result.FailureStatusCode.Should().Be(HttpStatusCode.NotFound);
         }

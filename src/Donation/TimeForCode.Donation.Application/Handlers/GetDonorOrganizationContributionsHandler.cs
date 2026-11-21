@@ -28,7 +28,7 @@ namespace TimeForCode.Donation.Application.Handlers
         public async Task<Result<GetDonorOrganizationContributionsResult>> Handle(GetDonorOrganizationContributionsQuery request, CancellationToken cancellationToken)
         {
             var denied = await DonorOrganizationAccess.CheckAsync<GetDonorOrganizationContributionsResult>(
-                _organizationRepository, _contributorRepository, request.DonorOrganizationId, request.CallerUserId, request.IsAdministrator, _logger);
+                _organizationRepository, _contributorRepository, request.DonorOrganizationId, request.Actor.UserId, request.Actor.IsAdministrator, _logger);
             if (denied != null)
             {
                 return denied;

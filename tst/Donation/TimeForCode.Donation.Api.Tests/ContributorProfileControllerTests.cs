@@ -7,6 +7,7 @@ using System.Security.Claims;
 using TimeForCode.Donation.Api.V1.Controllers;
 using TimeForCode.Donation.Api.V1.Models;
 using TimeForCode.Donation.Commands;
+using TimeForCode.Donation.Values;
 
 namespace TimeForCode.Donation.Api.Tests
 {
@@ -67,7 +68,7 @@ namespace TimeForCode.Donation.Api.Tests
         [TestMethod]
         public async Task GetMyContributorProfile_Found_ReturnsProfile()
         {
-            _mediator.Setup(m => m.Send(It.Is<GetContributorProfileQuery>(q => q.CallerUserId == UserId), It.IsAny<CancellationToken>()))
+            _mediator.Setup(m => m.Send(It.Is<GetContributorProfileQuery>(q => q.Actor.UserId == UserId), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(ProfileResult());
 
             var result = await CreateSut().GetMyContributorProfile();
@@ -107,8 +108,8 @@ namespace TimeForCode.Donation.Api.Tests
 
             result.Should().BeOfType<OkObjectResult>();
             sent!.ContributorId.Should().BeNull();
-            sent.IsAdministrator.Should().BeFalse();
-            sent.CallerUserId.Should().Be(UserId);
+            sent.Actor.IsAdministrator.Should().BeFalse();
+            sent.Actor.UserId.Should().Be(UserId);
         }
 
         [TestMethod]
@@ -121,7 +122,7 @@ namespace TimeForCode.Donation.Api.Tests
 
             await CreateSut(admin: true).UpdateContributorProfile(ContributorId, Request());
 
-            sent!.IsAdministrator.Should().BeTrue();
+            sent!.Actor.IsAdministrator.Should().BeTrue();
             sent.ContributorId.Should().Be(ContributorId);
         }
 
@@ -146,7 +147,7 @@ namespace TimeForCode.Donation.Api.Tests
 
             await CreateSut(admin: true).GetContributorProfile(ContributorId);
 
-            sent!.IsAdministrator.Should().BeTrue();
+            sent!.Actor.IsAdministrator.Should().BeTrue();
             sent.ContributorId.Should().Be(ContributorId);
         }
 
