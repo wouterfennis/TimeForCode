@@ -61,6 +61,16 @@ Choices that differ from the latest versions or the usual defaults, with the rea
 | Latest jsdom (30) | jsdom 29 | jsdom 30 needs Node 24.15 or later; 29 supports every Node 24 release |
 | ESLint | oxlint | The Vite React template ships oxlint; it has the React, hooks and jsx-a11y rules built in, while the ESLint jsx-a11y plugin does not support ESLint 10 yet |
 
+## Comments above declarations
+
+Write a `/** ... */` doc comment above every hand-written declaration: function, class, type, interface, exported or module-level const, and class or interface members. A plain `//` comment directly above one does not show in editor tooltips, so `npm run lint` rejects it with the project rule `timeforcode/doc-comment-above-declaration` (`lint/declaration-comments-plugin.js`, an oxlint JS plugin registered in `.oxlintrc.json`).
+
+- **Allowed**: `//` inside function bodies and above object properties, comments that start with `TODO` (such as `// TODO(review): ...`), tool directives (`@ts-expect-error`, `oxlint-disable-next-line`, `prettier-ignore`, `#region`), and a `//` comment separated from the declaration by a blank line.
+- **Excluded**: the generated `src/api/*.d.ts` files, through an `overrides` entry in `.oxlintrc.json`.
+- **Proof**: `tests/lint/declarationComments.test.ts` lints sample sources with the repository configuration and checks that each violating sample is reported and each allowed sample is clean.
+
+The back end has the same convention for C# (XML docs above type and member declarations), enforced at build time by an analyzer.
+
 ## Authentication and the BFF
 
 This is the most important design constraint. Read it before writing any code. The full design, the sequence diagrams and the endpoint reference are in [Authentication flow](../authentication/authentication_flow_design.md); the decision is [ADR-019](../reference/adr/0019-browser-session-in-the-bff.md).

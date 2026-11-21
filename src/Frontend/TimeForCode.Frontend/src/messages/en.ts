@@ -1,4 +1,4 @@
-// All user-facing strings live here, so translations can be added later without touching components.
+/** All user-facing strings live here, so translations can be added later without touching components. */
 export const messages = {
   title: 'TimeForCode',
   session: {
