@@ -20,9 +20,24 @@ namespace TimeForCode.Reporting.Api.V1.Rendering
         private const int Padding = 10;
         private const int IconWidth = 16;
 
+        // The brand mark (docs/branding) on the left of the label: 14 px square, 5 px from the edge, 4 px before the label.
+        private const int LogoSize = 14;
+        private const int LogoOffset = 5;
+        private const int LogoSpace = LogoSize + 4;
+
         private const int MaxTextLength = 40;
 
         private static readonly XNamespace Svg = "http://www.w3.org/2000/svg";
+
+        // The mark in the colours for a dark surface (the label is dark grey), on the 48 x 48 grid of docs/branding/build.mjs.
+        // A badge cannot adapt to light and dark mode, so it uses the fixed variant.
+        private static readonly XElement Mark = XElement.Parse(
+            $"<g xmlns=\"{Svg.NamespaceName}\" fill=\"none\" stroke-linecap=\"round\" stroke-linejoin=\"round\">"
+            + "<circle cx=\"24\" cy=\"24\" r=\"19\" stroke=\"#2fc2ad\" stroke-opacity=\".28\" stroke-width=\"5\"/>"
+            + "<circle cx=\"24\" cy=\"24\" r=\"19\" stroke=\"#f7b733\" stroke-width=\"5\" stroke-dasharray=\"85.95 33.43\" transform=\"rotate(-90 24 24)\"/>"
+            + "<polyline points=\"16,17 24,24 16,31\" stroke=\"#e8f0ef\" stroke-width=\"4\"/>"
+            + "<line x1=\"27\" y1=\"32\" x2=\"34\" y2=\"32\" stroke=\"#e8f0ef\" stroke-width=\"4\"/>"
+            + "</g>");
 
         // Icons are white shapes in a 12 x 12 box: no text, no emoji, so they look the same in every viewer.
         // Parsed once; adding the elements of one to an image copies them.
@@ -46,7 +61,7 @@ namespace TimeForCode.Reporting.Api.V1.Rendering
             (string text, string colour, string icon) = StyleOf(content);
             text = Shorten(Clean(text));
 
-            int labelWidth = WidthOf(Label) + Padding;
+            int labelWidth = LogoSpace + WidthOf(Label) + Padding;
             int valueWidth = WidthOf(text) + Padding + IconWidth;
             int width = labelWidth + valueWidth;
             string description = $"{Label}: {text}";
@@ -71,6 +86,7 @@ namespace TimeForCode.Reporting.Api.V1.Rendering
                     new XAttribute("clip-path", $"url(#{clipId})"),
                     Rect(0, labelWidth, LabelColour),
                     Rect(labelWidth, valueWidth, colour)),
+                LogoOf(),
                 IconOf(icon, labelWidth + 6),
                 new XElement(
                     Svg + "g",
@@ -78,7 +94,7 @@ namespace TimeForCode.Reporting.Api.V1.Rendering
                     new XAttribute("text-anchor", "middle"),
                     new XAttribute("font-family", Font),
                     new XAttribute("font-size", 11),
-                    Text(Label, labelWidth / 2.0),
+                    Text(Label, LogoSpace + ((labelWidth - LogoSpace) / 2.0)),
                     Text(text, labelWidth + IconWidth + ((valueWidth - IconWidth) / 2.0))));
 
             return svg.ToString(SaveOptions.DisableFormatting);
@@ -166,6 +182,12 @@ namespace TimeForCode.Reporting.Api.V1.Rendering
 
             return group;
         }
+
+        private static XElement LogoOf() => new(
+            Svg + "g",
+            new XAttribute("data-logo", "mark"),
+            new XAttribute("transform", $"translate({LogoOffset} {(Height - LogoSize) / 2}) scale({(LogoSize / 48.0).ToString("0.####", CultureInfo.InvariantCulture)})"),
+            Mark.Elements());
 
         private static XElement Shape(string elements) => XElement.Parse($"<g xmlns=\"{Svg.NamespaceName}\">{elements}</g>");
     }

@@ -28,6 +28,22 @@ namespace TimeForCode.Reporting.Api.Tests
         }
 
         [TestMethod]
+        [DataRow(BadgeImageState.HoursReceived, "120 hours")]
+        [DataRow(BadgeImageState.Tier, "Gold")]
+        [DataRow(BadgeImageState.NoBadgeYet, null)]
+        [DataRow(BadgeImageState.Unavailable, null)]
+        public void Render_Image_ShowsTheLogoMarkOnTheLeftOfTheLabel(BadgeImageState state, string? text)
+        {
+            XElement svg = Parse(SvgBadgeRenderer.Render(new BadgeImageContent(state, text)));
+
+            XElement logo = svg.Descendants().Single(e => e.Attribute("data-logo") != null);
+            double logoX = double.Parse(logo.Attribute("transform")!.Value.Split('(', ' ')[1], System.Globalization.CultureInfo.InvariantCulture);
+            double labelX = double.Parse(svg.Descendants().First(e => e.Name.LocalName == "text").Attribute("x")!.Value, System.Globalization.CultureInfo.InvariantCulture);
+            logoX.Should().BeLessThan(labelX);
+            logo.Descendants().Select(e => e.Attribute("stroke")?.Value).Should().Contain(new[] { "#2fc2ad", "#f7b733", "#e8f0ef" });
+        }
+
+        [TestMethod]
         public void Render_Value_HasATitleForAssistiveTechnology()
         {
             XElement svg = Parse(SvgBadgeRenderer.Render(new BadgeImageContent(BadgeImageState.Tier, "Gold")));

@@ -66,4 +66,6 @@ The build renders the PNGs with `@resvg/resvg-js`, so it needs no other tools. I
 ## Not yet included
 
 - A stacked lockup (name below the mark).
-- Using the mark in the front-end and in the Reporting badge images. That is application work and goes through the normal issue workflow.
+- Using the mark in the front-end. That is application work and goes through the normal issue workflow.
+
+The Reporting badge images show the mark on the left of the label. `SvgBadgeRenderer` holds its own copy of the mark in the dark-surface colors (the label is dark grey), drawn at 14 px. When the mark changes in `build.mjs`, update that copy too.
