@@ -9,7 +9,9 @@ namespace TimeForCode.Shared.ApiDocs
     /// </summary>
     public static class OpenApiDocumentationCheck
     {
-        // Framework-owned schemas that TimeForCode cannot document.
+        /// <summary>
+        /// Framework-owned schemas that TimeForCode cannot document.
+        /// </summary>
         private static readonly string[] ExemptSchemas = ["ProblemDetails", "HttpValidationProblemDetails"];
 
         /// <summary>
@@ -100,7 +102,9 @@ namespace TimeForCode.Shared.ApiDocs
             }
         }
 
-        // The generator fills in the HTTP reason phrase ("Bad Request") when a response is not documented, which says nothing about the endpoint.
+        /// <summary>
+        /// The generator fills in the HTTP reason phrase ("Bad Request") when a response is not documented, which says nothing about the endpoint.
+        /// </summary>
         private static bool HasSpecificResponseDescription(JsonProperty response)
         {
             if (!HasDescription(response.Value))

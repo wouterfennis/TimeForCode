@@ -69,7 +69,9 @@ namespace TimeForCode.Frontend.Bff.Sessions
 
         private sealed record CeremonyResponse(string CeremonyId, string OptionsJson);
 
-        // The API reads the token value; the expiry in the body is informational, so a far date keeps the request well formed.
+        /// <summary>
+        /// The API reads the token value; the expiry in the body is informational, so a far date keeps the request well formed.
+        /// </summary>
         private static object RefreshBody(string refreshToken) => new { refreshToken = new { token = refreshToken, expiresAfter = DateTimeOffset.MaxValue } };
 
         private static async Task<IssuedTokens?> ReadTokensAsync(HttpResponseMessage response, CancellationToken cancellationToken)

@@ -96,8 +96,10 @@ namespace TimeForCode.Reporting.Specifications.Steps
             _donationData.AddProjectContribution(Constants.TestProjectId, new ProjectContribution(Constants.ContributorIdOf(login), login, hours));
         }
 
-        // Registered, submitted and approved through the Donation API directly with its own tokens, so the scenario's own identity
-        // (or absence of one) stays untouched and the scenario user is not the maintainer.
+        /// <summary>
+        /// Registered, submitted and approved through the Donation API directly with its own tokens, so the scenario's own identity
+        /// (or absence of one) stays untouched and the scenario user is not the maintainer.
+        /// </summary>
         private static async Task<string> RegisterLiveProjectAsync()
         {
             using HttpClient maintainer = CreateDonationClient(await GetMaintainerTokenAsync());
@@ -144,7 +146,9 @@ namespace TimeForCode.Reporting.Specifications.Steps
             }
         }
 
-        // Cached: a sign-in is three calls against the shared sign-in rate limit, which every live scenario would otherwise spend again.
+        /// <summary>
+        /// Cached: a sign-in is three calls against the shared sign-in rate limit, which every live scenario would otherwise spend again.
+        /// </summary>
         private static readonly LiveTokenCache MaintainerToken = new(SignInMaintainerAsync);
 
         private static Task<string> GetMaintainerTokenAsync() => MaintainerToken.GetAsync();

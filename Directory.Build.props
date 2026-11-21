@@ -8,4 +8,12 @@
     <Verify_SponsorshipExemptionUntil>2027-10</Verify_SponsorshipExemptionUntil>
   </PropertyGroup>
 
+  <!-- TFC0001: a // comment directly above a declaration fails the build; use an XML doc (///). -->
+  <ItemGroup Condition="'$(MSBuildProjectName)' != 'TimeForCode.Shared.Analyzers'">
+    <ProjectReference Include="$(MSBuildThisFileDirectory)src/Shared/TimeForCode.Shared.Analyzers/TimeForCode.Shared.Analyzers.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false"
+                      SetTargetFramework="TargetFramework=netstandard2.0" />
+  </ItemGroup>
+
 </Project>

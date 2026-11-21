@@ -165,7 +165,9 @@ namespace TimeForCode.Donation.Infrastructure.Tests.Services
             };
         }
 
-        // Local DTO models that mirror GithubRepositoryResponse so we can serialize test payloads.
+        /// <summary>
+        /// Local DTO models that mirror GithubRepositoryResponse so we can serialize test payloads.
+        /// </summary>
         private sealed class GithubRepositoryResponseTestModel
         {
             public required string Name { get; init; }

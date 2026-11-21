@@ -29,7 +29,9 @@ namespace TimeForCode.Frontend.Bff.Sessions
         private readonly Lazy<IMongoCollection<Session>> _sessions;
         private readonly Lazy<IMongoCollection<LoginAttempt>> _attempts;
 
-        // The client is created on first use, so starting the host (also at build time for the OpenAPI document) needs no database.
+        /// <summary>
+        /// The client is created on first use, so starting the host (also at build time for the OpenAPI document) needs no database.
+        /// </summary>
         public MongoSessionStore(IOptions<DbOptions> options)
             : this(new Lazy<IMongoDatabase>(() =>
                 new MongoClient(options.Value.ConnectionString).GetDatabase(options.Value.DatabaseName)))

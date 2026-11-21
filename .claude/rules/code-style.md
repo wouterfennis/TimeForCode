@@ -33,6 +33,14 @@ After a solution-wide `dotnet format`, run one plain `dotnet build TimeForCode.s
 
 ---
 
+## Comments above declarations
+
+Put an XML doc (`/// <summary>`, with `<param>` and `<returns>` where they add information) above every type and member (public, internal, protected or private, in `src/` and `tst/`). A plain `//` comment directly above a declaration does not show in IDE tooltips or generated docs and **fails the build** (analyzer `TFC0001` in `src/Shared/TimeForCode.Shared.Analyzers`, wired in through `Directory.Build.props`).
+
+`//` stays allowed inside method bodies, as `// TODO(review): ...` markers, and above a declaration when a blank line separates them. Escape `<`, `>` and `&` in the doc text (`&lt;`, `&gt;`, `&amp;`).
+
+---
+
 ## Project Style Conventions (driven by `.editorconfig`)
 
 | Rule | Value |

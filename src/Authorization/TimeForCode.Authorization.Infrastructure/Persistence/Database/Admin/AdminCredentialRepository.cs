@@ -36,7 +36,9 @@ namespace TimeForCode.Authorization.Infrastructure.Persistence.Database.Admin
             }
         }
 
-        // One conditional update, so two assertions that race on the same stored counter cannot both advance it.
+        /// <summary>
+        /// One conditional update, so two assertions that race on the same stored counter cannot both advance it.
+        /// </summary>
         internal static FilterDefinition<AdminCredential> AdvanceFilter(long presented)
         {
             var isSingleton = Builders<AdminCredential>.Filter.Eq(x => x.Id, AdminCredential.SingletonId);

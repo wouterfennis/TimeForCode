@@ -32,7 +32,9 @@ namespace TimeForCode.Shared.Live
             }
         }
 
-        // The expiry is read once, so a token that is not a readable JWT faults the task and is not kept.
+        /// <summary>
+        /// The expiry is read once, so a token that is not a readable JWT faults the task and is not kept.
+        /// </summary>
         private async Task<string> AcquireAsync()
         {
             string token = await _acquire();

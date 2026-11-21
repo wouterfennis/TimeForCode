@@ -12,7 +12,9 @@ namespace TimeForCode.Frontend.Bff
     [ExcludeFromCodeCoverage(Justification = "Application entrypoint")]
     public class Program
     {
-        // Only a type to hang the entry point on (and to name in the web application factory of the tests); nobody creates one.
+        /// <summary>
+        /// Only a type to hang the entry point on (and to name in the web application factory of the tests); nobody creates one.
+        /// </summary>
         protected Program()
         {
         }

@@ -129,7 +129,9 @@ namespace TimeForCode.Authorization.Infrastructure.Services.Admin
             return new AdminAssertionOutcome { Succeeded = true, SignCount = result.Passkey.SignCount };
         }
 
-        // The state is taken (deleted) first, so the ceremony works once even when it then fails; an unreadable state counts as unknown.
+        /// <summary>
+        /// The state is taken (deleted) first, so the ceremony works once even when it then fails; an unreadable state counts as unknown.
+        /// </summary>
         private async Task<string?> TakeStateAsync(CeremonyKind kind, string ceremonyId)
         {
             var stored = await _ceremonyStates.TakeAsync(kind, ceremonyId);

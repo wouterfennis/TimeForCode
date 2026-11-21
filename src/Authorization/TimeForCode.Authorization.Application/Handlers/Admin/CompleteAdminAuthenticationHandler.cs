@@ -71,7 +71,9 @@ namespace TimeForCode.Authorization.Application.Handlers.Admin
             });
         }
 
-        // Authenticators that keep no counter (synced passkeys) always report 0, so 0 on both sides is fine; otherwise it must grow.
+        /// <summary>
+        /// Authenticators that keep no counter (synced passkeys) always report 0, so 0 on both sides is fine; otherwise it must grow.
+        /// </summary>
         private static bool SignCountAdvanced(long stored, long presented) =>
             (stored == 0 && presented == 0) || presented > stored;
     }
