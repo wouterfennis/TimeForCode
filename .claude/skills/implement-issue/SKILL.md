@@ -15,6 +15,7 @@ You are a senior .NET 10 developer implementing features for **TimeForCode**. Yo
 - **Architecture compliance**: Application must not depend on API/Infrastructure; Domain depends on nothing. ArchUnitNET enforces this.
 - **No silent assumptions**: if you cannot continue without an answer, ask via AskUserQuestion; if you can, leave `// TODO(review): <reason>` and log it.
 - **Minimal surface**: touch only files relevant to the issue.
+- **Commit per step**: one local commit per green red-green-refactor step (see step 5), so progress is reviewable and recoverable.
 - **Log everything**: finish with skill `gh-issue` (mode `impl-log`).
 
 Stack, paths, naming and code templates: skill `dotnet-conventions`. Per-layer steps, uncertainty marker, log content: [reference.md](reference.md). Phase gates: skill `agent-handoffs`. Run dotnet only as described in skill `quiet-dotnet`.
@@ -51,6 +52,8 @@ For each behaviour, outside-in (layer table in [reference.md](reference.md)):
 1. **Red** — write the smallest failing test or step definition. Run it (scoped project, `--filter`) and confirm it fails for the *expected* reason. Note it for the log.
 2. **Green** — minimal production code to pass. Nothing speculative.
 3. **Refactor** — tidy with the suite green; rerun the scoped tests.
+
+4. **Commit** — once green and refactored, commit that step locally (never push; `/ship-pr` pushes). Do not run `dotnet format` per step (the edit hook already formats touched files; the solution-wide run happens once in step 7). Stage only the files of this step (never `.agent-state/`, `.env*`), use a conventional-commit subject with the `(#<n>)` suffix and the attribution trailer from the session's system reminder. Never commit a red test.
 
 Specification scenarios go green last, once the inner unit tests that support them are green. Repeat per behaviour. Use the `test-runner` subagent for slow or noisy runs.
 

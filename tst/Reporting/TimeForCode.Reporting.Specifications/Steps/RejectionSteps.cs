@@ -30,6 +30,9 @@ namespace TimeForCode.Reporting.Specifications.Steps
         [Then("The request is rejected as not found")]
         public void ThenTheRequestIsRejectedAsNotFound() => AssertRejectedWith(HttpStatusCode.NotFound);
 
+        [Then("The request is rejected as too many requests")]
+        public void ThenTheRequestIsRejectedAsTooManyRequests() => AssertRejectedWith(HttpStatusCode.TooManyRequests);
+
         private void AssertRejectedWith(HttpStatusCode expected)
         {
             _context.LastStatusCode.Should().Be(expected, "the request should be rejected with status {0}", expected);

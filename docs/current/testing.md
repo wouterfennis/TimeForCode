@@ -220,7 +220,7 @@ Use the returned `token` as a bearer token on the Donation API. A plain `podman 
 
 ## Seeding the Local Stack
 
-`tools/TimeForCode.Seeder` is a console application that fills a freshly started local stack with deterministic demo data. It calls the real APIs through the generated NSwag clients, so it creates only states the application can produce. It sits outside `src/` and nothing references it.
+`tools/TimeForCode.Seeder` is a console application that fills a freshly started local stack with deterministic demo data. It calls the real APIs through the generated NSwag clients (the Reporting API has none, so the badge tiers go through a small hand-written client), so it creates only states the application can produce. It sits outside `src/` and nothing references it.
 
 It signs in as fixed personas through the mock identity provider (`alice-contributor`, `bob-contributor`, `carol-contributor`, `maya-maintainer`, `marco-maintainer`, `dana-donor`, `dirk-donor`) and as the administrator through the test-only admin token endpoint. Each persona name selects a stable mock user (see [Identity Provider Mock Service](#identity-provider-mock-service)). The scenarios run in this fixed order:
 
@@ -232,6 +232,7 @@ It signs in as fixed personas through the mock identity provider (`alice-contrib
 | `donations` | Active organization and individual donations, a pending one and a cancelled one |
 | `contributions` | Logged hours, one corrected contribution and one deleted contribution |
 | `anonymised-contributor` | A contributor who logged hours and then deleted the account |
+| `badge-tiers` | Badge tiers through the Reporting API, defined by the administrator after the donations and contributions: organization Silver at 5 and Gold at 10 hours, contributor Bronze at 5 and Silver at 8 hours |
 
 ### Story lines in the data
 
@@ -244,6 +245,7 @@ The scenarios build on each other, so the data tells connected stories you can f
 | The contributor who left | Carol logs 3 hours on the toolkit and then deletes the account; the hours stay, attributed to a generic deleted user |
 | Globex backs the library | Dirk (Globex Engineering) pledges 25 hours to Marco's `second-approved-library`, active; Bob logs 6 hours there. Dirk's 15-hour pledge on the toolkit is cancelled |
 | An individual donor | Alice pledges 5 hours to the library as herself and leaves the donation pending |
+| Badges for the seeded hours | Acme has 12 logged hours and earns Gold, Globex has 6 and earns Silver; Alice has 9 hours and earns Silver, Bob has 6 and earns Bronze, and the deleted user's 3 hours stay below the first tier (see [Trying the badges locally](#trying-the-badges-locally)) |
 | Maya's other projects | `draft-notes` is not submitted, `pending-parser` waits for the administrator, `needs-work-cli` was returned with a reason and `archived-legacy` was approved and then archived |
 
 The API has no rejection state, so the administrator's decisions are approving and returning a project with a reason; the archived project stands in for a rejected one.
@@ -254,9 +256,74 @@ $env:TIMEFORCODE_LIVE_TEST_ADMIN_SECRET = $env:TEST_ADMIN_ACCESS_SECRET
 dotnet run --project tools/TimeForCode.Seeder
 ```
 
-The defaults match the local compose stack (Authorization `http://localhost:8080`, Donation `http://localhost:8082`, login redirect `http://localhost:8084`). Override them with `--authorization-url`, `--donation-url`, `--redirect-uri` and `--admin-secret`, or with the `TIMEFORCODE_LIVE_*` variables of the live tier; arguments win. Prefer the environment variable for the secret, because an argument shows up in the process list and the shell history. The seeder fails with a message when the admin secret is missing, when an API does not answer or when the stack refuses the admin token.
+The defaults match the local compose stack (Authorization `http://localhost:8080`, Donation `http://localhost:8082`, Reporting `http://localhost:8083`, login redirect `http://localhost:8084`). Override them with `--authorization-url`, `--donation-url`, `--reporting-url`, `--redirect-uri` and `--admin-secret`, or with the `TIMEFORCODE_LIVE_*` variables of the live tier; arguments win. Prefer the environment variable for the secret, because an argument shows up in the process list and the shell history. The seeder fails with a message when the admin secret is missing, when an API does not answer or when the stack refuses the admin token.
 
 The data is the same on every run against a fresh stack, but the seeder is not idempotent: a second run against a seeded stack fails on duplicate names and repositories. Reset by dropping the Mongo volume: `.\scripts\start-local.ps1 -ResetData`. The ordering, persona selection and each scenario's calls are unit-tested without a stack in `tst/Seeder/TimeForCode.Seeder.Tests`.
+
+---
+
+## Trying the badges locally
+
+A manual check of the embeddable badge images (#190) against the local stack, seeded with the data above. Use a fresh stack, because the seeder is not idempotent:
+
+```powershell
+$env:TEST_ADMIN_ACCESS_SECRET = "my-local-admin-secret"
+$env:TIMEFORCODE_LIVE_TEST_ADMIN_SECRET = $env:TEST_ADMIN_ACCESS_SECRET
+.\scripts\start-local.ps1 -ResetData
+dotnet run --project tools/TimeForCode.Seeder
+```
+
+The next script looks up the identifiers and writes a Markdown page with every badge variant. Set `$unpublished` to the identifier of a project that is not `Active`, for example `draft-notes` from `GET /api/v1/maintainer/me/projects` as Maya (see [Admin Actions on a Running Stack](#admin-actions-on-a-running-stack) for tokens), or leave it empty to skip that row:
+
+```powershell
+$donation = 'http://localhost:8082'
+$reporting = 'http://localhost:8083'
+$unpublished = ''
+
+$projects = (Invoke-RestMethod "$donation/api/v1/project").projects
+$toolkit = $projects | Where-Object { $_.fullName -like '*approved-toolkit' } | Select-Object -First 1
+$library = $projects | Where-Object { $_.fullName -like '*second-approved-library' } | Select-Object -First 1
+$acme = (Invoke-RestMethod "$donation/api/v1/donororganization").organizations | Where-Object name -eq 'Acme Software'
+
+$hours = @{}
+foreach ($project in $toolkit, $library) {
+    foreach ($c in (Invoke-RestMethod "$donation/api/v1/project/$($project.id)/contribution").contributions) { $hours[$c.contributorId] += $c.hours }
+}
+$ranked = $hours.GetEnumerator() | Sort-Object Value -Descending   # 9 hours, 6 hours, 3 hours
+
+$badge = @(
+    @('Project hours received', "project/$($toolkit.id)/badge/hours-received.svg"),
+    @('Project progress', "project/$($toolkit.id)/badge/progress.svg"),
+    @('Organization tier (Acme, Gold)', "donororganization/$($acme.id)/badge.svg"),
+    @('Contributor tier (9 hours, Silver)', "contributor/$($ranked[0].Key)/badge.svg"),
+    @('Contributor tier (6 hours, Bronze)', "contributor/$($ranked[1].Key)/badge.svg"),
+    @('Contributor without a badge (3 hours, no badge yet)', "contributor/$($ranked[2].Key)/badge.svg"),
+    @('Unknown contributor (the same image as the row above)', 'contributor/000000000000000000000000/badge.svg'),
+    @('Unknown project (not found)', 'project/000000000000000000000000/badge/hours-received.svg'),
+    @('Malformed project identifier (not found)', 'project/not-an-id/badge/hours-received.svg'),
+    @('Unknown organization (not found)', 'donororganization/000000000000000000000000/badge.svg')
+)
+if ($unpublished) { $badge += ,@('Unpublished project (not found)', "project/$unpublished/badge/hours-received.svg") }
+
+$page = $badge | ForEach-Object { "| $($_[0]) | ![$($_[0])]($reporting/api/v1/reporting/$($_[1])) |" }
+Set-Content "$env:TEMP\badges-preview.md" (@('| Badge | Image |', '| --- | --- |') + $page)
+code "$env:TEMP\badges-preview.md"   # then open the Markdown preview
+```
+
+The images load from `http://localhost:8083`; if the preview shows none, allow insecure local content in the preview (command "Markdown: Change preview security settings"). Expect the project badges to read `40 hours` and `12 / 40 hours (30%)`, Acme to read `Gold`, the three contributors to read `Silver`, `Bronze` and `no badge yet`, and every unknown, malformed or unpublished target to read `not found`. The unknown contributor and the contributor without a badge must look identical.
+
+Headers, rate limit and the unavailable badge (the local stack allows 600 public requests a minute per address):
+
+```powershell
+$url = "$reporting/api/v1/reporting/project/$($toolkit.id)/badge/hours-received.svg"
+curl.exe -i $url                          # 200, Content-Type: image/svg+xml, Cache-Control: public, max-age=300
+1..700 | ForEach-Object { curl.exe -s -o NUL -w "%{http_code}\n" $url } | Group-Object   # 200 first, then 429
+podman compose stop donation-api
+curl.exe -i $url                          # 200, an "unavailable" badge, Cache-Control: public, max-age=30
+podman compose start donation-api
+```
+
+Wait a minute after the rate-limit run before the next check, because the window is a minute. Record the outcome in the implementation log of the issue.
 
 ---
 

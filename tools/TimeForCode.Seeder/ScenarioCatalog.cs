@@ -12,7 +12,8 @@ namespace TimeForCode.Seeder
             new ProjectLifecycleScenario(),
             new DonationsScenario(),
             new ContributionsScenario(),
-            new AnonymisedContributorScenario()
+            new AnonymisedContributorScenario(),
+            new BadgeTiersScenario()
         ];
     }
 }

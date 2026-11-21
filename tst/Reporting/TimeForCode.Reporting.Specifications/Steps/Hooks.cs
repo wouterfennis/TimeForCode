@@ -49,6 +49,7 @@ namespace TimeForCode.Reporting.Specifications.Steps
                 _objectContainer.RegisterInstanceAs(new InMemoryDonationDataSource());
                 _objectContainer.RegisterInstanceAs(new InMemoryBadgeTierRepository());
                 _objectContainer.RegisterInstanceAs(new InMemoryBadgeAwardRepository());
+                _objectContainer.RegisterInstanceAs(new PublicRateLimit());
                 return;
             }
 
@@ -60,6 +61,7 @@ namespace TimeForCode.Reporting.Specifications.Steps
             _objectContainer.RegisterInstanceAs(factory.Services.GetRequiredService<InMemoryDonationDataSource>());
             _objectContainer.RegisterInstanceAs(factory.Services.GetRequiredService<InMemoryBadgeTierRepository>());
             _objectContainer.RegisterInstanceAs(factory.Services.GetRequiredService<InMemoryBadgeAwardRepository>());
+            _objectContainer.RegisterInstanceAs(factory.Services.GetRequiredService<PublicRateLimit>());
         }
 
         [AfterTestRun]

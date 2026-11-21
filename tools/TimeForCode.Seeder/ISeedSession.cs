@@ -3,7 +3,7 @@ using TimeForCode.Donation.Api.Client;
 
 namespace TimeForCode.Seeder
 {
-    internal sealed record SeedClients(IDonationClient Donation, IAuthClient Auth);
+    internal sealed record SeedClients(IDonationClient Donation, IAuthClient Auth, IReportingClient Reporting);
 
     /// <summary>Signs in personas and hands out API clients that act as them.</summary>
     internal interface ISeedSession

@@ -91,7 +91,7 @@ namespace TimeForCode.Seeder.Tests
             public Task<SeedClients> SignInAsync(Persona persona)
             {
                 SignedInAs.Add(persona.Name);
-                return Task.FromResult(new SeedClients(new Mock<IDonationClient>().Object, new Mock<IAuthClient>().Object));
+                return Task.FromResult(new SeedClients(new Mock<IDonationClient>().Object, new Mock<IAuthClient>().Object, new Mock<IReportingClient>().Object));
             }
         }
 

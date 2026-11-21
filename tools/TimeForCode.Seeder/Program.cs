@@ -1,7 +1,9 @@
+using System.Diagnostics.CodeAnalysis;
 using TimeForCode.Authorization.Api.Client;
 
 namespace TimeForCode.Seeder
 {
+    [ExcludeFromCodeCoverage(Justification = "Application entrypoint")]
     internal static class Program
     {
         private static async Task<int> Main(string[] args)
@@ -11,7 +13,7 @@ namespace TimeForCode.Seeder
                 SeederOptions options = SeederOptions.Resolve(args, Environment.GetEnvironmentVariable);
 
                 using var probeClient = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
-                await StackProbe.CheckAsync(probeClient, options.AuthorizationUrl, options.DonationUrl);
+                await StackProbe.CheckAsync(probeClient, options.AuthorizationUrl, options.DonationUrl, options.ReportingUrl);
 
                 await new SeedRunner(new LiveSeedSession(options), Console.WriteLine).RunAsync(ScenarioCatalog.All);
 

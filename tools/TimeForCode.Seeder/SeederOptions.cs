@@ -3,17 +3,20 @@ using TimeForCode.Shared.Live;
 namespace TimeForCode.Seeder
 {
     /// <summary>Addresses and secret of the stack to seed. Arguments win over environment variables, which win over the local compose defaults.</summary>
-    internal sealed record SeederOptions(Uri AuthorizationUrl, Uri DonationUrl, Uri ClientRedirectUri, string AdminSecret)
+    internal sealed record SeederOptions(Uri AuthorizationUrl, Uri DonationUrl, Uri ReportingUrl, Uri ClientRedirectUri, string AdminSecret)
     {
         public const string DonationUrlVariable = "TIMEFORCODE_LIVE_DONATION_URL";
+        public const string ReportingUrlVariable = "TIMEFORCODE_LIVE_REPORTING_URL";
 
         private const string AuthorizationUrlOption = "--authorization-url";
         private const string DonationUrlOption = "--donation-url";
+        private const string ReportingUrlOption = "--reporting-url";
         private const string ClientRedirectUriOption = "--redirect-uri";
         private const string AdminSecretOption = "--admin-secret";
 
         private const string DefaultAuthorizationUrl = "http://localhost:8080"; // NOSONAR S1075: local compose address, overridable
         private const string DefaultDonationUrl = "http://localhost:8082"; // NOSONAR S1075: local compose address, overridable
+        private const string DefaultReportingUrl = "http://localhost:8083"; // NOSONAR S1075: local compose address, overridable
         private const string DefaultClientRedirectUri = "http://localhost:8084"; // NOSONAR S1075: local compose address, overridable
 
         public static SeederOptions Resolve(IReadOnlyList<string> args, Func<string, string?> environment)
@@ -30,13 +33,14 @@ namespace TimeForCode.Seeder
             return new SeederOptions(
                 ToUri(AuthorizationUrlOption, Pick(given, AuthorizationUrlOption, environment, LiveAuthentication.AuthorizationUrlVariable) ?? DefaultAuthorizationUrl),
                 ToUri(DonationUrlOption, Pick(given, DonationUrlOption, environment, DonationUrlVariable) ?? DefaultDonationUrl),
+                ToUri(ReportingUrlOption, Pick(given, ReportingUrlOption, environment, ReportingUrlVariable) ?? DefaultReportingUrl),
                 ToUri(ClientRedirectUriOption, Pick(given, ClientRedirectUriOption, environment, LiveAuthentication.ClientRedirectUriVariable) ?? DefaultClientRedirectUri),
                 secret);
         }
 
         private static Dictionary<string, string> ParseArguments(IReadOnlyList<string> args)
         {
-            string[] known = [AuthorizationUrlOption, DonationUrlOption, ClientRedirectUriOption, AdminSecretOption];
+            string[] known = [AuthorizationUrlOption, DonationUrlOption, ReportingUrlOption, ClientRedirectUriOption, AdminSecretOption];
             var given = new Dictionary<string, string>();
 
             for (int i = 0; i < args.Count; i += 2)

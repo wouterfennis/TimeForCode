@@ -510,6 +510,182 @@
         }
       }
     },
+    "/api/v1/reporting/project/{id}/badge/hours-received.svg": {
+      "get": {
+        "tags": [
+          "BadgeImage"
+        ],
+        "summary": "The badge with the hours a published project received.",
+        "operationId": "GetProjectHoursReceivedBadge",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The project identifier.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "An SVG image: the hours received, or \"not found\" for an unknown, malformed or unpublished project, or \"unavailable\".",
+            "content": {
+              "image/svg+xml": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. Retry after the number of seconds given in the Retry-After header.",
+            "headers": {
+              "Retry-After": {
+                "description": "Number of seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reporting/project/{id}/badge/progress.svg": {
+      "get": {
+        "tags": [
+          "BadgeImage"
+        ],
+        "summary": "The badge with the progress of a published project: the hours logged out of the hours received, with a percentage.",
+        "operationId": "GetProjectProgressBadge",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The project identifier.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "An SVG image: the progress, or \"not found\" for an unknown, malformed or unpublished project, or \"unavailable\".",
+            "content": {
+              "image/svg+xml": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. Retry after the number of seconds given in the Retry-After header.",
+            "headers": {
+              "Retry-After": {
+                "description": "Number of seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reporting/donororganization/{id}/badge.svg": {
+      "get": {
+        "tags": [
+          "BadgeImage"
+        ],
+        "summary": "The badge with the highest tier of a donor organization.",
+        "operationId": "GetOrganizationBadge",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The donor organization identifier.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "An SVG image: the highest tier, \"no badge yet\", \"not found\" for an unknown or malformed organization, or \"unavailable\".",
+            "content": {
+              "image/svg+xml": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. Retry after the number of seconds given in the Retry-After header.",
+            "headers": {
+              "Retry-After": {
+                "description": "Number of seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reporting/contributor/{id}/badge.svg": {
+      "get": {
+        "tags": [
+          "BadgeImage"
+        ],
+        "summary": "The badge with the highest tier of a contributor. An unknown or malformed contributor shows the same image as a\r\ncontributor without badges, so the badge does not confirm that an identifier exists.",
+        "operationId": "GetContributorBadge",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The contributor identifier.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "An SVG image: the highest tier, \"no badge yet\", or \"unavailable\".",
+            "content": {
+              "image/svg+xml": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. Retry after the number of seconds given in the Retry-After header.",
+            "headers": {
+              "Retry-After": {
+                "description": "Number of seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/reporting/project/{id}/donation-report": {
       "get": {
         "tags": [
@@ -1511,6 +1687,9 @@
   "tags": [
     {
       "name": "Badge"
+    },
+    {
+      "name": "BadgeImage"
     },
     {
       "name": "ProjectReporting"

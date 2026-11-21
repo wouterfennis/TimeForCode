@@ -58,6 +58,19 @@ namespace TimeForCode.Reporting.Specifications.Steps
             _context.ProjectId = IdOf(0xdead);
         }
 
+        [Given("The project identifier is {string}")]
+        public void GivenTheProjectIdentifierIs(string projectId)
+        {
+            _context.ProjectId = projectId;
+        }
+
+        [Given("The project is not published")]
+        public void GivenTheProjectIsNotPublished()
+        {
+            // The project exists and keeps its maintainer; like the Donation context, its public reads answer not found.
+            _donationData.Unpublish(_context.ProjectId!);
+        }
+
         [Given("The project has a donation of {int} hours with status {string}")]
         public void GivenTheProjectHasADonationOfHoursWithStatus(int hours, string status)
         {

@@ -16,7 +16,8 @@ namespace TimeForCode.Seeder.Tests
                 "project-lifecycle",
                 "donations",
                 "contributions",
-                "anonymised-contributor");
+                "anonymised-contributor",
+                "badge-tiers");
         }
 
         [TestMethod]
@@ -55,10 +56,10 @@ namespace TimeForCode.Seeder.Tests
         }
 
         [TestMethod]
-        public void Personas_Admin_IsOnlyRequestedByTheProjectLifecycle()
+        public void Personas_Admin_IsOnlyRequestedByTheProjectLifecycleAndTheBadgeTiers()
         {
             ScenarioCatalog.All.Where(s => s.Personas.Contains(Personas.Admin)).Select(s => s.Name)
-                .Should().Equal("project-lifecycle");
+                .Should().Equal("project-lifecycle", "badge-tiers");
         }
 
         [GeneratedRegex("^[A-Za-z0-9._ -]+$")]

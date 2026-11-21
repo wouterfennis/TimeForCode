@@ -26,7 +26,8 @@ namespace TimeForCode.Seeder
             string token = await AcquireTokenAsync(persona);
             var clients = new SeedClients(
                 new DonationClient(CreateHttpClient(_options.DonationUrl, token)),
-                new AuthClient(CreateHttpClient(_options.AuthorizationUrl, token)));
+                new AuthClient(CreateHttpClient(_options.AuthorizationUrl, token)),
+                new ReportingClient(CreateHttpClient(_options.ReportingUrl, token)));
             _clients[persona.Name] = clients;
             return clients;
         }

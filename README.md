@@ -21,6 +21,7 @@
 - [Tech Stack](#tech-stack)
 - [Getting Started](#getting-started)
 - [Running with Real GitHub API](#running-with-real-github-api)
+- [Show your TimeForCode badge](#show-your-timeforcode-badge)
 - [Contributing](#contributing)
 - [License](#license)
 - [Contact](#contact)
@@ -140,6 +141,19 @@ podman compose -f docker-compose.yaml -f docker-compose.real-github.yml --env-fi
 > `.env.real-github` is listed in `.gitignore` and will never be committed.
 
 ---
+
+## Show your TimeForCode badge
+
+Projects, donor organizations and contributors can show their standing in a GitHub README with a small image that updates itself and needs no login. Replace `<host>` with the address of the Reporting API (locally `http://localhost:8083`) and `<id>` with the identifier of the project, donor organization or contributor:
+
+```markdown
+![TimeForCode hours received](https://<host>/api/v1/reporting/project/<id>/badge/hours-received.svg)
+![TimeForCode progress](https://<host>/api/v1/reporting/project/<id>/badge/progress.svg)
+![TimeForCode organization](https://<host>/api/v1/reporting/donororganization/<id>/badge.svg)
+![TimeForCode contributor](https://<host>/api/v1/reporting/contributor/<id>/badge.svg)
+```
+
+An unknown, malformed or unpublished target shows a neutral "not found" badge and a recipient without a badge shows "no badge yet", so the image never breaks. Responses are cached for five minutes (30 seconds while the Donation API is unavailable) and fall under the public rate limit. Only totals and tier names appear. Details and status codes: [API surface](docs/current/api-surface.md#reporting-api); how it looks: [design and examples](docs/target/embeddable-badges.md).
 
 ## Contributing
 

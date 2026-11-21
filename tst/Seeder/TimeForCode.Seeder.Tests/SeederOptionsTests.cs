@@ -52,6 +52,28 @@ namespace TimeForCode.Seeder.Tests
         }
 
         [TestMethod]
+        public void Resolve_OnlySecret_UsesTheLocalReportingAddress()
+        {
+            SeederOptions.Resolve([], name => Lookup(SecretOnly, name)).ReportingUrl.Should().Be(new Uri("http://localhost:8083"));
+        }
+
+        [TestMethod]
+        public void Resolve_ReportingEnvironment_OverridesTheDefault()
+        {
+            var env = new Dictionary<string, string?>(SecretOnly) { ["TIMEFORCODE_LIVE_REPORTING_URL"] = "http://reporting:9100" };
+
+            SeederOptions.Resolve([], name => Lookup(env, name)).ReportingUrl.Should().Be(new Uri("http://reporting:9100"));
+        }
+
+        [TestMethod]
+        public void Resolve_ReportingArgument_OverridesTheEnvironment()
+        {
+            var env = new Dictionary<string, string?>(SecretOnly) { ["TIMEFORCODE_LIVE_REPORTING_URL"] = "http://reporting:9100" };
+
+            SeederOptions.Resolve(["--reporting-url", "http://other:3"], name => Lookup(env, name)).ReportingUrl.Should().Be(new Uri("http://other:3"));
+        }
+
+        [TestMethod]
         public void Resolve_RelativeUrl_FailsNamingTheOption()
         {
             Action act = () => SeederOptions.Resolve(["--donation-url", "not a url"], name => Lookup(SecretOnly, name));

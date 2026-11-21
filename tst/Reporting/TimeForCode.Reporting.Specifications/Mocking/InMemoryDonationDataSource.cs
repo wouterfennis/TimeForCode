@@ -17,8 +17,25 @@ namespace TimeForCode.Reporting.Specifications.Mocking
         private readonly Dictionary<string, Organization> _organizations = [];
         private readonly Dictionary<string, Project> _projects = [];
 
+        private bool _unavailable;
+
+        /// <summary>Makes every public read fail like a Donation context that cannot be reached.</summary>
+        internal void MakeUnavailable()
+        {
+            _unavailable = true;
+        }
+
+        /// <summary>The project stays, with its maintainer, but its public reads answer not found, like an unpublished project of the Donation context.</summary>
+        internal void Unpublish(string id)
+        {
+            _projects[id].Published = false;
+        }
+
+        private static Result<T> Unreachable<T>() => Result<T>.Failure("The Donation API could not be reached.", HttpStatusCode.BadGateway);
+
         internal void Clear()
         {
+            _unavailable = false;
             _organizations.Clear();
             _projects.Clear();
         }
@@ -111,17 +128,22 @@ namespace TimeForCode.Reporting.Specifications.Mocking
 
         public Task<Result<IReadOnlyList<ProjectDonation>>> GetProjectDonationsAsync(string projectId, CancellationToken cancellationToken)
         {
-            return Task.FromResult(ReadProject(projectId, p => p.Donations));
+            return Task.FromResult(_unavailable ? Unreachable<IReadOnlyList<ProjectDonation>>() : ReadProject(projectId, p => p.Donations));
         }
 
         public Task<Result<IReadOnlyList<ProjectContribution>>> GetProjectContributionsAsync(string projectId, CancellationToken cancellationToken)
         {
-            return Task.FromResult(ReadProject(projectId, p => p.Contributions));
+            return Task.FromResult(_unavailable ? Unreachable<IReadOnlyList<ProjectContribution>>() : ReadProject(projectId, p => p.Contributions));
         }
 
         /// <summary>Like the public hours read of the Donation context: not found for an unknown organization, otherwise the hours logged on its Active and Completed donations.</summary>
         public Task<Result<int>> GetOrganizationHoursAsync(string donorOrganizationId, CancellationToken cancellationToken)
         {
+            if (_unavailable)
+            {
+                return Task.FromResult(Unreachable<int>());
+            }
+
             return Task.FromResult(_organizations.TryGetValue(donorOrganizationId, out Organization? organization)
                 ? Result<int>.Success(CountedHours(organization))
                 : Result<int>.Failure("Donor organization not found.", HttpStatusCode.NotFound));
@@ -130,6 +152,11 @@ namespace TimeForCode.Reporting.Specifications.Mocking
         /// <summary>Like the public hours read of the Donation context: a contributor exists once they logged hours; the hours add up over every project.</summary>
         public Task<Result<int>> GetContributorHoursAsync(string contributorId, CancellationToken cancellationToken)
         {
+            if (_unavailable)
+            {
+                return Task.FromResult(Unreachable<int>());
+            }
+
             List<ProjectContribution> contributions = _projects.Values
                 .SelectMany(p => p.Contributions)
                 .Where(c => c.ContributorId == contributorId)
@@ -153,7 +180,7 @@ namespace TimeForCode.Reporting.Specifications.Mocking
 
         private Result<IReadOnlyList<T>> ReadProject<T>(string projectId, Func<Project, List<T>> select)
         {
-            return _projects.TryGetValue(projectId, out Project? project)
+            return _projects.TryGetValue(projectId, out Project? project) && project.Published
                 ? Result<IReadOnlyList<T>>.Success(select(project).ToList())
                 : Result<IReadOnlyList<T>>.Failure("Project not found.", HttpStatusCode.NotFound);
         }
@@ -186,6 +213,7 @@ namespace TimeForCode.Reporting.Specifications.Mocking
         private sealed class Project
         {
             internal string? MaintainerUserId { get; set; }
+            internal bool Published { get; set; } = true;
             internal List<ProjectDonation> Donations { get; } = [];
             internal List<ProjectContribution> Contributions { get; } = [];
         }

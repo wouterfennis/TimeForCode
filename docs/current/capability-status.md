@@ -88,6 +88,7 @@ This document provides an explicit, feature-level view of what is implemented, p
 | Contribution history for a user | ❌ | Not implemented |
 | Impact dashboard | ❌ | Not implemented |
 | Badges and tiers | ✅ | Admin-configured tiers per recipient type (`PUT/DELETE /api/v1/reporting/badge-tier/...`), badges for donor organizations and contributors awarded once per tier (`GET /api/v1/reporting/donororganization/{id}/badges`, `.../contributor/{id}/badges`) and public statistics (`GET /api/v1/reporting/statistics`); back-end only, no front-end yet |
+| Embeddable README badges | ✅ | Anonymous SVG badge images for the hours a project received and its progress (`GET /api/v1/reporting/project/{id}/badge/hours-received.svg`, `.../progress.svg`) and for the highest tier of a donor organization or a contributor (`.../donororganization/{id}/badge.svg`, `.../contributor/{id}/badge.svg`); neutral "not found", "no badge yet" and "unavailable" images instead of errors, cache headers and the `public` rate limit |
 
 ---
 

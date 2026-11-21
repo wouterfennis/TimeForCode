@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="TimeForCode.Seeder.Tests" />
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
   </ItemGroup>
 
 </Project>

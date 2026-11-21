@@ -17,7 +17,7 @@ namespace TimeForCode.Seeder.Tests
         {
             if (!_clients.TryGetValue(persona.Name, out SeedClients? clients))
             {
-                clients = new SeedClients(CreateDonationClient(persona.Name), CreateAuthClient(persona.Name));
+                clients = new SeedClients(CreateDonationClient(persona.Name), CreateAuthClient(persona.Name), CreateReportingClient(persona.Name));
                 _clients[persona.Name] = clients;
             }
 
@@ -66,6 +66,14 @@ namespace TimeForCode.Seeder.Tests
             client.Setup(c => c.DeleteContributionAsync(It.IsAny<string>(), It.IsAny<string>()))
                 .Callback((string id, string contribution) => Calls.Add($"{persona}:DeleteContribution:{contribution}"));
 
+            return client.Object;
+        }
+
+        private IReportingClient CreateReportingClient(string persona)
+        {
+            var client = new Mock<IReportingClient>();
+            client.Setup(c => c.DefineBadgeTierAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>()))
+                .Callback((string type, string name, int hours) => Calls.Add($"{persona}:DefineBadgeTier:{type}:{name}:{hours}"));
             return client.Object;
         }
 

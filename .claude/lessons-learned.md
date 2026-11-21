@@ -35,11 +35,11 @@ Before adding an entry, check whether it belongs in a rule (`.claude/rules/`), a
 - **Why:** The path casing differs between the config and the setup file on Windows, so the module is resolved twice.
 - **How to apply:** Run `npm test` from `C:\Git\...` (upper-case drive letter), for example `Set-Location "C:\Git\TimeForCode\src\Frontend\TimeForCode.Frontend"` in the PowerShell tool, before concluding that the front-end suite is broken.
 
-### The smoke test cannot run twice within a minute
+### Two sign-in-heavy runs within a minute can still hit the `auth` limit
 
-- **Date / issue:** 2026-11-14 / #194
-- **Lesson:** The sign-in, token, refresh and callback endpoints of the Authorization API share the `auth` rate limit (20 requests a minute). One smoke run uses most of it, so a second run (or a manual sign-in script) in the same minute fails at "Code exchange" with `429`, which looks like a regression.
-- **How to apply:** Wait a minute between smoke runs and manual sign-in scripts; check for `429` before debugging.
+- **Date / issue:** 2026-11-14 / #194, updated 2026-11-20 / #190
+- **Lesson:** The sign-in, token, refresh and callback endpoints of the Authorization API share one `auth` rate limit, a single bucket for everyone (40 requests a minute since the limits were doubled in #190, was 20). One smoke run uses most of the old budget; the seeder (eight personas) alone exceeded 20 and failed with `429` at `anonymised-contributor`. The CI wait step between the Donation and Reporting live scenarios was removed once smoke, Donation live and Reporting live passed back to back at 40.
+- **How to apply:** Check for `429` before debugging a sign-in failure. Running the smoke test and the seeder in the same minute can still exceed 40; leave a minute between them.
 
 ### `podman compose` fails or hangs when the Docker API pipe is missing
 

@@ -250,6 +250,8 @@ sequenceDiagram
     ReportingAPI-->>Visitor: 200 { badges: [ { name, awardedAt } ] }
 ```
 
+A README embeds the same data as an image: `GET /api/v1/reporting/donororganization/{id}/badge.svg` (also `contributor/{id}/badge.svg` and `project/{id}/badge/hours-received.svg` or `progress.svg`) sends a `GetOrganizationBadgeImageQuery` (or the contributor or project variant), whose handler reuses the badge or public summary handler, picks the earned tier with the highest threshold and returns a state (value, no badge yet, not found, unavailable). `SvgBadgeRenderer` draws it and the controller answers `200 image/svg+xml` with `Cache-Control: public, max-age=300` (30 seconds for "unavailable"); a failure of the Donation API never becomes an error body.
+
 Administrators define the tiers with `PUT /api/v1/reporting/badge-tier/{recipientType}/{name}` (policy `ApiAdmin`: `401` without a token, `403` for a user token). `GET /api/v1/reporting/statistics` reads `GET /api/v1/statistics` from the Donation API and passes the two totals on.
 
 ---

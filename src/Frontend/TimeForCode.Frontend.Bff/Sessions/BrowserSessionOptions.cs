@@ -35,6 +35,6 @@ namespace TimeForCode.Frontend.Bff.Sessions
         /// <summary>
         /// How many sign-in requests (start, callback, admin passkey ceremonies) one client address may make per minute.
         /// </summary>
-        public int SignInRequestsPerMinute { get; init; } = 20;
+        public int SignInRequestsPerMinute { get; init; } = 40;
     }
 }
