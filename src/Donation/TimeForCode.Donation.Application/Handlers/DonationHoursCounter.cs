@@ -39,12 +39,13 @@ namespace TimeForCode.Donation.Application.Handlers
             {
                 var donations = await _donationRepository.GetActiveByProjectIdAsync(projectId, cancellationToken);
                 DonationAllocation? unconfirmed = null;
+                var now = _timeProvider.GetUtcNow();
 
                 try
                 {
-                    foreach (var counted in Domain.Donation.CountHours(donations, remaining, _timeProvider.GetUtcNow()))
+                    foreach (var counted in Domain.Donation.CountHours(donations, remaining, now))
                     {
-                        unconfirmed = DonationAllocation.Create(contributionId, counted.Donation.Id, counted.Hours, _timeProvider.GetUtcNow());
+                        unconfirmed = DonationAllocation.Create(contributionId, counted.Donation.Id, counted.Hours, now);
                         await _allocationRepository.CreateAsync(unconfirmed, cancellationToken);
                         await _donationRepository.UpdateAsync(counted.Donation);
                         unconfirmed = null;
