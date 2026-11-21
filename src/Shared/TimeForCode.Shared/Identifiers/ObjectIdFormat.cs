@@ -9,9 +9,9 @@ namespace TimeForCode.Shared.Identifiers
         private const int Length = 24;
 
         /// <summary>True when the identifier is exactly 24 hexadecimal characters.</summary>
-        /// <summary>
+        /// <remarks>
         /// Not a regular expression: its end anchor also accepts a trailing line feed, which a route value can carry.
-        /// </summary>
+        /// </remarks>
         public static bool IsValid(string? id) => id is { Length: Length } && id.All(Uri.IsHexDigit);
     }
 }

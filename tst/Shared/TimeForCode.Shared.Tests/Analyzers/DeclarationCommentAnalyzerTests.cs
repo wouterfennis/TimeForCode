@@ -254,6 +254,120 @@ namespace TimeForCode.Shared.Tests.Analyzers
         }
 
         [TestMethod]
+        public async Task Analyze_DirectiveBetweenCommentAndDeclaration_ReportsNothing()
+        {
+            const string source = """
+                public class Sample
+                {
+                    // Explains the region, not the method.
+                #pragma warning disable CS0618
+                    public void Run() { }
+                }
+                """;
+
+            ImmutableArray<Diagnostic> diagnostics = await AnalyzeAsync(source);
+
+            diagnostics.Should().BeEmpty();
+        }
+
+        [TestMethod]
+        public async Task Analyze_LineCommentBetweenDirectiveAndDeclaration_ReportsDiagnostic()
+        {
+            const string source = """
+                public class Sample
+                {
+                #pragma warning disable CS0618
+                    // Explains the method.
+                    public void Run() { }
+                }
+                """;
+
+            ImmutableArray<Diagnostic> diagnostics = await AnalyzeAsync(source);
+
+            diagnostics.Should().ContainSingle();
+        }
+
+        [TestMethod]
+        public async Task Analyze_LineCommentAboveInterfaceMember_ReportsDiagnostic()
+        {
+            const string source = """
+                public interface ISample
+                {
+                    // Explains the member.
+                    void Run();
+                }
+                """;
+
+            ImmutableArray<Diagnostic> diagnostics = await AnalyzeAsync(source);
+
+            diagnostics.Should().ContainSingle();
+        }
+
+        [TestMethod]
+        public async Task Analyze_LineCommentAboveRecordProperty_ReportsDiagnostic()
+        {
+            const string source = """
+                public record Sample
+                {
+                    // Explains the property.
+                    public int Value { get; init; }
+                }
+                """;
+
+            ImmutableArray<Diagnostic> diagnostics = await AnalyzeAsync(source);
+
+            diagnostics.Should().ContainSingle();
+        }
+
+        [TestMethod]
+        public async Task Analyze_LineCommentAbovePartialType_ReportsDiagnostic()
+        {
+            const string source = """
+                // Explains the type.
+                public partial class Sample { }
+                """;
+
+            ImmutableArray<Diagnostic> diagnostics = await AnalyzeAsync(source);
+
+            diagnostics.Should().ContainSingle();
+        }
+
+        [TestMethod]
+        public async Task Analyze_LineCommentAbovePrimaryConstructorParameter_ReportsNothing()
+        {
+            const string source = """
+                public class Sample(
+                    // Explains the parameter.
+                    int value)
+                {
+                }
+                """;
+
+            ImmutableArray<Diagnostic> diagnostics = await AnalyzeAsync(source);
+
+            diagnostics.Should().BeEmpty();
+        }
+
+        [TestMethod]
+        public async Task Analyze_LineCommentAboveLocalFunction_ReportsNothing()
+        {
+            const string source = """
+                public class Sample
+                {
+                    public void Run()
+                    {
+                        // Explains the local function.
+                        void Local() { }
+                    }
+                }
+                """;
+
+            ImmutableArray<Diagnostic> diagnostics = await AnalyzeAsync(source);
+
+            diagnostics.Should().BeEmpty();
+        }
+
+        [TestMethod]
         public async Task Analyze_GeneratedCode_ReportsNothing()
         {
             const string source = """

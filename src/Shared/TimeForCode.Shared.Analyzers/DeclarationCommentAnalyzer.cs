@@ -92,6 +92,12 @@ namespace TimeForCode.Shared.Analyzers
                     continue;
                 }
 
+                if (current.IsDirective)
+                {
+                    // A directive line (#if, #pragma, #region) separates a comment from the declaration.
+                    break;
+                }
+
                 lineHasContent = true;
                 if (current.IsKind(SyntaxKind.SingleLineCommentTrivia) && !IsXmlDoc(current))
                 {
