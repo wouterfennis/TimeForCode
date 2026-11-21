@@ -274,7 +274,7 @@ Every badge answers `200` with `Content-Type: image/svg+xml`, so a README never 
 | An unknown or malformed contributor | `no badge yet`, exactly the image of a known contributor without badges, so the badge does not confirm that an identifier exists | `public, max-age=300` |
 | The Donation API fails | `unavailable` | `public, max-age=30` |
 
-The lifetimes are configuration (`BadgeImageOptions:CacheSeconds` and `BadgeImageOptions:UnavailableCacheSeconds`). The routes fall under the `public` rate-limit policy, so too many requests get `429` without an image. A badge shows only the label "TimeForCode", totals, tier names and fixed texts, never names, logins or identifiers, and every text is XML-escaped. Reading a badge awards newly reached badges exactly like the JSON endpoints.
+The lifetimes are configuration (`BadgeImageOptions:CacheSeconds` and `BadgeImageOptions:UnavailableCacheSeconds`). The routes fall under the `public` rate-limit policy, so too many requests get `429` without an image. A badge shows only the TimeForCode logo, totals, tier names and fixed texts, never names, logins or identifiers, and every text is XML-escaped. Reading a badge awards newly reached badges exactly like the JSON endpoints.
 
 Badges are awarded when they are requested, so a tier added or lowered reaches recipients who already qualify the next time their badges are read; a raised or removed tier takes no badge away. An award is stored once per recipient type, recipient and tier (unique index), so requests at the same time store one award and keep the first award date. The hours come from three anonymous, totals-only endpoints of the Donation API (see Public totals), read without a token.
 

@@ -1,0 +1,21 @@
+{
+  "$description": "TimeForCode brand colors. build.mjs reads this file; change a color here and run npm run build.",
+  "light": {
+    "ring": "#0b8f7e",
+    "progress": "#f2a516",
+    "code": "#14201f"
+  },
+  "dark": {
+    "ring": "#2fc2ad",
+    "progress": "#f7b733",
+    "code": "#e8f0ef"
+  },
+  "surface": {
+    "dark": "#0f1a19",
+    "light": "#ffffff"
+  },
+  "mono": {
+    "black": "#000000",
+    "white": "#ffffff"
+  }
+}

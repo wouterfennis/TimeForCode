@@ -1,0 +1,58 @@
+name: Brand Assets
+
+# Builds the brand kit (docs/branding/build.mjs) and publishes the generated PNGs and
+# favicon.ico as a workflow artifact. Only the SVGs are committed; the build fails when
+# they no longer match build.mjs and colors.json.
+
+on:
+  pull_request:
+    paths:
+      - 'docs/branding/**'
+      - '.github/workflows/brand-assets.yaml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'docs/branding/**'
+      - '.github/workflows/brand-assets.yaml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build brand assets
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+    - name: Setup Node.js
+      uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+      with:
+        node-version: '26'
+        cache: npm
+        cache-dependency-path: docs/branding/package-lock.json
+
+    - name: Install dependencies
+      working-directory: docs/branding
+      run: npm ci --ignore-scripts
+
+    - name: Build
+      working-directory: docs/branding
+      run: npm run build
+
+    # The committed SVGs are referenced by the README and the docs site; they must be what the build produces
+    - name: Committed SVGs up to date
+      run: git diff --exit-code -- docs/branding/svg
+
+    - name: Upload brand assets
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+      with:
+        name: brand-assets
+        path: |
+          docs/branding/svg
+          docs/branding/png
+          docs/branding/favicon.ico

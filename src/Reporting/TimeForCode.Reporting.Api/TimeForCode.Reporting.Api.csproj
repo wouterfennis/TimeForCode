@@ -21,6 +21,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- The brand logo drawn on every badge; the single source is the brand kit (docs/branding). -->
+    <EmbeddedResource Include="..\..\..\docs\branding\svg\logo-lockup-dark.svg" LogicalName="logo-lockup-dark.svg" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\Shared\TimeForCode.Shared\TimeForCode.Shared.csproj" />
     <ProjectReference Include="..\TimeForCode.Reporting.Application\TimeForCode.Reporting.Application.csproj" />
     <ProjectReference Include="..\TimeForCode.Reporting.Infrastructure\TimeForCode.Reporting.Infrastructure.csproj" />

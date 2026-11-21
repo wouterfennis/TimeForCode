@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="TimeForCode logo">
+  <title>TimeForCode</title>
+  <style>
+    .track { stroke: #0b8f7e; stroke-opacity: .28; }
+    .time { stroke: #f2a516; }
+    .code { stroke: #14201f; }
+    @media (prefers-color-scheme: dark) {
+      .track { stroke: #2fc2ad; }
+      .time { stroke: #f7b733; }
+      .code { stroke: #e8f0ef; }
+    }
+  </style>
+  <circle class="track" cx="24" cy="24" r="19" stroke-width="5"/>
+  <circle class="time" cx="24" cy="24" r="19" stroke-width="5" stroke-dasharray="85.95 33.43" transform="rotate(-90 24 24)"/>
+  <polyline class="code" points="16,17 24,24 16,31" stroke-width="4"/>
+  <line class="code" x1="27" y1="32" x2="34" y2="32" stroke-width="4"/>
+</svg>

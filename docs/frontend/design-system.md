@@ -73,7 +73,7 @@ Build these once, in a shared folder, and compose pages from them.
 
 ## Iconography and imagery
 
-One icon set (an open-source set such as Lucide), SVG only, decorative icons hidden from assistive technology. The project banner at `docs/images/banner.png` can inform the brand, but no logo or brand mark is final. **Open question for the designer**: logo, wordmark, and final accent colour.
+One icon set (an open-source set such as Lucide), SVG only, decorative icons hidden from assistive technology. The logo, lockup, colours and usage rules are in the [brand kit](../branding/README.md); the front-end does not use the logo yet. **Open question for the designer**: final accent colour for the interface.
 
 ## Content style
 

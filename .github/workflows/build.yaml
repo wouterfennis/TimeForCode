@@ -132,7 +132,9 @@ jobs:
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       run: |
-          dotnet dotnet-sonarscanner end /d:sonar.token="$SONAR_TOKEN"
+          # sonar.log.level is ignored by the end step, so keep only warnings, errors and the result lines.
+          set -o pipefail
+          dotnet dotnet-sonarscanner end /d:sonar.token="$SONAR_TOKEN" 2>&1 | { grep -iE "WARN|ERROR|ANALYSIS (SUCCESSFUL|FAILED)|EXECUTION (SUCCESS|FAILURE)" || true; }
 
     - name: Publish living documentation
       uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7

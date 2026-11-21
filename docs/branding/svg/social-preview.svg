@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640" fill="none" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="TimeForCode">
+  <title>TimeForCode</title>
+  <rect width="1280" height="640" fill="#0f1a19" stroke="none"/>
+  <g transform="translate(480 160) scale(6.6667)">
+  <circle cx="24" cy="24" r="19" stroke="#2fc2ad" stroke-opacity="0.28" stroke-width="5"/>
+  <circle cx="24" cy="24" r="19" stroke="#f7b733" stroke-width="5" stroke-dasharray="85.95 33.43" transform="rotate(-90 24 24)"/>
+  <polyline points="16,17 24,24 16,31" stroke="#e8f0ef" stroke-width="4"/>
+  <line x1="27" y1="32" x2="34" y2="32" stroke="#e8f0ef" stroke-width="4"/></g>
+</svg>
