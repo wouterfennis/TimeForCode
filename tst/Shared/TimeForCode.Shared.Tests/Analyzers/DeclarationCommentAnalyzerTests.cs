@@ -139,6 +139,40 @@ namespace TimeForCode.Shared.Tests.Analyzers
         }
 
         [TestMethod]
+        public async Task Analyze_XmlDocOverSeveralLinesAboveMethod_ReportsNothing()
+        {
+            const string source = """
+                public class Sample
+                {
+                    /// <summary>
+                    /// Explains the method.
+                    /// </summary>
+                    public void Run() { }
+                }
+                """;
+
+            ImmutableArray<Diagnostic> diagnostics = await AnalyzeAsync(source);
+
+            diagnostics.Should().BeEmpty();
+        }
+
+        [TestMethod]
+        public async Task Analyze_FourSlashCommentAboveMethod_ReportsDiagnostic()
+        {
+            const string source = """
+                public class Sample
+                {
+                    //// Commented-out text.
+                    public void Run() { }
+                }
+                """;
+
+            ImmutableArray<Diagnostic> diagnostics = await AnalyzeAsync(source);
+
+            diagnostics.Should().ContainSingle();
+        }
+
+        [TestMethod]
         public async Task Analyze_LineCommentInsideMethodBody_ReportsNothing()
         {
             const string source = """
@@ -221,7 +255,9 @@ namespace TimeForCode.Shared.Tests.Analyzers
 
         private static async Task<ImmutableArray<Diagnostic>> AnalyzeAsync(string source, string path = "Sample.cs")
         {
-            SyntaxTree tree = CSharpSyntaxTree.ParseText(source, path: path);
+            // The compiler does not parse documentation comments unless GenerateDocumentationFile is set, so they are plain trivia.
+            CSharpParseOptions options = CSharpParseOptions.Default.WithDocumentationMode(DocumentationMode.None);
+            SyntaxTree tree = CSharpSyntaxTree.ParseText(source, options, path);
             string trustedAssemblies = (string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")!;
             IEnumerable<MetadataReference> references = trustedAssemblies
                 .Split(Path.PathSeparator)

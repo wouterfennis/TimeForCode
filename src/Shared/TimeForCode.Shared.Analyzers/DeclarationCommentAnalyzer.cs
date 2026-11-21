@@ -93,13 +93,23 @@ namespace TimeForCode.Shared.Analyzers
                 }
 
                 lineHasContent = true;
-                if (current.IsKind(SyntaxKind.SingleLineCommentTrivia))
+                if (current.IsKind(SyntaxKind.SingleLineCommentTrivia) && !IsXmlDoc(current))
                 {
                     first = current;
                 }
             }
 
             return first is { } comment && !IsTodo(comment) ? first : null;
+        }
+
+        /// <summary>
+        /// Tells an XML doc line from a plain comment: without GenerateDocumentationFile the compiler lexes <c>///</c>
+        /// lines as plain single-line comments.
+        /// </summary>
+        private static bool IsXmlDoc(SyntaxTrivia comment)
+        {
+            string text = comment.ToString();
+            return text.StartsWith("///", StringComparison.Ordinal) && !text.StartsWith("////", StringComparison.Ordinal);
         }
 
         private static bool IsTodo(SyntaxTrivia comment) =>
