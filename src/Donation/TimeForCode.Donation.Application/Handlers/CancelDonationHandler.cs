@@ -21,7 +21,7 @@ namespace TimeForCode.Donation.Application.Handlers
 
         public async Task<Result<DonationResult>> Handle(CancelDonationCommand request, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Cancelling donation {DonationId} for user {UserId}", request.DonationId, request.UserId);
+            _logger.LogInformation("Cancelling donation {DonationId} for user {UserId}", request.DonationId, request.Actor.UserId);
 
             var donation = await _donationRepository.GetByIdAsync(request.DonationId);
             if (donation == null)
@@ -30,9 +30,9 @@ namespace TimeForCode.Donation.Application.Handlers
                 return Result<DonationResult>.NotFound("Donation not found.");
             }
 
-            if (!donation.CanBeChangedBy(request.UserId, request.IsAdministrator))
+            if (!donation.CanBeChangedBy(request.Actor))
             {
-                _logger.LogWarning("User {UserId} may not change donation {DonationId}", request.UserId, request.DonationId);
+                _logger.LogWarning("User {UserId} may not change donation {DonationId}", request.Actor.UserId, request.DonationId);
                 return Result<DonationResult>.Forbidden("Only the donor or an administrator can change a donation.");
             }
 

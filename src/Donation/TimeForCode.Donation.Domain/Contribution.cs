@@ -74,9 +74,9 @@ namespace TimeForCode.Donation.Domain
         /// Refused when the contribution is deleted or the user is neither the contributor nor an administrator.
         /// </summary>
         /// <param name="contributor">The contributor of the contribution, or <c>null</c> when it was anonymised.</param>
-        public ContributionChange Correct(string userId, bool isAdministrator, Contributor? contributor, int hours, Uri? githubReference, DateTimeOffset correctedAt)
+        public ContributionChange Correct(Actor actor, Contributor? contributor, int hours, Uri? githubReference, DateTimeOffset correctedAt)
         {
-            var refused = Refuse(userId, isAdministrator, contributor);
+            var refused = Refuse(actor, contributor);
             if (refused != null)
             {
                 return refused;
@@ -88,7 +88,7 @@ namespace TimeForCode.Donation.Domain
             {
                 Hours = Hours,
                 GithubReference = GithubReference,
-                CorrectedByUserId = userId,
+                CorrectedByUserId = actor.UserId,
                 CorrectedAt = correctedAt
             };
 
@@ -99,31 +99,31 @@ namespace TimeForCode.Donation.Domain
         /// Marks the contribution as deleted; the values stay stored. Refused when it is already deleted or the user is neither the contributor nor an administrator.
         /// </summary>
         /// <param name="contributor">The contributor of the contribution, or <c>null</c> when it was anonymised.</param>
-        public ContributionChange MarkDeleted(string userId, bool isAdministrator, Contributor? contributor, DateTimeOffset deletedAt)
+        public ContributionChange MarkDeleted(Actor actor, Contributor? contributor, DateTimeOffset deletedAt)
         {
-            var refused = Refuse(userId, isAdministrator, contributor);
+            var refused = Refuse(actor, contributor);
             if (refused != null)
             {
                 return refused;
             }
 
-            return ContributionChange.Success(Copy(Hours, GithubReference, History, deletedAt, userId), -Hours);
+            return ContributionChange.Success(Copy(Hours, GithubReference, History, deletedAt, actor.UserId), -Hours);
         }
 
         /// <summary>Only the contributor who logged the contribution and administrators may change it.</summary>
-        private bool CanBeChangedBy(string userId, Contributor? contributor, bool isAdministrator)
+        private bool CanBeChangedBy(Actor actor, Contributor? contributor)
         {
-            return isAdministrator || (contributor != null && contributor.Id == ContributorId && contributor.PlatformUserId == userId);
+            return actor.IsAdministrator || (contributor != null && contributor.Id == ContributorId && contributor.PlatformUserId == actor.UserId);
         }
 
-        private ContributionChange? Refuse(string userId, bool isAdministrator, Contributor? contributor)
+        private ContributionChange? Refuse(Actor actor, Contributor? contributor)
         {
             if (IsDeleted)
             {
                 return ContributionChange.Refused(ContributionChangeFailure.Deleted);
             }
 
-            return CanBeChangedBy(userId, contributor, isAdministrator)
+            return CanBeChangedBy(actor, contributor)
                 ? null
                 : ContributionChange.Refused(ContributionChangeFailure.NotAllowed);
         }

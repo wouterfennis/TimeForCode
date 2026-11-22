@@ -1,4 +1,5 @@
 using MediatR;
+using TimeForCode.Donation.Values;
 
 namespace TimeForCode.Donation.Commands
 {
@@ -7,8 +8,7 @@ namespace TimeForCode.Donation.Commands
     /// </summary>
     public class GetContributorProfileQuery : IRequest<Result<ContributorProfileResult>>
     {
-        public required string CallerUserId { get; init; }
-        public bool IsAdministrator { get; init; }
+        public required Actor Actor { get; init; }
         public string? ContributorId { get; init; }
     }
 }

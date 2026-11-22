@@ -22,7 +22,6 @@ namespace TimeForCode.Donation.Api.V1.Controllers
     {
         private const string LoginClaim = "login";
         private const string AvatarUrlClaim = "avatar_url";
-        private const string AdminScope = "admin";
 
         private readonly IMediator _mediator;
 
@@ -159,8 +158,7 @@ namespace TimeForCode.Donation.Api.V1.Controllers
             [FromQuery, Range(1, ApiConstraints.MaxPageNumber)] int pageNumber = 1,
             [FromQuery, Range(1, ApiConstraints.MaxPageSize)] int pageSize = 20)
         {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userId))
+            if (!User.TryGetActor(out var actor))
             {
                 return MissingIdentity();
             }
@@ -168,8 +166,7 @@ namespace TimeForCode.Donation.Api.V1.Controllers
             var result = await _mediator.Send(new GetDonorOrganizationContributionsQuery
             {
                 DonorOrganizationId = id,
-                CallerUserId = userId,
-                IsAdministrator = User.HasClaim("scope", AdminScope),
+                Actor = actor,
                 PageNumber = pageNumber,
                 PageSize = pageSize
             });
@@ -211,8 +208,7 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         [Authorize(Policy = "ApiUserOrAdmin")]
         public async Task<IActionResult> CorrectContribution([ObjectId] string id, [ObjectId] string contributionId, CorrectContributionRequest request)
         {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userId))
+            if (!User.TryGetActor(out var actor))
             {
                 return MissingIdentity();
             }
@@ -221,8 +217,7 @@ namespace TimeForCode.Donation.Api.V1.Controllers
             {
                 ProjectId = id,
                 ContributionId = contributionId,
-                UserId = userId,
-                IsAdministrator = User.HasClaim("scope", AdminScope),
+                Actor = actor,
                 Hours = request.Hours,
                 GithubReference = request.GithubReference
             });
@@ -256,8 +251,7 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         [Authorize(Policy = "ApiUserOrAdmin")]
         public async Task<IActionResult> DeleteContribution([ObjectId] string id, [ObjectId] string contributionId)
         {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userId))
+            if (!User.TryGetActor(out var actor))
             {
                 return MissingIdentity();
             }
@@ -266,8 +260,7 @@ namespace TimeForCode.Donation.Api.V1.Controllers
             {
                 ProjectId = id,
                 ContributionId = contributionId,
-                UserId = userId,
-                IsAdministrator = User.HasClaim("scope", AdminScope)
+                Actor = actor
             });
 
             return result.IsFailure

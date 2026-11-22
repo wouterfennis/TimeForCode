@@ -1,6 +1,7 @@
 using AwesomeAssertions;
 using TimeForCode.Donation.Application.Validators;
 using TimeForCode.Donation.Commands;
+using TimeForCode.Donation.Values;
 
 namespace TimeForCode.Donation.Application.Tests.Validators
 {
@@ -13,8 +14,7 @@ namespace TimeForCode.Donation.Application.Tests.Validators
         {
             ProjectId = "5f43a0e74b12c84f1b000001",
             ContributionId = "5f43a0e74b12c84f1b0000f1",
-            UserId = "user-1",
-            IsAdministrator = false,
+            Actor = new Actor("user-1", false),
             Hours = hours,
             GithubReference = githubReference
         };

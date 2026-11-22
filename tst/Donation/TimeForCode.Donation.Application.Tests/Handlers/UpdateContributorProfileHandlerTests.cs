@@ -7,6 +7,7 @@ using TimeForCode.Donation.Application.Handlers;
 using TimeForCode.Donation.Application.Interfaces;
 using TimeForCode.Donation.Commands;
 using TimeForCode.Donation.Domain;
+using TimeForCode.Donation.Values;
 
 namespace TimeForCode.Donation.Application.Tests.Handlers
 {
@@ -50,10 +51,9 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
             int? hoursAvailable = 10,
             string? donorOrganizationId = null) => new()
             {
-                CallerUserId = callerUserId,
+                Actor = new Actor(callerUserId, isAdministrator),
                 GithubLogin = "octocat",
                 AvatarUrl = "https://avatars.githubusercontent.com/u/1",
-                IsAdministrator = isAdministrator,
                 ContributorId = contributorId,
                 Role = role,
                 Skills = skills ?? ["C#", "MongoDB"],

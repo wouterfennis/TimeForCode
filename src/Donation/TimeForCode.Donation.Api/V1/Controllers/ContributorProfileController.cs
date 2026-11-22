@@ -7,6 +7,7 @@ using System.Net.Mime;
 using System.Security.Claims;
 using TimeForCode.Donation.Api.V1.Models;
 using TimeForCode.Donation.Commands;
+using TimeForCode.Donation.Values;
 
 namespace TimeForCode.Donation.Api.V1.Controllers
 {
@@ -21,7 +22,6 @@ namespace TimeForCode.Donation.Api.V1.Controllers
     {
         private const string LoginClaim = "login";
         private const string AvatarUrlClaim = "avatar_url";
-        private const string AdminScope = "admin";
 
         private readonly IMediator _mediator;
 
@@ -57,7 +57,7 @@ namespace TimeForCode.Donation.Api.V1.Controllers
                 return MissingIdentity();
             }
 
-            var result = await _mediator.Send(new GetContributorProfileQuery { CallerUserId = userId });
+            var result = await _mediator.Send(new GetContributorProfileQuery { Actor = Actor.ForUser(userId) });
 
             return result.IsFailure
                 ? ToProblem(result.FailureStatusCode, "Cannot get contributor profile", result.ErrorMessage)
@@ -91,7 +91,7 @@ namespace TimeForCode.Donation.Api.V1.Controllers
                 return MissingIdentity();
             }
 
-            var result = await _mediator.Send(ToCommand(request, userId, login, avatarUrl, contributorId: null, isAdministrator: false));
+            var result = await _mediator.Send(ToCommand(request, Actor.ForUser(userId), login, avatarUrl, contributorId: null));
 
             return result.IsFailure
                 ? ToProblem(result.FailureStatusCode, "Cannot update contributor profile", result.ErrorMessage)
@@ -119,15 +119,14 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         [Authorize(Policy = "ApiUserOrAdmin")]
         public async Task<IActionResult> GetContributorProfile([ObjectId] string id)
         {
-            if (!TryGetUserId(out var userId))
+            if (!User.TryGetActor(out var actor))
             {
                 return MissingIdentity();
             }
 
             var result = await _mediator.Send(new GetContributorProfileQuery
             {
-                CallerUserId = userId,
-                IsAdministrator = User.HasClaim("scope", AdminScope),
+                Actor = actor,
                 ContributorId = id
             });
 
@@ -159,18 +158,17 @@ namespace TimeForCode.Donation.Api.V1.Controllers
         [Authorize(Policy = "ApiUserOrAdmin")]
         public async Task<IActionResult> UpdateContributorProfile([ObjectId] string id, UpdateContributorProfileRequest request)
         {
-            if (!TryGetUserId(out var userId))
+            if (!User.TryGetActor(out var actor))
             {
                 return MissingIdentity();
             }
 
             var command = ToCommand(
                 request,
-                userId,
+                actor,
                 User.FindFirst(LoginClaim)?.Value ?? string.Empty,
                 User.FindFirst(AvatarUrlClaim)?.Value ?? string.Empty,
-                id,
-                User.HasClaim("scope", AdminScope));
+                id);
             var result = await _mediator.Send(command);
 
             return result.IsFailure
@@ -214,18 +212,16 @@ namespace TimeForCode.Donation.Api.V1.Controllers
 
         private static UpdateContributorProfileCommand ToCommand(
             UpdateContributorProfileRequest request,
-            string userId,
+            Actor actor,
             string login,
             string avatarUrl,
-            string? contributorId,
-            bool isAdministrator)
+            string? contributorId)
         {
             return new UpdateContributorProfileCommand
             {
-                CallerUserId = userId,
+                Actor = actor,
                 GithubLogin = login,
                 AvatarUrl = avatarUrl,
-                IsAdministrator = isAdministrator,
                 ContributorId = contributorId,
                 Role = request.Role,
                 Skills = request.Skills,

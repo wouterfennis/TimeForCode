@@ -1,5 +1,6 @@
 using TimeForCode.Donation.Commands;
 using TimeForCode.Donation.Domain;
+using TimeForCode.Donation.Values;
 
 namespace TimeForCode.Donation.Application.Handlers
 {
@@ -22,9 +23,9 @@ namespace TimeForCode.Donation.Application.Handlers
         /// <summary>
         /// A profile is private to its owner and to administrators.
         /// </summary>
-        internal static bool MayAccess(this Contributor contributor, string callerUserId, bool isAdministrator)
+        internal static bool MayAccess(this Contributor contributor, Actor actor)
         {
-            return isAdministrator || contributor.PlatformUserId == callerUserId;
+            return actor.IsAdministrator || contributor.PlatformUserId == actor.UserId;
         }
     }
 }

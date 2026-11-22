@@ -217,19 +217,19 @@ namespace TimeForCode.Donation.Application.Tests.Domain
         [TestMethod]
         public void CanBeChangedBy_Pledger_IsAllowed()
         {
-            Build(DonationStatus.Pending).CanBeChangedBy("user-1", isAdministrator: false).Should().BeTrue();
+            Build(DonationStatus.Pending).CanBeChangedBy(new Actor("user-1", false)).Should().BeTrue();
         }
 
         [TestMethod]
         public void CanBeChangedBy_Administrator_IsAllowed()
         {
-            Build(DonationStatus.Pending).CanBeChangedBy("admin", isAdministrator: true).Should().BeTrue();
+            Build(DonationStatus.Pending).CanBeChangedBy(new Actor("admin", true)).Should().BeTrue();
         }
 
         [TestMethod]
         public void CanBeChangedBy_OtherUser_IsRejected()
         {
-            Build(DonationStatus.Pending).CanBeChangedBy("user-2", isAdministrator: false).Should().BeFalse();
+            Build(DonationStatus.Pending).CanBeChangedBy(new Actor("user-2", false)).Should().BeFalse();
         }
 
         [TestMethod]

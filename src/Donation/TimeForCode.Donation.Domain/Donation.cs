@@ -53,9 +53,9 @@ namespace TimeForCode.Donation.Domain
             };
         }
 
-        public bool CanBeChangedBy(string userId, bool isAdministrator)
+        public bool CanBeChangedBy(Actor actor)
         {
-            return isAdministrator || PledgedByUserId == userId;
+            return actor.IsAdministrator || PledgedByUserId == actor.UserId;
         }
 
         public DonationTransitionResult Activate(DateTimeOffset at)

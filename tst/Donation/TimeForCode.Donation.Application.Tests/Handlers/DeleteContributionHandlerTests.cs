@@ -7,6 +7,7 @@ using TimeForCode.Donation.Application.Handlers;
 using TimeForCode.Donation.Application.Interfaces;
 using TimeForCode.Donation.Commands;
 using TimeForCode.Donation.Domain;
+using TimeForCode.Donation.Values;
 
 namespace TimeForCode.Donation.Application.Tests.Handlers
 {
@@ -46,8 +47,7 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
         {
             ProjectId = ProjectId.ToString(),
             ContributionId = _contribution.Id.ToString(),
-            UserId = userId,
-            IsAdministrator = isAdministrator
+            Actor = new Actor(userId, isAdministrator)
         };
 
         [TestMethod]
@@ -118,7 +118,7 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
         [TestMethod]
         public async Task Handle_ContributionAlreadyDeleted_ReturnsNotFoundAndReleasesNothing()
         {
-            var deleted = _contribution.MarkDeleted("user-1", false, _contributor, DateTimeOffset.UtcNow).Contribution!;
+            var deleted = _contribution.MarkDeleted(new Actor("user-1", false), _contributor, DateTimeOffset.UtcNow).Contribution!;
             _contributionRepository
                 .Setup(r => r.GetByIdAsync(ProjectId.ToString(), _contribution.Id.ToString(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(deleted);

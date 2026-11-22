@@ -16,7 +16,7 @@ namespace TimeForCode.Donation.Application.Tests.Validators
             int? hoursAvailable = 10,
             string? donorOrganizationId = null) => new()
             {
-                CallerUserId = "user-1",
+                Actor = new Actor("user-1", false),
                 GithubLogin = "octocat",
                 AvatarUrl = "https://avatars.githubusercontent.com/u/1",
                 Role = role,

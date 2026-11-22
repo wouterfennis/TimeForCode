@@ -7,6 +7,7 @@ using TimeForCode.Donation.Application.Handlers;
 using TimeForCode.Donation.Application.Interfaces;
 using TimeForCode.Donation.Commands;
 using TimeForCode.Donation.Domain;
+using TimeForCode.Donation.Values;
 
 namespace TimeForCode.Donation.Application.Tests.Handlers
 {
@@ -44,7 +45,7 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
         {
             _contributorRepository.Setup(r => r.GetByPlatformUserIdAsync(UserId)).ReturnsAsync(ContributorOf(UserId));
 
-            var result = await _sut.Handle(new GetContributorProfileQuery { CallerUserId = UserId }, CancellationToken.None);
+            var result = await _sut.Handle(new GetContributorProfileQuery { Actor = new Actor(UserId, false) }, CancellationToken.None);
 
             result.IsSuccess.Should().BeTrue();
             result.Value.Profile.Id.Should().Be(ContributorId.ToString());
@@ -58,7 +59,7 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
         {
             _contributorRepository.Setup(r => r.GetByPlatformUserIdAsync(UserId)).ReturnsAsync((Contributor?)null);
 
-            var result = await _sut.Handle(new GetContributorProfileQuery { CallerUserId = UserId }, CancellationToken.None);
+            var result = await _sut.Handle(new GetContributorProfileQuery { Actor = new Actor(UserId, false) }, CancellationToken.None);
 
             result.IsFailure.Should().BeTrue();
             result.FailureStatusCode.Should().Be(HttpStatusCode.NotFound);
@@ -70,7 +71,7 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
             _contributorRepository.Setup(r => r.GetByIdAsync(ContributorId)).ReturnsAsync(ContributorOf("another-user"));
 
             var result = await _sut.Handle(
-                new GetContributorProfileQuery { CallerUserId = "admin", IsAdministrator = true, ContributorId = ContributorId.ToString() },
+                new GetContributorProfileQuery { Actor = new Actor("admin", true), ContributorId = ContributorId.ToString() },
                 CancellationToken.None);
 
             result.IsSuccess.Should().BeTrue();
@@ -82,7 +83,7 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
             _contributorRepository.Setup(r => r.GetByIdAsync(ContributorId)).ReturnsAsync(ContributorOf("another-user"));
 
             var result = await _sut.Handle(
-                new GetContributorProfileQuery { CallerUserId = UserId, ContributorId = ContributorId.ToString() },
+                new GetContributorProfileQuery { Actor = new Actor(UserId, false), ContributorId = ContributorId.ToString() },
                 CancellationToken.None);
 
             result.IsFailure.Should().BeTrue();
@@ -95,7 +96,7 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
             _contributorRepository.Setup(r => r.GetByIdAsync(ContributorId)).ReturnsAsync(ContributorOf(UserId));
 
             var result = await _sut.Handle(
-                new GetContributorProfileQuery { CallerUserId = UserId, ContributorId = ContributorId.ToString() },
+                new GetContributorProfileQuery { Actor = new Actor(UserId, false), ContributorId = ContributorId.ToString() },
                 CancellationToken.None);
 
             result.IsSuccess.Should().BeTrue();
@@ -107,7 +108,7 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
             _contributorRepository.Setup(r => r.GetByIdAsync(ContributorId)).ReturnsAsync((Contributor?)null);
 
             var result = await _sut.Handle(
-                new GetContributorProfileQuery { CallerUserId = "admin", IsAdministrator = true, ContributorId = ContributorId.ToString() },
+                new GetContributorProfileQuery { Actor = new Actor("admin", true), ContributorId = ContributorId.ToString() },
                 CancellationToken.None);
 
             result.IsFailure.Should().BeTrue();

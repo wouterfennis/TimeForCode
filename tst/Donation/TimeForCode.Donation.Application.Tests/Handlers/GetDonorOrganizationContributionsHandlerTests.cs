@@ -7,6 +7,7 @@ using TimeForCode.Donation.Application.Handlers;
 using TimeForCode.Donation.Application.Interfaces;
 using TimeForCode.Donation.Commands;
 using TimeForCode.Donation.Domain;
+using TimeForCode.Donation.Values;
 
 namespace TimeForCode.Donation.Application.Tests.Handlers
 {
@@ -37,8 +38,7 @@ namespace TimeForCode.Donation.Application.Tests.Handlers
         private static GetDonorOrganizationContributionsQuery Query(bool isAdministrator = false, int pageNumber = 1, int pageSize = 20) => new()
         {
             DonorOrganizationId = OrganizationId.ToString(),
-            CallerUserId = "user-1",
-            IsAdministrator = isAdministrator,
+            Actor = new Actor("user-1", isAdministrator),
             PageNumber = pageNumber,
             PageSize = pageSize
         };
