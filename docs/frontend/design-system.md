@@ -8,9 +8,13 @@ A small, token-driven design system. The values below are a **starting proposal*
 
 ## Principles
 
-- Calm and trustworthy. Plenty of whitespace, one accent colour, no decoration for its own sake.
-- Content first. Project names and descriptions are the hero.
-- A single light theme, driven by tokens. Dark mode is out of scope for now; because components use tokens only, it can be added later.
+The visual direction is a toned-down game store: inspired by the browsing experience of stores such as Steam and the responsive feel of console interfaces, without copying their look and without their flashiness.
+
+- **A store you want to browse.** Projects are presented like titles in a game store: imagery first, shelves by theme, and clear badges for what matters (help needed, hours pledged).
+- **Motion that responds, not motion that performs.** Tiles react to hover and keyboard focus alike (a slight lift or glow), and transitions show where content comes from and goes. Motion is short (300 ms or less), small (a tile grows by at most about 5%), never loops or plays on its own, and is turned off when the user prefers reduced motion.
+- **Trustworthy where it counts.** Hours and progress are accurate and easy to read. No store tricks: no countdowns, fake urgency or scarcity messages.
+- **Content first.** The project, its image and its need are the hero; decoration only supports them.
+- **Dark first, driven by tokens.** The dark theme is the default; a light theme can follow from the same token names. The token values below are the original light proposal and are replaced by the dark set in [#211](https://github.com/wouterfennis/TimeForCode/issues/211).
 
 ## Design tokens
 
