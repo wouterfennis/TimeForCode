@@ -45,10 +45,26 @@ a { color: var(--color-primary); }
 [data-hover="sheen"] .tile-media::after { content: ""; position: absolute; inset: 0; pointer-events: none; transform: translateX(-100%);
   background: linear-gradient(105deg, transparent 35%, rgb(255 255 255 / 0.18) 50%, transparent 65%); }
 [data-hover="sheen"] .tile:is(:hover, :focus-within) .tile-media::after { transform: translateX(100%); transition: transform 700ms var(--ease-settle); }
+
+/* Card-level options; all use the slowing tail. */
+/* "frame": the card's background and ring grow behind the content; text and art stay crisp because they are not scaled */
+[data-hover="frame"] .tile { background: transparent; overflow: visible; isolation: isolate; }
+[data-hover="frame"] .tile::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--color-surface); border-radius: var(--radius-card);
+  transition: transform 600ms var(--ease-settle), box-shadow var(--motion-base) var(--ease-out), background var(--motion-base); }
+[data-hover="frame"] .tile:is(:hover, :focus-within, .is-hover, .is-focus) { box-shadow: none; }
+[data-hover="frame"] .tile:is(:hover, :focus-within, .is-hover, .is-focus)::before { transform: scale(1.06, 1.05); box-shadow: var(--glow); background: var(--color-surface-raised); }
+/* "lift": a small, slow rise */
+[data-hover="lift"] .tile { transition: transform 600ms var(--ease-settle), box-shadow var(--motion-base) var(--ease-out); }
+[data-hover="lift"] .tile:is(:hover, :focus-within, .is-hover, .is-focus) { transform: translateY(-0.25rem); }
+/* "grow": the whole card grows like a PS5 tile (text may soften slightly while scaled) */
+[data-hover="grow"] .tile { transition: transform 600ms var(--ease-settle), box-shadow var(--motion-base) var(--ease-out); }
+[data-hover="grow"] .tile:is(:hover, :focus-within, .is-hover, .is-focus) { transform: scale(1.04); z-index: 1; }
+/* "tilt": the card leans towards the pointer (max ~4deg); keyboard focus only gets the ring */
+[data-hover="tilt"] .tile { transform: perspective(40rem) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); transition: transform 400ms var(--ease-settle), box-shadow var(--motion-base) var(--ease-out); }
 .tile.is-focus, .tile:has(a:focus-visible) { outline: 0.1875rem solid var(--color-primary); outline-offset: 0.125rem; }
 
 /* Shelf: a horizontal row of tiles */
-.shelf { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(16rem, 1fr); gap: var(--space-4); overflow-x: auto; padding: var(--space-3) var(--space-1) var(--space-5); scroll-snap-type: x mandatory; }
+.shelf { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(16rem, 1fr); gap: var(--space-4); overflow-x: auto; padding: var(--space-3) var(--space-3) var(--space-5); scroll-snap-type: x mandatory; }
 .shelf > * { scroll-snap-align: start; }
 
 /* Buttons */
@@ -137,5 +153,5 @@ a { color: var(--color-primary); }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; }
-  .tile img, .tile-media::after, .spotlight-bg { transform: none !important; filter: none !important; }
+  .tile, .tile::before, .tile img, .tile-media::after, .spotlight-bg { transform: none !important; filter: none !important; }
 }

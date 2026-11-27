@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-hover="zoom">
+<html lang="en" data-hover="frame">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -64,8 +64,11 @@
 
   <section aria-labelledby="tile">
     <h2 id="tile">Project tile</h2>
-    <p class="muted">Hover and keyboard focus look the same. The card itself never moves or grows; the animation happens in the art. Pick one, then try the shelf below with mouse and Tab:</p>
-    <div class="toolbar" role="group" aria-label="Tile hover" id="hovers" style="margin-bottom: var(--space-4)"><button class="btn" type="button" data-key="zoom" aria-pressed="true">Ring + slow art zoom</button><button class="btn" type="button" data-key="sheen" aria-pressed="false">Ring + light sheen</button><button class="btn" type="button" data-key="" aria-pressed="false">Ring only</button><button class="btn" type="button" data-key="brighten" aria-pressed="false">Brighten</button></div>
+    <p class="muted">Hover and keyboard focus look the same, all with the slow PS5-like ending. Pick one, then try the shelf below with mouse and Tab:</p>
+    <p class="label">Card moves</p>
+    <div class="toolbar" role="group" aria-label="Card hover" id="hovers-card" style="margin-bottom: var(--space-3)"><button class="btn" type="button" data-key="frame" aria-pressed="true">Frame grows (text stays sharp)</button><button class="btn" type="button" data-key="grow" aria-pressed="false">Whole card grows (PS5)</button><button class="btn" type="button" data-key="lift" aria-pressed="false">Gentle lift</button><button class="btn" type="button" data-key="tilt" aria-pressed="false">Tilt to pointer</button></div>
+    <p class="label">Card stays, art moves</p>
+    <div class="toolbar" role="group" aria-label="Art hover" id="hovers" style="margin-bottom: var(--space-4)"><button class="btn" type="button" data-key="zoom" aria-pressed="false">Ring + slow art zoom</button><button class="btn" type="button" data-key="sheen" aria-pressed="false">Ring + light sheen</button><button class="btn" type="button" data-key="" aria-pressed="false">Ring only</button><button class="btn" type="button" data-key="brighten" aria-pressed="false">Brighten</button></div>
     <div class="states" id="states"></div>
   </section>
 
@@ -210,7 +213,20 @@
     `<div class="toolbar" role="group" aria-label="${label}" data-attr="${attr}"><span class="label">${label}</span>` +
     opts.map(([key, name]) => `<button class="btn" type="button" data-key="${key}" aria-pressed="${spotlight.dataset[attr] === key}">${name}</button>`).join("") + "</div>").join("");
   document.querySelectorAll("#spot-options [data-attr]").forEach((box) => toggleGroup(box, (btn) => { spotlight.dataset[box.dataset.attr] = btn.dataset.key; }));
-  toggleGroup(document.getElementById("hovers"), (btn) => { btn.dataset.key ? (document.documentElement.dataset.hover = btn.dataset.key) : delete document.documentElement.dataset.hover; });
+  // Tile hover options: two button rows act as one choice
+  const hoverBoxes = [document.getElementById("hovers-card"), document.getElementById("hovers")];
+  hoverBoxes.forEach((box) => toggleGroup(box, (btn) => {
+    hoverBoxes.filter((b) => b !== box).forEach((b) => b.querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", "false")));
+    btn.dataset.key ? (document.documentElement.dataset.hover = btn.dataset.key) : delete document.documentElement.dataset.hover;
+  }));
+  // Tilt option: lean the tile towards the pointer, max ~4deg
+  document.addEventListener("pointermove", (e) => {
+    const t = document.documentElement.dataset.hover === "tilt" && e.target.closest?.(".tile");
+    document.querySelectorAll(".tile[style*='--rx']").forEach((el) => { if (el !== t) { el.style.removeProperty("--rx"); el.style.removeProperty("--ry"); } });
+    if (!t) return;
+    const r = t.getBoundingClientRect(), x = (e.clientX - r.left) / r.width - 0.5, y = (e.clientY - r.top) / r.height - 0.5;
+    t.style.setProperty("--rx", `${(-y * 8).toFixed(2)}deg`); t.style.setProperty("--ry", `${(x * 8).toFixed(2)}deg`);
+  });
   toggleGroup(document.getElementById("chips"));
 
   // Primary colour options
