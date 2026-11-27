@@ -22,9 +22,25 @@
     .label { font-size: var(--text-sm); color: var(--color-text-muted); margin-bottom: var(--space-2); }
     .type > * { margin: 0 0 var(--space-2); }
     .note { border-left: 0.25rem solid var(--color-warning); padding-left: var(--space-3); }
+    /* Floating options panel */
+    .lab { position: fixed; right: var(--space-4); bottom: var(--space-4); z-index: 3; max-width: min(36rem, calc(100vw - 2rem)); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-card); padding: var(--space-3) var(--space-4); box-shadow: 0 0.75rem 2rem rgb(0 0 0 / 0.5); font-size: var(--text-sm); }
+    .lab summary { cursor: pointer; font-weight: 600; }
+    .lab .toolbar { gap: var(--space-2); margin-top: var(--space-2); align-items: center; }
+    .lab .label { min-width: 5.5rem; margin: 0; }
+    .lab .btn { min-height: 2.25rem; padding: 0 var(--space-3); font-size: var(--text-sm); }
+    /* Colour comparison */
+    .compare { display: grid; gap: var(--space-3); grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr)); margin-bottom: var(--space-5); }
+    .compare > div { background: var(--color-surface); border-radius: var(--radius-card); padding: var(--space-4); display: flex; flex-direction: column; gap: var(--space-3); }
+    .compare .focus { outline: 0.1875rem solid var(--color-primary); outline-offset: 0.125rem; }
   </style>
 </head>
 <body>
+<div class="ambient" aria-hidden="true"><svg class="waves" viewBox="0 0 2880 400" preserveAspectRatio="none">
+  <path d="M0 250 C240 180 480 320 720 250 S1200 180 1440 250 S1920 320 2160 250 S2640 180 2880 250"/>
+  <path d="M0 290 C240 230 480 350 720 290 S1200 230 1440 290 S1920 350 2160 290 S2640 230 2880 290"/>
+  <path d="M0 330 C240 290 480 370 720 330 S1200 290 1440 330 S1920 370 2160 330 S2640 290 2880 330"/>
+</svg></div>
+<details class="lab" open><summary>Try options (whole page)</summary><div id="lab"></div></details>
 <header class="app-header"><div class="container">
   <a class="brand" href="#">Time<b>For</b>Code</a>
   <nav aria-label="Primary"><a href="#" aria-current="page">Store</a><a href="#">Projects</a><a href="#">How it works</a></nav>
@@ -48,7 +64,8 @@
 
   <section aria-labelledby="palette">
     <h2 id="palette">Palette</h2>
-    <div class="toolbar" role="group" aria-label="Primary colour option" style="margin-bottom: var(--space-4)" id="accents"></div>
+    <p class="muted">The five primary-colour candidates side by side. Switch the whole page with the options panel (bottom right).</p>
+    <div class="compare" id="compare"></div>
     <div class="swatches" id="swatches"></div>
   </section>
 
@@ -141,13 +158,13 @@
 </main>
 <footer class="app-footer"><div class="container"><a href="#">GitHub repository</a><a href="#">Documentation</a><a href="#">Code of conduct</a><a href="#">Admin sign-in</a></div></footer>
 <script>
-  // Sample data only; real repositories so the Open Graph images load.
+  // Sample data only; real repositories so the Open Graph images load. "colour" is a sample; the app could take it from the project image.
   const projects = [
-    { repo: "dotnet/aspire", need: "Dashboard accessibility and hosting docs", tags: ["C#", "Docs"], pledged: 120, goal: 200 },
-    { repo: "withastro/astro", need: "Help triaging issues in the i18n router", tags: ["TypeScript", "Triage"], pledged: 45, goal: 60 },
-    { repo: "excalidraw/excalidraw", need: "Keyboard support for the shape picker", tags: ["TypeScript", "A11y"], pledged: 18, goal: 80 },
-    { repo: "jellyfin/jellyfin", need: "Performance work on library scans", tags: ["C#", "Backend"], pledged: 64, goal: 100 },
-    { repo: "mastodon/mastodon", need: "Security review of media uploads", tags: ["Ruby", "Security"], pledged: 30, goal: 40 },
+    { repo: "dotnet/aspire", need: "Dashboard accessibility and hosting docs", tags: ["C#", "Docs"], pledged: 120, goal: 200, colour: "#7b61ff" },
+    { repo: "withastro/astro", need: "Help triaging issues in the i18n router", tags: ["TypeScript", "Triage"], pledged: 45, goal: 60, colour: "#ff5d01" },
+    { repo: "excalidraw/excalidraw", need: "Keyboard support for the shape picker", tags: ["TypeScript", "A11y"], pledged: 18, goal: 80, colour: "#2f9e44" },
+    { repo: "jellyfin/jellyfin", need: "Performance work on library scans", tags: ["C#", "Backend"], pledged: 64, goal: 100, colour: "#00a4dc" },
+    { repo: "mastodon/mastodon", need: "Security review of media uploads", tags: ["Ruby", "Security"], pledged: 30, goal: 40, colour: "#d6336c" },
   ];
   const tile = (p, state = "") => {
     const pct = Math.round((p.pledged / p.goal) * 100);
@@ -202,15 +219,33 @@
   toggleGroup(document.getElementById("layouts"), (btn) => { document.getElementById("spotlight").dataset.layout = btn.dataset.key; });
   toggleGroup(document.getElementById("chips"));
 
-  // Primary colour options
-  const accents = [["", "Blue"], ["teal", "Teal"], ["amber", "Amber"], ["violet", "Violet"], ["lime", "Lime"]];
-  const accentBox = document.getElementById("accents");
-  accentBox.innerHTML = accents.map(([key, name]) => `<button class="btn" type="button" data-key="${key}" aria-pressed="${key === ""}">${name}</button>`).join("");
-  accentBox.addEventListener("click", (e) => {
-    const btn = e.target.closest("button"); if (!btn) return;
-    document.documentElement.dataset.accent = btn.dataset.key;
-    accentBox.querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", b === btn));
-  });
+  // Whole-page options: primary colour, ambient background, card texture (data attributes on <html>)
+  const accents = [["blue", "Blue"], ["teal", "Teal"], ["amber", "Amber"], ["violet", "Violet"], ["lime", "Lime"]];
+  const lab = [
+    ["accent", "Colour", accents],
+    ["bg", "Background", [["none", "None"], ["tint", "Project tint"], ["pointer", "Pointer light"], ["waves", "Scroll waves"], ["tintwaves", "Tint + waves"]]],
+    ["texture", "Card texture", [["none", "None"], ["grain", "Grain"], ["dots", "Dots"], ["lines", "Lines"], ["glass", "Glass edge"]]],
+  ];
+  const root = document.documentElement;
+  Object.assign(root.dataset, { accent: "blue", bg: "tint", texture: "grain" });
+  document.getElementById("lab").innerHTML = lab.map(([attr, label, opts]) =>
+    `<div class="toolbar" role="group" aria-label="${label}" data-attr="${attr}"><span class="label">${label}</span>` +
+    opts.map(([key, name]) => `<button class="btn" type="button" data-key="${key}" aria-pressed="${root.dataset[attr] === key}">${name}</button>`).join("") + "</div>").join("");
+  document.querySelectorAll("#lab [data-attr]").forEach((box) => toggleGroup(box, (btn) => { root.dataset[box.dataset.attr] = btn.dataset.key; }));
+
+  // Colour comparison: the same small set of UI in each candidate
+  document.getElementById("compare").innerHTML = accents.map(([key, name]) => `<div data-accent="${key}">
+    <strong>${name}</strong><a href="#">A link</a><span class="btn primary">Pledge hours</span>
+    <div class="progress"><span style="width: 60%; background: var(--color-primary)"></span></div><span class="chip focus" aria-pressed="true">Focused chip</span></div>`).join("");
+
+  // Ambient background reacts to the visitor: project colour on hover/focus, pointer position, scroll position
+  const ambient = document.querySelector(".ambient");
+  const colours = Object.fromEntries(projects.map((p) => [p.repo, p.colour]));
+  const tint = (e) => { const t = e.target.closest?.(".tile"); const c = t && colours[t.querySelector("h3")?.textContent]; if (c) ambient.style.setProperty("--ambient", c); };
+  document.addEventListener("mouseover", tint); document.addEventListener("focusin", tint);
+  document.addEventListener("pointermove", (e) => { if (root.dataset.bg !== "pointer") return;
+    ambient.style.setProperty("--px", `${(e.clientX / innerWidth) * 100}%`); ambient.style.setProperty("--py", `${(e.clientY / innerHeight) * 100}%`); });
+  addEventListener("scroll", () => ambient.style.setProperty("--shift", (scrollY / Math.max(1, document.documentElement.scrollHeight - innerHeight)) * 50), { passive: true });
 
   document.getElementById("swatches").innerHTML = swatches.map(([token, use]) =>
     `<div class="swatch"><span style="background: var(${token})"></span><div><code>${token.replace("--color-", "")}</code><br><span class="muted">${use}</span></div></div>`).join("");

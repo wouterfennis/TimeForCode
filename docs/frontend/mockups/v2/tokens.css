@@ -33,7 +33,8 @@
 }
 
 /* Primary colour options (moodboard only; pick one). Ratios against --color-bg. */
-[data-accent="teal"]   { --color-primary: #2dd4bf; } /* ≈ 10.2:1 */
+[data-accent="blue"]   { --color-primary: #66c0f4; } /* ≈ 9.3:1, the default */
+[data-accent="teal"]  { --color-primary: #2dd4bf; } /* ≈ 10.2:1 */
 [data-accent="amber"]  { --color-primary: #f5a524; } /* ≈ 9.2:1, warm: "time" */
 [data-accent="violet"] { --color-primary: #a78bfa; } /* ≈ 6.8:1 */
 [data-accent="lime"]   { --color-primary: #a3e635; } /* ≈ 12.5:1 */
