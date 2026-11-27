@@ -25,6 +25,7 @@
 
   --motion-fast: 150ms; --motion-base: 200ms; /* never above 300ms */
   --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-settle: cubic-bezier(0.16, 1, 0.3, 1); /* long, slowing tail (easeOutExpo-like); background art only */
 }
 
 /* Primary colour options (moodboard only; pick one). Ratios against --color-bg. */
