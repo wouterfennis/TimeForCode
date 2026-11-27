@@ -223,7 +223,7 @@
   const accents = [["blue", "Blue"], ["teal", "Teal"], ["amber", "Amber"], ["violet", "Violet"], ["lime", "Lime"]];
   const lab = [
     ["accent", "Colour", accents],
-    ["bg", "Background", [["none", "None"], ["tint", "Project tint"], ["pointer", "Pointer light"], ["waves", "Scroll waves"], ["tintwaves", "Tint + waves"]]],
+    ["bg", "Background", [["none", "None"], ["tint", "Project tint"], ["waves", "Scroll waves"], ["tintwaves", "Tint + waves"]]],
     ["particles", "Particles", [["none", "None"], ["react", "React to you"], ["drift", "Slow drift (always)"]]],
     ["texture", "Card texture", [["none", "None"], ["grain", "Grain"], ["frost", "Frosted glass"], ["project", "Project colour"], ["holo", "Holographic"], ["carbon", "Carbon"], ["brushed", "Brushed metal"], ["glass", "Glass edge"], ["dots", "Dots"], ["lines", "Lines"]]],
   ];
@@ -239,13 +239,11 @@
     <strong>${name}</strong><a href="#">A link</a><span class="btn primary">Pledge hours</span>
     <div class="progress"><span style="width: 60%; background: var(--color-primary)"></span></div><span class="chip focus" aria-pressed="true">Focused chip</span></div>`).join("");
 
-  // Ambient background reacts to the visitor: project colour on hover/focus, pointer position, scroll position
+  // Ambient background reacts to the visitor: project colour on hover/focus, scroll position (no mouse-movement effects)
   const ambient = document.querySelector(".ambient");
   const colours = Object.fromEntries(projects.map((p) => [p.repo, p.colour]));
   const tint = (e) => { const t = e.target.closest?.(".tile"); const c = t && colours[t.querySelector("h3")?.textContent]; if (c) ambient.style.setProperty("--ambient", c); };
   document.addEventListener("mouseover", tint); document.addEventListener("focusin", tint);
-  document.addEventListener("pointermove", (e) => { if (root.dataset.bg !== "pointer") return;
-    ambient.style.setProperty("--px", `${(e.clientX / innerWidth) * 100}%`); ambient.style.setProperty("--py", `${(e.clientY / innerHeight) * 100}%`); });
   addEventListener("scroll", () => ambient.style.setProperty("--shift", (scrollY / Math.max(1, document.documentElement.scrollHeight - innerHeight)) * 50), { passive: true });
 
   document.getElementById("swatches").innerHTML = swatches.map(([token, use]) =>

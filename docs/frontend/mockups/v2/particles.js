@@ -1,5 +1,5 @@
 // Moodboard particles (PS5-like): soft dots at different depths in the ambient layer.
-// "react": they only move when the visitor does (pointer, scroll, focusing a tile) and then settle.
+// "react": they only move when the visitor scrolls or focuses a tile, and then settle (no mouse-movement effects).
 // "drift": they also float slowly on their own; paused when the tab is hidden. Reduced motion: drawn once, no movement.
 (() => {
   const root = document.documentElement;
@@ -67,7 +67,6 @@
   resize(); paintSprite(); kick();
   addEventListener("resize", () => { resize(); kick(); });
   document.addEventListener("visibilitychange", kick);
-  document.addEventListener("pointermove", (e) => { target.ox = (e.clientX / innerWidth - 0.5) * -60; target.oy = (e.clientY / innerHeight - 0.5) * -40; kick(); });
   addEventListener("scroll", () => { target.s = scrollY * 0.35; kick(); }, { passive: true });
 
   // Tile hover/focus: particles take the project's colour
@@ -78,12 +77,4 @@
   document.addEventListener("mouseover", tint);
   document.addEventListener("focusin", tint);
   document.getElementById("lab").addEventListener("click", () => setTimeout(kick));
-
-  // Holographic texture: the sheen follows the pointer across a card
-  document.addEventListener("pointermove", (e) => {
-    const t = root.dataset.texture === "holo" && e.target.closest?.(".tile, .panel, .stat");
-    if (!t) return;
-    const r = t.getBoundingClientRect();
-    t.style.setProperty("--hx", `${((e.clientX - r.left) / r.width) * 100}%`);
-  });
 })();

@@ -135,18 +135,14 @@ a { color: var(--color-primary); }
 /* ---- Moodboard options: ambient background and card texture (pick later) ---- */
 
 /* Ambient background: a fixed layer behind the page that reacts to the visitor (secondary motion).
-   [data-bg] on <html>: tint | pointer | waves | tintwaves */
+   [data-bg] on <html>: tint | waves | tintwaves */
 @property --ambient { syntax: "<color>"; inherits: true; initial-value: #66c0f4; }
-@property --px { syntax: "<percentage>"; inherits: true; initial-value: 50%; }
-@property --py { syntax: "<percentage>"; inherits: true; initial-value: 20%; }
 .ambient { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden;
-  transition: --ambient var(--motion-secondary) var(--ease-secondary), --px var(--motion-secondary-fade) var(--ease-secondary), --py var(--motion-secondary-fade) var(--ease-secondary); }
+  transition: --ambient var(--motion-secondary) var(--ease-secondary); }
 /* tint: the page glows in the colour of the focused project, like the PS5 home screen */
 :is([data-bg="tint"], [data-bg="tintwaves"]) .ambient { background:
   radial-gradient(70% 60% at 80% 0%, color-mix(in srgb, var(--ambient) 22%, transparent), transparent 70%),
   radial-gradient(60% 50% at 0% 100%, color-mix(in srgb, var(--ambient) 12%, transparent), transparent 70%); }
-/* pointer: a soft light trails the pointer */
-[data-bg="pointer"] .ambient { background: radial-gradient(40rem circle at var(--px) var(--py), color-mix(in srgb, var(--color-primary) 12%, transparent), transparent 70%); }
 /* waves: thin lines that drift sideways as you scroll (they never move on their own) */
 .waves { display: none; position: absolute; left: 0; bottom: 0; width: 200%; height: 45vh; fill: none; stroke-width: 1.5;
   stroke: color-mix(in srgb, var(--ambient) 30%, transparent);
@@ -173,9 +169,10 @@ a { color: var(--color-primary); }
 /* project: a faint gradient in the project's colour, with grain */
 [data-texture="project"] :is(.tile, .panel, .stat) { background-image: var(--grain-img),
   linear-gradient(160deg, color-mix(in srgb, var(--tile-colour, var(--color-primary)) 20%, transparent), transparent 65%); }
-/* holo: a faint foil sheen that shifts with the pointer (--hx set by script) */
+/* holo: a faint foil sheen; it shifts as the card brightens on hover */
 [data-texture="holo"] :is(.tile, .panel, .stat) { background-image: linear-gradient(115deg, transparent 20%, rgb(255 0 140 / 0.07) 38%, rgb(0 200 255 / 0.08) 50%, rgb(255 220 0 / 0.06) 62%, transparent 80%);
-  background-size: 250% 100%; background-position: var(--hx, 50%) 0; }
+  background-size: 250% 100%; background-position: 100% 0; transition: background-position var(--motion-secondary) var(--ease-secondary); }
+[data-texture="holo"] .tile:is(:hover, :focus-within) { background-position: 0 0; }
 /* carbon: a fine woven pattern */
 [data-texture="carbon"] :is(.tile, .panel, .stat) { background-image:
   linear-gradient(45deg, rgb(255 255 255 / 0.035) 25%, transparent 25% 75%, rgb(255 255 255 / 0.035) 75%),
