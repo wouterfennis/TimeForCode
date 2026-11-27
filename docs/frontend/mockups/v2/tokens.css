@@ -13,15 +13,22 @@
   --color-progress: #8bd46e;      /* hours pledged ≈ 10.5:1 */
   --color-warning: #f0b429;       /* ≈ 10.1:1 */
   --color-danger: #ff6b6b;        /* ≈ 6.8:1 */
-  --glow: 0 0 0 1px var(--color-primary), 0 0.5rem 1.5rem rgb(102 192 244 / 0.25);
+  --glow: 0 0 0 1px var(--color-primary), 0 0.5rem 1.5rem color-mix(in srgb, var(--color-primary) 25%, transparent);
 
   --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
   --text-sm: 0.875rem; --text-md: 1rem; --text-lg: 1.25rem; --text-xl: 1.5rem; --text-2xl: 2rem; --text-3xl: 2.75rem;
 
   --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem; --space-4: 1rem;
   --space-5: 1.5rem; --space-6: 2rem; --space-7: 3rem; --space-8: 4rem;
-  --radius-control: 0.375rem; --radius-card: 0.75rem; --radius-pill: 999px;
+  /* Square, like the references: only a hint of rounding */
+  --radius-control: 0.125rem; --radius-card: 0.125rem; --radius-pill: 0.125rem;
 
   --motion-fast: 150ms; --motion-base: 200ms; /* never above 300ms */
   --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
 }
+
+/* Primary colour options (moodboard only; pick one). Ratios against --color-bg. */
+[data-accent="teal"]   { --color-primary: #2dd4bf; } /* ≈ 10.2:1 */
+[data-accent="amber"]  { --color-primary: #f5a524; } /* ≈ 9.2:1, warm: "time" */
+[data-accent="violet"] { --color-primary: #a78bfa; } /* ≈ 6.8:1 */
+[data-accent="lime"]   { --color-primary: #a3e635; } /* ≈ 12.5:1 */
