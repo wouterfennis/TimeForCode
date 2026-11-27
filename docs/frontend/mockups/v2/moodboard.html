@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Moodboard — TimeForCode visual direction</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="components.css">
+  <style>
+    /* Moodboard-only layout */
+    main { padding: var(--space-7) 0 var(--space-8); }
+    section { margin-top: var(--space-8); }
+    .lead { font-size: var(--text-lg); max-width: 48rem; }
+    .refs { display: grid; gap: var(--space-3); grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr)); padding: 0; list-style: none; }
+    .refs li { background: var(--color-surface); border-radius: var(--radius-card); padding: var(--space-4); }
+    .swatches { display: grid; gap: var(--space-3); grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr)); }
+    .swatch { border: 1px solid var(--color-border); border-radius: var(--radius-card); overflow: hidden; font-size: var(--text-sm); }
+    .swatch > span { display: block; height: 4rem; }
+    .swatch div { padding: var(--space-2) var(--space-3); }
+    .states { display: grid; gap: var(--space-5); grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr)); }
+    .label { font-size: var(--text-sm); color: var(--color-text-muted); margin-bottom: var(--space-2); }
+    .type > * { margin: 0 0 var(--space-2); }
+    .note { border-left: 0.25rem solid var(--color-warning); padding-left: var(--space-3); }
+  </style>
+</head>
+<body>
+<main class="container">
+  <h1 style="font-size: var(--text-3xl)">A store you want to browse</h1>
+  <p class="lead muted">Moodboard for the toned-down game-store direction in <a href="../../design-system.md">design-system.md</a>. Built in code with the tokens the SPA will use (#211). Project data and hours are sample values; images come from GitHub's generated Open Graph images (the interim source in #213).</p>
+
+  <section aria-labelledby="refs">
+    <h2 id="refs">References and what we take from them</h2>
+    <ul class="refs">
+      <li><a href="https://store.steampowered.com/">Steam store</a><p class="muted">Dark surfaces, image-first capsules, shelves by theme, badges that carry the key fact.</p></li>
+      <li><a href="https://www.playstation.com/en-us/ps5/">PlayStation 5 interface</a><p class="muted">Tiles that respond to focus with a small lift and glow; calm, quick motion.</p></li>
+      <li><a href="https://polar.sh/">Polar</a><p class="muted">Developer funding presented in a modern, restrained dark UI.</p></li>
+      <li><a href="https://opencollective.com/">Open Collective</a><p class="muted">Transparent progress: who gave what, and how much is still needed.</p></li>
+      <li><a href="https://www.catchafire.org/">Catchafire</a><p class="muted">Skills-based volunteering: the "what help is needed" framing.</p></li>
+    </ul>
+    <p class="note muted">We take patterns, not looks: no copied colours, logos or layouts. And no store tricks: no countdowns, fake urgency or scarcity.</p>
+  </section>
+
+  <section aria-labelledby="palette">
+    <h2 id="palette">Palette</h2>
+    <div class="swatches" id="swatches"></div>
+  </section>
+
+  <section aria-labelledby="type" class="type">
+    <h2 id="type">Type</h2>
+    <p class="label">Inter (open question: final typeface)</p>
+    <p style="font-size: var(--text-3xl); font-weight: 700">Donate developer time</p>
+    <p style="font-size: var(--text-2xl); font-weight: 700">Needs help now</p>
+    <p style="font-size: var(--text-lg); font-weight: 600">dotnet/aspire</p>
+    <p>Body text for project descriptions and explanations.</p>
+    <p class="muted" style="font-size: var(--text-sm)">120 of 200 hours pledged · C# · ★ 4.1k</p>
+  </section>
+
+  <section aria-labelledby="tile">
+    <h2 id="tile">Project tile</h2>
+    <p class="muted">Hover and keyboard focus look the same: lift 0.25rem, grow 3%, glow, 200 ms. Turned off with reduced motion. Try the shelf below with mouse and Tab.</p>
+    <div class="states" id="states"></div>
+  </section>
+
+  <section aria-labelledby="shelf">
+    <h2 id="shelf">Shelf: Needs help now</h2>
+    <div class="shelf" id="shelf-row"></div>
+  </section>
+
+  <section aria-labelledby="actions">
+    <h2 id="actions">Actions</h2>
+    <div style="display: flex; gap: var(--space-3); flex-wrap: wrap">
+      <a class="btn primary" href="#">Browse projects</a>
+      <a class="btn" href="#">List your project</a>
+    </div>
+  </section>
+</main>
+<script>
+  // Sample data only; real repositories so the Open Graph images load.
+  const projects = [
+    { repo: "dotnet/aspire", need: "Dashboard accessibility and hosting docs", tags: ["C#", "Docs"], pledged: 120, goal: 200 },
+    { repo: "withastro/astro", need: "Help triaging issues in the i18n router", tags: ["TypeScript", "Triage"], pledged: 45, goal: 60 },
+    { repo: "excalidraw/excalidraw", need: "Keyboard support for the shape picker", tags: ["TypeScript", "A11y"], pledged: 18, goal: 80 },
+    { repo: "jellyfin/jellyfin", need: "Performance work on library scans", tags: ["C#", "Backend"], pledged: 64, goal: 100 },
+    { repo: "mastodon/mastodon", need: "Security review of media uploads", tags: ["Ruby", "Security"], pledged: 30, goal: 40 },
+  ];
+  const tile = (p, state = "") => {
+    const pct = Math.round((p.pledged / p.goal) * 100);
+    return `<article class="tile ${state}">
+      <div class="tile-media"><img src="https://opengraph.githubassets.com/1/${p.repo}" alt="" loading="lazy" onerror="this.remove()"><span class="badge">${pct}% pledged</span></div>
+      <div class="tile-body">
+        <h3><a href="#">${p.repo}</a></h3>
+        <p>${p.need}</p>
+        <div class="tags">${p.tags.map((t) => `<span class="tag">${t}</span>`).join("")}</div>
+        <div class="hours"><span><strong>${p.pledged}</strong> of ${p.goal} h</span><span>${p.goal - p.pledged} h to go</span></div>
+        <div class="progress" aria-hidden="true"><span style="width: ${pct}%"></span></div>
+      </div></article>`;
+  };
+  const labelled = (label, html) => `<div><p class="label">${label}</p>${html}</div>`;
+  document.getElementById("states").innerHTML =
+    labelled("Normal", tile(projects[0])) + labelled("Hover", tile(projects[0], "is-hover")) + labelled("Keyboard focus", tile(projects[0], "is-focus"));
+  document.getElementById("shelf-row").innerHTML = projects.map((p) => tile(p)).join("");
+
+  const swatches = [
+    ["--color-bg", "Page"], ["--color-surface", "Tiles"], ["--color-surface-raised", "Hover, inputs"], ["--color-border", "Dividers"],
+    ["--color-text", "Text · 15.8:1"], ["--color-text-muted", "Muted · 8.3:1"], ["--color-primary", "Primary · 9.3:1"],
+    ["--color-progress", "Progress · 10.5:1"], ["--color-warning", "Warning · 10.1:1"], ["--color-danger", "Danger · 6.8:1"],
+  ];
+  document.getElementById("swatches").innerHTML = swatches.map(([token, use]) =>
+    `<div class="swatch"><span style="background: var(${token})"></span><div><code>${token.replace("--color-", "")}</code><br><span class="muted">${use}</span></div></div>`).join("");
+</script>
+</body>
+</html>
