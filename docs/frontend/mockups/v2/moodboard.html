@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-hover="frame">
+<html lang="en" data-hover="frame" data-art="zoom">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -64,11 +64,11 @@
 
   <section aria-labelledby="tile">
     <h2 id="tile">Project tile</h2>
-    <p class="muted">Hover and keyboard focus look the same, all with the slow PS5-like ending. Pick one, then try the shelf below with mouse and Tab:</p>
-    <p class="label">Card moves</p>
-    <div class="toolbar" role="group" aria-label="Card hover" id="hovers-card" style="margin-bottom: var(--space-3)"><button class="btn" type="button" data-key="frame" aria-pressed="true">Frame grows (text stays sharp)</button><button class="btn" type="button" data-key="grow" aria-pressed="false">Whole card grows (PS5)</button><button class="btn" type="button" data-key="lift" aria-pressed="false">Gentle lift</button><button class="btn" type="button" data-key="tilt" aria-pressed="false">Tilt to pointer</button></div>
-    <p class="label">Card stays, art moves</p>
-    <div class="toolbar" role="group" aria-label="Art hover" id="hovers" style="margin-bottom: var(--space-4)"><button class="btn" type="button" data-key="zoom" aria-pressed="false">Ring + slow art zoom</button><button class="btn" type="button" data-key="sheen" aria-pressed="false">Ring + light sheen</button><button class="btn" type="button" data-key="" aria-pressed="false">Ring only</button><button class="btn" type="button" data-key="brighten" aria-pressed="false">Brighten</button></div>
+    <p class="muted">Hover and keyboard focus look the same. Two layers: the card answers at once (primary, 200 ms), then the art follows and settles slowly (secondary, PS5-like). Combine one of each, then try the shelf below with mouse and Tab:</p>
+    <p class="label">Primary: the card (fast)</p>
+    <div class="toolbar" role="group" aria-label="Card hover" id="hovers-card" style="margin-bottom: var(--space-3)"><button class="btn" type="button" data-key="frame" aria-pressed="true">Frame grows (text stays sharp)</button><button class="btn" type="button" data-key="grow" aria-pressed="false">Whole card grows (PS5)</button><button class="btn" type="button" data-key="lift" aria-pressed="false">Gentle lift</button><button class="btn" type="button" data-key="tilt" aria-pressed="false">Tilt to pointer</button><button class="btn" type="button" data-key="ring" aria-pressed="false">Ring only</button><button class="btn" type="button" data-key="brighten" aria-pressed="false">Brighten</button></div>
+    <p class="label">Secondary: the art (slow settle)</p>
+    <div class="toolbar" role="group" aria-label="Secondary motion" id="hovers-art" style="margin-bottom: var(--space-4)"><button class="btn" type="button" data-key="zoom" aria-pressed="true">Slow art zoom</button><button class="btn" type="button" data-key="sheen" aria-pressed="false">Light sheen</button><button class="btn" type="button" data-key="none" aria-pressed="false">None</button></div>
     <div class="states" id="states"></div>
   </section>
 
@@ -213,12 +213,9 @@
     `<div class="toolbar" role="group" aria-label="${label}" data-attr="${attr}"><span class="label">${label}</span>` +
     opts.map(([key, name]) => `<button class="btn" type="button" data-key="${key}" aria-pressed="${spotlight.dataset[attr] === key}">${name}</button>`).join("") + "</div>").join("");
   document.querySelectorAll("#spot-options [data-attr]").forEach((box) => toggleGroup(box, (btn) => { spotlight.dataset[box.dataset.attr] = btn.dataset.key; }));
-  // Tile hover options: two button rows act as one choice
-  const hoverBoxes = [document.getElementById("hovers-card"), document.getElementById("hovers")];
-  hoverBoxes.forEach((box) => toggleGroup(box, (btn) => {
-    hoverBoxes.filter((b) => b !== box).forEach((b) => b.querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", "false")));
-    btn.dataset.key ? (document.documentElement.dataset.hover = btn.dataset.key) : delete document.documentElement.dataset.hover;
-  }));
+  // Tile hover options: primary (card) and secondary (art) are picked independently
+  toggleGroup(document.getElementById("hovers-card"), (btn) => { document.documentElement.dataset.hover = btn.dataset.key; });
+  toggleGroup(document.getElementById("hovers-art"), (btn) => { document.documentElement.dataset.art = btn.dataset.key; });
   // Tilt option: lean the tile towards the pointer, max ~4deg
   document.addEventListener("pointermove", (e) => {
     const t = document.documentElement.dataset.hover === "tilt" && e.target.closest?.(".tile");
