@@ -145,11 +145,45 @@ a { color: var(--color-primary); }
 [data-bg="elevation"] :is(.tile, .panel, .stat) { box-shadow: 0 0.125rem 0.25rem rgb(0 0 0 / 0.5), 0 0.0625rem 0.125rem rgb(0 0 0 / 0.4); }
 /* gradient: Material You hero wash; primary at the top fading into the page */
 [data-bg="gradient"] .ambient { background: radial-gradient(120% 60% at 50% -10%, color-mix(in srgb, var(--color-primary) 18%, transparent), transparent 70%); }
-/* planes: classic Material paper; large angled planes in tones of the primary colour */
-[data-bg="planes"] .ambient { background:
-  linear-gradient(160deg, transparent 58%, color-mix(in srgb, var(--color-primary) 5%, transparent) 58%),
-  linear-gradient(200deg, transparent 68%, color-mix(in srgb, var(--color-primary) 7%, transparent) 68%),
-  linear-gradient(120deg, color-mix(in srgb, var(--color-primary) 4%, transparent) 22%, transparent 22%); }
+/* planes: classic Material paper. Three tonal sheets (.plane) behind the page.
+   [data-planes] picks the shape: angled | layered | origami. [data-scroll] picks how they react to scrolling:
+   none | parallax | tilt | slide (CSS scroll-driven animations; browsers without them keep the planes still). */
+.plane { display: none; position: absolute; inset: -20vh -10vw; background: color-mix(in srgb, var(--color-primary) var(--tone), transparent); }
+[data-bg="planes"] .plane { display: block; }
+.plane-1 { --tone: 5%; clip-path: polygon(0 62%, 100% 38%, 100% 100%, 0 100%); }
+.plane-2 { --tone: 7%; clip-path: polygon(45% 100%, 100% 58%, 100% 100%); }
+.plane-3 { --tone: 4%; clip-path: polygon(0 0, 38% 0, 0 55%); }
+/* layered: stacked sheets with a soft shadow edge, like paper on paper */
+[data-planes="layered"] .plane { filter: drop-shadow(0 -0.5rem 1rem rgb(0 0 0 / 0.35)); }
+[data-planes="layered"] .plane-1 { clip-path: polygon(0 55%, 100% 45%, 100% 100%, 0 100%); }
+[data-planes="layered"] .plane-2 { clip-path: polygon(0 75%, 100% 62%, 100% 100%, 0 100%); }
+[data-planes="layered"] .plane-3 { --tone: 9%; clip-path: polygon(0 90%, 100% 82%, 100% 100%, 0 100%); }
+/* origami: folded triangles */
+[data-planes="origami"] .plane-1 { clip-path: polygon(0 40%, 55% 100%, 0 100%); }
+[data-planes="origami"] .plane-2 { clip-path: polygon(100% 20%, 100% 100%, 40% 100%); }
+[data-planes="origami"] .plane-3 { --tone: 6%; clip-path: polygon(30% 0, 75% 0, 52% 35%); }
+/* Scroll reactions: each sheet moves at its own rate, so the page feels layered */
+@supports (animation-timeline: scroll()) {
+  [data-scroll] .plane { animation: none linear both; animation-timeline: scroll(root); }
+  [data-scroll="parallax"] .plane-1 { animation-name: plane-up-1; }
+  [data-scroll="parallax"] .plane-2 { animation-name: plane-up-2; }
+  [data-scroll="parallax"] .plane-3 { animation-name: plane-up-3; }
+  [data-scroll="tilt"] .plane-1 { animation-name: plane-tilt-1; }
+  [data-scroll="tilt"] .plane-2 { animation-name: plane-tilt-2; }
+  [data-scroll="tilt"] .plane-3 { animation-name: plane-tilt-3; }
+  [data-scroll="slide"] .plane-1 { animation-name: plane-slide-1; }
+  [data-scroll="slide"] .plane-2 { animation-name: plane-slide-2; }
+  [data-scroll="slide"] .plane-3 { animation-name: plane-slide-3; }
+}
+@keyframes plane-up-1 { to { transform: translateY(-8vh); } }
+@keyframes plane-up-2 { to { transform: translateY(-18vh); } }
+@keyframes plane-up-3 { to { transform: translateY(-4vh); } }
+@keyframes plane-tilt-1 { to { transform: rotate(-4deg); } }
+@keyframes plane-tilt-2 { to { transform: rotate(6deg); } }
+@keyframes plane-tilt-3 { to { transform: rotate(-8deg); } }
+@keyframes plane-slide-1 { from { transform: translateX(-6vw); } to { transform: translateX(6vw); } }
+@keyframes plane-slide-2 { from { transform: translateX(10vw); } to { transform: translateX(-10vw); } }
+@keyframes plane-slide-3 { from { transform: translateX(-12vw); } to { transform: translateX(4vw); } }
 /* shapes: Material 3 Expressive; a few big soft shapes (circle, ring, pill) */
 [data-bg="shapes"] .ambient { background:
   radial-gradient(circle at 92% 8%, color-mix(in srgb, var(--color-primary) 10%, transparent) 0 12rem, transparent 12rem),
@@ -157,33 +191,18 @@ a { color: var(--color-primary); }
 [data-bg="shapes"] .ambient::after { content: ""; position: absolute; right: 18%; bottom: 6%; width: 22rem; height: 7rem; border-radius: 999rem;
   background: color-mix(in srgb, var(--color-primary) 6%, transparent); }
 
-/* Card texture: [data-texture] on <html>: grain | dots | lines | glass. Kept faint so text contrast is unchanged. */
-[data-texture="grain"] :is(.tile, .panel, .stat) { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
-[data-texture="dots"] :is(.tile, .panel, .stat) { background-image: radial-gradient(rgb(255 255 255 / 0.06) 1px, transparent 1.5px); background-size: 0.75rem 0.75rem; }
-[data-texture="lines"] :is(.tile, .panel, .stat) { background-image: repeating-linear-gradient(135deg, rgb(255 255 255 / 0.035) 0 1px, transparent 1px 0.5rem); }
-[data-texture="glass"] :is(.tile, .panel, .stat) { background-image: linear-gradient(180deg, rgb(255 255 255 / 0.14) 0 1px, rgb(255 255 255 / 0.07) 1px, transparent 45%); }
-
-
-/* More textures. --tile-colour is set per tile from its project (sample colours). */
+/* Card texture: [data-texture] on <html>: grain | frost | project. Kept faint so text contrast is unchanged. */
 :root {
-  --grain-img: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  --brushed-img: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='160'%3E%3Cfilter id='b'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.004 .9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23b)'/%3E%3C/svg%3E");
+  /* Coarse grain: low noise frequency on a 240px tile, so the grain reads at normal viewing distance */
+  --grain-img: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.38' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .11 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
-/* frost: see-through cards that blur what is behind them (background shapes) */
-[data-texture="frost"] :is(.tile, .panel, .stat) { background: color-mix(in srgb, var(--color-surface) 55%, transparent); backdrop-filter: blur(1rem) saturate(1.3);
-  border: 1px solid rgb(255 255 255 / 0.08); }
-[data-texture="frost"] .tile:is(:hover, :focus-within, .is-hover, .is-focus) { background: color-mix(in srgb, var(--color-surface-raised) 70%, transparent); }
+[data-texture="grain"] :is(.tile, .panel, .stat) { background-image: var(--grain-img); }
+/* frost: see-through cards that blur what is behind them; a light edge and top sheen make the glass visible */
+[data-texture="frost"] :is(.tile, .panel, .stat) { background: linear-gradient(180deg, rgb(255 255 255 / 0.08), transparent 50%), color-mix(in srgb, var(--color-surface) 35%, transparent);
+  backdrop-filter: blur(1.25rem) saturate(1.6); border: 1px solid rgb(255 255 255 / 0.14); }
+[data-texture="frost"] .tile:is(:hover, :focus-within, .is-hover, .is-focus) { background: linear-gradient(180deg, rgb(255 255 255 / 0.12), transparent 50%), color-mix(in srgb, var(--color-surface-raised) 55%, transparent); }
 /* project: a faint gradient in the project's colour, with grain */
 [data-texture="project"] :is(.tile, .panel, .stat) { background-image: var(--grain-img),
-  linear-gradient(160deg, color-mix(in srgb, var(--tile-colour, var(--color-primary)) 20%, transparent), transparent 65%); }
-/* holo: a faint foil sheen; it shifts as the card brightens on hover */
-[data-texture="holo"] :is(.tile, .panel, .stat) { background-image: linear-gradient(115deg, transparent 20%, rgb(255 0 140 / 0.07) 38%, rgb(0 200 255 / 0.08) 50%, rgb(255 220 0 / 0.06) 62%, transparent 80%);
-  background-size: 250% 100%; background-position: 100% 0; transition: background-position var(--motion-secondary) var(--ease-secondary); }
-[data-texture="holo"] .tile:is(:hover, :focus-within) { background-position: 0 0; }
-/* carbon: a fine woven pattern */
-[data-texture="carbon"] :is(.tile, .panel, .stat) { background-image:
-  linear-gradient(45deg, rgb(255 255 255 / 0.035) 25%, transparent 25% 75%, rgb(255 255 255 / 0.035) 75%),
-  linear-gradient(45deg, rgb(255 255 255 / 0.035) 25%, transparent 25% 75%, rgb(255 255 255 / 0.035) 75%);
-  background-size: 0.5rem 0.5rem; background-position: 0 0, 0.25rem 0.25rem; }
-/* brushed: horizontal brushed-metal streaks */
-[data-texture="brushed"] :is(.tile, .panel, .stat) { background-image: var(--brushed-img), linear-gradient(180deg, rgb(255 255 255 / 0.05), transparent 60%); }
+  linear-gradient(160deg, color-mix(in srgb, var(--tile-colour, var(--color-primary)) 22%, transparent), transparent 65%); }
+
+@media (prefers-reduced-motion: reduce) { .plane { animation: none !important; } }

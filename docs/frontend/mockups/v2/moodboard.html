@@ -35,7 +35,7 @@
   </style>
 </head>
 <body>
-<div class="ambient" aria-hidden="true"></div>
+<div class="ambient" aria-hidden="true"><i class="plane plane-1"></i><i class="plane plane-2"></i><i class="plane plane-3"></i></div>
 <details class="lab" open><summary>Try options (whole page)</summary><div id="lab"></div></details>
 <header class="app-header"><div class="container">
   <a class="brand" href="#">Time<b>For</b>Code</a>
@@ -221,10 +221,12 @@
   const lab = [
     ["accent", "Colour", accents],
     ["bg", "Background", [["none", "Plain"], ["tonal", "Tonal (M3)"], ["elevation", "Elevation (M2 dark)"], ["gradient", "Gradient wash"], ["planes", "Paper planes"], ["shapes", "Expressive shapes"]]],
-    ["texture", "Card texture", [["none", "None"], ["grain", "Grain"], ["frost", "Frosted glass"], ["project", "Project colour"], ["holo", "Holographic"], ["carbon", "Carbon"], ["brushed", "Brushed metal"], ["glass", "Glass edge"], ["dots", "Dots"], ["lines", "Lines"]]],
+    ["planes", "Plane shape", [["angled", "Angled"], ["layered", "Layered sheets"], ["origami", "Origami"]]],
+    ["scroll", "On scroll", [["none", "Still"], ["parallax", "Parallax"], ["tilt", "Tilt"], ["slide", "Slide"]]],
+    ["texture", "Card texture", [["none", "None"], ["grain", "Grain"], ["frost", "Frosted glass"], ["project", "Project colour"]]],
   ];
   const root = document.documentElement;
-  Object.assign(root.dataset, { accent: "blue", bg: "tonal", texture: "grain" });
+  Object.assign(root.dataset, { accent: "blue", bg: "planes", planes: "angled", scroll: "parallax", texture: "frost" });
   document.getElementById("lab").innerHTML = lab.map(([attr, label, opts]) =>
     `<div class="toolbar" role="group" aria-label="${label}" data-attr="${attr}"><span class="label">${label}</span>` +
     opts.map(([key, name]) => `<button class="btn" type="button" data-key="${key}" aria-pressed="${root.dataset[attr] === key}">${name}</button>`).join("") + "</div>").join("");
