@@ -53,6 +53,11 @@ a { color: var(--color-primary); }
 [data-hover="brighten"] .tile:is(:hover, :focus-within, .is-hover, .is-focus) { box-shadow: none; background: var(--color-surface-raised); }
 [data-hover="brighten"] .tile:is(:hover, :focus-within, .is-hover, .is-focus) h3 a { color: var(--color-primary); }
 [data-hover="brighten"] .tile:is(:hover, :focus-within, .is-hover, .is-focus) img { filter: brightness(1.15) saturate(1.1); }
+/* Primary: "mix" (the pick): grows, lifts and brightens; a soft drop shadow instead of the ring */
+[data-hover="mix"] .tile:is(:hover, :focus-within, .is-hover, .is-focus) { transform: translateY(-0.5rem) scale(1.04); z-index: 1; background: var(--color-surface-raised);
+  box-shadow: 0 0.75rem 1.5rem rgb(0 0 0 / 0.45); }
+[data-hover="mix"] .tile:is(:hover, :focus-within, .is-hover, .is-focus) h3 a { color: var(--color-primary); }
+[data-hover="mix"] .tile:is(:hover, :focus-within, .is-hover, .is-focus) img { filter: brightness(1.15) saturate(1.1); }
 /* "ring" (any other value): only the glow */
 
 /* Secondary: "zoom" lets the art drift closer inside its frame */
