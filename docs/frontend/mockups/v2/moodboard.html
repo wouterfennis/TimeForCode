@@ -168,7 +168,7 @@
   ];
   const tile = (p, state = "") => {
     const pct = Math.round((p.pledged / p.goal) * 100);
-    return `<article class="tile ${state}">
+    return `<article class="tile ${state}" style="--tile-colour: ${p.colour}">
       <div class="tile-media"><img src="https://opengraph.githubassets.com/1/${p.repo}" alt="" loading="lazy" onerror="this.remove()"><span class="badge">${pct}% pledged</span></div>
       <div class="tile-body">
         <h3><a href="#">${p.repo}</a></h3>
@@ -224,10 +224,11 @@
   const lab = [
     ["accent", "Colour", accents],
     ["bg", "Background", [["none", "None"], ["tint", "Project tint"], ["pointer", "Pointer light"], ["waves", "Scroll waves"], ["tintwaves", "Tint + waves"]]],
-    ["texture", "Card texture", [["none", "None"], ["grain", "Grain"], ["dots", "Dots"], ["lines", "Lines"], ["glass", "Glass edge"]]],
+    ["particles", "Particles", [["none", "None"], ["react", "React to you"], ["drift", "Slow drift (always)"]]],
+    ["texture", "Card texture", [["none", "None"], ["grain", "Grain"], ["frost", "Frosted glass"], ["project", "Project colour"], ["holo", "Holographic"], ["carbon", "Carbon"], ["brushed", "Brushed metal"], ["glass", "Glass edge"], ["dots", "Dots"], ["lines", "Lines"]]],
   ];
   const root = document.documentElement;
-  Object.assign(root.dataset, { accent: "blue", bg: "tint", texture: "grain" });
+  Object.assign(root.dataset, { accent: "blue", bg: "none", particles: "react", texture: "frost" });
   document.getElementById("lab").innerHTML = lab.map(([attr, label, opts]) =>
     `<div class="toolbar" role="group" aria-label="${label}" data-attr="${attr}"><span class="label">${label}</span>` +
     opts.map(([key, name]) => `<button class="btn" type="button" data-key="${key}" aria-pressed="${root.dataset[attr] === key}">${name}</button>`).join("") + "</div>").join("");
@@ -250,5 +251,6 @@
   document.getElementById("swatches").innerHTML = swatches.map(([token, use]) =>
     `<div class="swatch"><span style="background: var(${token})"></span><div><code>${token.replace("--color-", "")}</code><br><span class="muted">${use}</span></div></div>`).join("");
 </script>
+<script src="particles.js"></script>
 </body>
 </html>
