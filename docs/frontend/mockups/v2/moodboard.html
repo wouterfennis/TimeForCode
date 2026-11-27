@@ -35,11 +35,7 @@
   </style>
 </head>
 <body>
-<div class="ambient" aria-hidden="true"><svg class="waves" viewBox="0 0 2880 400" preserveAspectRatio="none">
-  <path d="M0 250 C240 180 480 320 720 250 S1200 180 1440 250 S1920 320 2160 250 S2640 180 2880 250"/>
-  <path d="M0 290 C240 230 480 350 720 290 S1200 230 1440 290 S1920 350 2160 290 S2640 230 2880 290"/>
-  <path d="M0 330 C240 290 480 370 720 330 S1200 290 1440 330 S1920 370 2160 330 S2640 290 2880 330"/>
-</svg></div>
+<div class="ambient" aria-hidden="true"></div>
 <details class="lab" open><summary>Try options (whole page)</summary><div id="lab"></div></details>
 <header class="app-header"><div class="container">
   <a class="brand" href="#">Time<b>For</b>Code</a>
@@ -58,6 +54,7 @@
       <li><a href="https://polar.sh/">Polar</a><p class="muted">Same domain, not the same style: a platform that funds open-source maintainers. Shows how funding progress is presented to developers.</p></li>
       <li><a href="https://opencollective.com/">Open Collective</a><p class="muted">Transparent progress: who gave what, and how much is still needed.</p></li>
       <li><a href="https://www.catchafire.org/">Catchafire</a><p class="muted">Skills-based volunteering: the "what help is needed" framing.</p></li>
+      <li><a href="https://m3.material.io/styles/elevation/applying-elevation">Material Design 3: elevation and tonal surfaces</a><p class="muted">Source of the background options: tonal surfaces, the dark-theme elevation greys, and Expressive shapes. Try them in the options panel.</p></li>
     </ul>
     <p class="note muted">We take patterns, not looks: no copied colours, logos or layouts. And no store tricks: no countdowns, fake urgency or scarcity.</p>
   </section>
@@ -219,16 +216,15 @@
   toggleGroup(document.getElementById("layouts"), (btn) => { document.getElementById("spotlight").dataset.layout = btn.dataset.key; });
   toggleGroup(document.getElementById("chips"));
 
-  // Whole-page options: primary colour, ambient background, card texture (data attributes on <html>)
+  // Whole-page options: primary colour, background, card texture (data attributes on <html>)
   const accents = [["blue", "Blue"], ["teal", "Teal"], ["amber", "Amber"], ["violet", "Violet"], ["lime", "Lime"]];
   const lab = [
     ["accent", "Colour", accents],
-    ["bg", "Background", [["none", "None"], ["tint", "Project tint"], ["waves", "Scroll waves"], ["tintwaves", "Tint + waves"]]],
-    ["particles", "Particles", [["none", "None"], ["react", "React to you"], ["drift", "Slow drift (always)"]]],
+    ["bg", "Background", [["none", "Plain"], ["tonal", "Tonal (M3)"], ["elevation", "Elevation (M2 dark)"], ["gradient", "Gradient wash"], ["planes", "Paper planes"], ["shapes", "Expressive shapes"]]],
     ["texture", "Card texture", [["none", "None"], ["grain", "Grain"], ["frost", "Frosted glass"], ["project", "Project colour"], ["holo", "Holographic"], ["carbon", "Carbon"], ["brushed", "Brushed metal"], ["glass", "Glass edge"], ["dots", "Dots"], ["lines", "Lines"]]],
   ];
   const root = document.documentElement;
-  Object.assign(root.dataset, { accent: "blue", bg: "none", particles: "react", texture: "frost" });
+  Object.assign(root.dataset, { accent: "blue", bg: "tonal", texture: "grain" });
   document.getElementById("lab").innerHTML = lab.map(([attr, label, opts]) =>
     `<div class="toolbar" role="group" aria-label="${label}" data-attr="${attr}"><span class="label">${label}</span>` +
     opts.map(([key, name]) => `<button class="btn" type="button" data-key="${key}" aria-pressed="${root.dataset[attr] === key}">${name}</button>`).join("") + "</div>").join("");
@@ -239,16 +235,9 @@
     <strong>${name}</strong><a href="#">A link</a><span class="btn primary">Pledge hours</span>
     <div class="progress"><span style="width: 60%; background: var(--color-primary)"></span></div><span class="chip focus" aria-pressed="true">Focused chip</span></div>`).join("");
 
-  // Ambient background reacts to the visitor: project colour on hover/focus, scroll position (no mouse-movement effects)
-  const ambient = document.querySelector(".ambient");
-  const colours = Object.fromEntries(projects.map((p) => [p.repo, p.colour]));
-  const tint = (e) => { const t = e.target.closest?.(".tile"); const c = t && colours[t.querySelector("h3")?.textContent]; if (c) ambient.style.setProperty("--ambient", c); };
-  document.addEventListener("mouseover", tint); document.addEventListener("focusin", tint);
-  addEventListener("scroll", () => ambient.style.setProperty("--shift", (scrollY / Math.max(1, document.documentElement.scrollHeight - innerHeight)) * 50), { passive: true });
 
   document.getElementById("swatches").innerHTML = swatches.map(([token, use]) =>
     `<div class="swatch"><span style="background: var(${token})"></span><div><code>${token.replace("--color-", "")}</code><br><span class="muted">${use}</span></div></div>`).join("");
 </script>
-<script src="particles.js"></script>
 </body>
 </html>
