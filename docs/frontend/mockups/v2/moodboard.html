@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-hover="mix" data-art="sheen">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -64,11 +64,7 @@
 
   <section aria-labelledby="tile">
     <h2 id="tile">Project tile</h2>
-    <p class="muted">Hover and keyboard focus look the same. Two layers: the card answers at once (primary, 200 ms), then the art follows and settles slowly (secondary, PS5-like). Combine one of each, then try the shelf below with mouse and Tab:</p>
-    <p class="label">Primary: the card (fast)</p>
-    <div class="toolbar" role="group" aria-label="Card hover" id="hovers-card" style="margin-bottom: var(--space-3)"><button class="btn" type="button" data-key="mix" aria-pressed="true">Your mix: grow + lift + brighten</button><button class="btn" type="button" data-key="frame" aria-pressed="false">Frame grows (text stays sharp)</button><button class="btn" type="button" data-key="grow" aria-pressed="false">Whole card grows (PS5)</button><button class="btn" type="button" data-key="lift" aria-pressed="false">Gentle lift</button><button class="btn" type="button" data-key="tilt" aria-pressed="false">Tilt to pointer</button><button class="btn" type="button" data-key="ring" aria-pressed="false">Ring only</button><button class="btn" type="button" data-key="brighten" aria-pressed="false">Brighten</button></div>
-    <p class="label">Secondary: the art (slow settle)</p>
-    <div class="toolbar" role="group" aria-label="Secondary motion" id="hovers-art" style="margin-bottom: var(--space-4)"><button class="btn" type="button" data-key="zoom" aria-pressed="false">Slow art zoom</button><button class="btn" type="button" data-key="sheen" aria-pressed="true">Light sheen</button><button class="btn" type="button" data-key="none" aria-pressed="false">None</button></div>
+    <p class="muted">Hover and keyboard focus look the same, in two layers. Primary (200 ms): the card lifts, grows 4% and brightens. Secondary (settles slowly): one band of light sweeps over the art. Try the shelf below with mouse and Tab.</p>
     <div class="states" id="states"></div>
   </section>
 
@@ -79,9 +75,9 @@
 
   <section aria-labelledby="spot">
     <h2 id="spot">Spotlight (PS5 feel)</h2>
-    <p class="muted">Hover or Tab through the row: the background art follows the focused project. A candidate for the home page hero. Combine the options:</p>
-    <div class="spot-options" id="spot-options"></div>
-    <div class="spotlight" id="spotlight" data-arrival="slide" data-pace="slow" data-layout="overlay">
+    <p class="muted">Hover or Tab through the row: the background art slides in from the side you move towards and settles slowly (secondary motion). A candidate for the home page hero. Both layouts stay available:</p>
+    <div class="toolbar" role="group" aria-label="Spotlight layout" id="layouts" style="margin-bottom: var(--space-4)"><button class="btn" type="button" data-key="overlay" aria-pressed="true">Overlay</button><button class="btn" type="button" data-key="panel" aria-pressed="false">Side panel</button></div>
+    <div class="spotlight" id="spotlight" data-layout="overlay">
       <div class="spotlight-bg is-visible" id="bg-a"></div><div class="spotlight-bg" id="bg-b"></div>
       <div><p class="label">Featured</p><h3 id="spot-title" style="font-size: var(--text-2xl)">dotnet/aspire</h3><p id="spot-need" class="muted"></p></div>
       <div class="shelf" id="spot-row"></div>
@@ -186,7 +182,7 @@
     const p = projects[i], dir = i > current ? 1 : -1;
     current = i;
     const back = layers[1 - front], old = layers[front];
-    // Slide variant: new art enters from the side you move towards, old art leaves the other way.
+    // New art enters from the side you move towards, old art leaves the other way.
     back.style.transition = "none"; back.style.setProperty("--from", `${dir * 8}%`); void back.offsetWidth; back.style.transition = "";
     old.style.setProperty("--from", `${-dir * 8}%`);
     back.style.backgroundImage = `url(${og(p.repo)})`;
@@ -203,27 +199,7 @@
     box.querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", b === btn));
     onPick?.(btn);
   });
-  const spotlight = document.getElementById("spotlight");
-  const spotOptions = [
-    ["arrival", "Arrival", [["fade", "Crossfade"], ["slide", "Slide"], ["zoom", "Zoom settle"], ["blur", "Blur to sharp"]]],
-    ["pace", "Pace", [["quick", "Quick (300 ms)"], ["slow", "Slow settle (PS5)"]]],
-    ["layout", "Layout", [["overlay", "Overlay"], ["panel", "Side panel"]]],
-  ];
-  document.getElementById("spot-options").innerHTML = spotOptions.map(([attr, label, opts]) =>
-    `<div class="toolbar" role="group" aria-label="${label}" data-attr="${attr}"><span class="label">${label}</span>` +
-    opts.map(([key, name]) => `<button class="btn" type="button" data-key="${key}" aria-pressed="${spotlight.dataset[attr] === key}">${name}</button>`).join("") + "</div>").join("");
-  document.querySelectorAll("#spot-options [data-attr]").forEach((box) => toggleGroup(box, (btn) => { spotlight.dataset[box.dataset.attr] = btn.dataset.key; }));
-  // Tile hover options: primary (card) and secondary (art) are picked independently
-  toggleGroup(document.getElementById("hovers-card"), (btn) => { document.documentElement.dataset.hover = btn.dataset.key; });
-  toggleGroup(document.getElementById("hovers-art"), (btn) => { document.documentElement.dataset.art = btn.dataset.key; });
-  // Tilt option: lean the tile towards the pointer, max ~4deg
-  document.addEventListener("pointermove", (e) => {
-    const t = document.documentElement.dataset.hover === "tilt" && e.target.closest?.(".tile");
-    document.querySelectorAll(".tile[style*='--rx']").forEach((el) => { if (el !== t) { el.style.removeProperty("--rx"); el.style.removeProperty("--ry"); } });
-    if (!t) return;
-    const r = t.getBoundingClientRect(), x = (e.clientX - r.left) / r.width - 0.5, y = (e.clientY - r.top) / r.height - 0.5;
-    t.style.setProperty("--rx", `${(-y * 8).toFixed(2)}deg`); t.style.setProperty("--ry", `${(x * 8).toFixed(2)}deg`);
-  });
+  toggleGroup(document.getElementById("layouts"), (btn) => { document.getElementById("spotlight").dataset.layout = btn.dataset.key; });
   toggleGroup(document.getElementById("chips"));
 
   // Primary colour options

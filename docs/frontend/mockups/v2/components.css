@@ -31,46 +31,25 @@ a { color: var(--color-primary); }
 .tile h3 a::after { content: ""; position: absolute; inset: 0; }
 .tile h3 a:focus-visible { outline: none; }
 .tile p { margin: 0; color: var(--color-text-muted); }
-/* Tile hover = focus, in two layers (moodboard options on <html>):
-   primary   [data-hover]  the card answers the pointer at once  (--motion-primary, fast)
-   secondary [data-art]    the art follows and settles slowly     (--motion-secondary, PS5-like tail) */
+/* Tile hover = keyboard focus, in two layers:
+   primary   the card answers at once: lifts 0.5rem, grows 4%, brightens   (--motion-primary, ≤ 300 ms)
+   secondary one band of light sweeps over the art and slows down            (--motion-secondary-fade, settles) */
 .tile-media { overflow: hidden; }
-.tile, .tile::before { transition: transform var(--motion-primary) var(--ease-primary), box-shadow var(--motion-primary) var(--ease-primary), background var(--motion-primary); }
-.tile:is(:hover, :focus-within, .is-hover, .is-focus) { box-shadow: var(--glow); }
-
-/* Primary: "frame" grows the card's background and ring behind the content, so text and art stay crisp */
-[data-hover="frame"] .tile { background: transparent; overflow: visible; isolation: isolate; }
-[data-hover="frame"] .tile::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--color-surface); border-radius: var(--radius-card); }
-[data-hover="frame"] .tile:is(:hover, :focus-within, .is-hover, .is-focus) { box-shadow: none; }
-[data-hover="frame"] .tile:is(:hover, :focus-within, .is-hover, .is-focus)::before { transform: scale(1.06, 1.05); box-shadow: var(--glow); background: var(--color-surface-raised); }
-/* Primary: "grow" scales the whole card like a PS5 tile (text may soften slightly while scaled) */
-[data-hover="grow"] .tile:is(:hover, :focus-within, .is-hover, .is-focus) { transform: scale(1.04); z-index: 1; }
-/* Primary: "lift" */
-[data-hover="lift"] .tile:is(:hover, :focus-within, .is-hover, .is-focus) { transform: translateY(-0.25rem); }
-/* Primary: "tilt" leans towards the pointer (max ~4deg); keyboard focus only gets the ring */
-[data-hover="tilt"] .tile { transform: perspective(40rem) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); }
-/* Primary: "brighten" */
-[data-hover="brighten"] .tile:is(:hover, :focus-within, .is-hover, .is-focus) { box-shadow: none; background: var(--color-surface-raised); }
-[data-hover="brighten"] .tile:is(:hover, :focus-within, .is-hover, .is-focus) h3 a { color: var(--color-primary); }
-[data-hover="brighten"] .tile:is(:hover, :focus-within, .is-hover, .is-focus) img { filter: brightness(1.15) saturate(1.1); }
-/* Primary: "mix" (the pick): grows, lifts and brightens; a soft drop shadow instead of the ring */
-[data-hover="mix"] .tile:is(:hover, :focus-within, .is-hover, .is-focus) { transform: translateY(-0.5rem) scale(1.04); z-index: 1; background: var(--color-surface-raised);
+.tile { transition: transform var(--motion-primary) var(--ease-primary), box-shadow var(--motion-primary) var(--ease-primary), background var(--motion-primary); }
+.tile:is(:hover, :focus-within, .is-hover, .is-focus) { transform: translateY(-0.5rem) scale(1.04); z-index: 1; background: var(--color-surface-raised);
   box-shadow: 0 0.75rem 1.5rem rgb(0 0 0 / 0.45); }
-[data-hover="mix"] .tile:is(:hover, :focus-within, .is-hover, .is-focus) h3 a { color: var(--color-primary); }
-[data-hover="mix"] .tile:is(:hover, :focus-within, .is-hover, .is-focus) img { filter: brightness(1.15) saturate(1.1); }
-/* "ring" (any other value): only the glow */
-
-/* Secondary: "zoom" lets the art drift closer inside its frame */
-.tile-media img { transition: transform var(--motion-secondary) var(--ease-secondary), filter var(--motion-primary) var(--ease-primary); }
-[data-art="zoom"] .tile:is(:hover, :focus-within, .is-hover, .is-focus) img { transform: scale(1.08); }
-/* Secondary: "sheen" sweeps one band of light over the art (no return sweep, never loops) */
-[data-art="sheen"] .tile-media::after { content: ""; position: absolute; inset: 0; pointer-events: none; transform: translateX(-100%);
+.tile h3 a { transition: color var(--motion-primary) var(--ease-primary); }
+.tile:is(:hover, :focus-within, .is-hover, .is-focus) h3 a { color: var(--color-primary); }
+.tile-media img { transition: filter var(--motion-primary) var(--ease-primary); }
+.tile:is(:hover, :focus-within, .is-hover, .is-focus) img { filter: brightness(1.15) saturate(1.1); }
+/* Sheen: no return sweep, never loops */
+.tile-media::after { content: ""; position: absolute; inset: 0; pointer-events: none; transform: translateX(-100%);
   background: linear-gradient(105deg, transparent 35%, rgb(255 255 255 / 0.18) 50%, transparent 65%); }
-[data-art="sheen"] .tile:is(:hover, :focus-within) .tile-media::after { transform: translateX(100%); transition: transform var(--motion-secondary-fade) var(--ease-secondary); }
+.tile:is(:hover, :focus-within) .tile-media::after { transform: translateX(100%); transition: transform var(--motion-secondary-fade) var(--ease-secondary); }
 .tile.is-focus, .tile:has(a:focus-visible) { outline: 0.1875rem solid var(--color-primary); outline-offset: 0.125rem; }
 
 /* Shelf: a horizontal row of tiles */
-.shelf { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(16rem, 1fr); gap: var(--space-4); overflow-x: auto; padding: var(--space-3) var(--space-3) var(--space-5); scroll-snap-type: x mandatory; }
+.shelf { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(16rem, 1fr); gap: var(--space-4); overflow-x: auto; padding: var(--space-5) var(--space-3); scroll-snap-type: x mandatory; }
 .shelf > * { scroll-snap-align: start; }
 
 /* Buttons */
@@ -108,26 +87,16 @@ a { color: var(--color-primary); }
 
 /* Spotlight: the background follows the focused tile (PS5-like) */
 .spotlight { position: relative; overflow: hidden; border-radius: var(--radius-card); padding: var(--space-6) var(--space-5) var(--space-4); min-height: 26rem; display: flex; flex-direction: column; justify-content: flex-end; gap: var(--space-4); }
-.spotlight-bg { position: absolute; inset: 0; background-size: cover; background-position: center; opacity: 0; transition: opacity 300ms var(--ease-out); }
-.spotlight-bg.is-visible { opacity: 1; }
+/* Secondary motion: the new art slides in from the side you move towards and settles slowly (fade 700 ms, move 1600 ms) */
+.spotlight-bg { position: absolute; inset: 0; background-size: cover; background-position: center; opacity: 0; transform: translateX(var(--from, 0));
+  transition: opacity var(--motion-secondary-fade) var(--ease-out), transform var(--motion-secondary) var(--ease-secondary); }
+.spotlight-bg.is-visible { opacity: 1; transform: none; }
 .spotlight::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to top, var(--color-bg) 35%, color-mix(in srgb, var(--color-bg) 55%, transparent)); }
 .spotlight > :not(.spotlight-bg) { position: relative; z-index: 1; }
 .spotlight .shelf { grid-auto-columns: minmax(11rem, 14rem); }
 .spotlight .tile-body { padding: var(--space-3); }
 .spotlight .tile p, .spotlight .tile .tags { display: none; }
-/* Spotlight options: how the art arrives (data-arrival), how fast (data-pace), layout (data-layout).
-   "slow" is a long deceleration like the PS5 home screen; only for background art, which never blocks input. */
-.spotlight { --bg-fade: var(--motion-primary); --bg-move: var(--motion-primary); --bg-ease: var(--ease-primary); }
-.spotlight[data-pace="slow"] { --bg-fade: var(--motion-secondary-fade); --bg-move: var(--motion-secondary); --bg-ease: var(--ease-secondary); }
-.spotlight-bg { transition: opacity var(--bg-fade) var(--ease-out), transform var(--bg-move) var(--bg-ease), filter var(--bg-move) var(--bg-ease); }
-.spotlight[data-arrival="slide"] .spotlight-bg { transform: translateX(var(--from, 0)); }
-.spotlight[data-arrival="zoom"] .spotlight-bg { transform: scale(1.12); }
-.spotlight[data-arrival="blur"] .spotlight-bg { filter: blur(1rem); transform: scale(1.04); }
-.spotlight .spotlight-bg.is-visible { transform: none; filter: none; }
-.spot-options { display: flex; flex-direction: column; gap: var(--space-2); margin-bottom: var(--space-4); }
-.spot-options .toolbar { align-items: center; }
-.spot-options .label { min-width: 4rem; margin: 0; }
-/* Layout "panel": details sit on a dark area left of the art */
+/* Two layouts, both kept: overlay (default, details over the art) and "panel" (details on a dark area left of the art) */
 .spotlight[data-layout="panel"]::after { background: linear-gradient(to right, var(--color-bg) 30%, transparent 75%), linear-gradient(to top, var(--color-bg) 25%, transparent 60%); }
 
 /* Impact numbers */
@@ -159,5 +128,6 @@ a { color: var(--color-primary); }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; }
-  .tile, .tile::before, .tile img, .tile-media::after, .spotlight-bg { transform: none !important; filter: none !important; }
+  .tile, .tile-media::after, .spotlight-bg { transform: none !important; }
+  .tile-media::after { display: none; }
 }
