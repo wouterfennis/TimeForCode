@@ -64,7 +64,7 @@
 
   <section aria-labelledby="tile">
     <h2 id="tile">Project tile</h2>
-    <p class="muted">Hover and keyboard focus look the same: lift 0.25rem, grow 3%, glow, 200 ms. Turned off with reduced motion. Try the shelf below with mouse and Tab.</p>
+    <p class="muted">Hover and keyboard focus look the same: the tile lifts 0.375rem with a glow and only the image zooms (text never scales, so it stays sharp), 200 ms. Turned off with reduced motion. Try the shelf below with mouse and Tab.</p>
     <div class="states" id="states"></div>
   </section>
 
@@ -75,11 +75,33 @@
 
   <section aria-labelledby="spot">
     <h2 id="spot">Spotlight (PS5 feel)</h2>
-    <p class="muted">Hover or Tab through the row: the background art crossfades to the focused project (300 ms). A candidate for the home page hero.</p>
-    <div class="spotlight">
+    <p class="muted">Hover or Tab through the row: the background art follows the focused project (300 ms). A candidate for the home page hero. Pick how the new art arrives:</p>
+    <div class="toolbar" role="group" aria-label="Spotlight variant" id="variants" style="margin-bottom: var(--space-4)"></div>
+    <div class="spotlight" id="spotlight">
       <div class="spotlight-bg is-visible" id="bg-a"></div><div class="spotlight-bg" id="bg-b"></div>
       <div><p class="label">Featured</p><h3 id="spot-title" style="font-size: var(--text-2xl)">dotnet/aspire</h3><p id="spot-need" class="muted"></p></div>
       <div class="shelf" id="spot-row"></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="extra">
+    <h2 id="extra">Store building blocks</h2>
+    <p class="label">Impact numbers (home)</p>
+    <div class="stats">
+      <div class="stat"><strong>12,480 h</strong><span class="muted">donated so far</span></div>
+      <div class="stat"><strong>86</strong><span class="muted">projects helped</span></div>
+      <div class="stat"><strong>34</strong><span class="muted">organizations</span></div>
+    </div>
+    <p class="label" style="margin-top: var(--space-5)">Browse by topic (chips, toggle)</p>
+    <div class="toolbar" id="chips"><button class="chip" type="button" aria-pressed="true">All</button><button class="chip" type="button" aria-pressed="false">Accessibility</button><button class="chip" type="button" aria-pressed="false">Docs</button><button class="chip" type="button" aria-pressed="false">Security</button><button class="chip" type="button" aria-pressed="false">Testing</button><button class="chip" type="button" aria-pressed="false">Good first help</button></div>
+    <div class="states" style="margin-top: var(--space-5)">
+      <div><p class="label">Breadcrumb (detail)</p><nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="#">Projects</a></li><li><a href="#">C#</a></li><li aria-current="page">dotnet/aspire</li></ol></nav></div>
+      <div><p class="label">Donors (detail)</p><ul class="donors">
+        <li><img class="avatar" src="https://github.com/microsoft.png?size=80" alt=""><span>Microsoft</span><span class="h">80 h</span></li>
+        <li><img class="avatar" src="https://github.com/github.png?size=80" alt=""><span>GitHub</span><span class="h">32 h</span></li>
+        <li><img class="avatar" src="https://github.com/vercel.png?size=80" alt=""><span>Vercel</span><span class="h">8 h</span></li>
+      </ul></div>
+      <div><p class="label">Toast (after an action)</p><div class="toast" role="status"><span><strong>Pledge sent.</strong> <span class="muted">40 h for dotnet/aspire</span></span></div></div>
     </div>
   </section>
 
@@ -117,6 +139,7 @@
     </div>
   </section>
 </main>
+<footer class="app-footer"><div class="container"><a href="#">GitHub repository</a><a href="#">Documentation</a><a href="#">Code of conduct</a><a href="#">Admin sign-in</a></div></footer>
 <script>
   // Sample data only; real repositories so the Open Graph images load.
   const projects = [
@@ -153,18 +176,34 @@
   const spotRow = document.getElementById("spot-row");
   spotRow.innerHTML = projects.map((p) => tile(p)).join("");
   const layers = [document.getElementById("bg-a"), document.getElementById("bg-b")];
-  let front = 0, current = "";
-  const show = (p) => {
-    if (p.repo === current) return;
-    current = p.repo;
-    const back = layers[1 - front];
+  let front = 0, current = -1;
+  const show = (i) => {
+    if (i === current) return;
+    const p = projects[i], dir = i > current ? 1 : -1;
+    current = i;
+    const back = layers[1 - front], old = layers[front];
+    // Slide variant: new art enters from the side you move towards, old art leaves the other way.
+    back.style.transition = "none"; back.style.setProperty("--from", `${dir * 8}%`); void back.offsetWidth; back.style.transition = "";
+    old.style.setProperty("--from", `${-dir * 8}%`);
     back.style.backgroundImage = `url(${og(p.repo)})`;
-    back.classList.add("is-visible"); layers[front].classList.remove("is-visible"); front = 1 - front;
+    back.classList.add("is-visible"); old.classList.remove("is-visible"); front = 1 - front;
     document.getElementById("spot-title").textContent = p.repo;
     document.getElementById("spot-need").textContent = p.need;
   };
-  [...spotRow.children].forEach((el, i) => ["mouseenter", "focusin"].forEach((ev) => el.addEventListener(ev, () => show(projects[i]))));
-  show(projects[0]);
+  [...spotRow.children].forEach((el, i) => ["mouseenter", "focusin"].forEach((ev) => el.addEventListener(ev, () => show(i))));
+  show(0);
+
+  // Toggle groups: one pressed button per group
+  const toggleGroup = (box, onPick) => box.addEventListener("click", (e) => {
+    const btn = e.target.closest("button"); if (!btn) return;
+    box.querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", b === btn));
+    onPick?.(btn);
+  });
+  const variants = [["", "Crossfade"], ["slide", "Slide"], ["zoom", "Zoom settle"], ["blur", "Blur to sharp"], ["panel", "Side panel"]];
+  const variantBox = document.getElementById("variants");
+  variantBox.innerHTML = variants.map(([key, name]) => `<button class="btn" type="button" data-key="${key}" aria-pressed="${key === ""}">${name}</button>`).join("");
+  toggleGroup(variantBox, (btn) => { const s = document.getElementById("spotlight"); btn.dataset.key ? (s.dataset.variant = btn.dataset.key) : s.removeAttribute("data-variant"); });
+  toggleGroup(document.getElementById("chips"));
 
   // Primary colour options
   const accents = [["", "Blue"], ["teal", "Teal"], ["amber", "Amber"], ["violet", "Violet"], ["lime", "Lime"]];
