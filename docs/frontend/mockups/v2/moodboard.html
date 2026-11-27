@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-hover="zoom">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -64,8 +64,8 @@
 
   <section aria-labelledby="tile">
     <h2 id="tile">Project tile</h2>
-    <p class="muted">Hover and keyboard focus look the same, and nothing moves or scales. Pick one, then try the shelf below with mouse and Tab:</p>
-    <div class="toolbar" role="group" aria-label="Tile hover" id="hovers" style="margin-bottom: var(--space-4)"><button class="btn" type="button" data-key="" aria-pressed="true">Ring (glow outline)</button><button class="btn" type="button" data-key="brighten" aria-pressed="false">Brighten (art lights up, title turns primary)</button></div>
+    <p class="muted">Hover and keyboard focus look the same. The card itself never moves or grows; the animation happens in the art. Pick one, then try the shelf below with mouse and Tab:</p>
+    <div class="toolbar" role="group" aria-label="Tile hover" id="hovers" style="margin-bottom: var(--space-4)"><button class="btn" type="button" data-key="zoom" aria-pressed="true">Ring + slow art zoom</button><button class="btn" type="button" data-key="sheen" aria-pressed="false">Ring + light sheen</button><button class="btn" type="button" data-key="" aria-pressed="false">Ring only</button><button class="btn" type="button" data-key="brighten" aria-pressed="false">Brighten</button></div>
     <div class="states" id="states"></div>
   </section>
 
@@ -78,7 +78,7 @@
     <h2 id="spot">Spotlight (PS5 feel)</h2>
     <p class="muted">Hover or Tab through the row: the background art follows the focused project. A candidate for the home page hero. Combine the options:</p>
     <div class="spot-options" id="spot-options"></div>
-    <div class="spotlight" id="spotlight" data-arrival="zoom" data-pace="slow" data-layout="overlay">
+    <div class="spotlight" id="spotlight" data-arrival="slide" data-pace="slow" data-layout="overlay">
       <div class="spotlight-bg is-visible" id="bg-a"></div><div class="spotlight-bg" id="bg-b"></div>
       <div><p class="label">Featured</p><h3 id="spot-title" style="font-size: var(--text-2xl)">dotnet/aspire</h3><p id="spot-need" class="muted"></p></div>
       <div class="shelf" id="spot-row"></div>
