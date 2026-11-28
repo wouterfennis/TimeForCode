@@ -21,7 +21,7 @@ Screenshot names follow `<page>.<desktop|mobile>.png`.
 
 ### Version 2 (game-store direction)
 
-The [v2](v2/) folder holds the mockups for the toned-down game-store direction (#218). They share [v2/tokens.css](v2/tokens.css), [v2/components.css](v2/components.css) and the sample data in [v2/mockup.js](v2/mockup.js); the cards show only fields the API returns. A dashed **Mockup state** panel switches between states such as loading, empty and error; it is not part of the design.
+Open [v2/index.html](v2/index.html) straight from disk (double-click it); no server is needed. The [v2](v2/) folder holds the mockups for the toned-down game-store direction (#218). They share [v2/tokens.css](v2/tokens.css), [v2/components.css](v2/components.css) and the sample data in [v2/mockup.js](v2/mockup.js); the cards show only fields the API returns. A dashed **Mockup state** panel switches between states such as loading, empty and error; it is not part of the design.
 
 | Mockup | Page spec | Issue |
 | --- | --- | --- |

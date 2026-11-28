@@ -127,8 +127,9 @@
   <a href="#">GitHub repository</a><a href="#">Documentation</a><a href="#">Code of conduct</a><a href="#">Admin sign-in</a>
 </div></footer>
 
-<script type="module">
-  import { projects, art, short, stateSwitcher } from "./mockup.js";
+<script src="mockup.js"></script>
+<script>
+  const { projects, art, short, stateSwitcher } = window.Mockup;
   const id = new URLSearchParams(location.search).get("id") ?? "1";
   const p = projects.find((x) => x.id === id);
   if (!p) document.documentElement.dataset.state = "notfound";

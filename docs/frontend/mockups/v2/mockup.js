@@ -1,9 +1,11 @@
 // Shared sample data and helpers for the v2 page mockups.
 // Fields follow the Donation API (ProjectSummaryResponse / ProjectResponse); the numbers are rough samples.
 // Real repositories, so GitHub's Open Graph images load.
+// A plain script (not a module) so the pages also work when opened straight from disk (file://); it exposes window.Mockup.
+(() => {
 
 /** GitHub's language colours; the card tint comes from the project's primary language. */
-export const languageColours = {
+const languageColours = {
   "C#": "#178600", TypeScript: "#3178c6", JavaScript: "#f1e05a", Ruby: "#701516", Python: "#3572a5",
   "C++": "#f34b7d", PHP: "#4f5d95", Go: "#00add8",
 };
@@ -15,7 +17,7 @@ const p = (id, fullName, description, language, stargazersCount, forksCount, ope
 };
 
 /** Sample projects, as the list endpoint would return them. */
-export const projects = [
+const projects = [
   p("1", "dotnet/aspire", "Tools, templates and packages to accelerate building observable, production-ready apps.", "C#", 4800, 650, 900, ["dotnet", "cloud-native", "observability"], "MIT"),
   p("2", "withastro/astro", "The web framework for content-driven websites.", "TypeScript", 51000, 2800, 230, ["static-site-generator", "ssr", "islands"], "MIT"),
   p("3", "excalidraw/excalidraw", "Virtual whiteboard for sketching hand-drawn like diagrams.", "TypeScript", 98000, 9500, 1500, ["whiteboard", "diagrams", "collaboration"], "MIT"),
@@ -31,16 +33,16 @@ export const projects = [
 ];
 
 /** GitHub's generated Open Graph image (interim project image, issue #252). */
-export const art = (fullName) => `https://opengraph.githubassets.com/1/${fullName}`;
+const art = (fullName) => `https://opengraph.githubassets.com/1/${fullName}`;
 
 /** Compact number, e.g. 98000 -> "98k". */
-export const short = (n) => (n >= 1000 ? `${Math.round(n / 100) / 10}k`.replace(".0k", "k") : String(n));
+const short = (n) => (n >= 1000 ? `${Math.round(n / 100) / 10}k`.replace(".0k", "k") : String(n));
 
 /** Image fallback chain from #213: Open Graph image, then the owner avatar, then a plain tile. */
 const fallback = (avatar) => `onerror="if (this.dataset.fallback) { this.remove() } else { this.dataset.fallback = '1'; this.src = '${avatar}'; this.classList.add('is-avatar') }"`;
 
 /** Project tile; data-testids match the E2E tests (page-specs.md). */
-export const tile = (x, { compact = false } = {}) => `<article class="tile" data-testid="project-tile" data-id="${x.id}" style="--tile-colour: ${x.colour}; --tile-art: url(${art(x.fullName)})">
+const tile = (x, { compact = false } = {}) => `<article class="tile" data-testid="project-tile" data-id="${x.id}" style="--tile-colour: ${x.colour}; --tile-art: url(${art(x.fullName)})">
     <div class="tile-media"><img src="${art(x.fullName)}" alt="" loading="lazy" width="1200" height="600" ${fallback(x.ownerAvatarUrl)}></div>
     <div class="tile-body">
       <h3><a href="project-detail.html?id=${x.id}" data-testid="project-link">${x.fullName}</a></h3>
@@ -54,7 +56,7 @@ export const tile = (x, { compact = false } = {}) => `<article class="tile" data
     </div></article>`;
 
 /** Spotlight: two background layers; the art of the hovered or focused tile slides in and settles. */
-export const spotlight = (root, items, onShow = () => {}) => {
+const spotlight = (root, items, onShow = () => {}) => {
   const layers = [...root.querySelectorAll(".spotlight-bg")];
   const tiles = [...root.querySelectorAll(".tile")];
   let front = 0, current = -1;
@@ -74,7 +76,7 @@ export const spotlight = (root, items, onShow = () => {}) => {
 };
 
 /** Mockup-only state switcher (fixed bottom right): sets data attributes on <html>. */
-export const stateSwitcher = (groups, onChange = () => {}) => {
+const stateSwitcher = (groups, onChange = () => {}) => {
   const box = document.createElement("details");
   box.className = "mock-switch"; box.open = true;
   box.innerHTML = `<summary>Mockup state</summary>` + groups.map(([attr, label, opts]) =>
@@ -89,3 +91,6 @@ export const stateSwitcher = (groups, onChange = () => {}) => {
   });
   document.body.append(box);
 };
+
+window.Mockup = { languageColours, projects, art, short, tile, spotlight, stateSwitcher };
+})();

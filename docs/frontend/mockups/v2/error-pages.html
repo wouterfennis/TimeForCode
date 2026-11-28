@@ -56,8 +56,9 @@
   <a href="#">GitHub repository</a><a href="#">Documentation</a><a href="#">Code of conduct</a><a href="#">Admin sign-in</a>
 </div></footer>
 
-<script type="module">
-  import { stateSwitcher } from "./mockup.js";
+<script src="mockup.js"></script>
+<script>
+  const { stateSwitcher } = window.Mockup;
   // Each route sets its own document title
   const titles = { notfound: "Page not found — TimeForCode", error: "Something went wrong — TimeForCode" };
   stateSwitcher([["state", "Page", [["notfound", "Not found (404)"], ["error", "Error"]]]], (_, key) => (document.title = titles[key]));

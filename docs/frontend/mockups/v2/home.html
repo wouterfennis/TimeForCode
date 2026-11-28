@@ -86,8 +86,9 @@
   <a href="#">GitHub repository</a><a href="#">Documentation</a><a href="#">Code of conduct</a><a href="#">Admin sign-in</a>
 </div></footer>
 
-<script type="module">
-  import { projects, tile, spotlight, stateSwitcher } from "./mockup.js";
+<script src="mockup.js"></script>
+<script>
+  const { projects, tile, spotlight, stateSwitcher } = window.Mockup;
   const featured = projects.slice(0, 3); // the API's first three active projects
   document.getElementById("featured").innerHTML = featured.map((p) => tile(p, { compact: true })).join("");
   spotlight(document.querySelector(".hero"), featured, (p) => {

@@ -84,8 +84,9 @@
   <a href="#">GitHub repository</a><a href="#">Documentation</a><a href="#">Code of conduct</a><a href="#">Admin sign-in</a>
 </div></footer>
 
-<script type="module">
-  import { projects, tile, stateSwitcher } from "./mockup.js";
+<script src="mockup.js"></script>
+<script>
+  const { projects, tile, stateSwitcher } = window.Mockup;
   const pageSize = 6;
   const params = new URLSearchParams(location.search);
   const q = (params.get("q") ?? "").trim(), language = params.get("language") ?? "", page = Math.max(1, Number(params.get("page")) || 1);
