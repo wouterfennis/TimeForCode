@@ -3,9 +3,9 @@
 :root {
   color-scheme: dark;
   --color-bg: #0e1117;            /* page */
-  --color-surface: #161b24;       /* tiles, panels */
-  --color-surface-raised: #1e2532;/* hover, inputs */
-  --color-border: #2b3444;        /* dividers */
+  --color-surface: #1a212d;       /* tiles, panels; clearly lighter than the page */
+  --color-surface-raised: #242c3b;/* hover, inputs; one step above surface */
+  --color-border: #364256;        /* dividers and box edges */
   --color-text: #e8ecf2;          /* ≈ 15.8:1 */
   --color-text-muted: #a3adbd;    /* ≈ 8.3:1 */
   --color-primary: #66c0f4;       /* links, focus, primary button ≈ 9.3:1 */
