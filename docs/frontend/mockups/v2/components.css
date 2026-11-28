@@ -88,7 +88,7 @@ a { color: var(--color-primary); }
 .pager [aria-current="page"] { background: var(--color-primary); color: var(--color-primary-contrast); border-color: var(--color-primary); }
 
 /* Skeleton */
-.skeleton { background: linear-gradient(90deg, var(--color-surface), var(--color-surface-raised), var(--color-surface)); background-size: 200% 100%; animation: shimmer 1.4s linear infinite; border-radius: var(--radius-control); }
+.skeleton { --skeleton-bg: linear-gradient(90deg, var(--color-surface), var(--color-surface-raised), var(--color-surface)); background: var(--skeleton-bg); background-size: 200% 100%; animation: shimmer 1.4s linear infinite; border-radius: var(--radius-control); }
 @keyframes shimmer { to { background-position: -200% 0; } }
 
 /* Pledge panel (detail page side panel) */
