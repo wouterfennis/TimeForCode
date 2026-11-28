@@ -129,9 +129,34 @@ a { color: var(--color-primary); }
 .app-footer .container { display: flex; gap: var(--space-5); flex-wrap: wrap; }
 .app-footer a { color: var(--color-text-muted); }
 
+/* Hover and focus feedback for everything interactive (primary motion: fast, the same for mouse and keyboard).
+   Nothing follows the pointer; non-interactive boxes (facts, steps, stats) get no hover. */
+.btn, .chip { transition: background var(--motion-primary) var(--ease-primary), border-color var(--motion-primary) var(--ease-primary),
+  color var(--motion-primary) var(--ease-primary), box-shadow var(--motion-primary) var(--ease-primary), transform var(--motion-primary) var(--ease-primary); }
+.btn:is(:hover, :focus-visible):not([aria-disabled="true"]) { border-color: var(--color-primary); background: color-mix(in srgb, var(--color-primary) 12%, var(--color-surface-raised)); transform: translateY(-0.125rem); }
+.btn.primary:is(:hover, :focus-visible):not([aria-disabled="true"]) { background: color-mix(in srgb, white 18%, var(--color-primary));
+  box-shadow: 0 0.5rem 1.25rem color-mix(in srgb, var(--color-primary) 35%, transparent); }
+.btn:active:not([aria-disabled="true"]) { transform: translateY(0); box-shadow: none; }
+.btn .arrow, .gh-link [aria-hidden="true"] { display: inline-block; transition: transform var(--motion-primary) var(--ease-primary); }
+:is(.btn, .gh-link):is(:hover, :focus-visible) [aria-hidden="true"] { transform: translate(0.125rem, -0.125rem); }
+.chip:is(:hover, :focus-visible):not([aria-pressed="true"]) { border-color: var(--color-primary); color: var(--color-text); }
+/* Menu links: an underline grows from the left */
+.app-header nav a { position: relative; transition: color var(--motion-primary) var(--ease-primary); }
+.app-header nav a::after { content: ""; position: absolute; left: 0; right: 0; bottom: -0.125rem; height: 0.125rem; background: var(--color-primary);
+  transform: scaleX(0); transform-origin: left; transition: transform var(--motion-primary) var(--ease-primary); }
+.app-header nav a:is(:hover, :focus-visible) { color: var(--color-text); }
+.app-header nav a:is(:hover, :focus-visible)::after { transform: scaleX(1); }
+/* Text links (body, breadcrumb, footer): underline slides closer and the colour brightens */
+main a:not(.btn, .tile a), .app-footer a, .crumbs a { text-underline-offset: 0.35em; text-decoration-thickness: 1px;
+  transition: color var(--motion-primary) var(--ease-primary), text-underline-offset var(--motion-primary) var(--ease-primary), text-decoration-color var(--motion-primary); }
+main a:not(.btn, .tile a):is(:hover, :focus-visible), .app-footer a:is(:hover, :focus-visible), .crumbs a:is(:hover, :focus-visible) {
+  color: var(--color-text); text-underline-offset: 0.2em; text-decoration-color: var(--color-primary); }
+.brand { transition: opacity var(--motion-primary); }
+.brand:is(:hover, :focus-visible) { opacity: 0.85; }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; }
-  .tile, .tile-media::after, .spotlight-bg { transform: none !important; }
+  .tile, .tile-media::after, .spotlight-bg, .btn, .btn [aria-hidden], .gh-link [aria-hidden] { transform: none !important; }
   .tile-media::after { display: none; }
 }
 
