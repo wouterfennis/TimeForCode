@@ -162,6 +162,20 @@ a { color: var(--color-primary); }
 [data-planes="origami"] .plane-1 { clip-path: polygon(0 40%, 55% 100%, 0 100%); }
 [data-planes="origami"] .plane-2 { clip-path: polygon(100% 20%, 100% 100%, 40% 100%); }
 [data-planes="origami"] .plane-3 { --tone: 6%; clip-path: polygon(30% 0, 75% 0, 52% 35%); }
+/* "page": the background is part of the page and scrolls with it 1:1. Each sheet is a shape repeated down the
+   whole page (a mask tile per sheet, with different tile heights so the repeats never line up). */
+body { position: relative; }
+[data-scroll="page"] .ambient { position: absolute; }
+[data-scroll="page"] .plane { inset: 0; clip-path: none; mask: var(--mask) top left / 100% var(--tile) repeat-y; }
+[data-scroll="page"] .plane-1 { --tile: 140vh; --mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpolygon points='0,42 100,18 100,46 0,70'/%3E%3C/svg%3E"); }
+[data-scroll="page"] .plane-2 { --tile: 190vh; --mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpolygon points='0,78 100,52 100,66 0,92'/%3E%3C/svg%3E"); }
+[data-scroll="page"] .plane-3 { --tile: 115vh; --mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpolygon points='0,0 42,0 0,38'/%3E%3C/svg%3E"); }
+[data-scroll="page"][data-planes="layered"] .plane-1 { --mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpolygon points='0,48 100,38 100,62 0,72'/%3E%3C/svg%3E"); }
+[data-scroll="page"][data-planes="layered"] .plane-2 { --mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpolygon points='0,70 100,60 100,80 0,90'/%3E%3C/svg%3E"); }
+[data-scroll="page"][data-planes="layered"] .plane-3 { --mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpolygon points='0,20 100,12 100,24 0,32'/%3E%3C/svg%3E"); }
+[data-scroll="page"][data-planes="origami"] .plane-1 { --mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpolygon points='0,30 50,90 0,90'/%3E%3C/svg%3E"); }
+[data-scroll="page"][data-planes="origami"] .plane-2 { --mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpolygon points='100,10 100,80 45,80'/%3E%3C/svg%3E"); }
+[data-scroll="page"][data-planes="origami"] .plane-3 { --mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpolygon points='30,10 70,10 50,40'/%3E%3C/svg%3E"); }
 /* Scroll reactions: each sheet moves at its own rate, so the page feels layered */
 @supports (animation-timeline: scroll()) {
   [data-scroll] .plane { animation: none linear both; animation-timeline: scroll(root); }
