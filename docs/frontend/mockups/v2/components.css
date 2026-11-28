@@ -273,3 +273,10 @@ main a:not(.btn, .tile a):is(:hover, :focus-visible), .app-footer a:is(:hover, :
 [data-texture="bevel"] .tile:is(:hover, :focus-within, .is-hover, .is-focus) { box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.14), inset 0 -0.1875rem 0 rgb(0 0 0 / 0.35), 0 0.75rem 1.5rem rgb(0 0 0 / 0.45); }
 
 @media (prefers-reduced-motion: reduce) { .plane { animation: none !important; } }
+
+/* Skip link: the first focusable element on every page; visible only when focused */
+.skip-link { position: absolute; left: var(--space-4); top: var(--space-2); z-index: 10; padding: var(--space-2) var(--space-4);
+  background: var(--color-primary); color: var(--color-primary-contrast); font-weight: 600; border-radius: var(--radius-control);
+  transform: translateY(-200%); transition: transform var(--motion-primary) var(--ease-primary); }
+.skip-link:focus-visible { transform: none; }
+main:focus { outline: none; } /* focus lands here from the skip link; the heading below is what is announced */

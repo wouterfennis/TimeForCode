@@ -29,6 +29,7 @@ The [v2](v2/) folder holds the mockups for the toned-down game-store direction (
 | [v2/home.html](v2/home.html) | Home | #216 |
 | [v2/projects.html](v2/projects.html) | Project list with search, filter and paging | #213, #214 |
 | [v2/project-detail.html](v2/project-detail.html) | Project detail | #215 |
+| [v2/error-pages.html](v2/error-pages.html) | Error and not-found pages | #212 |
 
 ## Tooling
 
