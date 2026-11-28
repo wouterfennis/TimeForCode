@@ -1,5 +1,5 @@
 // Renders every mockup page to PNG (desktop/mobile) or runs the checks.
-//   node tools/render.mjs screenshots   -> writes ./screenshots/<page>.<viewport>.png
+//   node tools/render.mjs screenshots [prefix] -> writes ./screenshots/<page>.<viewport>.png (e.g. prefix v2/ for only the v2 pages)
 //   node tools/render.mjs check         -> fails on axe violations (incl. colour contrast) and on skeletons
 //                                          that do not line up with the content they stand in for
 import { mkdir, readdir } from "node:fs/promises";
@@ -17,7 +17,8 @@ if (!["screenshots", "check"].includes(mode)) {
 const root = fileURLToPath(new URL("..", import.meta.url));
 const outDir = `${root}screenshots`;
 const htmlIn = async (dir) => (await readdir(`${root}${dir}`)).filter((f) => f.endsWith(".html")).map((f) => `${dir}${f.replace(".html", "")}`);
-const pages = [...(await htmlIn("")), ...(await htmlIn("v2/"))];
+const only = process.argv[3] ?? "";
+const pages = [...(await htmlIn("")), ...(await htmlIn("v2/"))].filter((p) => p.startsWith(only));
 const viewports = { desktop: { width: 1280, height: 800 }, mobile: { width: 390, height: 844 } };
 
 // Skeleton alignment: a skeleton block and the real element it stands in for share a data-frame name.
@@ -44,6 +45,7 @@ try {
       const page = await context.newPage();
       await page.goto(`${base}/${name}.html`, { waitUntil: "networkidle" });
       if (mode === "screenshots") {
+        await page.addStyleTag({ content: ".mock-switch { display: none !important; }" }); // mockup-only panel
         await page.screenshot({ path: `${outDir}/${name.replace("/", "-")}.${viewport}.png`, fullPage: true });
       } else {
         if (viewport === "desktop") {
