@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en" data-bg="planes" data-planes="angled" data-scroll="parallax" data-texture="project" data-state="results">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Projects — TimeForCode mockup v2</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="components.css">
+  <link rel="stylesheet" href="mockup.css">
+  <style>
+    /* Page layout (would become ProjectList.module.css) */
+    main.container { padding-block: var(--space-8); display: flex; flex-direction: column; gap: var(--space-5); }
+    .page-head { display: flex; flex-wrap: wrap; gap: var(--space-4); align-items: end; justify-content: space-between; }
+    .page-head h1 { font-size: var(--text-3xl); margin: 0; }
+    .toolbar .btn { align-self: end; }
+    .grid { display: grid; gap: var(--space-5); grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr)); padding: 0; margin: 0; list-style: none; }
+    .grid > li { display: flex; }
+    .grid .tile { flex: 1; }
+    .result-bar { display: flex; flex-wrap: wrap; gap: var(--space-4); align-items: center; justify-content: space-between; }
+    .count { margin: 0; color: var(--color-text-muted); }
+    .skel-tile { flex-direction: column; background: var(--color-surface); border-radius: var(--radius-card); overflow: hidden; }
+    .skel-tile .skeleton:first-child { aspect-ratio: 2 / 1; border-radius: 0; }
+    .skel-lines { display: flex; flex-direction: column; gap: 0.25rem; }
+    .skel-tile > div:last-child { flex: 1; padding: var(--space-4); display: flex; flex-direction: column; gap: var(--space-3); }
+    .message { background: var(--color-surface); border-radius: var(--radius-card); padding: var(--space-7) var(--space-5); text-align: center;
+      display: flex; flex-direction: column; align-items: center; gap: var(--space-3); }
+    .message h2 { margin: 0; }
+    .message p { margin: 0; max-width: 32rem; color: var(--color-text-muted); }
+    .message.error { border-top: 0.25rem solid var(--color-danger); }
+    /* States (mockup switcher): each region shows in its own states only; --d is its normal display */
+    [data-show] { display: none; }
+    [data-state="results"] [data-show~="results"], [data-state="loading"] [data-show~="loading"],
+    [data-state="empty"] [data-show~="empty"], [data-state="error"] [data-show~="error"] { display: var(--d, block); }
+    .grid, .message, .pager, .result-bar { --d: flex; }
+    .grid { --d: grid; }
+  </style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to main content</a>
+<div class="ambient" aria-hidden="true"><i class="plane plane-1"></i><i class="plane plane-2"></i><i class="plane plane-3"></i></div>
+
+<header class="app-header"><div class="container">
+  <a class="brand" href="home.html">Time<b>For</b>Code</a>
+  <nav aria-label="Primary"><a href="projects.html" aria-current="page">Projects</a></nav>
+  <a class="btn primary" href="#">Sign in with GitHub</a>
+</div></header>
+
+<main class="container" id="main" tabindex="-1">
+  <div class="page-head">
+    <h1>Projects</h1>
+    <!-- Search and language live in the URL (?q=&language=); submitting returns to page 1 -->
+    <form class="toolbar" role="search" method="get" action="projects.html">
+      <div class="field"><label for="q">Search projects</label><input id="q" name="q" type="search" placeholder="Name or description"></div>
+      <div class="field"><label for="language">Language</label><select id="language" name="language"><option value="">All languages</option></select></div>
+      <button class="btn primary" type="submit">Search</button>
+    </form>
+  </div>
+
+  <div class="result-bar" data-show="results loading">
+    <h2 class="visually-hidden">Results</h2>
+    <p class="count" role="status" aria-live="polite" id="count"></p>
+    <a href="projects.html" id="clear" hidden>Clear search and filter</a>
+  </div>
+
+  <ul class="grid" data-testid="project-list" id="list" data-frame="grid" data-show="results" aria-label="Projects"></ul>
+  <ul class="grid" data-show="loading" aria-busy="true" aria-label="Loading projects" id="skeletons" data-frame="grid"></ul>
+
+  <div class="message" data-show="empty">
+    <h2>No projects match your search</h2>
+    <p>Try another word, or show projects in every language.</p>
+    <a class="btn primary" href="projects.html">Clear search and filter</a>
+  </div>
+  <div class="message error" data-show="error" role="alert">
+    <h2>Projects could not be loaded</h2>
+    <p>Something went wrong on our side. Your search is kept; try again.</p>
+    <button class="btn primary" type="button">Try again</button>
+  </div>
+
+  <nav class="pager" aria-label="Pagination" data-show="results" id="pager"></nav>
+</main>
+
+<footer class="app-footer"><div class="container">
+  <a href="#">GitHub repository</a><a href="#">Documentation</a><a href="#">Code of conduct</a><a href="#">Admin sign-in</a>
+</div></footer>
+
+<script src="mockup.js"></script>
+<script>
+  const { projects, tile, stateSwitcher } = window.Mockup;
+  const pageSize = 6;
+  const params = new URLSearchParams(location.search);
+  const q = (params.get("q") ?? "").trim(), language = params.get("language") ?? "", page = Math.max(1, Number(params.get("page")) || 1);
+  document.getElementById("q").value = q;
+
+  // Language options from the data; the API filters on an exact language
+  const select = document.getElementById("language");
+  [...new Set(projects.map((p) => p.language))].sort().forEach((l) => select.add(new Option(l, l, false, l === language)));
+
+  // What the API would return for these query parameters
+  const matches = projects.filter((p) => (!language || p.language === language) &&
+    (!q || `${p.fullName} ${p.description}`.toLowerCase().includes(q.toLowerCase())));
+  const pages = Math.max(1, Math.ceil(matches.length / pageSize));
+  const shown = matches.slice((page - 1) * pageSize, page * pageSize);
+  if (!matches.length) document.documentElement.dataset.state = "empty";
+
+  document.getElementById("list").innerHTML = shown.map((p, i) => `<li${i ? "" : ' data-frame="first-tile"'}>${tile(p)}</li>`).join("");
+  document.getElementById("count").textContent = `Showing ${shown.length} of ${matches.length} projects`;
+  document.getElementById("clear").hidden = !q && !language;
+  document.getElementById("skeletons").innerHTML = Array.from({ length: 6 }, (_, i) =>
+    `<li class="skel-tile"${i ? "" : ' data-frame="first-tile"'}><div class="skeleton"></div><div>` +
+    // Bars at the real line heights: title, two description lines, facts, GitHub link
+    `<div class="skeleton" style="height: 1.875rem; width: 70%"></div>` +
+    `<div class="skel-lines"><div class="skeleton" style="height: 1.25rem"></div><div class="skeleton" style="height: 1.25rem; width: 80%"></div></div>` +
+    `<div class="skeleton" style="height: 1.3rem; width: 50%"></div><div class="skeleton" style="height: 1.3rem; width: 25%; margin-top: auto"></div></div></li>`).join("");
+
+  // Pagination keeps the search and filter in the URL
+  const link = (n) => { const u = new URLSearchParams(params); u.set("page", n); return `projects.html?${u}`; };
+  const pager = [];
+  pager.push(page > 1 ? `<a class="btn" href="${link(page - 1)}">‹ Previous</a>` : `<span class="btn" aria-disabled="true">‹ Previous</span>`);
+  for (let n = 1; n <= pages; n++) pager.push(`<a class="btn" href="${link(n)}" ${n === page ? 'aria-current="page"' : ""}><span class="visually-hidden">Page </span>${n}</a>`);
+  pager.push(page < pages ? `<a class="btn" href="${link(page + 1)}">Next ›</a>` : `<span class="btn" aria-disabled="true">Next ›</span>`);
+  document.getElementById("pager").innerHTML = pager.join("");
+
+  stateSwitcher([["state", "State", [["results", "Results"], ["loading", "Loading"], ["empty", "No results"], ["error", "Error"]]]]);
+</script>
+</body>
+</html>

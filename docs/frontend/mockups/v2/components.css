@@ -1,0 +1,282 @@
+@import url("tokens.css");
+
+* { box-sizing: border-box; }
+/* Sticky footer: the page is a column and main takes the free space, so the footer sits at the bottom on short pages */
+body { display: flex; flex-direction: column; min-height: 100dvh; }
+body > main { flex: 1 0 auto; width: 100%; } /* width: auto side margins would otherwise shrink it to its content */
+body { margin: 0; background: var(--color-bg); color: var(--color-text); font: var(--text-md)/1.5 var(--font-sans); }
+h1, h2, h3 { line-height: 1.2; margin: 0 0 var(--space-3); letter-spacing: -0.01em; }
+p { margin: 0 0 var(--space-3); }
+a { color: var(--color-primary); }
+:focus-visible { outline: 0.1875rem solid var(--color-primary); outline-offset: 0.125rem; }
+.muted { color: var(--color-text-muted); }
+.container { max-width: 72rem; margin: 0 auto; padding: 0 var(--space-4); }
+
+/* Tags and badges */
+.tags { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+/* Tags take the project colour (like the card texture); falls back to the primary colour */
+.tag { --tag-colour: var(--tile-colour, var(--color-primary));
+  font-size: var(--text-sm); padding: var(--space-1) var(--space-2); border-radius: var(--radius-pill); color: var(--color-text);
+  background: color-mix(in srgb, var(--tag-colour) 20%, var(--color-surface));
+  border: 1px solid color-mix(in srgb, var(--tag-colour) 45%, transparent); }
+/* Each tag in a row turns the hue a step further (--i = its index), keeping lightness and chroma, so the row reads as one family */
+@supports (color: oklch(from red l c h)) {
+  .tag { --tag-colour: oklch(from var(--tile-colour, var(--color-primary)) l c calc(h + var(--i, 0) * 30)); }
+}
+.badge { position: absolute; top: var(--space-3); left: var(--space-3); font-size: var(--text-sm); font-weight: 600; padding: var(--space-1) var(--space-2); border-radius: var(--radius-control); background: var(--color-bg); color: var(--color-progress); }
+
+/* Progress */
+.progress { height: 0.375rem; border-radius: var(--radius-pill); background: var(--color-surface-raised); overflow: hidden; }
+.progress > span { display: block; height: 100%; background: var(--color-progress); }
+.hours { display: flex; justify-content: space-between; font-size: var(--text-sm); color: var(--color-text-muted); }
+.hours strong { color: var(--color-text); }
+
+/* Tile: the whole tile is clickable through the heading link (one tab stop) */
+.tile { position: relative; display: flex; flex-direction: column; background: var(--color-surface); border-radius: var(--radius-card); overflow: hidden;
+  transition: transform var(--motion-base) var(--ease-out), box-shadow var(--motion-base) var(--ease-out), background var(--motion-base); }
+.tile-media { position: relative; aspect-ratio: 2 / 1; background: linear-gradient(135deg, var(--color-surface-raised), var(--color-border)); }
+.tile-media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.tile-body { display: flex; flex-direction: column; gap: var(--space-3); padding: var(--space-4); flex: 1; }
+.tile h3 { font-size: var(--text-lg); margin: 0; }
+.tile h3 a { color: var(--color-text); text-decoration: none; }
+.tile h3 a::after { content: ""; position: absolute; inset: 0; }
+.tile h3 a:focus-visible { outline: none; }
+.tile p { margin: 0; color: var(--color-text-muted); }
+/* Tile hover = keyboard focus, in two layers:
+   primary   the card answers at once: lifts 0.5rem, grows 4%, brightens   (--motion-primary, ≤ 300 ms)
+   secondary one band of light sweeps over the art and slows down            (--motion-secondary-fade, settles) */
+.tile-media { overflow: hidden; }
+.tile { transition: transform var(--motion-primary) var(--ease-primary), box-shadow var(--motion-primary) var(--ease-primary), background var(--motion-primary); }
+.tile:is(:hover, :focus-within, .is-hover, .is-focus) { transform: translateY(-0.5rem) scale(1.04); z-index: 1; background: var(--color-surface-raised);
+  box-shadow: 0 0.75rem 1.5rem rgb(0 0 0 / 0.45); }
+.tile h3 a { transition: color var(--motion-primary) var(--ease-primary); }
+.tile:is(:hover, :focus-within, .is-hover, .is-focus) h3 a { color: var(--color-primary); }
+.tile-media img { transition: filter var(--motion-primary) var(--ease-primary); }
+.tile:is(:hover, :focus-within, .is-hover, .is-focus) img { filter: brightness(1.15) saturate(1.1); }
+/* Sheen: no return sweep, never loops */
+.tile-media::after { content: ""; position: absolute; inset: 0; pointer-events: none; transform: translateX(-100%);
+  background: linear-gradient(105deg, transparent 35%, rgb(255 255 255 / 0.18) 50%, transparent 65%); }
+.tile:is(:hover, :focus-within) .tile-media::after { transform: translateX(100%); transition: transform var(--motion-secondary-fade) var(--ease-secondary); }
+.tile.is-focus, .tile:has(a:focus-visible) { outline: 0.1875rem solid var(--color-primary); outline-offset: 0.125rem; }
+
+/* Shelf: a horizontal row of tiles */
+.shelf { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(16rem, 1fr); gap: var(--space-4); overflow-x: auto; padding: var(--space-5) var(--space-3); scroll-snap-type: x mandatory; }
+.shelf > * { scroll-snap-align: start; }
+
+/* Buttons */
+.btn { display: inline-flex; align-items: center; min-height: 2.75rem; padding: 0 var(--space-4); border-radius: var(--radius-control); border: 1px solid var(--color-border); background: var(--color-surface-raised); color: var(--color-text); font: inherit; font-weight: 600; text-decoration: none; }
+.btn[aria-pressed="true"] { border-color: var(--color-primary); box-shadow: inset 0 -0.1875rem 0 var(--color-primary); }
+.btn.primary { background: var(--color-primary); border-color: var(--color-primary); color: var(--color-primary-contrast); }
+
+/* App header */
+.app-header { position: sticky; top: 0; z-index: 2; background: color-mix(in srgb, var(--color-bg) 92%, transparent); backdrop-filter: blur(0.5rem); border-bottom: 1px solid var(--color-border); }
+.app-header .container { display: flex; align-items: center; gap: var(--space-5); min-height: 4rem; flex-wrap: wrap; }
+.brand { font-weight: 700; font-size: var(--text-lg); color: var(--color-text); text-decoration: none; }
+.brand b { color: var(--color-primary); }
+.app-header nav { display: flex; gap: var(--space-4); flex: 1; }
+.app-header nav a { color: var(--color-text-muted); text-decoration: none; padding: var(--space-2) 0; border-bottom: 0.125rem solid transparent; }
+.app-header nav a[aria-current="page"] { color: var(--color-text); border-color: var(--color-primary); }
+
+/* Fields and toolbar */
+.toolbar { display: flex; gap: var(--space-3); flex-wrap: wrap; align-items: end; }
+.field { display: flex; flex-direction: column; gap: var(--space-1); font-size: var(--text-sm); color: var(--color-text-muted); }
+.field input, .field select { min-height: 2.75rem; min-width: 14rem; padding: 0 var(--space-3); border: 1px solid var(--color-border); border-radius: var(--radius-control); background: var(--color-surface-raised); color: var(--color-text); font: inherit; }
+
+/* Pagination */
+.pager { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; }
+.pager .btn { min-width: 2.75rem; justify-content: center; }
+.pager [aria-current="page"] { background: var(--color-primary); color: var(--color-primary-contrast); border-color: var(--color-primary); }
+
+/* Skeleton */
+.skeleton { --skeleton-bg: linear-gradient(90deg, var(--color-surface), var(--color-surface-raised), var(--color-surface)); background: var(--skeleton-bg); background-size: 200% 100%; animation: shimmer 1.4s linear infinite; border-radius: var(--radius-control); }
+@keyframes shimmer { to { background-position: -200% 0; } }
+
+/* Pledge panel (detail page side panel) */
+.panel { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-card); padding: var(--space-5); display: flex; flex-direction: column; gap: var(--space-4); }
+.panel .big { font-size: var(--text-2xl); font-weight: 700; }
+.btn[aria-disabled="true"] { opacity: 0.55; cursor: not-allowed; }
+
+/* Spotlight: the background follows the focused tile (PS5-like) */
+.spotlight { position: relative; overflow: hidden; border-radius: var(--radius-card); padding: var(--space-6) var(--space-5) var(--space-4); min-height: 26rem; display: flex; flex-direction: column; justify-content: flex-end; gap: var(--space-4); }
+/* Secondary motion: the new art slides in from the side you move towards and settles slowly (fade 700 ms, move 1600 ms) */
+.spotlight-bg { position: absolute; inset: 0; background-size: cover; background-position: center; opacity: 0; transform: translateX(var(--from, 0));
+  transition: opacity var(--motion-secondary-fade) var(--ease-out), transform var(--motion-secondary) var(--ease-secondary); }
+.spotlight-bg.is-visible { opacity: 1; transform: none; }
+.spotlight::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to top, var(--color-bg) 35%, color-mix(in srgb, var(--color-bg) 55%, transparent)); }
+.spotlight > :not(.spotlight-bg) { position: relative; z-index: 1; }
+.spotlight .shelf { grid-auto-columns: minmax(11rem, 14rem); }
+.spotlight .tile-body { padding: var(--space-3); }
+.spotlight .tile p, .spotlight .tile .tags { display: none; }
+/* Two layouts, both kept: overlay (default, details over the art) and "panel" (details on a dark area left of the art) */
+.spotlight[data-layout="panel"]::after { background: linear-gradient(to right, var(--color-bg) 30%, transparent 75%), linear-gradient(to top, var(--color-bg) 25%, transparent 60%); }
+
+/* Impact numbers */
+.stats { display: grid; gap: var(--space-4); grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); }
+.stat { background: var(--color-surface); border-radius: var(--radius-card); padding: var(--space-4); }
+.stat strong { display: block; font-size: var(--text-2xl); font-variant-numeric: tabular-nums; }
+
+/* Topic chips (toggle filters) */
+.chip { min-height: 2.25rem; padding: 0 var(--space-3); border: 1px solid var(--color-border); border-radius: var(--radius-pill); background: transparent; color: var(--color-text-muted); font: inherit; cursor: pointer; }
+.chip[aria-pressed="true"] { background: var(--color-primary); border-color: var(--color-primary); color: var(--color-primary-contrast); }
+
+/* Breadcrumb */
+.crumbs ol { display: flex; gap: var(--space-2); padding: 0; margin: 0; list-style: none; font-size: var(--text-sm); color: var(--color-text-muted); }
+.crumbs li + li::before { content: "/"; margin-right: var(--space-2); }
+
+/* Donor list */
+.donors { display: flex; flex-direction: column; gap: var(--space-3); padding: 0; margin: 0; list-style: none; }
+.donors li { display: flex; align-items: center; gap: var(--space-3); }
+.avatar { width: 2.5rem; height: 2.5rem; border-radius: var(--radius-control); background: var(--color-surface-raised); object-fit: cover; }
+.donors .h { margin-left: auto; font-variant-numeric: tabular-nums; color: var(--color-progress); }
+
+/* Toast */
+.toast { display: flex; gap: var(--space-3); align-items: center; background: var(--color-surface-raised); border-left: 0.25rem solid var(--color-progress); border-radius: var(--radius-control); padding: var(--space-3) var(--space-4); box-shadow: 0 0.5rem 1.5rem rgb(0 0 0 / 0.4); }
+
+/* Footer */
+.app-footer { border-top: 1px solid var(--color-border); padding: var(--space-6) 0; font-size: var(--text-sm); }
+.app-footer .container { display: flex; gap: var(--space-5); flex-wrap: wrap; }
+.app-footer a { color: var(--color-text-muted); }
+
+/* Hover and focus feedback for everything interactive (primary motion: fast, the same for mouse and keyboard).
+   Nothing follows the pointer; non-interactive boxes (facts, steps, stats) get no hover. */
+.btn, .chip { transition: background var(--motion-primary) var(--ease-primary), border-color var(--motion-primary) var(--ease-primary),
+  color var(--motion-primary) var(--ease-primary), box-shadow var(--motion-primary) var(--ease-primary), transform var(--motion-primary) var(--ease-primary); }
+.btn:is(:hover, :focus-visible):not([aria-disabled="true"]) { border-color: var(--color-primary); background: color-mix(in srgb, var(--color-primary) 12%, var(--color-surface-raised)); transform: translateY(-0.125rem); }
+.btn.primary:is(:hover, :focus-visible):not([aria-disabled="true"]) { background: color-mix(in srgb, white 18%, var(--color-primary));
+  box-shadow: 0 0.5rem 1.25rem color-mix(in srgb, var(--color-primary) 35%, transparent); }
+.btn:active:not([aria-disabled="true"]) { transform: translateY(0); box-shadow: none; }
+.btn .arrow, .gh-link [aria-hidden="true"] { display: inline-block; transition: transform var(--motion-primary) var(--ease-primary); }
+:is(.btn, .gh-link):is(:hover, :focus-visible) [aria-hidden="true"] { transform: translate(0.125rem, -0.125rem); }
+.chip:is(:hover, :focus-visible):not([aria-pressed="true"]) { border-color: var(--color-primary); color: var(--color-text); }
+/* Menu links: an underline grows from the left */
+.app-header nav a { position: relative; transition: color var(--motion-primary) var(--ease-primary); }
+.app-header nav a::after { content: ""; position: absolute; left: 0; right: 0; bottom: -0.125rem; height: 0.125rem; background: var(--color-primary);
+  transform: scaleX(0); transform-origin: left; transition: transform var(--motion-primary) var(--ease-primary); }
+.app-header nav a:is(:hover, :focus-visible) { color: var(--color-text); }
+.app-header nav a:is(:hover, :focus-visible)::after { transform: scaleX(1); }
+/* Text links (body, breadcrumb, footer): underline slides closer and the colour brightens */
+main a:not(.btn, .tile a), .app-footer a, .crumbs a { text-underline-offset: 0.35em; text-decoration-thickness: 1px;
+  transition: color var(--motion-primary) var(--ease-primary), text-underline-offset var(--motion-primary) var(--ease-primary), text-decoration-color var(--motion-primary); }
+main a:not(.btn, .tile a):is(:hover, :focus-visible), .app-footer a:is(:hover, :focus-visible), .crumbs a:is(:hover, :focus-visible) {
+  color: var(--color-text); text-underline-offset: 0.2em; text-decoration-color: var(--color-primary); }
+.brand { transition: opacity var(--motion-primary); }
+.brand:is(:hover, :focus-visible) { opacity: 0.85; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; }
+  .tile, .tile-media::after, .spotlight-bg, .btn, .btn [aria-hidden], .gh-link [aria-hidden] { transform: none !important; }
+  .tile-media::after { display: none; }
+}
+
+/* ---- Moodboard options: ambient background and card texture (pick later) ---- */
+
+/* Background: a fixed, static layer behind the page (Material Design feel, no animation).
+   [data-bg] on <html>: tonal | elevation | gradient | planes | shapes */
+.ambient { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
+/* tonal: Material 3 tonal surfaces; page and cards take a hint of the primary colour */
+[data-bg="tonal"] { --color-bg: color-mix(in srgb, var(--color-primary) 5%, #0e1117); --color-surface: color-mix(in srgb, var(--color-primary) 8%, #161b24);
+  --color-surface-raised: color-mix(in srgb, var(--color-primary) 12%, #1e2532); --color-border: color-mix(in srgb, var(--color-primary) 14%, #2b3444); }
+/* elevation: Material 2 dark theme; neutral grey, higher surfaces are lighter and carry a shadow */
+[data-bg="elevation"] { --color-bg: #121212; --color-surface: #1e1e1e; --color-surface-raised: #2c2c2c; --color-border: #333; }
+[data-bg="elevation"] :is(.tile, .panel, .stat) { box-shadow: 0 0.125rem 0.25rem rgb(0 0 0 / 0.5), 0 0.0625rem 0.125rem rgb(0 0 0 / 0.4); }
+/* gradient: Material You hero wash; primary at the top fading into the page */
+[data-bg="gradient"] .ambient { background: radial-gradient(120% 60% at 50% -10%, color-mix(in srgb, var(--color-primary) 18%, transparent), transparent 70%); }
+/* planes: classic Material paper. Three tonal sheets (.plane) behind the page.
+   [data-planes] picks the shape: angled | layered | origami. [data-scroll] picks how they react to scrolling:
+   none | parallax | tilt | slide (CSS scroll-driven animations; browsers without them keep the planes still). */
+.plane { display: none; position: absolute; inset: -20vh -10vw; background: color-mix(in srgb, var(--color-primary) var(--tone), transparent); }
+[data-bg="planes"] .plane { display: block; }
+.plane-1 { --tone: 5%; clip-path: polygon(0 62%, 100% 38%, 100% 100%, 0 100%); }
+.plane-2 { --tone: 7%; clip-path: polygon(45% 100%, 100% 58%, 100% 100%); }
+.plane-3 { --tone: 4%; clip-path: polygon(0 0, 38% 0, 0 55%); }
+/* layered: stacked sheets with a soft shadow edge, like paper on paper */
+[data-planes="layered"] .plane { filter: drop-shadow(0 -0.5rem 1rem rgb(0 0 0 / 0.35)); }
+[data-planes="layered"] .plane-1 { clip-path: polygon(0 55%, 100% 45%, 100% 100%, 0 100%); }
+[data-planes="layered"] .plane-2 { clip-path: polygon(0 75%, 100% 62%, 100% 100%, 0 100%); }
+[data-planes="layered"] .plane-3 { --tone: 9%; clip-path: polygon(0 90%, 100% 82%, 100% 100%, 0 100%); }
+/* origami: folded triangles */
+[data-planes="origami"] .plane-1 { clip-path: polygon(0 40%, 55% 100%, 0 100%); }
+[data-planes="origami"] .plane-2 { clip-path: polygon(100% 20%, 100% 100%, 40% 100%); }
+[data-planes="origami"] .plane-3 { --tone: 6%; clip-path: polygon(30% 0, 75% 0, 52% 35%); }
+/* Scroll reactions: each sheet moves at its own rate, so the page feels layered */
+@supports (animation-timeline: scroll()) {
+  [data-scroll] .plane { animation: none linear both; animation-timeline: scroll(root); }
+  /* Parallax: sheets extend far below the screen so the near ones can travel a long way; near = fast, far = slow */
+  [data-scroll="parallax"] .plane { bottom: -80vh; }
+  /* Same shapes as above, rescaled to the taller sheets so the top of the page looks unchanged */
+  [data-scroll="parallax"]:not([data-planes="origami"]) .plane-1 { clip-path: polygon(0 43.4%, 100% 26.6%, 100% 100%, 0 100%); }
+  [data-scroll="parallax"]:not([data-planes="origami"]) .plane-2 { clip-path: polygon(0 94%, 45% 70%, 100% 40.6%, 100% 100%, 0 100%); }
+  [data-scroll="parallax"]:not([data-planes="origami"]) .plane-3 { clip-path: polygon(0 0, 38% 0, 0 38.5%); }
+  [data-scroll="parallax"][data-planes="layered"] .plane-1 { clip-path: polygon(0 38.5%, 100% 31.5%, 100% 100%, 0 100%); }
+  [data-scroll="parallax"][data-planes="layered"] .plane-2 { clip-path: polygon(0 52.5%, 100% 43.4%, 100% 100%, 0 100%); }
+  [data-scroll="parallax"][data-planes="layered"] .plane-3 { clip-path: polygon(0 63%, 100% 57.4%, 100% 100%, 0 100%); }
+  [data-scroll="parallax"] .plane-1 { animation-name: plane-up-1; }
+  [data-scroll="parallax"] .plane-2 { animation-name: plane-up-2; }
+  [data-scroll="parallax"] .plane-3 { animation-name: plane-up-3; }
+  [data-scroll="tilt"] .plane-1 { animation-name: plane-tilt-1; }
+  [data-scroll="tilt"] .plane-2 { animation-name: plane-tilt-2; }
+  [data-scroll="tilt"] .plane-3 { animation-name: plane-tilt-3; }
+  [data-scroll="slide"] .plane-1 { animation-name: plane-slide-1; }
+  [data-scroll="slide"] .plane-2 { animation-name: plane-slide-2; }
+  [data-scroll="slide"] .plane-3 { animation-name: plane-slide-3; }
+}
+@keyframes plane-up-1 { to { transform: translateY(-35vh); } }
+@keyframes plane-up-2 { to { transform: translateY(-75vh); } }
+@keyframes plane-up-3 { to { transform: translateY(-12vh); } }
+@keyframes plane-tilt-1 { to { transform: rotate(-4deg); } }
+@keyframes plane-tilt-2 { to { transform: rotate(6deg); } }
+@keyframes plane-tilt-3 { to { transform: rotate(-8deg); } }
+@keyframes plane-slide-1 { from { transform: translateX(-6vw); } to { transform: translateX(6vw); } }
+@keyframes plane-slide-2 { from { transform: translateX(10vw); } to { transform: translateX(-10vw); } }
+@keyframes plane-slide-3 { from { transform: translateX(-12vw); } to { transform: translateX(4vw); } }
+/* shapes: Material 3 Expressive; a few big soft shapes (circle, ring, pill) */
+[data-bg="shapes"] .ambient { background:
+  radial-gradient(circle at 92% 8%, color-mix(in srgb, var(--color-primary) 10%, transparent) 0 12rem, transparent 12rem),
+  radial-gradient(circle at 4% 70%, transparent 0 9rem, color-mix(in srgb, var(--color-primary) 8%, transparent) 9rem 11rem, transparent 11rem); }
+[data-bg="shapes"] .ambient::after { content: ""; position: absolute; right: 18%; bottom: 6%; width: 22rem; height: 7rem; border-radius: 999rem;
+  background: color-mix(in srgb, var(--color-primary) 6%, transparent); }
+
+/* Card texture: [data-texture] on <html>. Grain is a separate overlay layer (::after) so it works on top of
+   any card background: fine light and dark specks, blended with "overlay", over the whole card. */
+:root {
+  --grain-img: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n' x='0' y='0'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='linear' slope='2' intercept='-.5'/%3E%3CfeFuncG type='linear' slope='2' intercept='-.5'/%3E%3CfeFuncB type='linear' slope='2' intercept='-.5'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --fibre-img: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n' x='0' y='0'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.012 .55' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='linear' slope='2' intercept='-.5'/%3E%3CfeFuncG type='linear' slope='2' intercept='-.5'/%3E%3CfeFuncB type='linear' slope='2' intercept='-.5'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.panel, .stat { position: relative; }
+:is([data-texture="grain"], [data-texture="frost-grain"], [data-texture="frost-tint"], [data-texture="project"], [data-texture="grainy-gradient"],
+    [data-texture="art"], [data-texture="fibre"], [data-texture="bevel"]) :is(.tile, .panel, .stat)::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none; border-radius: inherit;
+  background: var(--grain-img); mix-blend-mode: overlay; opacity: var(--grain-opacity, 0.22); }
+[data-texture="grainy-gradient"] :is(.tile, .panel, .stat)::after { --grain-opacity: 0.4; }
+[data-texture="fibre"] :is(.tile, .panel, .stat)::after { background: var(--fibre-img); --grain-opacity: 0.3; }
+
+/* frost: see-through cards that blur what is behind them; a light edge and top sheen make the glass visible */
+:is([data-texture="frost"], [data-texture="frost-grain"]) :is(.tile, .panel, .stat) { background: linear-gradient(180deg, rgb(255 255 255 / 0.08), transparent 50%), color-mix(in srgb, var(--color-surface) 35%, transparent); backdrop-filter: blur(1.25rem) saturate(1.6); border: 1px solid rgb(255 255 255 / 0.14); }
+:is([data-texture="frost"], [data-texture="frost-grain"]) .tile:is(:hover, :focus-within, .is-hover, .is-focus) { background: linear-gradient(180deg, rgb(255 255 255 / 0.08), transparent 50%), color-mix(in srgb, var(--color-surface-raised) 55%, transparent); }
+/* frost-tint: frosted glass tinted in the project's colour */
+[data-texture="frost-tint"] :is(.tile, .panel, .stat) { background: linear-gradient(160deg, color-mix(in srgb, var(--tile-colour, var(--color-primary)) 30%, transparent), transparent 70%), linear-gradient(180deg, rgb(255 255 255 / 0.08), transparent 50%), color-mix(in srgb, var(--color-surface) 35%, transparent); backdrop-filter: blur(1.25rem) saturate(1.6);
+  border: 1px solid color-mix(in srgb, var(--tile-colour, var(--color-primary)) 35%, transparent); }
+[data-texture="frost-tint"] .tile:is(:hover, :focus-within, .is-hover, .is-focus) { background: linear-gradient(160deg, color-mix(in srgb, var(--tile-colour, var(--color-primary)) 40%, transparent), transparent 70%), linear-gradient(180deg, rgb(255 255 255 / 0.08), transparent 50%), color-mix(in srgb, var(--color-surface-raised) 55%, transparent); }
+/* project: a faint gradient in the project's colour */
+[data-texture="project"] :is(.tile, .panel, .stat) { background-image: linear-gradient(160deg, color-mix(in srgb, var(--tile-colour, var(--color-primary)) 22%, transparent), transparent 70%); }
+/* grainy-gradient: a two-colour glow (project colour and primary) under heavier grain */
+[data-texture="grainy-gradient"] :is(.tile, .panel, .stat) { background-image:
+  radial-gradient(120% 80% at 0 0, color-mix(in srgb, var(--tile-colour, var(--color-primary)) 35%, transparent), transparent 60%),
+  radial-gradient(100% 80% at 100% 100%, color-mix(in srgb, var(--color-primary) 16%, transparent), transparent 60%); }
+/* art: the card shows the project's own image, heavily blurred and darkened (PS5 game hub feel) */
+[data-texture="art"] .tile { isolation: isolate; }
+[data-texture="art"] .tile::before { content: ""; position: absolute; inset: -3rem; z-index: -1;
+  background: linear-gradient(rgb(14 17 23 / 0.55), rgb(14 17 23 / 0.55)), var(--tile-art, none) center / cover, var(--color-surface);
+  filter: blur(2rem) saturate(1.5); }
+/* bevel: thick paper; a light top edge and a dark bottom edge */
+[data-texture="bevel"] :is(.tile, .panel, .stat) { box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.1), inset 0 -0.1875rem 0 rgb(0 0 0 / 0.35); }
+[data-texture="bevel"] .tile:is(:hover, :focus-within, .is-hover, .is-focus) { box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.14), inset 0 -0.1875rem 0 rgb(0 0 0 / 0.35), 0 0.75rem 1.5rem rgb(0 0 0 / 0.45); }
+
+@media (prefers-reduced-motion: reduce) { .plane { animation: none !important; } }
+
+/* Skip link: the first focusable element on every page; visible only when focused */
+.skip-link { position: absolute; left: var(--space-4); top: var(--space-2); z-index: 10; padding: var(--space-2) var(--space-4);
+  background: var(--color-primary); color: var(--color-primary-contrast); font-weight: 600; border-radius: var(--radius-control);
+  transform: translateY(-200%); transition: transform var(--motion-primary) var(--ease-primary); }
+.skip-link:focus-visible { transform: none; }
+main:focus { outline: none; } /* focus lands here from the skip link; the heading below is what is announced */

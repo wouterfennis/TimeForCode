@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en" data-bg="planes" data-planes="angled" data-scroll="parallax" data-texture="project" data-state="found">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Project — TimeForCode mockup v2</title>
+  <meta name="description" content="">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="components.css">
+  <link rel="stylesheet" href="mockup.css">
+  <style>
+    /* Page layout (would become ProjectDetail.module.css) */
+    main.container { padding-block: var(--space-8); display: flex; flex-direction: column; gap: var(--space-5); }
+    .title-row { display: flex; flex-wrap: wrap; gap: var(--space-4); align-items: center; }
+    .title-row img { width: 3.5rem; height: 3.5rem; border-radius: var(--radius-control); }
+    .title-row h1 { font-size: clamp(1.75rem, 4vw, var(--text-3xl)); margin: 0; flex: 1; min-width: 14rem; overflow-wrap: anywhere; }
+    .layout { display: grid; gap: var(--space-6); grid-template-columns: minmax(0, 1fr) 22rem; align-items: start; }
+    @media (max-width: 56em) { .layout { grid-template-columns: minmax(0, 1fr); } }
+    .media { aspect-ratio: 2 / 1; border-radius: var(--radius-card); overflow: hidden; background: linear-gradient(135deg, var(--color-surface-raised), var(--color-border)); }
+    .media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .media img.is-avatar { object-fit: contain; padding: var(--space-6); }
+    .about { display: flex; flex-direction: column; gap: var(--space-4); }
+    .about h2 { font-size: var(--text-xl); margin: var(--space-3) 0 0; }
+    .description { font-size: var(--text-lg); margin: 0; }
+    .facts { display: grid; grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr)); gap: var(--space-3); margin: 0; }
+    .facts div { background: var(--color-surface); border-radius: var(--radius-card); padding: var(--space-3) var(--space-4); }
+    .facts dt { font-size: var(--text-sm); color: var(--color-text-muted); }
+    .facts dd { margin: 0; font-size: var(--text-lg); font-weight: 600; display: flex; align-items: center; gap: var(--space-2); }
+    .panel { position: sticky; top: 5.5rem; }
+    .panel h2 { font-size: var(--text-xl); margin: 0; }
+    .panel p { margin: 0; color: var(--color-text-muted); }
+    .planned { border-left: 0.25rem solid var(--color-primary); padding-left: var(--space-3); }
+    .message { background: var(--color-surface); border-radius: var(--radius-card); padding: var(--space-7) var(--space-5); text-align: center;
+      display: flex; flex-direction: column; align-items: center; gap: var(--space-3); }
+    .message h1, .message h2 { margin: 0; }
+    .message p { margin: 0; max-width: 32rem; color: var(--color-text-muted); }
+    .message.error { border-top: 0.25rem solid var(--color-danger); }
+    /* Loading reuses the Found layout: its wrapper adds no box, so spacing matches */
+    .loading { --d: contents; }
+    .loading .title-row { display: flex; }
+    .loading .layout { display: grid; }
+    /* Description: one line on wide screens, two on narrow ones, like a typical description */
+    .skel-lines { display: flex; flex-direction: column; gap: 0.25rem; }
+    @media (min-width: 40em) { .narrow-only { display: none; } }
+    /* Skeleton blocks win over the layout styles they borrow (.media, .facts div), so they keep the shimmer */
+    .loading .skeleton { background: var(--skeleton-bg); background-size: 200% 100%; }
+    .loading .facts .skeleton { height: 4.625rem; border: 1px solid var(--color-border); border-radius: var(--radius-card); }
+    /* Image spot: a faint picture icon in the middle */
+    .loading .media { position: relative; }
+    .loading .media::after { content: ""; position: absolute; inset: 0; margin: auto; width: 3.5rem; height: 3.5rem; background: var(--color-border);
+      mask: url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27black%27 stroke-width=%271.5%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Crect x=%273%27 y=%274%27 width=%2718%27 height=%2716%27 rx=%271%27/%3E%3Ccircle cx=%278.5%27 cy=%279.5%27 r=%271.5%27/%3E%3Cpath d=%27m21 16-5-5-9 9%27/%3E%3C/svg%3E") center / contain no-repeat; }
+    /* States (mockup switcher): each region shows in its own states only; --d is its normal display */
+    [data-show] { display: none; }
+    [data-state="found"] [data-show~="found"], [data-state="loading"] [data-show~="loading"],
+    [data-state="notfound"] [data-show~="notfound"], [data-state="error"] [data-show~="error"] { display: var(--d, block); }
+    .message, .title-row, .crumbs { --d: flex; }
+    .layout { --d: grid; }
+  </style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to main content</a>
+<div class="ambient" aria-hidden="true"><i class="plane plane-1"></i><i class="plane plane-2"></i><i class="plane plane-3"></i></div>
+
+<header class="app-header"><div class="container">
+  <a class="brand" href="home.html">Time<b>For</b>Code</a>
+  <nav aria-label="Primary"><a href="projects.html">Projects</a></nav>
+  <a class="btn primary" href="#">Sign in with GitHub</a>
+</div></header>
+
+<main class="container" id="main" tabindex="-1">
+  <!-- Found -->
+  <nav class="crumbs" aria-label="Breadcrumb" data-show="found loading"><ol><li><a href="projects.html">Projects</a></li><li aria-current="page" id="crumb"></li></ol></nav>
+  <div class="title-row" data-show="found" data-frame="title">
+    <img id="avatar" src="" alt="">
+    <h1 id="name"></h1>
+    <a class="btn" id="github" href="#" target="_blank" rel="noopener">View on GitHub <span aria-hidden="true">↗</span><span class="visually-hidden"> (opens GitHub in a new tab)</span></a>
+  </div>
+  <div class="layout" data-show="found">
+    <div class="about">
+      <div class="media" data-frame="media"><img id="art" src="" alt="" width="1200" height="600"></div>
+      <p class="description" id="description" data-frame="description"></p>
+      <div class="tags" id="topics" data-frame="topics" aria-label="Topics"></div>
+      <h2>Repository</h2>
+      <dl class="facts" id="facts" data-frame="facts"></dl>
+    </div>
+    <aside class="panel" data-frame="panel" aria-labelledby="support-title" id="support">
+      <h2 id="support-title">Support this project</h2>
+      <p>Give some of your developer time to this project.</p>
+      <button class="btn primary" type="button" aria-disabled="true" aria-describedby="pledge-note">Pledge hours</button>
+      <p class="planned" id="pledge-note"><strong>Coming soon.</strong> Pledging hours, and seeing what help a project needs, is planned for a later release. For now, you can follow the project on GitHub.</p>
+    </aside>
+  </div>
+
+    <!-- Loading: the same layout as Found, with skeleton blocks in place of each part -->
+  <div class="loading" data-show="loading" aria-busy="true">
+    <h1 class="visually-hidden">Loading project</h1>
+    <div class="title-row" data-frame="title"><div class="skeleton" style="width: 3.5rem; height: 3.5rem"></div><div class="skeleton" style="height: 2.75rem; flex: 1; min-width: 14rem"></div><div class="skeleton" style="width: 10.5rem; height: 2.75rem"></div></div>
+    <div class="layout">
+      <div class="about">
+        <div class="skeleton media" data-frame="media"></div>
+        <div class="skel-lines" data-frame="description"><div class="skeleton" style="height: 1.75rem; width: 70%"></div><div class="skeleton narrow-only" style="height: 1.75rem; width: 45%"></div></div>
+        <div class="tags" data-frame="topics"><div class="skeleton" style="width: 6rem; height: 1.75rem"></div><div class="skeleton" style="width: 5rem; height: 1.75rem"></div><div class="skeleton" style="width: 7rem; height: 1.75rem"></div></div>
+        <div class="skeleton" style="height: 1.5rem; width: 9rem; margin-top: var(--space-3)"></div>
+        <div class="facts" data-frame="facts"><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div></div>
+      </div>
+      <div class="panel" data-frame="panel"><div class="skeleton" style="height: 1.5rem; width: 70%"></div><div class="skeleton" style="height: 1rem"></div><div class="skeleton" style="height: 2.75rem; width: 9rem"></div><div class="skeleton" style="height: 6.5rem"></div></div>
+    </div>
+  </div>
+
+  <!-- Not found: unknown or non-active project id -->
+  <div class="message" data-show="notfound">
+    <h1>Project not found</h1>
+    <p>This project does not exist or is no longer listed. It may have been archived by its owner.</p>
+    <a class="btn primary" href="projects.html">Browse all projects</a>
+  </div>
+
+  <!-- Error -->
+  <div class="message error" data-show="error" role="alert">
+    <h1>This project could not be loaded</h1>
+    <p>Something went wrong on our side. Try again in a moment.</p>
+    <button class="btn primary" type="button">Try again</button>
+  </div>
+</main>
+
+<footer class="app-footer"><div class="container">
+  <a href="#">GitHub repository</a><a href="#">Documentation</a><a href="#">Code of conduct</a><a href="#">Admin sign-in</a>
+</div></footer>
+
+<script src="mockup.js"></script>
+<script>
+  const { projects, art, short, stateSwitcher } = window.Mockup;
+  const id = new URLSearchParams(location.search).get("id") ?? "1";
+  const p = projects.find((x) => x.id === id);
+  if (!p) document.documentElement.dataset.state = "notfound";
+  else {
+    // Document title and description meta tag per project (shared links)
+    document.title = `${p.fullName} — TimeForCode`;
+    document.querySelector('meta[name="description"]').content = p.description;
+    document.body.style.setProperty("--tile-colour", p.colour);
+    document.getElementById("crumb").textContent = p.fullName;
+    document.getElementById("name").textContent = p.fullName;
+    document.getElementById("avatar").src = p.ownerAvatarUrl;
+    document.getElementById("github").href = p.githubUrl;
+    document.getElementById("description").textContent = p.description;
+    const img = document.getElementById("art");
+    img.src = art(p.fullName);
+    img.onerror = () => { if (img.classList.contains("is-avatar")) img.remove(); else { img.classList.add("is-avatar"); img.src = p.ownerAvatarUrl; } };
+    document.getElementById("topics").innerHTML = p.topics.map((t, i) => `<span class="tag" style="--i: ${i}">${t}</span>`).join("");
+    const facts = [
+      ["Language", `<span class="lang-dot" style="background: ${p.colour}" aria-hidden="true"></span>${p.language}`],
+      ["Stars", short(p.stargazersCount)], ["Forks", short(p.forksCount)], ["Open issues", short(p.openIssuesCount)], ["Licence", p.license],
+    ];
+    document.getElementById("facts").innerHTML = facts.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join("");
+  }
+  stateSwitcher([["state", "State", [["found", "Found"], ["loading", "Loading"], ["notfound", "Not found"], ["error", "Error"]]]]);
+</script>
+</body>
+</html>

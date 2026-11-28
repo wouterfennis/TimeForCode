@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en" data-bg="planes" data-planes="angled" data-scroll="parallax" data-texture="project" data-state="notfound">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Page not found — TimeForCode</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="components.css">
+  <link rel="stylesheet" href="mockup.css">
+  <style>
+    /* Page layout (would become NotFoundPage.module.css and ErrorPage.module.css) */
+    main.container { padding-block: var(--space-8); display: grid; place-items: center; }
+    .oops { position: relative; display: flex; flex-direction: column; align-items: center; gap: var(--space-4); text-align: center; max-width: 36rem; }
+    /* The big code is decoration only (aria-hidden); the h1 says what happened */
+    .code { font-size: clamp(6rem, 22vw, 11rem); font-weight: 700; line-height: 1; letter-spacing: -0.04em; margin: 0;
+      background: linear-gradient(160deg, var(--color-primary), color-mix(in srgb, var(--color-primary) 25%, var(--color-surface)));
+      -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .oops h1 { font-size: var(--text-2xl); margin: 0; }
+    .oops p { margin: 0; color: var(--color-text-muted); font-size: var(--text-lg); }
+    .oops .actions { display: flex; gap: var(--space-3); flex-wrap: wrap; justify-content: center; margin-top: var(--space-3); }
+    .oops .ref { font-size: var(--text-sm); }
+    [data-show] { display: none; }
+    [data-state="notfound"] [data-show="notfound"], [data-state="error"] [data-show="error"] { display: flex; }
+  </style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to main content</a>
+<div class="ambient" aria-hidden="true"><i class="plane plane-1"></i><i class="plane plane-2"></i><i class="plane plane-3"></i></div>
+
+<header class="app-header"><div class="container">
+  <a class="brand" href="home.html">Time<b>For</b>Code</a>
+  <nav aria-label="Primary"><a href="projects.html">Projects</a></nav>
+  <a class="btn primary" href="#">Sign in with GitHub</a>
+</div></header>
+
+<main class="container" id="main" tabindex="-1">
+  <!-- Not found: any unknown URL -->
+  <div class="oops" data-show="notfound">
+    <p class="code" aria-hidden="true">404</p>
+    <h1>Page not found</h1>
+    <p>We could not find this page. The link may be old, or the address may have a typo.</p>
+    <div class="actions"><a class="btn primary" href="home.html">Go to the home page</a><a class="btn" href="projects.html">Browse projects</a></div>
+  </div>
+
+  <!-- Generic error: a rendering error; never a stack trace or a raw API message -->
+  <div class="oops" data-show="error">
+    <p class="code" aria-hidden="true">Oops</p>
+    <h1>Something went wrong</h1>
+    <p>This page could not be shown. It is not something you did. Try again, or go back to the home page.</p>
+    <div class="actions"><button class="btn primary" type="button" onclick="location.reload()">Try again</button><a class="btn" href="home.html">Go to the home page</a></div>
+  </div>
+</main>
+
+<footer class="app-footer"><div class="container">
+  <a href="#">GitHub repository</a><a href="#">Documentation</a><a href="#">Code of conduct</a><a href="#">Admin sign-in</a>
+</div></footer>
+
+<script src="mockup.js"></script>
+<script>
+  const { stateSwitcher } = window.Mockup;
+  // Each route sets its own document title
+  const titles = { notfound: "Page not found — TimeForCode", error: "Something went wrong — TimeForCode" };
+  stateSwitcher([["state", "Page", [["notfound", "Not found (404)"], ["error", "Error"]]]], (_, key) => (document.title = titles[key]));
+</script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+/* Mockup-only helpers for the v2 pages (not part of the design system) */
+.mock-switch { position: fixed; right: var(--space-4); bottom: var(--space-4); z-index: 3; max-width: min(34rem, calc(100vw - 2rem));
+  background: var(--color-surface); border: 1px dashed var(--color-warning); border-radius: var(--radius-card); padding: var(--space-3) var(--space-4);
+  box-shadow: 0 0.75rem 2rem rgb(0 0 0 / 0.5); font-size: var(--text-sm); }
+.mock-switch summary { cursor: pointer; font-weight: 600; color: var(--color-warning); }
+.mock-switch .toolbar { gap: var(--space-2); margin-top: var(--space-2); align-items: center; }
+.mock-switch .label { min-width: 5rem; color: var(--color-text-muted); }
+.mock-switch .btn { min-height: 2.25rem; padding: 0 var(--space-3); font-size: var(--text-sm); }
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+/* Tile facts (would move into components.css with the tile) */
+.meta { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-4); padding: 0; margin: 0; list-style: none; font-size: var(--text-sm); color: var(--color-text-muted); }
+.meta li { display: inline-flex; align-items: center; gap: var(--space-2); }
+.lang-dot { width: 0.625rem; height: 0.625rem; border-radius: 50%; }
+.gh-link { position: relative; z-index: 1; align-self: flex-start; font-size: var(--text-sm); margin-top: auto; }
+.tile-media img.is-avatar { object-fit: contain; padding: var(--space-4); }
+
+/* Info boxes (facts, steps, stats, messages): a visible edge so they stand apart from the page */
+.facts div, .steps li, .stat, .message, .skel-tile { border: 1px solid var(--color-border); }

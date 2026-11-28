@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en" data-bg="planes" data-planes="angled" data-scroll="parallax" data-texture="project" data-session="anonymous" data-featured="three">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Home — TimeForCode mockup v2</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="components.css">
+  <link rel="stylesheet" href="mockup.css">
+  <style>
+    /* Page layout (would become Home.module.css) */
+    main.container { padding-block: var(--space-8); display: flex; flex-direction: column; gap: var(--space-8); }
+    .hero { min-height: 30rem; }
+    .hero h1 { font-size: clamp(2rem, 5vw, var(--text-3xl)); max-width: 36rem; margin: 0; }
+    .hero .lead { font-size: var(--text-lg); max-width: 36rem; color: var(--color-text); margin: 0; }
+    .hero .actions { display: flex; gap: var(--space-3); flex-wrap: wrap; }
+    .hero h2 { font-size: var(--text-md); color: var(--color-text-muted); margin: var(--space-4) 0 0; font-weight: 600; }
+    .now { font-size: var(--text-sm); color: var(--color-text-muted); margin: 0; }
+    .now strong { color: var(--color-text); }
+    .steps { display: grid; gap: var(--space-4); grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); padding: 0; margin: 0; list-style: none; counter-reset: step; }
+    .steps li { position: relative; background: var(--color-surface); border-radius: var(--radius-card); padding: var(--space-5); counter-increment: step; }
+    .steps li::before { content: counter(step); display: grid; place-items: center; width: 2.5rem; height: 2.5rem; margin-bottom: var(--space-3);
+      border-radius: var(--radius-control); background: var(--color-primary); color: var(--color-primary-contrast); font-weight: 700; }
+    .steps h3 { font-size: var(--text-lg); margin-bottom: var(--space-2); }
+    .steps p { margin: 0; color: var(--color-text-muted); }
+    .welcome { display: flex; gap: var(--space-4); align-items: center; flex-wrap: wrap; border-left-color: var(--color-primary); }
+    .welcome p { margin: 0; flex: 1; min-width: 14rem; }
+    .user { display: flex; align-items: center; gap: var(--space-3); }
+    .user img { width: 2rem; height: 2rem; border-radius: var(--radius-control); }
+    .user a { color: var(--color-text-muted); }
+    /* Session variants (mockup state) */
+    [data-session="anonymous"] .signed-in, :not([data-session="anonymous"]) > body .anonymous { display: none; }
+    :not([data-session="new"]) > body .welcome { display: none; }
+    [data-featured="none"] .featured, [data-featured="none"] .spotlight-bg { display: none; }
+  </style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to main content</a>
+<div class="ambient" aria-hidden="true"><i class="plane plane-1"></i><i class="plane plane-2"></i><i class="plane plane-3"></i></div>
+
+<header class="app-header"><div class="container">
+  <a class="brand" href="home.html">Time<b>For</b>Code</a>
+  <nav aria-label="Primary"><a href="projects.html">Projects</a></nav>
+  <a class="btn primary anonymous" href="#">Sign in with GitHub</a>
+  <div class="user signed-in">
+    <img src="https://github.com/octocat.png" alt="">
+    <span><strong data-testid="user-name">Alex Doe</strong> <span class="muted" data-testid="login-handle">@alexdoe</span></span>
+    <a href="#">Profile</a><a href="#" data-testid="logout-link">Sign out</a>
+  </div>
+</div></header>
+
+<main class="container" id="main" tabindex="-1">
+  <div class="toast welcome" role="status" data-testid="new-user-welcome">
+    <p><strong>Welcome to TimeForCode, Alex!</strong> Your account is ready. Add your skills and available hours on your profile so projects know how you can help.</p>
+    <a class="btn primary" href="#">Go to your profile</a>
+    <button class="btn" type="button" aria-label="Dismiss welcome message" onclick="this.closest('.welcome').remove()">Dismiss</button>
+  </div>
+
+  <section class="spotlight hero" aria-labelledby="hero-title">
+    <div class="spotlight-bg"></div><div class="spotlight-bg"></div>
+    <h1 id="hero-title">Donate developer time to open source.</h1>
+    <p class="lead">Projects say what help they need. Developers pledge hours. Everyone sees the progress.</p>
+    <div class="actions">
+      <a class="btn primary" href="projects.html">Browse projects</a>
+      <a class="btn" href="#">List your project</a>
+    </div>
+    <div class="featured">
+      <h2 id="featured-title">Featured projects</h2>
+      <p class="now">Now showing: <strong id="now-title"></strong> · <span id="now-need"></span></p>
+      <div class="shelf" data-testid="project-list" aria-labelledby="featured-title" id="featured"></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="how-title">
+    <h2 id="how-title">How it works</h2>
+    <ol class="steps">
+      <li><h3>Find</h3><p>Browse open source projects and the concrete help they ask for: docs, triage, accessibility, security.</p></li>
+      <li><h3>Pledge</h3><p>Sign in with GitHub and pledge the hours you can give. No money changes hands.</p></li>
+      <li><h3>Track</h3><p>See how close each project is to its goal, and what your hours have done.</p></li>
+    </ol>
+  </section>
+</main>
+
+<footer class="app-footer"><div class="container">
+  <a href="#">GitHub repository</a><a href="#">Documentation</a><a href="#">Code of conduct</a><a href="#">Admin sign-in</a>
+</div></footer>
+
+<script src="mockup.js"></script>
+<script>
+  const { projects, tile, spotlight, stateSwitcher } = window.Mockup;
+  const featured = projects.slice(0, 3); // the API's first three active projects
+  document.getElementById("featured").innerHTML = featured.map((p) => tile(p, { compact: true })).join("");
+  spotlight(document.querySelector(".hero"), featured, (p) => {
+    document.getElementById("now-title").textContent = p.fullName;
+    document.getElementById("now-need").textContent = p.description;
+  });
+  stateSwitcher([
+    ["session", "Session", [["anonymous", "Anonymous"], ["signed-in", "Signed in"], ["new", "New user (first sign-in)"]]],
+    ["featured", "Projects", [["three", "Three active"], ["none", "None (section hidden)"]]],
+  ]);
+</script>
+</body>
+</html>

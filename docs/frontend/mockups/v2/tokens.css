@@ -1,0 +1,40 @@
+/* Dark-first tokens for the toned-down game-store direction (design-system.md, #211).
+   Contrast ratios against --color-bg are noted per colour (WCAG 2.2 AA: 4.5:1 text, 3:1 UI). */
+:root {
+  color-scheme: dark;
+  --color-bg: #0e1117;            /* page */
+  --color-surface: #1a212d;       /* tiles, panels; clearly lighter than the page */
+  --color-surface-raised: #242c3b;/* hover, inputs; one step above surface */
+  --color-border: #303a4d;        /* dividers and box edges */
+  --color-text: #e8ecf2;          /* ≈ 15.8:1 */
+  --color-text-muted: #a3adbd;    /* ≈ 8.3:1 */
+  --color-primary: #66c0f4;       /* links, focus, primary button ≈ 9.3:1 */
+  --color-primary-contrast: #0e1117;
+  --color-progress: #8bd46e;      /* hours pledged ≈ 10.5:1 */
+  --color-warning: #f0b429;       /* ≈ 10.1:1 */
+  --color-danger: #ff6b6b;        /* ≈ 6.8:1 */
+  --glow: 0 0 0 1px var(--color-primary), 0 0.5rem 1.5rem color-mix(in srgb, var(--color-primary) 25%, transparent);
+
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --text-sm: 0.875rem; --text-md: 1rem; --text-lg: 1.25rem; --text-xl: 1.5rem; --text-2xl: 2rem; --text-3xl: 2.75rem;
+
+  --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem; --space-4: 1rem;
+  --space-5: 1.5rem; --space-6: 2rem; --space-7: 3rem; --space-8: 4rem;
+  /* Square, like the references: only a hint of rounding */
+  --radius-control: 0.125rem; --radius-card: 0.125rem; --radius-pill: 0.125rem;
+
+  --motion-fast: 150ms; --motion-base: 200ms; /* never above 300ms */
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-settle: cubic-bezier(0.16, 1, 0.3, 1); /* long, slowing tail (easeOutExpo-like) */
+  /* Primary motion answers input directly (card, buttons, page): fast. Secondary motion follows it
+     (tile art, spotlight background): slower, settles; it never blocks input. */
+  --motion-primary: 200ms; --ease-primary: var(--ease-out);
+  --motion-secondary: 1600ms; --motion-secondary-fade: 700ms; --ease-secondary: var(--ease-settle);
+}
+
+/* Primary colour options (moodboard only; pick one). Ratios against --color-bg. */
+[data-accent="blue"]   { --color-primary: #66c0f4; } /* ≈ 9.3:1, the default */
+[data-accent="teal"]  { --color-primary: #2dd4bf; } /* ≈ 10.2:1 */
+[data-accent="amber"]  { --color-primary: #f5a524; } /* ≈ 9.2:1, warm: "time" */
+[data-accent="violet"] { --color-primary: #a78bfa; } /* ≈ 6.8:1 */
+[data-accent="lime"]   { --color-primary: #a3e635; } /* ≈ 12.5:1 */

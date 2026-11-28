@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Moodboard — TimeForCode visual direction</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="components.css">
+  <style>
+    /* Moodboard-only layout */
+    main.container { padding-block: var(--space-8); }
+    section { margin-top: var(--space-8); }
+    .lead { font-size: var(--text-lg); max-width: 48rem; }
+    .refs { display: grid; gap: var(--space-3); grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr)); padding: 0; list-style: none; }
+    .refs li { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-card); padding: var(--space-4); display: flex; flex-direction: column; gap: var(--space-2); }
+    .refs p { margin: 0; }
+    .refs .where { font-size: var(--text-sm); margin-top: auto; }
+    .refs .where::before { content: "In the mockups: "; color: var(--color-text-muted); }
+    .ref-group { font-size: var(--text-lg); margin: var(--space-5) 0 var(--space-3); }
+    .swatches { display: grid; gap: var(--space-3); grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr)); }
+    .swatch { border: 1px solid var(--color-border); border-radius: var(--radius-card); overflow: hidden; font-size: var(--text-sm); }
+    .swatch > span { display: block; height: 4rem; }
+    .swatch div { padding: var(--space-2) var(--space-3); }
+    .states { display: grid; gap: var(--space-5); grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr)); }
+    .label { font-size: var(--text-sm); color: var(--color-text-muted); margin-bottom: var(--space-2); }
+    .type > * { margin: 0 0 var(--space-2); }
+    .note { border-left: 0.25rem solid var(--color-warning); padding-left: var(--space-3); }
+    /* Floating options panel */
+    .lab { position: fixed; right: var(--space-4); bottom: var(--space-4); z-index: 3; max-width: min(36rem, calc(100vw - 2rem)); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-card); padding: var(--space-3) var(--space-4); box-shadow: 0 0.75rem 2rem rgb(0 0 0 / 0.5); font-size: var(--text-sm); }
+    .lab summary { cursor: pointer; font-weight: 600; }
+    .lab .toolbar { gap: var(--space-2); margin-top: var(--space-2); align-items: center; }
+    .lab .label { min-width: 5.5rem; margin: 0; }
+    .lab .btn { min-height: 2.25rem; padding: 0 var(--space-3); font-size: var(--text-sm); }
+    /* Colour-vision simulation (moodboard only) */
+    [data-vision="protan"] :is(.ambient, .app-header, main, .app-footer) { filter: url(#protan); }
+    [data-vision="deutan"] :is(.ambient, .app-header, main, .app-footer) { filter: url(#deutan); }
+    [data-vision="tritan"] :is(.ambient, .app-header, main, .app-footer) { filter: url(#tritan); }
+    [data-vision="blur"] :is(.ambient, .app-header, main, .app-footer) { filter: blur(1.5px); }
+    /* Colour comparison */
+    .compare { display: grid; gap: var(--space-3); grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr)); margin-bottom: var(--space-5); }
+    .compare > div { background: var(--color-surface); border-radius: var(--radius-card); padding: var(--space-4); display: flex; flex-direction: column; gap: var(--space-3); }
+    .compare .focus { outline: 0.1875rem solid var(--color-primary); outline-offset: 0.125rem; }
+  </style>
+</head>
+<body>
+<div class="ambient" aria-hidden="true"><i class="plane plane-1"></i><i class="plane plane-2"></i><i class="plane plane-3"></i></div>
+<svg width="0" height="0" style="position: absolute" aria-hidden="true">
+  <filter id="protan"><feColorMatrix type="matrix" values="0.152 1.053 -0.205 0 0  0.115 0.786 0.099 0 0  -0.004 -0.048 1.052 0 0  0 0 0 1 0"/></filter>
+  <filter id="deutan"><feColorMatrix type="matrix" values="0.367 0.861 -0.228 0 0  0.280 0.673 0.047 0 0  -0.012 0.043 0.969 0 0  0 0 0 1 0"/></filter>
+  <filter id="tritan"><feColorMatrix type="matrix" values="1.256 -0.077 -0.179 0 0  -0.078 0.931 0.148 0 0  0.005 0.691 0.304 0 0  0 0 0 1 0"/></filter>
+</svg>
+<details class="lab" open><summary>Try options (whole page)</summary><div id="lab"></div></details>
+<header class="app-header"><div class="container">
+  <a class="brand" href="#">Time<b>For</b>Code</a>
+  <nav aria-label="Primary"><a href="#" aria-current="page">Store</a><a href="#">Projects</a><a href="#">How it works</a></nav>
+  <a class="btn primary" href="#">Sign in with GitHub</a>
+</div></header>
+<main class="container">
+  <h1 style="font-size: var(--text-3xl)">A store you want to browse</h1>
+  <p class="lead muted">Moodboard for the toned-down game-store direction in <a href="../../design-system.md">design-system.md</a>. Built in code with the tokens the SPA will use (#211). Project data and hours are sample values; images come from GitHub's generated Open Graph images (the interim source in #213).</p>
+
+  <section aria-labelledby="refs">
+    <h2 id="refs">References and what we take from them</h2>
+    <h3 class="ref-group">Look and motion</h3>
+    <ul class="refs">
+      <li><a href="https://store.steampowered.com/">Steam store</a><p class="muted">Dark surfaces, image-first tiles, shelves of related items, one key fact per tile.</p><p class="where">Tiles, shelves, dark palette</p></li>
+      <li><a href="https://store.steampowered.com/app/1145360/">A Steam game page</a><p class="muted">Big media on the left, a buy panel on the right that stays in view, facts as small blocks.</p><p class="where">Project detail layout and the support panel</p></li>
+      <li><a href="https://blog.playstation.com/2020/10/15/first-look-playstation-5s-next-generation-user-experience/">PS5 home screen (video)</a><p class="muted">The background art follows the focused tile; motion starts fast and settles slowly.</p><p class="where">Spotlight, primary and secondary motion</p></li>
+      <li><a href="https://m2.material.io/design/environment/surfaces.html">Material Design: surfaces</a><p class="muted">Sheets of paper at different depths, each a slightly different tone.</p><p class="where">Paper-plane background with parallax</p></li>
+    </ul>
+    <h3 class="ref-group">Same domain: finding open source to help</h3>
+    <ul class="refs">
+      <li><a href="https://github.com/explore">GitHub Explore and Topics</a><p class="muted">Repository cards: owner/name, description, language with its colour, stars. Topics as tags.</p><p class="where">Card content and the language colour tint</p></li>
+      <li><a href="https://up-for-grabs.net/">Up For Grabs</a><p class="muted">Browse projects that want help, filtered by language and label.</p><p class="where">Search and language filter on the project list</p></li>
+      <li><a href="https://goodfirstissue.dev/">Good First Issue</a><p class="muted">A curated list of projects for new contributors, grouped by language.</p><p class="where">Home: featured projects for a first visit</p></li>
+      <li><a href="https://www.codetriage.com/">CodeTriage</a><p class="muted">Pick a project and get help requests from it; low effort to start.</p><p class="where">The tone of the &quot;How it works&quot; steps</p></li>
+    </ul>
+    <h3 class="ref-group">For later phases (pledging hours)</h3>
+    <ul class="refs">
+      <li><a href="https://opencollective.com/">Open Collective</a><p class="muted">Transparent progress: who gave what, and what is still needed.</p><p class="where">Pledges and progress, once the API has them</p></li>
+      <li><a href="https://www.catchafire.org/">Catchafire</a><p class="muted">Skills-based volunteering: a project says which help it needs.</p><p class="where">&quot;Needs help with&quot;, once the API has it</p></li>
+    </ul>
+    <p class="note muted">We take patterns, not looks: no copied colours, logos or layouts. And no store tricks: no countdowns, fake urgency or scarcity.</p>
+  </section>
+
+  <section aria-labelledby="palette">
+    <h2 id="palette">Palette</h2>
+    <p class="muted">The five primary-colour candidates side by side. Switch the whole page with the options panel (bottom right).</p>
+    <div class="compare" id="compare"></div>
+    <div class="swatches" id="swatches"></div>
+  </section>
+
+  <section aria-labelledby="type" class="type">
+    <h2 id="type">Type</h2>
+    <p class="label">Inter (open question: final typeface)</p>
+    <p style="font-size: var(--text-3xl); font-weight: 700">Donate developer time</p>
+    <p style="font-size: var(--text-2xl); font-weight: 700">Needs help now</p>
+    <p style="font-size: var(--text-lg); font-weight: 600">dotnet/aspire</p>
+    <p>Body text for project descriptions and explanations.</p>
+    <p class="muted" style="font-size: var(--text-sm)">120 of 200 hours pledged · C# · ★ 4.1k</p>
+  </section>
+
+  <section aria-labelledby="tile">
+    <h2 id="tile">Project tile</h2>
+    <p class="muted">Hover and keyboard focus look the same, in two layers. Primary (200 ms): the card lifts, grows 4% and brightens. Secondary (settles slowly): one band of light sweeps over the art. Try the shelf below with mouse and Tab.</p>
+    <div class="states" id="states"></div>
+  </section>
+
+  <section aria-labelledby="shelf">
+    <h2 id="shelf">Shelf: Needs help now</h2>
+    <div class="shelf" id="shelf-row"></div>
+  </section>
+
+  <section aria-labelledby="spot">
+    <h2 id="spot">Spotlight (PS5 feel)</h2>
+    <p class="muted">Hover or Tab through the row: the background art slides in from the side you move towards and settles slowly (secondary motion). A candidate for the home page hero. Both layouts stay available:</p>
+    <div class="toolbar" role="group" aria-label="Spotlight layout" id="layouts" style="margin-bottom: var(--space-4)"><button class="btn" type="button" data-key="overlay" aria-pressed="true">Overlay</button><button class="btn" type="button" data-key="panel" aria-pressed="false">Side panel</button></div>
+    <div class="spotlight" id="spotlight" data-layout="overlay">
+      <div class="spotlight-bg is-visible" id="bg-a"></div><div class="spotlight-bg" id="bg-b"></div>
+      <div><p class="label">Featured</p><h3 id="spot-title" style="font-size: var(--text-2xl)">dotnet/aspire</h3><p id="spot-need" class="muted"></p></div>
+      <div class="shelf" id="spot-row"></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="extra">
+    <h2 id="extra">Store building blocks</h2>
+    <p class="label">Impact numbers (home)</p>
+    <div class="stats">
+      <div class="stat"><strong>12,480 h</strong><span class="muted">donated so far</span></div>
+      <div class="stat"><strong>86</strong><span class="muted">projects helped</span></div>
+      <div class="stat"><strong>34</strong><span class="muted">organizations</span></div>
+    </div>
+    <p class="label" style="margin-top: var(--space-5)">Browse by topic (chips, toggle)</p>
+    <div class="toolbar" id="chips"><button class="chip" type="button" aria-pressed="true">All</button><button class="chip" type="button" aria-pressed="false">Accessibility</button><button class="chip" type="button" aria-pressed="false">Docs</button><button class="chip" type="button" aria-pressed="false">Security</button><button class="chip" type="button" aria-pressed="false">Testing</button><button class="chip" type="button" aria-pressed="false">Good first help</button></div>
+    <div class="states" style="margin-top: var(--space-5)">
+      <div><p class="label">Breadcrumb (detail)</p><nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="#">Projects</a></li><li><a href="#">C#</a></li><li aria-current="page">dotnet/aspire</li></ol></nav></div>
+      <div><p class="label">Donors (detail)</p><ul class="donors">
+        <li><img class="avatar" src="https://github.com/microsoft.png?size=80" alt=""><span>Microsoft</span><span class="h">80 h</span></li>
+        <li><img class="avatar" src="https://github.com/github.png?size=80" alt=""><span>GitHub</span><span class="h">32 h</span></li>
+        <li><img class="avatar" src="https://github.com/vercel.png?size=80" alt=""><span>Vercel</span><span class="h">8 h</span></li>
+      </ul></div>
+      <div><p class="label">Toast (after an action)</p><div class="toast" role="status"><span><strong>Pledge sent.</strong> <span class="muted">40 h for dotnet/aspire</span></span></div></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="more">
+    <h2 id="more">More components</h2>
+    <p class="label">Search and filter (project list)</p>
+    <div class="toolbar">
+      <label class="field">Search<input type="search" placeholder="Project name or topic"></label>
+      <label class="field">Language<select><option>All languages</option><option>C#</option><option>TypeScript</option></select></label>
+    </div>
+    <p class="label" style="margin-top: var(--space-5)">Pagination</p>
+    <nav class="pager" aria-label="Pagination"><a class="btn" href="#">Previous</a><a class="btn" href="#" aria-current="page">1</a><a class="btn" href="#">2</a><a class="btn" href="#">3</a><a class="btn" href="#">Next</a><span class="muted">Showing 12 of 48</span></nav>
+    <div class="states" style="margin-top: var(--space-5)">
+      <div><p class="label">Loading (skeleton)</p><div class="tile"><div class="tile-media skeleton"></div><div class="tile-body"><div class="skeleton" style="height: 1.25rem; width: 60%"></div><div class="skeleton" style="height: 1rem"></div><div class="skeleton" style="height: 0.375rem"></div></div></div></div>
+      <div><p class="label">Pledge panel (detail page)</p><div class="panel">
+        <div><span class="big">120 h</span> <span class="muted">of 200 h pledged</span></div>
+        <div class="progress" aria-hidden="true"><span style="width: 60%"></span></div>
+        <p class="muted" style="margin: 0">12 organizations · 80 h to go</p>
+        <a class="btn primary" href="#" aria-disabled="true">Pledge hours</a>
+        <p class="muted" style="margin: 0; font-size: var(--text-sm)">Pledging opens when the donation flow is live.</p>
+      </div></div>
+      <div><p class="label">Empty state</p><div class="panel" style="text-align: center">
+        <p style="margin: 0; font-weight: 600">No projects match "rust"</p>
+        <p class="muted" style="margin: 0">Try another search or language.</p>
+        <a class="btn" href="#">Clear filters</a>
+      </div></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="actions">
+    <h2 id="actions">Actions</h2>
+    <div style="display: flex; gap: var(--space-3); flex-wrap: wrap">
+      <a class="btn primary" href="#">Browse projects</a>
+      <a class="btn" href="#">List your project</a>
+    </div>
+  </section>
+</main>
+<footer class="app-footer"><div class="container"><a href="#">GitHub repository</a><a href="#">Documentation</a><a href="#">Code of conduct</a><a href="#">Admin sign-in</a></div></footer>
+<script>
+  // Sample data only; real repositories so the Open Graph images load. "colour" is a sample; the app could take it from the project image.
+  const projects = [
+    { repo: "dotnet/aspire", need: "Dashboard accessibility and hosting docs", tags: ["C#", "Docs"], pledged: 120, goal: 200, colour: "#7b61ff" },
+    { repo: "withastro/astro", need: "Help triaging issues in the i18n router", tags: ["TypeScript", "Triage"], pledged: 45, goal: 60, colour: "#ff5d01" },
+    { repo: "excalidraw/excalidraw", need: "Keyboard support for the shape picker", tags: ["TypeScript", "A11y"], pledged: 18, goal: 80, colour: "#2f9e44" },
+    { repo: "jellyfin/jellyfin", need: "Performance work on library scans", tags: ["C#", "Backend"], pledged: 64, goal: 100, colour: "#00a4dc" },
+    { repo: "mastodon/mastodon", need: "Security review of media uploads", tags: ["Ruby", "Security"], pledged: 30, goal: 40, colour: "#d6336c" },
+  ];
+  const tile = (p, state = "") => {
+    const pct = Math.round((p.pledged / p.goal) * 100);
+    return `<article class="tile ${state}" style="--tile-colour: ${p.colour}; --tile-art: url(https://opengraph.githubassets.com/1/${p.repo})">
+      <div class="tile-media"><img src="https://opengraph.githubassets.com/1/${p.repo}" alt="" loading="lazy" onerror="this.remove()"><span class="badge">${pct}% pledged</span></div>
+      <div class="tile-body">
+        <h3><a href="#">${p.repo}</a></h3>
+        <p>${p.need}</p>
+        <div class="tags">${p.tags.map((t, i) => `<span class="tag" style="--i: ${i}">${t}</span>`).join("")}</div>
+        <div class="hours"><span><strong>${p.pledged}</strong> of ${p.goal} h</span><span>${p.goal - p.pledged} h to go</span></div>
+        <div class="progress" aria-hidden="true"><span style="width: ${pct}%"></span></div>
+      </div></article>`;
+  };
+  const labelled = (label, html) => `<div><p class="label">${label}</p>${html}</div>`;
+  document.getElementById("states").innerHTML =
+    labelled("Normal", tile(projects[0])) + labelled("Hover", tile(projects[0], "is-hover")) + labelled("Keyboard focus", tile(projects[0], "is-focus"));
+  document.getElementById("shelf-row").innerHTML = projects.map((p) => tile(p)).join("");
+
+  const swatches = [
+    ["--color-bg", "Page"], ["--color-surface", "Tiles"], ["--color-surface-raised", "Hover, inputs"], ["--color-border", "Dividers"],
+    ["--color-text", "Text · 15.8:1"], ["--color-text-muted", "Muted · 8.3:1"], ["--color-primary", "Primary · 9.3:1"],
+    ["--color-progress", "Progress · 10.5:1"], ["--color-warning", "Warning · 10.1:1"], ["--color-danger", "Danger · 6.8:1"],
+  ];
+  // Spotlight: crossfade between two background layers when a tile gets hover or focus.
+  const og = (repo) => `https://opengraph.githubassets.com/1/${repo}`;
+  const spotRow = document.getElementById("spot-row");
+  spotRow.innerHTML = projects.map((p) => tile(p)).join("");
+  const layers = [document.getElementById("bg-a"), document.getElementById("bg-b")];
+  let front = 0, current = -1;
+  const show = (i) => {
+    if (i === current) return;
+    const p = projects[i], dir = i > current ? 1 : -1;
+    current = i;
+    const back = layers[1 - front], old = layers[front];
+    // New art enters from the side you move towards, old art leaves the other way.
+    back.style.transition = "none"; back.style.setProperty("--from", `${dir * 8}%`); void back.offsetWidth; back.style.transition = "";
+    old.style.setProperty("--from", `${-dir * 8}%`);
+    back.style.backgroundImage = `url(${og(p.repo)})`;
+    back.classList.add("is-visible"); old.classList.remove("is-visible"); front = 1 - front;
+    document.getElementById("spot-title").textContent = p.repo;
+    document.getElementById("spot-need").textContent = p.need;
+  };
+  [...spotRow.children].forEach((el, i) => ["mouseenter", "focusin"].forEach((ev) => el.addEventListener(ev, () => show(i))));
+  show(0);
+
+  // Toggle groups: one pressed button per group
+  const toggleGroup = (box, onPick) => box.addEventListener("click", (e) => {
+    const btn = e.target.closest("button"); if (!btn) return;
+    box.querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", b === btn));
+    onPick?.(btn);
+  });
+  toggleGroup(document.getElementById("layouts"), (btn) => { document.getElementById("spotlight").dataset.layout = btn.dataset.key; });
+  toggleGroup(document.getElementById("chips"));
+
+  // Whole-page options: primary colour, background, card texture (data attributes on <html>)
+  const accents = [["blue", "Blue"], ["teal", "Teal"], ["amber", "Amber"], ["violet", "Violet"], ["lime", "Lime"]];
+  const lab = [
+    ["accent", "Colour", accents],
+    ["bg", "Background", [["none", "Plain"], ["tonal", "Tonal (M3)"], ["elevation", "Elevation (M2 dark)"], ["gradient", "Gradient wash"], ["planes", "Paper planes"], ["shapes", "Expressive shapes"]]],
+    ["planes", "Plane shape", [["angled", "Angled"], ["layered", "Layered sheets"], ["origami", "Origami"]]],
+    ["scroll", "On scroll", [["none", "Still"], ["parallax", "Parallax"], ["tilt", "Tilt"], ["slide", "Slide"]]],
+    ["vision", "Simulate", [["normal", "Normal vision"], ["deutan", "Deuteranopia (green-weak)"], ["protan", "Protanopia (red-weak)"], ["tritan", "Tritanopia (blue-weak)"], ["blur", "Low vision (blur)"]]],
+    ["texture", "Card texture", [["none", "None"], ["grain", "Grain"], ["frost", "Frosted glass"], ["project", "Project colour"], ["frost-grain", "Frosted grain"], ["frost-tint", "Tinted frost"], ["grainy-gradient", "Grainy gradient"], ["art", "Blurred art (PS5)"], ["fibre", "Paper fibre"], ["bevel", "Thick paper"]]],
+  ];
+  const root = document.documentElement;
+  Object.assign(root.dataset, { accent: "blue", bg: "planes", planes: "angled", scroll: "parallax", texture: "project", vision: "normal" });
+  document.getElementById("lab").innerHTML = lab.map(([attr, label, opts]) =>
+    `<div class="toolbar" role="group" aria-label="${label}" data-attr="${attr}"><span class="label">${label}</span>` +
+    opts.map(([key, name]) => `<button class="btn" type="button" data-key="${key}" aria-pressed="${root.dataset[attr] === key}">${name}</button>`).join("") + "</div>").join("");
+  document.querySelectorAll("#lab [data-attr]").forEach((box) => toggleGroup(box, (btn) => { root.dataset[box.dataset.attr] = btn.dataset.key; }));
+
+  // Colour comparison: the same small set of UI in each candidate
+  document.getElementById("compare").innerHTML = accents.map(([key, name]) => `<div data-accent="${key}">
+    <strong>${name}</strong><a href="#">A link</a><span class="btn primary">Pledge hours</span>
+    <div class="progress"><span style="width: 60%; background: var(--color-primary)"></span></div><button class="chip focus" type="button" aria-pressed="true" tabindex="-1">Focused chip</button>
+    <div class="progress"><span style="width: 40%"></span></div><span class="muted">↑ hours pledged (progress colour)</span>
+    <span style="color: var(--color-warning)">⚠ Warning: goal almost reached</span></div>`).join("");
+
+
+  document.getElementById("swatches").innerHTML = swatches.map(([token, use]) =>
+    `<div class="swatch"><span style="background: var(${token})"></span><div><code>${token.replace("--color-", "")}</code><br><span class="muted">${use}</span></div></div>`).join("");
+</script>
+</body>
+</html>

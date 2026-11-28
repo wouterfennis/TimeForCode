@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en" data-bg="planes" data-planes="angled" data-scroll="parallax" data-texture="project">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mockups v2 — TimeForCode</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="components.css">
+  <link rel="stylesheet" href="mockup.css">
+  <style>
+    main.container { padding-block: var(--space-8); display: flex; flex-direction: column; gap: var(--space-5); }
+    h1 { font-size: var(--text-3xl); margin: 0; }
+    .lead { font-size: var(--text-lg); color: var(--color-text-muted); max-width: 44rem; margin: 0; }
+    .pages { display: grid; gap: var(--space-4); grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr)); padding: 0; margin: 0; list-style: none; }
+    .pages li { display: flex; }
+    .pages .panel { flex: 1; gap: var(--space-2); }
+    .pages h2 { font-size: var(--text-lg); margin: 0; }
+    .pages p { margin: 0; color: var(--color-text-muted); }
+    .pages .issue { font-size: var(--text-sm); margin-top: auto; padding-top: var(--space-2); }
+  </style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to main content</a>
+<div class="ambient" aria-hidden="true"><i class="plane plane-1"></i><i class="plane plane-2"></i><i class="plane plane-3"></i></div>
+
+<header class="app-header"><div class="container">
+  <a class="brand" href="index.html">Time<b>For</b>Code</a>
+  <nav aria-label="Primary"><a href="index.html" aria-current="page">Mockups v2</a></nav>
+</div></header>
+
+<main class="container" id="main" tabindex="-1">
+  <h1>Mockups v2</h1>
+  <p class="lead">The Phase 1 pages in the toned-down game-store direction (#218). Open this file straight from disk or through <code>npm start</code>; both work. Each page has a dashed <strong>Mockup state</strong> panel to switch between states such as loading, empty and error.</p>
+  <ul class="pages">
+    <li><div class="panel"><h2><a href="home.html">Home</a></h2><p>Spotlight hero with featured projects, how it works, signed-in and new-user variants.</p><p class="issue">#216</p></div></li>
+    <li><div class="panel"><h2><a href="projects.html">Project list</a></h2><p>Search, language filter, tile grid, paging; loading, no results and error.</p><p class="issue">#213, #214</p></div></li>
+    <li><div class="panel"><h2><a href="project-detail.html?id=3">Project detail</a></h2><p>Store-style page with repository facts and the planned "Pledge hours"; loading, not found and error.</p><p class="issue">#215</p></div></li>
+    <li><div class="panel"><h2><a href="error-pages.html">Error and not-found pages</a></h2><p>404 and the generic error page, plus the skip link every page has.</p><p class="issue">#212</p></div></li>
+    <li><div class="panel"><h2><a href="moodboard.html">Moodboard</a></h2><p>References, palette, type, components and motion: how the direction was chosen.</p><p class="issue">#218</p></div></li>
+  </ul>
+</main>
+
+<footer class="app-footer"><div class="container"><a href="../README.md">Mockups README</a><a href="../../design-system.md">Design system</a></div></footer>
+</body>
+</html>
