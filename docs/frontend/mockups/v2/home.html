@@ -90,8 +90,8 @@
   const featured = projects.slice(0, 3); // the API's first three active projects
   document.getElementById("featured").innerHTML = featured.map((p) => tile(p, { compact: true })).join("");
   spotlight(document.querySelector(".hero"), featured, (p) => {
-    document.getElementById("now-title").textContent = p.repo;
-    document.getElementById("now-need").textContent = p.need;
+    document.getElementById("now-title").textContent = p.fullName;
+    document.getElementById("now-need").textContent = p.description;
   });
   stateSwitcher([
     ["session", "Session", [["anonymous", "Anonymous"], ["signed-in", "Signed in"], ["new", "New user (first sign-in)"]]],
