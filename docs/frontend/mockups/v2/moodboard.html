@@ -13,7 +13,11 @@
     section { margin-top: var(--space-8); }
     .lead { font-size: var(--text-lg); max-width: 48rem; }
     .refs { display: grid; gap: var(--space-3); grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr)); padding: 0; list-style: none; }
-    .refs li { background: var(--color-surface); border-radius: var(--radius-card); padding: var(--space-4); }
+    .refs li { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-card); padding: var(--space-4); display: flex; flex-direction: column; gap: var(--space-2); }
+    .refs p { margin: 0; }
+    .refs .where { font-size: var(--text-sm); margin-top: auto; }
+    .refs .where::before { content: "In the mockups: "; color: var(--color-text-muted); }
+    .ref-group { font-size: var(--text-lg); margin: var(--space-5) 0 var(--space-3); }
     .swatches { display: grid; gap: var(--space-3); grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr)); }
     .swatch { border: 1px solid var(--color-border); border-radius: var(--radius-card); overflow: hidden; font-size: var(--text-sm); }
     .swatch > span { display: block; height: 4rem; }
@@ -58,13 +62,24 @@
 
   <section aria-labelledby="refs">
     <h2 id="refs">References and what we take from them</h2>
+    <h3 class="ref-group">Look and motion</h3>
     <ul class="refs">
-      <li><a href="https://store.steampowered.com/">Steam store</a><p class="muted">Dark surfaces, image-first capsules, shelves by theme, badges that carry the key fact.</p></li>
-      <li><a href="https://blog.playstation.com/2020/10/15/first-look-playstation-5s-next-generation-user-experience/">PS5 user experience: first look (video)</a><p class="muted">Focus moves along a row of small tiles and the full-screen background art follows the focused game. See the spotlight below.</p></li>
-      <li><a href="https://polar.sh/">Polar</a><p class="muted">Same domain, not the same style: a platform that funds open-source maintainers. Shows how funding progress is presented to developers.</p></li>
-      <li><a href="https://opencollective.com/">Open Collective</a><p class="muted">Transparent progress: who gave what, and how much is still needed.</p></li>
-      <li><a href="https://www.catchafire.org/">Catchafire</a><p class="muted">Skills-based volunteering: the "what help is needed" framing.</p></li>
-      <li><a href="https://m3.material.io/styles/elevation/applying-elevation">Material Design 3: elevation and tonal surfaces</a><p class="muted">Source of the background options: tonal surfaces, the dark-theme elevation greys, and Expressive shapes. Try them in the options panel.</p></li>
+      <li><a href="https://store.steampowered.com/">Steam store</a><p class="muted">Dark surfaces, image-first tiles, shelves of related items, one key fact per tile.</p><p class="where">Tiles, shelves, dark palette</p></li>
+      <li><a href="https://store.steampowered.com/app/1145360/">A Steam game page</a><p class="muted">Big media on the left, a buy panel on the right that stays in view, facts as small blocks.</p><p class="where">Project detail layout and the support panel</p></li>
+      <li><a href="https://blog.playstation.com/2020/10/15/first-look-playstation-5s-next-generation-user-experience/">PS5 home screen (video)</a><p class="muted">The background art follows the focused tile; motion starts fast and settles slowly.</p><p class="where">Spotlight, primary and secondary motion</p></li>
+      <li><a href="https://m2.material.io/design/environment/surfaces.html">Material Design: surfaces</a><p class="muted">Sheets of paper at different depths, each a slightly different tone.</p><p class="where">Paper-plane background with parallax</p></li>
+    </ul>
+    <h3 class="ref-group">Same domain: finding open source to help</h3>
+    <ul class="refs">
+      <li><a href="https://github.com/explore">GitHub Explore and Topics</a><p class="muted">Repository cards: owner/name, description, language with its colour, stars. Topics as tags.</p><p class="where">Card content and the language colour tint</p></li>
+      <li><a href="https://up-for-grabs.net/">Up For Grabs</a><p class="muted">Browse projects that want help, filtered by language and label.</p><p class="where">Search and language filter on the project list</p></li>
+      <li><a href="https://goodfirstissue.dev/">Good First Issue</a><p class="muted">A curated list of projects for new contributors, grouped by language.</p><p class="where">Home: featured projects for a first visit</p></li>
+      <li><a href="https://www.codetriage.com/">CodeTriage</a><p class="muted">Pick a project and get help requests from it; low effort to start.</p><p class="where">The tone of the &quot;How it works&quot; steps</p></li>
+    </ul>
+    <h3 class="ref-group">For later phases (pledging hours)</h3>
+    <ul class="refs">
+      <li><a href="https://opencollective.com/">Open Collective</a><p class="muted">Transparent progress: who gave what, and what is still needed.</p><p class="where">Pledges and progress, once the API has them</p></li>
+      <li><a href="https://www.catchafire.org/">Catchafire</a><p class="muted">Skills-based volunteering: a project says which help it needs.</p><p class="where">&quot;Needs help with&quot;, once the API has it</p></li>
     </ul>
     <p class="note muted">We take patterns, not looks: no copied colours, logos or layouts. And no store tricks: no countdowns, fake urgency or scarcity.</p>
   </section>
