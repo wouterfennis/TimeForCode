@@ -200,47 +200,40 @@ a { color: var(--color-primary); }
 [data-bg="shapes"] .ambient::after { content: ""; position: absolute; right: 18%; bottom: 6%; width: 22rem; height: 7rem; border-radius: 999rem;
   background: color-mix(in srgb, var(--color-primary) 6%, transparent); }
 
-/* Card texture: [data-texture] on <html>: grain | frost | project. Kept faint so text contrast is unchanged. */
+/* Card texture: [data-texture] on <html>. Grain is a separate overlay layer (::after) so it works on top of
+   any card background: fine light and dark specks, blended with "overlay", over the whole card. */
 :root {
-  /* Coarse grain: low noise frequency on a 240px tile, so the grain reads at normal viewing distance */
-  --grain-img: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.38' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .11 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --grain-img: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n' x='0' y='0'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='linear' slope='2' intercept='-.5'/%3E%3CfeFuncG type='linear' slope='2' intercept='-.5'/%3E%3CfeFuncB type='linear' slope='2' intercept='-.5'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --fibre-img: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n' x='0' y='0'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.012 .55' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='linear' slope='2' intercept='-.5'/%3E%3CfeFuncG type='linear' slope='2' intercept='-.5'/%3E%3CfeFuncB type='linear' slope='2' intercept='-.5'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
-[data-texture="grain"] :is(.tile, .panel, .stat) { background-image: var(--grain-img); }
-/* frost: see-through cards that blur what is behind them; a light edge and top sheen make the glass visible */
-[data-texture="frost"] :is(.tile, .panel, .stat) { background: linear-gradient(180deg, rgb(255 255 255 / 0.08), transparent 50%), color-mix(in srgb, var(--color-surface) 35%, transparent);
-  backdrop-filter: blur(1.25rem) saturate(1.6); border: 1px solid rgb(255 255 255 / 0.14); }
-[data-texture="frost"] .tile:is(:hover, :focus-within, .is-hover, .is-focus) { background: linear-gradient(180deg, rgb(255 255 255 / 0.12), transparent 50%), color-mix(in srgb, var(--color-surface-raised) 55%, transparent); }
-/* project: a faint gradient in the project's colour, with grain */
-[data-texture="project"] :is(.tile, .panel, .stat) { background-image: var(--grain-img),
-  linear-gradient(160deg, color-mix(in srgb, var(--tile-colour, var(--color-primary)) 22%, transparent), transparent 65%); }
+.panel, .stat { position: relative; }
+:is([data-texture="grain"], [data-texture="frost-grain"], [data-texture="frost-tint"], [data-texture="project"], [data-texture="grainy-gradient"],
+    [data-texture="art"], [data-texture="fibre"], [data-texture="bevel"]) :is(.tile, .panel, .stat)::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none; border-radius: inherit;
+  background: var(--grain-img); mix-blend-mode: overlay; opacity: var(--grain-opacity, 0.22); }
+[data-texture="grainy-gradient"] :is(.tile, .panel, .stat)::after { --grain-opacity: 0.4; }
+[data-texture="fibre"] :is(.tile, .panel, .stat)::after { background: var(--fibre-img); --grain-opacity: 0.3; }
 
-/* More textures (moodboard options) */
-:root {
-  --grain-strong: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.38' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .2 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  --fibre-img: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='320'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.015 .5' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-}
-/* frost-grain: frosted glass with coarse grain, like real etched glass */
-[data-texture="frost-grain"] :is(.tile, .panel, .stat) { background: var(--grain-img), linear-gradient(180deg, rgb(255 255 255 / 0.08), transparent 50%), color-mix(in srgb, var(--color-surface) 35%, transparent);
-  backdrop-filter: blur(1.25rem) saturate(1.6); border: 1px solid rgb(255 255 255 / 0.14); }
-[data-texture="frost-grain"] .tile:is(:hover, :focus-within, .is-hover, .is-focus) { background: var(--grain-img), linear-gradient(180deg, rgb(255 255 255 / 0.12), transparent 50%), color-mix(in srgb, var(--color-surface-raised) 55%, transparent); }
+/* frost: see-through cards that blur what is behind them; a light edge and top sheen make the glass visible */
+:is([data-texture="frost"], [data-texture="frost-grain"]) :is(.tile, .panel, .stat) { background: linear-gradient(180deg, rgb(255 255 255 / 0.08), transparent 50%), color-mix(in srgb, var(--color-surface) 35%, transparent); backdrop-filter: blur(1.25rem) saturate(1.6); border: 1px solid rgb(255 255 255 / 0.14); }
+:is([data-texture="frost"], [data-texture="frost-grain"]) .tile:is(:hover, :focus-within, .is-hover, .is-focus) { background: linear-gradient(180deg, rgb(255 255 255 / 0.08), transparent 50%), color-mix(in srgb, var(--color-surface-raised) 55%, transparent); }
 /* frost-tint: frosted glass tinted in the project's colour */
-[data-texture="frost-tint"] :is(.tile, .panel, .stat) { background: var(--grain-img), linear-gradient(160deg, color-mix(in srgb, var(--tile-colour, var(--color-primary)) 30%, transparent), transparent 70%), color-mix(in srgb, var(--color-surface) 35%, transparent);
-  backdrop-filter: blur(1.25rem) saturate(1.6); border: 1px solid color-mix(in srgb, var(--tile-colour, var(--color-primary)) 35%, transparent); }
-[data-texture="frost-tint"] .tile:is(:hover, :focus-within, .is-hover, .is-focus) { background: var(--grain-img), linear-gradient(160deg, color-mix(in srgb, var(--tile-colour, var(--color-primary)) 40%, transparent), transparent 70%), color-mix(in srgb, var(--color-surface-raised) 55%, transparent); }
-/* grainy-gradient: a two-colour glow (project colour and primary) under heavy grain */
-[data-texture="grainy-gradient"] :is(.tile, .panel, .stat) { background-image: var(--grain-strong),
+[data-texture="frost-tint"] :is(.tile, .panel, .stat) { background: linear-gradient(160deg, color-mix(in srgb, var(--tile-colour, var(--color-primary)) 30%, transparent), transparent 70%), linear-gradient(180deg, rgb(255 255 255 / 0.08), transparent 50%), color-mix(in srgb, var(--color-surface) 35%, transparent); backdrop-filter: blur(1.25rem) saturate(1.6);
+  border: 1px solid color-mix(in srgb, var(--tile-colour, var(--color-primary)) 35%, transparent); }
+[data-texture="frost-tint"] .tile:is(:hover, :focus-within, .is-hover, .is-focus) { background: linear-gradient(160deg, color-mix(in srgb, var(--tile-colour, var(--color-primary)) 40%, transparent), transparent 70%), linear-gradient(180deg, rgb(255 255 255 / 0.08), transparent 50%), color-mix(in srgb, var(--color-surface-raised) 55%, transparent); }
+/* project: a faint gradient in the project's colour */
+[data-texture="project"] :is(.tile, .panel, .stat) { background-image: linear-gradient(160deg, color-mix(in srgb, var(--tile-colour, var(--color-primary)) 22%, transparent), transparent 70%); }
+/* grainy-gradient: a two-colour glow (project colour and primary) under heavier grain */
+[data-texture="grainy-gradient"] :is(.tile, .panel, .stat) { background-image:
   radial-gradient(120% 80% at 0 0, color-mix(in srgb, var(--tile-colour, var(--color-primary)) 35%, transparent), transparent 60%),
   radial-gradient(100% 80% at 100% 100%, color-mix(in srgb, var(--color-primary) 16%, transparent), transparent 60%); }
-/* art: the card body shows the project's own image, heavily blurred and darkened (PS5 game hub feel) */
+/* art: the card shows the project's own image, heavily blurred and darkened (PS5 game hub feel) */
 [data-texture="art"] .tile { isolation: isolate; }
 [data-texture="art"] .tile::before { content: ""; position: absolute; inset: -3rem; z-index: -1;
   background: linear-gradient(rgb(14 17 23 / 0.55), rgb(14 17 23 / 0.55)), var(--tile-art, none) center / cover, var(--color-surface);
   filter: blur(2rem) saturate(1.5); }
-[data-texture="art"] :is(.panel, .stat) { background-image: var(--grain-img); }
-/* fibre: paper with long fibres, matching the paper-plane background */
-[data-texture="fibre"] :is(.tile, .panel, .stat) { background-image: var(--fibre-img), var(--grain-img); }
-/* bevel: thick paper; grain plus a light top edge and a dark bottom edge */
-[data-texture="bevel"] :is(.tile, .panel, .stat) { background-image: var(--grain-img); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.1), inset 0 -0.1875rem 0 rgb(0 0 0 / 0.35); }
+/* bevel: thick paper; a light top edge and a dark bottom edge */
+[data-texture="bevel"] :is(.tile, .panel, .stat) { box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.1), inset 0 -0.1875rem 0 rgb(0 0 0 / 0.35); }
 [data-texture="bevel"] .tile:is(:hover, :focus-within, .is-hover, .is-focus) { box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.14), inset 0 -0.1875rem 0 rgb(0 0 0 / 0.35), 0 0.75rem 1.5rem rgb(0 0 0 / 0.45); }
 
 @media (prefers-reduced-motion: reduce) { .plane { animation: none !important; } }
