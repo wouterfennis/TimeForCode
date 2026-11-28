@@ -222,11 +222,11 @@
     ["accent", "Colour", accents],
     ["bg", "Background", [["none", "Plain"], ["tonal", "Tonal (M3)"], ["elevation", "Elevation (M2 dark)"], ["gradient", "Gradient wash"], ["planes", "Paper planes"], ["shapes", "Expressive shapes"]]],
     ["planes", "Plane shape", [["angled", "Angled"], ["layered", "Layered sheets"], ["origami", "Origami"]]],
-    ["scroll", "On scroll", [["page", "With the page"], ["none", "Still"], ["parallax", "Parallax"], ["tilt", "Tilt"], ["slide", "Slide"]]],
+    ["scroll", "On scroll", [["none", "Still"], ["parallax", "Parallax"], ["tilt", "Tilt"], ["slide", "Slide"]]],
     ["texture", "Card texture", [["none", "None"], ["grain", "Grain"], ["frost", "Frosted glass"], ["project", "Project colour"]]],
   ];
   const root = document.documentElement;
-  Object.assign(root.dataset, { accent: "blue", bg: "planes", planes: "angled", scroll: "page", texture: "frost" });
+  Object.assign(root.dataset, { accent: "blue", bg: "planes", planes: "angled", scroll: "parallax", texture: "frost" });
   document.getElementById("lab").innerHTML = lab.map(([attr, label, opts]) =>
     `<div class="toolbar" role="group" aria-label="${label}" data-attr="${attr}"><span class="label">${label}</span>` +
     opts.map(([key, name]) => `<button class="btn" type="button" data-key="${key}" aria-pressed="${root.dataset[attr] === key}">${name}</button>`).join("") + "</div>").join("");
