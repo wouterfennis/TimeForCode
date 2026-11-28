@@ -165,7 +165,7 @@
   ];
   const tile = (p, state = "") => {
     const pct = Math.round((p.pledged / p.goal) * 100);
-    return `<article class="tile ${state}" style="--tile-colour: ${p.colour}">
+    return `<article class="tile ${state}" style="--tile-colour: ${p.colour}; --tile-art: url(https://opengraph.githubassets.com/1/${p.repo})">
       <div class="tile-media"><img src="https://opengraph.githubassets.com/1/${p.repo}" alt="" loading="lazy" onerror="this.remove()"><span class="badge">${pct}% pledged</span></div>
       <div class="tile-body">
         <h3><a href="#">${p.repo}</a></h3>
@@ -223,7 +223,7 @@
     ["bg", "Background", [["none", "Plain"], ["tonal", "Tonal (M3)"], ["elevation", "Elevation (M2 dark)"], ["gradient", "Gradient wash"], ["planes", "Paper planes"], ["shapes", "Expressive shapes"]]],
     ["planes", "Plane shape", [["angled", "Angled"], ["layered", "Layered sheets"], ["origami", "Origami"]]],
     ["scroll", "On scroll", [["none", "Still"], ["parallax", "Parallax"], ["tilt", "Tilt"], ["slide", "Slide"]]],
-    ["texture", "Card texture", [["none", "None"], ["grain", "Grain"], ["frost", "Frosted glass"], ["project", "Project colour"]]],
+    ["texture", "Card texture", [["none", "None"], ["grain", "Grain"], ["frost", "Frosted glass"], ["project", "Project colour"], ["frost-grain", "Frosted grain"], ["frost-tint", "Tinted frost"], ["grainy-gradient", "Grainy gradient"], ["art", "Blurred art (PS5)"], ["fibre", "Paper fibre"], ["bevel", "Thick paper"]]],
   ];
   const root = document.documentElement;
   Object.assign(root.dataset, { accent: "blue", bg: "planes", planes: "angled", scroll: "parallax", texture: "frost" });

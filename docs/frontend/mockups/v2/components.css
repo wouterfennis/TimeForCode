@@ -214,4 +214,33 @@ a { color: var(--color-primary); }
 [data-texture="project"] :is(.tile, .panel, .stat) { background-image: var(--grain-img),
   linear-gradient(160deg, color-mix(in srgb, var(--tile-colour, var(--color-primary)) 22%, transparent), transparent 65%); }
 
+/* More textures (moodboard options) */
+:root {
+  --grain-strong: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.38' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .2 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --fibre-img: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='320'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.015 .5' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+/* frost-grain: frosted glass with coarse grain, like real etched glass */
+[data-texture="frost-grain"] :is(.tile, .panel, .stat) { background: var(--grain-img), linear-gradient(180deg, rgb(255 255 255 / 0.08), transparent 50%), color-mix(in srgb, var(--color-surface) 35%, transparent);
+  backdrop-filter: blur(1.25rem) saturate(1.6); border: 1px solid rgb(255 255 255 / 0.14); }
+[data-texture="frost-grain"] .tile:is(:hover, :focus-within, .is-hover, .is-focus) { background: var(--grain-img), linear-gradient(180deg, rgb(255 255 255 / 0.12), transparent 50%), color-mix(in srgb, var(--color-surface-raised) 55%, transparent); }
+/* frost-tint: frosted glass tinted in the project's colour */
+[data-texture="frost-tint"] :is(.tile, .panel, .stat) { background: var(--grain-img), linear-gradient(160deg, color-mix(in srgb, var(--tile-colour, var(--color-primary)) 30%, transparent), transparent 70%), color-mix(in srgb, var(--color-surface) 35%, transparent);
+  backdrop-filter: blur(1.25rem) saturate(1.6); border: 1px solid color-mix(in srgb, var(--tile-colour, var(--color-primary)) 35%, transparent); }
+[data-texture="frost-tint"] .tile:is(:hover, :focus-within, .is-hover, .is-focus) { background: var(--grain-img), linear-gradient(160deg, color-mix(in srgb, var(--tile-colour, var(--color-primary)) 40%, transparent), transparent 70%), color-mix(in srgb, var(--color-surface-raised) 55%, transparent); }
+/* grainy-gradient: a two-colour glow (project colour and primary) under heavy grain */
+[data-texture="grainy-gradient"] :is(.tile, .panel, .stat) { background-image: var(--grain-strong),
+  radial-gradient(120% 80% at 0 0, color-mix(in srgb, var(--tile-colour, var(--color-primary)) 35%, transparent), transparent 60%),
+  radial-gradient(100% 80% at 100% 100%, color-mix(in srgb, var(--color-primary) 16%, transparent), transparent 60%); }
+/* art: the card body shows the project's own image, heavily blurred and darkened (PS5 game hub feel) */
+[data-texture="art"] .tile { isolation: isolate; }
+[data-texture="art"] .tile::before { content: ""; position: absolute; inset: -3rem; z-index: -1;
+  background: linear-gradient(rgb(14 17 23 / 0.55), rgb(14 17 23 / 0.55)), var(--tile-art, none) center / cover, var(--color-surface);
+  filter: blur(2rem) saturate(1.5); }
+[data-texture="art"] :is(.panel, .stat) { background-image: var(--grain-img); }
+/* fibre: paper with long fibres, matching the paper-plane background */
+[data-texture="fibre"] :is(.tile, .panel, .stat) { background-image: var(--fibre-img), var(--grain-img); }
+/* bevel: thick paper; grain plus a light top edge and a dark bottom edge */
+[data-texture="bevel"] :is(.tile, .panel, .stat) { background-image: var(--grain-img); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.1), inset 0 -0.1875rem 0 rgb(0 0 0 / 0.35); }
+[data-texture="bevel"] .tile:is(:hover, :focus-within, .is-hover, .is-focus) { box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.14), inset 0 -0.1875rem 0 rgb(0 0 0 / 0.35), 0 0.75rem 1.5rem rgb(0 0 0 / 0.45); }
+
 @media (prefers-reduced-motion: reduce) { .plane { animation: none !important; } }
