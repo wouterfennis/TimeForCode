@@ -165,6 +165,15 @@ a { color: var(--color-primary); }
 /* Scroll reactions: each sheet moves at its own rate, so the page feels layered */
 @supports (animation-timeline: scroll()) {
   [data-scroll] .plane { animation: none linear both; animation-timeline: scroll(root); }
+  /* Parallax: sheets extend far below the screen so the near ones can travel a long way; near = fast, far = slow */
+  [data-scroll="parallax"] .plane { bottom: -80vh; }
+  /* Same shapes as above, rescaled to the taller sheets so the top of the page looks unchanged */
+  [data-scroll="parallax"]:not([data-planes="origami"]) .plane-1 { clip-path: polygon(0 43.4%, 100% 26.6%, 100% 100%, 0 100%); }
+  [data-scroll="parallax"]:not([data-planes="origami"]) .plane-2 { clip-path: polygon(0 94%, 45% 70%, 100% 40.6%, 100% 100%, 0 100%); }
+  [data-scroll="parallax"]:not([data-planes="origami"]) .plane-3 { clip-path: polygon(0 0, 38% 0, 0 38.5%); }
+  [data-scroll="parallax"][data-planes="layered"] .plane-1 { clip-path: polygon(0 38.5%, 100% 31.5%, 100% 100%, 0 100%); }
+  [data-scroll="parallax"][data-planes="layered"] .plane-2 { clip-path: polygon(0 52.5%, 100% 43.4%, 100% 100%, 0 100%); }
+  [data-scroll="parallax"][data-planes="layered"] .plane-3 { clip-path: polygon(0 63%, 100% 57.4%, 100% 100%, 0 100%); }
   [data-scroll="parallax"] .plane-1 { animation-name: plane-up-1; }
   [data-scroll="parallax"] .plane-2 { animation-name: plane-up-2; }
   [data-scroll="parallax"] .plane-3 { animation-name: plane-up-3; }
@@ -175,9 +184,9 @@ a { color: var(--color-primary); }
   [data-scroll="slide"] .plane-2 { animation-name: plane-slide-2; }
   [data-scroll="slide"] .plane-3 { animation-name: plane-slide-3; }
 }
-@keyframes plane-up-1 { to { transform: translateY(-8vh); } }
-@keyframes plane-up-2 { to { transform: translateY(-18vh); } }
-@keyframes plane-up-3 { to { transform: translateY(-4vh); } }
+@keyframes plane-up-1 { to { transform: translateY(-35vh); } }
+@keyframes plane-up-2 { to { transform: translateY(-75vh); } }
+@keyframes plane-up-3 { to { transform: translateY(-12vh); } }
 @keyframes plane-tilt-1 { to { transform: rotate(-4deg); } }
 @keyframes plane-tilt-2 { to { transform: rotate(6deg); } }
 @keyframes plane-tilt-3 { to { transform: rotate(-8deg); } }
