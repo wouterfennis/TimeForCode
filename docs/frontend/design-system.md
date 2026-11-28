@@ -58,7 +58,7 @@ Build these once, in a shared folder, and compose pages from them.
 | Pagination | Reflects page in the URL |
 | Dialog | Focus trap, Escape to close, returns focus; used for confirmations |
 | Toast / Alert | Success and error feedback with `role="status"` / `role="alert"` |
-| Skeleton | Loading placeholders |
+| Skeleton | Loading placeholders with the same layout as the loaded content, so nothing jumps when it arrives (layout shift close to 0; in the app, measure Cumulative Layout Shift in the E2E tests) |
 | EmptyState, ErrorState | Icon, message, optional action |
 | Avatar | With text fallback |
 | Badge | Language, status |

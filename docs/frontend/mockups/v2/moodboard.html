@@ -246,7 +246,7 @@
   // Colour comparison: the same small set of UI in each candidate
   document.getElementById("compare").innerHTML = accents.map(([key, name]) => `<div data-accent="${key}">
     <strong>${name}</strong><a href="#">A link</a><span class="btn primary">Pledge hours</span>
-    <div class="progress"><span style="width: 60%; background: var(--color-primary)"></span></div><span class="chip focus" aria-pressed="true">Focused chip</span>
+    <div class="progress"><span style="width: 60%; background: var(--color-primary)"></span></div><button class="chip focus" type="button" aria-pressed="true" tabindex="-1">Focused chip</button>
     <div class="progress"><span style="width: 40%"></span></div><span class="muted">↑ hours pledged (progress colour)</span>
     <span style="color: var(--color-warning)">⚠ Warning: goal almost reached</span></div>`).join("");
 
