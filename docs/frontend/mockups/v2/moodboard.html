@@ -180,7 +180,7 @@
       <div class="tile-body">
         <h3><a href="#">${p.repo}</a></h3>
         <p>${p.need}</p>
-        <div class="tags">${p.tags.map((t) => `<span class="tag">${t}</span>`).join("")}</div>
+        <div class="tags">${p.tags.map((t, i) => `<span class="tag" style="--i: ${i}">${t}</span>`).join("")}</div>
         <div class="hours"><span><strong>${p.pledged}</strong> of ${p.goal} h</span><span>${p.goal - p.pledged} h to go</span></div>
         <div class="progress" aria-hidden="true"><span style="width: ${pct}%"></span></div>
       </div></article>`;

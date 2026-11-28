@@ -15,9 +15,14 @@ a { color: var(--color-primary); }
 /* Tags and badges */
 .tags { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 /* Tags take the project colour (like the card texture); falls back to the primary colour */
-.tag { font-size: var(--text-sm); padding: var(--space-1) var(--space-2); border-radius: var(--radius-pill); color: var(--color-text);
-  background: color-mix(in srgb, var(--tile-colour, var(--color-primary)) 20%, var(--color-surface));
-  border: 1px solid color-mix(in srgb, var(--tile-colour, var(--color-primary)) 45%, transparent); }
+.tag { --tag-colour: var(--tile-colour, var(--color-primary));
+  font-size: var(--text-sm); padding: var(--space-1) var(--space-2); border-radius: var(--radius-pill); color: var(--color-text);
+  background: color-mix(in srgb, var(--tag-colour) 20%, var(--color-surface));
+  border: 1px solid color-mix(in srgb, var(--tag-colour) 45%, transparent); }
+/* Each tag in a row turns the hue a step further (--i = its index), keeping lightness and chroma, so the row reads as one family */
+@supports (color: oklch(from red l c h)) {
+  .tag { --tag-colour: oklch(from var(--tile-colour, var(--color-primary)) l c calc(h + var(--i, 0) * 30)); }
+}
 .badge { position: absolute; top: var(--space-3); left: var(--space-3); font-size: var(--text-sm); font-weight: 600; padding: var(--space-1) var(--space-2); border-radius: var(--radius-control); background: var(--color-bg); color: var(--color-progress); }
 
 /* Progress */

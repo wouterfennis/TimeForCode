@@ -125,7 +125,7 @@
     const img = document.getElementById("art");
     img.src = art(p.fullName);
     img.onerror = () => { if (img.classList.contains("is-avatar")) img.remove(); else { img.classList.add("is-avatar"); img.src = p.ownerAvatarUrl; } };
-    document.getElementById("topics").innerHTML = p.topics.map((t) => `<span class="tag">${t}</span>`).join("");
+    document.getElementById("topics").innerHTML = p.topics.map((t, i) => `<span class="tag" style="--i: ${i}">${t}</span>`).join("");
     const facts = [
       ["Language", `<span class="lang-dot" style="background: ${p.colour}" aria-hidden="true"></span>${p.language}`],
       ["Stars", short(p.stargazersCount)], ["Forks", short(p.forksCount)], ["Open issues", short(p.openIssuesCount)], ["Licence", p.license],
